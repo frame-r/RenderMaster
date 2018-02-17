@@ -3,13 +3,13 @@
 
 API Core::StartEngine()
 {
-	std::cout << "Engine started\n";
+	std::cout << "Core::StartEngine()\n";
 	return S_OK;
 }
 
 API Core::CloseEngine()
 {
-	std::cout << "Engine closed\n";
+	std::cout << "Core::CloseEngine()\n";
 	return S_OK;
 }
 
