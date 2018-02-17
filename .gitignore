@@ -1,0 +1,17 @@
+*.suo
+*.user
+*.sln.docstates
+*.ilk
+*.lib
+*.exp
+*.pdb
+*.aps
+*.sdf
+*.opensdf
+*.opendb
+*.7z
+
+/x64
+/Debug
+Debug
+x64
