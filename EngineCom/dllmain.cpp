@@ -29,7 +29,7 @@ EXTERN_C  HRESULT STDAPICALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid,
 	pCF = 0;
 
 	// Make sure the CLSID is for our Expression component
-	if (rclsid != CLSID_Core1)
+	if (rclsid != CLSID_Core)
 		return(E_FAIL);
 
 	pCF = new CoreClassFactory;
