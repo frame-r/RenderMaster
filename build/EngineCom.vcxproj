@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\Engine.h" />
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\CoreClassFactory.h" />
@@ -29,8 +30,6 @@
     <ClInclude Include="..\src\GL\wglew.h" />
     <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
-    <ClInclude Include="..\src\stdafx.h" />
-    <ClInclude Include="..\src\targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -42,7 +41,6 @@
     <ClCompile Include="..\src\GL\glew.c" />
     <ClCompile Include="..\src\Mesh.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
-    <ClCompile Include="..\src\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />

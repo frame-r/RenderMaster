@@ -9,14 +9,13 @@
     <ClInclude Include="..\src\GLCoreRender.h" />
     <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
-    <ClInclude Include="..\src\stdafx.h" />
-    <ClInclude Include="..\src\targetver.h" />
     <ClInclude Include="..\src\GL\glew.h">
       <Filter>GL</Filter>
     </ClInclude>
     <ClInclude Include="..\src\GL\wglew.h">
       <Filter>GL</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Engine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -27,7 +26,6 @@
     <ClCompile Include="..\src\GLCoreRender.cpp" />
     <ClCompile Include="..\src\Mesh.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
-    <ClCompile Include="..\src\stdafx.cpp" />
     <ClCompile Include="..\src\GL\glew.c">
       <Filter>GL</Filter>
     </ClCompile>
