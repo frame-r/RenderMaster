@@ -1,4 +1,5 @@
 #pragma once
+#define WIN32_LEAN_AND_MEAN
 #define INITGUID
 #include <Unknwn.h>
 #include <iostream>
@@ -23,10 +24,12 @@ namespace RENDER_MASTER
 	enum class INIT_FLAGS
 	{
 		IF_SELF_WINDOW = 0x00000000, // engine need create it's own window 
-		IF_EXTERN_WINDOW = 0x00000001,
+		IF_EXTERN_WINDOW = 0x00000001, // engine uses client's created window
+		IF_WINDOW_FLAG = 0x0000000F,
 
 		IF_OPENGL45 = 0x00000000,
-		IF_DIRECTX11 = 0x00000010
+		IF_DIRECTX11 = 0x00000010,
+		IF_GRAPHIC_LIBRARY_FLAG = 0x000000F0
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 

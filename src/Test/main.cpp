@@ -18,7 +18,7 @@ public:
 	}
 };
 
-int main(int argc, char *argv[])
+int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
 	
 	InitLog();
@@ -39,37 +39,17 @@ int main(int argc, char *argv[])
 
 		ev->Unsubscribe(&o1);
 		ev->Unsubscribe(&o2);
-
-		/*
-		LoadMeshTask task;
-		task.Start();
 		
-		LoadMeshTask task1;
-		task1.Start();
-
-		HANDLE hTimer = CreateEvent(NULL, FALSE, FALSE, NULL);
-		
-		int nCount = 0;
-		while (nCount < 10)
-		{
-			WaitForSingleObject(hTimer, 1000);
-			PrintLn("1 sec.");
-			nCount++;
-		}
-		
-		CloseHandle(hTimer);
-		*/
-
 
 		pCore->Log("hello!", LOG_TYPE::LT_NORMAL);
 
-
+		
 		pCore->CloseEngine();
 
 		FreeEngine(pCore);
 	}
 	
-	getchar();
+	//getchar();
 
 	return 0;
 }

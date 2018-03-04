@@ -4,10 +4,7 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\CoreClassFactory.h" />
-    <ClInclude Include="..\src\DX11CoreRender.h" />
     <ClInclude Include="..\src\EvLog.h" />
-    <ClInclude Include="..\src\GLCoreRender.h" />
-    <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\GL\glew.h">
       <Filter>GL</Filter>
@@ -16,19 +13,36 @@
       <Filter>GL</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Engine.h" />
+    <ClInclude Include="..\src\Mesh.h">
+      <Filter>CoreRender</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GLCoreRender.h">
+      <Filter>CoreRender</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DX11CoreRender.h">
+      <Filter>CoreRender</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Wnd.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\CoreClassFactory.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
-    <ClCompile Include="..\src\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\EvLog.cpp" />
-    <ClCompile Include="..\src\GLCoreRender.cpp" />
-    <ClCompile Include="..\src\Mesh.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
     <ClCompile Include="..\src\GL\glew.c">
       <Filter>GL</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Mesh.cpp">
+      <Filter>CoreRender</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GLCoreRender.cpp">
+      <Filter>CoreRender</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DX11CoreRender.cpp">
+      <Filter>CoreRender</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Wnd.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />
@@ -36,6 +50,9 @@
   <ItemGroup>
     <Filter Include="GL">
       <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CoreRender">
+      <UniqueIdentifier>{3eff1445-f3ae-4f99-a286-930ec385879a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

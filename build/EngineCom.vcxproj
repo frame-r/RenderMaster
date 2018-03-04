@@ -30,6 +30,7 @@
     <ClInclude Include="..\src\GL\wglew.h" />
     <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
+    <ClInclude Include="..\src\Wnd.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -41,6 +42,7 @@
     <ClCompile Include="..\src\GL\glew.c" />
     <ClCompile Include="..\src\Mesh.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
+    <ClCompile Include="..\src\Wnd.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />

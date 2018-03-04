@@ -2,13 +2,14 @@
 #include "ResourceManager.h"
 #include "DX11CoreRender.h"
 #include "GLCoreRender.h"
+#include "Wnd.h"
 
 #include <iostream>
 
 
 Core *_pCore;
 
-Core::Core() : _pResMan(nullptr), _pCoreRender(nullptr)
+Core::Core() : _pWnd(nullptr), _pResMan(nullptr), _pCoreRender(nullptr)
 {
 	_pCore = this;
 }
@@ -17,21 +18,36 @@ Core::~Core()
 {
 	delete _pCoreRender;
 	delete _pResMan;
+	delete _pWnd;
 }
 
 API Core::Init(INIT_FLAGS flags, WinHandle& handle)
 {
+	WinHandle h = handle;
+
 	Log("Start initialization engine...");
 
-	_pResMan = new ResourceManager;
+	_pResMan = new ResourceManager;	
 
-	if ((int)(flags & INIT_FLAGS::IF_DIRECTX11))
+	if ((flags & INIT_FLAGS::IF_WINDOW_FLAG) == INIT_FLAGS::IF_SELF_WINDOW)
+	{
+		_pWnd = new Wnd;
+		h = _pWnd->handle();
+	}
+
+	if ((flags & INIT_FLAGS::IF_GRAPHIC_LIBRARY_FLAG) == INIT_FLAGS::IF_DIRECTX11)
 		_pCoreRender = new DX11CoreRender;
 	else
 		_pCoreRender = new GLCoreRender;
 
 	_pCoreRender->Init(handle);
-	
+
+	if ((flags & INIT_FLAGS::IF_WINDOW_FLAG) == INIT_FLAGS::IF_SELF_WINDOW)
+	{
+		_pWnd->CreateAndShow();
+		_pWnd->StartMainLoop();
+		_pWnd->Destroy();
+	}
 	Log("Engine initialized");
 
 	return S_OK;
