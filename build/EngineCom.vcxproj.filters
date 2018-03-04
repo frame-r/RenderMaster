@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\src\Common.h" />
+    <ClInclude Include="..\src\Core.h" />
+    <ClInclude Include="..\src\CoreClassFactory.h" />
+    <ClInclude Include="..\src\DX11CoreRender.h" />
+    <ClInclude Include="..\src\EvLog.h" />
+    <ClInclude Include="..\src\GLCoreRender.h" />
+    <ClInclude Include="..\src\Mesh.h" />
+    <ClInclude Include="..\src\ResourceManager.h" />
+    <ClInclude Include="..\src\stdafx.h" />
+    <ClInclude Include="..\src\targetver.h" />
+    <ClInclude Include="..\src\GL\glew.h">
+      <Filter>GL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GL\wglew.h">
+      <Filter>GL</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\Core.cpp" />
+    <ClCompile Include="..\src\CoreClassFactory.cpp" />
+    <ClCompile Include="..\src\dllmain.cpp" />
+    <ClCompile Include="..\src\DX11CoreRender.cpp" />
+    <ClCompile Include="..\src\EvLog.cpp" />
+    <ClCompile Include="..\src\GLCoreRender.cpp" />
+    <ClCompile Include="..\src\Mesh.cpp" />
+    <ClCompile Include="..\src\ResourceManager.cpp" />
+    <ClCompile Include="..\src\stdafx.cpp" />
+    <ClCompile Include="..\src\GL\glew.c">
+      <Filter>GL</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\export.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="GL">
+      <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

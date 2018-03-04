@@ -11,7 +11,5 @@
 *.opendb
 *.7z
 
-/x64
-/Debug
-Debug
-x64
+bin/
+

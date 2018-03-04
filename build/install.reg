@@ -12,7 +12,7 @@ Windows Registry Editor Version 5.00
 @="Render Master 64"
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Classes\CLSID\{A889F560-58E4-11d0-A68A-0000837E3100}\InProcServer32]
-@="C:\\Users\\Konstantin\\Documents\\EngineCom\\x64\\Debug\\EngineCom.dll"
+@="C:\\Users\\Konstantin\\Documents\\EngineCom\\bin\\x64\\Debug\\EngineCom.dll"
 "ThreadingModel"="Both"
 
 ; 32 bit dll
@@ -20,5 +20,5 @@ Windows Registry Editor Version 5.00
 @="Render Master 32 bit running on 64 bit system"
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Classes\CLSID\{A889F560-58E4-11D0-A68A-0000837E3100}\InProcServer32]
-@="C:\\Users\\Konstantin\\Documents\\EngineCom\\Debug\\EngineCom.dll"
+@="C:\\Users\\Konstantin\\Documents\\EngineCom\\bin\\Win32\\Debug\\EngineCom.dll"
 "ThreadingModel"="Both"
