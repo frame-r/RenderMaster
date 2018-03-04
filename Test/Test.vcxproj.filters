@@ -2,5 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="LoadMeshTask.cpp" />
+    <ClCompile Include="Log.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LoadMeshTask.h" />
+    <ClInclude Include="Log.h" />
   </ItemGroup>
 </Project>

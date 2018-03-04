@@ -5,13 +5,38 @@
     <ClInclude Include="CoreClassFactory.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="EvLog.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="DX11CoreRender.h" />
+    <ClInclude Include="GLCoreRender.h" />
+    <ClInclude Include="GL\wglew.h">
+      <Filter>GL</Filter>
+    </ClInclude>
+    <ClInclude Include="GL\glew.h">
+      <Filter>GL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="CoreClassFactory.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="EvLog.cpp" />
+    <ClCompile Include="DX11CoreRender.cpp" />
+    <ClCompile Include="GLCoreRender.cpp" />
+    <ClCompile Include="GL\glew.c">
+      <Filter>GL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="export.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="GL">
+      <UniqueIdentifier>{dfe74c6c-c3bc-450b-b750-1093a45da3e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
