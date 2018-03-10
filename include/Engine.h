@@ -7,7 +7,10 @@
 #define API HRESULT
 
 typedef unsigned int uint;
+typedef unsigned char uint8;
 typedef HWND WinHandle;
+
+#define USE_FBX
 
 #define DEFINE_ENUM_OPERATORS(ENUM_NAME) \
 inline ENUM_NAME operator|(ENUM_NAME a, ENUM_NAME b) \
@@ -23,13 +26,17 @@ namespace RENDER_MASTER
 {
 	enum class INIT_FLAGS
 	{
-		IF_SELF_WINDOW = 0x00000000, // engine need create it's own window 
-		IF_EXTERN_WINDOW = 0x00000001, // engine uses client's created window
+		IF_SELF_WINDOW = 0x00000001, // engine need create it's own window 
+		IF_EXTERN_WINDOW = 0x00000002, // engine uses client's created window
 		IF_WINDOW_FLAG = 0x0000000F,
 
-		IF_OPENGL45 = 0x00000000,
-		IF_DIRECTX11 = 0x00000010,
-		IF_GRAPHIC_LIBRARY_FLAG = 0x000000F0
+		IF_OPENGL45 = 0x00000010,
+		IF_DIRECTX11 = 0x00000020,
+		IF_GRAPHIC_LIBRARY_FLAG = 0x000000F0,
+
+		IF_NO_CONSOLE = 0x00000100,
+		IF_CONSOLE = 0x00000200,
+		IF_CONSOLE_FLAG = 0x00000F00
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
@@ -49,8 +56,25 @@ namespace RENDER_MASTER
 	class ISubSystem
 	{
 	public:
-
 		virtual API GetName(const char *&pName) = 0;
+	};
+
+	enum class RES_TYPE
+	{
+		RT_CORE_MESH,
+		RT_CORE_TEXTURE,
+		RT_CORE_SHADER,
+		RT_REFERENCEBLE_END,
+
+		RT_GAMEOBJECT,
+		RT_MODEL
+	};
+
+	class IResource
+	{
+	public:
+		virtual API Free() = 0;
+		virtual API GetType(RES_TYPE& type) = 0;
 	};
 
 
@@ -92,36 +116,135 @@ namespace RENDER_MASTER
 	// Core Render stuff
 	//////////////////////
 
-	class IMesh
+	enum class DRAW_MODE
 	{
-	public:
-		virtual API GetVertexCount(uint &vertex) = 0;
+		DM_POINTS,
+		DM_LIMES,
+		DM_TRIANGLES,
 	};
 
-	class IShader
+	struct MeshDataDesc
 	{
-	public:
-		virtual API Init() = 0;
+		MeshDataDesc() : pData(nullptr), number(0), positionOffset(0), positionStride(12),
+			texCoordPresented(false), texCoordOffset(0), texCoordStride(0),
+			normalsPresented(false), normalOffset(0), normalStride(0) {}
+
+		uint8 *pData;
+
+		uint number;
+
+		// At minimum position attribute must be present
+		// Stride is step in bytes to move along the array from vertex to vertex 
+		// Offset also specified in bytes
+		// Stride and offset defines two case:
+
+		// 1) Interleaved
+		//
+		// x1, y1, z1, UVx1, UVy1, Nx1, Ny1, Nz1,   x2, y2, z2, UVx2, UVy2, Nx2, Ny2, Nz2, ...
+		// positionOffset = 0, positionStride = 32,
+		// texCoordOffset = 12, texCoordStride = 32,
+		// normalOffset = 20, normalStride = 32
+
+		// 2) Tightly packed attributes
+		//
+		// x1, y2, z1, x2, y2, z2, ...   UVx1, UVy1, UVx2, UVy2, ...  Nx1, Ny1, Nz1, Nx2, Ny2, Nz2, ...
+		// positionOffset = 0, positionStride = 12,
+		// texCoordOffset = vertexNumber * 12, texCoordStride = 8,
+		// normalOffset = vertexNumber * (12 + 8), normalStride = 12
+
+		uint positionOffset;
+		uint positionStride;
+
+		bool texCoordPresented;
+		uint texCoordOffset;
+		uint texCoordStride;
+
+		bool normalsPresented;
+		uint normalOffset;
+		uint normalStride;
 	};
 
-	class ITexture
+	enum class MESH_INDEX_FORMAT
+	{
+		MID_NOTHING,
+		MID_INT32,
+		MID_INT16
+	};
+
+	struct MeshIndexDesc
+	{
+		MeshIndexDesc() : pData(nullptr), number(0), format(MESH_INDEX_FORMAT::MID_NOTHING) {}
+
+		uint8 *pData;
+		uint number;
+		MESH_INDEX_FORMAT format;
+	};
+
+	class ICoreMesh : public IResource
 	{
 	public:
-		virtual API Init() = 0;
+		virtual API GetNumberOfVertex(uint &vertex) = 0;
+	};
+
+	struct ShaderDesc
+	{
+		const char** pVertStr;
+		int vertNunLines;
+
+		const char** pGeomStr;
+		int geomNunLines;
+
+		const char** pFragStr;
+		int fragNunLines;
+	};
+
+	class ICoreShader : public IResource
+	{
+	public:
+		virtual API Free() = 0;
+	};
+
+	class ITexture : public IResource
+	{
+	public:
+		virtual API Free() = 0;
 	};
 
 	class ICoreRender : public ISubSystem
 	{
 	public:
-		virtual API Init(WinHandle& handle) = 0;
+		virtual API Init(WinHandle* handle) = 0;
+		virtual API CreateMesh(ICoreMesh *& pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) = 0;
+		virtual API CreateShader(ICoreShader *&pShader, ShaderDesc& shaderDesc) = 0;
 		virtual API Clear() = 0;
 		virtual API Free() = 0;
 	};
 
 
 	//////////////////////
+	// Scene Objects
+	//////////////////////
+	class IGameObject : public IResource
+	{
+		
+	};
+
+	class IModel : public IGameObject
+	{
+	public:
+		virtual API GetMesh(ICoreMesh *&pMesh, uint idx) = 0;
+		virtual API GetMeshesNumber(uint &number) = 0;
+	};
+
+
+	//////////////////////
 	// Resource Manager
 	//////////////////////
+
+	enum class DEFAULT_RESOURCE_TYPE
+	{
+		RT_PLANE
+	};
 
 	class IProgressSubscriber
 	{
@@ -134,7 +257,15 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API LoadMesh(IMesh *&pMesh, const char *pFileName, IProgressSubscriber *pPregress) = 0;
+		virtual API LoadModel(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pPregress) = 0;
+		virtual API LoadShader(ICoreShader *&pShader, const char* pVertName, const char* pGeomName, const char* pFragName) = 0;
+		virtual API CreateDefaultModel(IModel *&pModel, DEFAULT_RESOURCE_TYPE type) = 0;
+		virtual API AddToList(IResource *pResource) = 0;
+		virtual API GetRefNumber(IResource *pResource, uint& number) = 0;
+		virtual API DecrementRef(IResource *pResource) = 0;
+		virtual API RemoveFromList(IResource *pResource) = 0;
+
+		virtual API FreeAllResources() = 0;
 	};
 
 
@@ -150,7 +281,7 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API Init(INIT_FLAGS flags, WinHandle& handle) = 0;
+		virtual API Init(INIT_FLAGS flags, WinHandle* handle) = 0;
 		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
 		virtual API CloseEngine() = 0;

@@ -11,7 +11,9 @@ public:
 	// ISubSystem
 	API GetName(const char *&pTxt) override;
 
-	API Init(WinHandle& handle) override;
+	API Init(WinHandle* handle) override;
+	API CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) override;
+	API CreateShader(ICoreShader *&pShader, ShaderDesc& shaderDesc) override;
 	API Clear() override;
 	API Free() override;
 

@@ -19,7 +19,17 @@ API DX11CoreRender::GetName(const char *& pTxt)
 	return S_OK;
 }
 
-API DX11CoreRender::Init(WinHandle& handle)
+API DX11CoreRender::Init(WinHandle* handle)
+{
+	return S_OK;
+}
+
+HRESULT DX11CoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode)
+{
+	return S_OK;
+}
+
+API DX11CoreRender::CreateShader(ICoreShader *& pShader, ShaderDesc & shaderDesc)
 {
 	return S_OK;
 }

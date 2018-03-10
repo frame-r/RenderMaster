@@ -13,9 +13,6 @@
       <Filter>GL</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Engine.h" />
-    <ClInclude Include="..\src\Mesh.h">
-      <Filter>CoreRender</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\GLCoreRender.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
@@ -23,6 +20,14 @@
       <Filter>CoreRender</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Wnd.h" />
+    <ClInclude Include="..\src\GLShader.h">
+      <Filter>CoreRender</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Console.h" />
+    <ClInclude Include="..\src\Model.h" />
+    <ClInclude Include="..\src\GLMesh.h">
+      <Filter>CoreRender</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -33,9 +38,6 @@
     <ClCompile Include="..\src\GL\glew.c">
       <Filter>GL</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Mesh.cpp">
-      <Filter>CoreRender</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\GLCoreRender.cpp">
       <Filter>CoreRender</Filter>
     </ClCompile>
@@ -43,6 +45,14 @@
       <Filter>CoreRender</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Wnd.cpp" />
+    <ClCompile Include="..\src\GLMesh.cpp">
+      <Filter>CoreRender</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GLShader.cpp">
+      <Filter>CoreRender</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Console.cpp" />
+    <ClCompile Include="..\src\Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />

@@ -19,13 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Test\LoadMeshTask.cpp" />
-    <ClCompile Include="..\src\Test\Log.cpp" />
     <ClCompile Include="..\src\Test\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\Test\LoadMeshTask.h" />
-    <ClInclude Include="..\src\Test\Log.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3456A1AE-45CA-4252-963F-066BFF62E21A}</ProjectGuid>

@@ -33,7 +33,7 @@ DWORD WINAPI LoadMeshTask::RealThreadProc(void* pv)
 
 BOOL LoadMeshTask::ClassThreadProc()
 {
-	pResMan->LoadMesh(pMesh, "", (IProgressSubscriber *)this);
+	pResMan->LoadModel(pMesh, "", (IProgressSubscriber *)this);
 
 	uint v;
 	pMesh->GetVertexCount(v);

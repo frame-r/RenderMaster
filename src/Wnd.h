@@ -11,7 +11,7 @@ public:
 	Wnd();
 	~Wnd();
 
-	HWND handle() { return hwnd; }
+	inline HWND *handle() { return &hwnd; }
 
 	void CreateAndShow();
 	void StartMainLoop();
