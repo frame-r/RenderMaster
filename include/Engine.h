@@ -22,30 +22,63 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 	return static_cast<ENUM_NAME>(static_cast<int>(a) & static_cast<int>(b)); \
 }
 
-namespace RENDER_MASTER
+
+namespace RENDER_MASTER 
 {
+	class ISubSystem;
+	class ILogEvent;
+	enum class SUBSYSTEM_TYPE;
+
+
+	//////////////////////
+	// Core
+	//////////////////////
+
 	enum class INIT_FLAGS
 	{
-		IF_SELF_WINDOW = 0x00000001, // engine need create it's own window 
-		IF_EXTERN_WINDOW = 0x00000002, // engine uses client's created window
 		IF_WINDOW_FLAG = 0x0000000F,
+		IF_SELF_WINDOW = 0x00000001, // engine should create it's own window 
+		IF_EXTERN_WINDOW = 0x00000002, // engine uses client's created window		
 
-		IF_OPENGL45 = 0x00000010,
-		IF_DIRECTX11 = 0x00000020,
 		IF_GRAPHIC_LIBRARY_FLAG = 0x000000F0,
-
-		IF_NO_CONSOLE = 0x00000100,
-		IF_CONSOLE = 0x00000200,
-		IF_CONSOLE_FLAG = 0x00000F00
+		IF_OPENGL45 = 0x00000010,
+		IF_DIRECTX11 = 0x00000020,		
+		
+		IF_CONSOLE_FLAG = 0x00000F00,
+		IF_NO_CONSOLE = 0x00000100,  // no need create console
+		IF_CONSOLE = 0x00000200 // engine should create console		
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
-	enum class LOG_TYPE
+		enum class LOG_TYPE
 	{
 		LT_NORMAL,
 		LT_WARNING,
 		LT_FATAL
 	};
+
+	// {A97B8EB3-93CE-4A45-800D-367084CFB4B1}
+	DEFINE_GUID(IID_Core,
+		0xa97b8eb3, 0x93ce, 0x4a45, 0x80, 0xd, 0x36, 0x70, 0x84, 0xcf, 0xb4, 0xb1);
+
+	class ICore : public IUnknown
+	{
+	public:
+
+		virtual API Init(INIT_FLAGS flags, WinHandle* handle, const char *pDataPath) = 0;
+		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
+		virtual API GetDataPath(const char *&pStr) = 0;
+		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
+		virtual API CloseEngine() = 0;
+
+		// Events
+		virtual API GetLogPrintedEv(ILogEvent *&pEvent) = 0;
+	};
+
+
+	//////////////////////
+	// Common
+	//////////////////////
 
 	enum class SUBSYSTEM_TYPE
 	{
@@ -64,7 +97,6 @@ namespace RENDER_MASTER
 		RT_CORE_MESH,
 		RT_CORE_TEXTURE,
 		RT_CORE_SHADER,
-		RT_REFERENCEBLE_END,
 
 		RT_GAMEOBJECT,
 		RT_MODEL
@@ -119,7 +151,7 @@ namespace RENDER_MASTER
 	enum class DRAW_MODE
 	{
 		DM_POINTS,
-		DM_LIMES,
+		DM_LINES,
 		DM_TRIANGLES,
 	};
 
@@ -131,6 +163,7 @@ namespace RENDER_MASTER
 
 		uint8 *pData;
 
+		// number of vertex
 		uint number;
 
 		// At minimum position attribute must be present
@@ -189,25 +222,21 @@ namespace RENDER_MASTER
 	struct ShaderDesc
 	{
 		const char** pVertStr;
-		int vertNunLines;
+		int vertNumLines;
 
 		const char** pGeomStr;
-		int geomNunLines;
+		int geomNumLines;
 
 		const char** pFragStr;
-		int fragNunLines;
+		int fragNumLines;
 	};
 
 	class ICoreShader : public IResource
 	{
-	public:
-		virtual API Free() = 0;
 	};
 
-	class ITexture : public IResource
+	class ICoreTexture : public IResource
 	{
-	public:
-		virtual API Free() = 0;
 	};
 
 	class ICoreRender : public ISubSystem
@@ -222,7 +251,7 @@ namespace RENDER_MASTER
 
 
 	//////////////////////
-	// Scene Objects
+	// Game Objects
 	//////////////////////
 	class IGameObject : public IResource
 	{
@@ -233,7 +262,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetMesh(ICoreMesh *&pMesh, uint idx) = 0;
-		virtual API GetMeshesNumber(uint &number) = 0;
+		virtual API GetMeshesNumber(uint& number) = 0;
 	};
 
 
@@ -243,55 +272,29 @@ namespace RENDER_MASTER
 
 	enum class DEFAULT_RESOURCE_TYPE
 	{
-		RT_PLANE
+		DRT_PLANE
 	};
 
 	class IProgressSubscriber
 	{
 	public:
-
-		virtual API ProgressChanged(uint i) = 0; // i = 0...100
+		virtual API ProgressChanged(uint i) = 0;
 	};
 
 	class IResourceManager : public ISubSystem
 	{
 	public:
 
-		virtual API LoadModel(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pPregress) = 0;
+		virtual API LoadModel(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
 		virtual API LoadShader(ICoreShader *&pShader, const char* pVertName, const char* pGeomName, const char* pFragName) = 0;
 		virtual API CreateDefaultModel(IModel *&pModel, DEFAULT_RESOURCE_TYPE type) = 0;
 		virtual API AddToList(IResource *pResource) = 0;
 		virtual API GetRefNumber(IResource *pResource, uint& number) = 0;
 		virtual API DecrementRef(IResource *pResource) = 0;
 		virtual API RemoveFromList(IResource *pResource) = 0;
-
 		virtual API FreeAllResources() = 0;
 	};
-
-
-	//////////////////////
-	// Core
-	//////////////////////
-
-	// {A97B8EB3-93CE-4A45-800D-367084CFB4B1}
-	DEFINE_GUID(IID_Core,
-		0xa97b8eb3, 0x93ce, 0x4a45, 0x80, 0xd, 0x36, 0x70, 0x84, 0xcf, 0xb4, 0xb1);
-
-	class ICore : public IUnknown
-	{
-	public:
-
-		virtual API Init(INIT_FLAGS flags, WinHandle* handle) = 0;
-		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
-		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
-		virtual API CloseEngine() = 0;
-
-		// Events
-		virtual API GetLogPrintedEv(ILogEvent *&pEvent) = 0;
-	};
-
-
-
+	
 	//////////////////////
 	// COM stuff
 	//////////////////////

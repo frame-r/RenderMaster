@@ -344,8 +344,6 @@ const char * ResourceManager::resourceToStr(IResource * pRes)
 		return "RT_CORE_TEXTURE";
 	case RENDER_MASTER::RES_TYPE::RT_CORE_SHADER:
 		return "RT_CORE_SHADER";
-	case RENDER_MASTER::RES_TYPE::RT_REFERENCEBLE_END:
-		return "RT_REFERENCEBLE_END";
 	case RENDER_MASTER::RES_TYPE::RT_GAMEOBJECT:
 		return "RT_GAMEOBJECT";
 	case RENDER_MASTER::RES_TYPE::RT_MODEL:
@@ -363,7 +361,6 @@ ResourceManager::ResourceManager()
 
 ResourceManager::~ResourceManager()
 {
-	FreeAllResources();
 }
 
 void ResourceManager::Init()
@@ -399,7 +396,7 @@ void ResourceManager::Init()
 
 	_pCoreRender->CreateMesh((ICoreMesh*&)pPlane, desc, indexDesc, DRAW_MODE::DM_TRIANGLES);
 
-	_default_meshes.emplace(DEFAULT_RESOURCE_TYPE::RT_PLANE, pPlane);
+	_default_meshes.emplace(DEFAULT_RESOURCE_TYPE::DRT_PLANE, pPlane);
 
 	_pCore->Log("ResourceManager initalized");
 }
@@ -416,10 +413,14 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 	
 	IModel *_pModel;
 
+	const char *pDataPath;
+	_pCore->GetDataPath(pDataPath);
+	string fullPath = string(pDataPath) + '\\' + string(pFileName);
+
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoad(_pModel, pFileName, pPregress);
+		bool ret = _FBXLoad(_pModel, fullPath.c_str(), pPregress);
 		if (!ret)
 			return S_FALSE;
 	}
@@ -472,22 +473,20 @@ API ResourceManager::LoadShader(ICoreShader *& pShader, const char * pVertName, 
 API ResourceManager::AddToList(IResource *pResource)
 { 
 	auto it = std::find_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
-	if (it != _res_vec.end())
+	if (it == _res_vec.end())
+	{
+		_res_vec.push_back(TResource{ pResource, 1 });
+#ifdef _DEBUG
+		_pCore->LogFormatted("AddToList(): added new resource! type=%s", LOG_TYPE::LT_NORMAL, resourceToStr(pResource));
+#endif
+	}
+	else
 	{
 		it->refCount++;
 #ifdef _DEBUG
 		_pCore->LogFormatted("AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::LT_NORMAL, it->refCount, resourceToStr(pResource));
 #endif
 	}
-	else
-	{
-		_res_vec.push_back(TResource{ pResource, 1 });
-
-#ifdef _DEBUG
-		_pCore->LogFormatted("AddToList(): refCount=1 type=%s", LOG_TYPE::LT_NORMAL, resourceToStr(pResource));
-#endif
-	}
-
 
 	return S_OK;
 }

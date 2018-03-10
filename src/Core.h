@@ -18,6 +18,9 @@ class Core : public ICore
 	ICoreRender *_pCoreRender;
 	EvLog _evLog;
 	CRITICAL_SECTION _cs;
+	char *_pDataPath;
+
+	std::string _getFullLogPath();
 
 public:
 
@@ -27,8 +30,9 @@ public:
 	template <typename... Arguments>
 	void LogFormatted(const char *pStr, LOG_TYPE type, Arguments ... args);
 
-	API Init(INIT_FLAGS flags, WinHandle* handle) override;
+	API Init(INIT_FLAGS flags, WinHandle* handle, const char *pDataPath) override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
+	API GetDataPath(const char *&pStr) override;
 	API Log(const char *pStr, LOG_TYPE type = LOG_TYPE::LT_NORMAL) override;
 	API CloseEngine() override;
 

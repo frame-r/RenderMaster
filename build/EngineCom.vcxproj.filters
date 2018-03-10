@@ -7,12 +7,11 @@
     <ClInclude Include="..\src\EvLog.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\GL\glew.h">
-      <Filter>GL</Filter>
+      <Filter>CoreRender\GL</Filter>
     </ClInclude>
     <ClInclude Include="..\src\GL\wglew.h">
-      <Filter>GL</Filter>
+      <Filter>CoreRender\GL</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Engine.h" />
     <ClInclude Include="..\src\GLCoreRender.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
@@ -28,6 +27,9 @@
     <ClInclude Include="..\src\GLMesh.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\Engine.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -36,7 +38,7 @@
     <ClCompile Include="..\src\EvLog.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
     <ClCompile Include="..\src\GL\glew.c">
-      <Filter>GL</Filter>
+      <Filter>CoreRender\GL</Filter>
     </ClCompile>
     <ClCompile Include="..\src\GLCoreRender.cpp">
       <Filter>CoreRender</Filter>
@@ -58,11 +60,14 @@
     <None Include="..\src\export.def" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="GL">
-      <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="CoreRender">
       <UniqueIdentifier>{3eff1445-f3ae-4f99-a286-930ec385879a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{c0a67650-fb7e-4027-ad7f-d6775549f077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CoreRender\GL">
+      <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

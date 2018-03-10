@@ -6,9 +6,16 @@
 #include "Console.h"
 
 #include <iostream>
+#include <fstream>
 
 
 Core *_pCore;
+
+
+std::string Core::_getFullLogPath()
+{
+	return std::string(_pDataPath) + "\\log.txt";
+}
 
 Core::Core() : _pConsole(nullptr), _pWnd(nullptr), _pResMan(nullptr), _pCoreRender(nullptr)
 {
@@ -23,15 +30,22 @@ Core::~Core()
 	delete _pWnd;
 	if (_pWnd) delete _pWnd;
 	if (_pConsole) delete _pConsole;
+	delete _pDataPath;
 }
 
-API Core::Init(INIT_FLAGS flags, WinHandle* externHandle)
+API Core::Init(INIT_FLAGS flags, WinHandle* externHandle, const char *pDataPath)
 {
 	const bool createWindow = (flags & INIT_FLAGS::IF_WINDOW_FLAG) == INIT_FLAGS::IF_SELF_WINDOW;
 	const bool createConsole = (flags & INIT_FLAGS::IF_CONSOLE_FLAG) == INIT_FLAGS::IF_CONSOLE;
 
-	Log("Start initialization engine...");
+	auto size = strlen(pDataPath);
+	_pDataPath = new char[size + 1];
+	strcpy(_pDataPath, pDataPath);
 
+	std::ofstream log(_getFullLogPath());
+	log.close();
+
+	Log("Start initialization engine...");
 
 	_pResMan = new ResourceManager;	
 
@@ -84,12 +98,22 @@ API Core::GetSubSystem(ISubSystem *& pSubSystem, SUBSYSTEM_TYPE type)
 	return S_OK;
 }
 
+API Core::GetDataPath(const char *&pStr)
+{
+	pStr = _pDataPath;
+	return S_OK;
+}
+
 API Core::Log(const char *pStr, LOG_TYPE type)
 {
 	EnterCriticalSection(&_cs);
 
 	if (_pConsole)
 		_pConsole->OutputTxt(pStr);
+
+	std::ofstream log(_getFullLogPath(), std::ios::out | std::ios::app);
+	log << pStr << std::endl;
+	log.close();
 
 	std::cout << pStr << std::endl;
 
@@ -109,7 +133,7 @@ API Core::CloseEngine()
 	_pCoreRender->Free();
 
 #ifdef _DEBUG
-	system("pause");
+	//system("pause");
 #endif
 
 	if (_pConsole)
