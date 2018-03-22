@@ -28,6 +28,7 @@ public:
 	API CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) override;
 	API CreateShader(ICoreShader *&pShader, ShaderDesc& shaderDesc) override;
 	API Clear() override;
+	API SwapBuffers() override;
 	API Free() override;
 };
 

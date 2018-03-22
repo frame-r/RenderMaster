@@ -19,8 +19,12 @@ class Core : public ICore
 	EvLog _evLog;
 	CRITICAL_SECTION _cs;
 	char *_pDataPath;
-
+	std::vector<IInitCallback *> _init_callbacks;
+	std::vector<IUpdateCallback *> _update_callbacks;
 	std::string _getFullLogPath();
+
+	void _main_loop();
+	void static _s_main_loop();
 
 public:
 
@@ -34,6 +38,9 @@ public:
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataPath(const char *&pStr) override;
 	API Log(const char *pStr, LOG_TYPE type = LOG_TYPE::LT_NORMAL) override;
+	API AddInitCallback(IInitCallback *pCallback) override;
+	API AddUpdateCallback(IUpdateCallback *pCallback) override;
+	API Start() override;
 	API CloseEngine() override;
 
 	API GetLogPrintedEv(ILogEvent *&pEvent) override;

@@ -27,6 +27,8 @@ namespace RENDER_MASTER
 {
 	class ISubSystem;
 	class ILogEvent;
+	class IInitCallback;
+	class IUpdateCallback;
 	enum class SUBSYSTEM_TYPE;
 
 
@@ -69,6 +71,9 @@ namespace RENDER_MASTER
 		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API GetDataPath(const char *&pStr) = 0;
 		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
+		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
+		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
+		virtual API Start() = 0;
 		virtual API CloseEngine() = 0;
 
 		// Events
@@ -109,6 +114,18 @@ namespace RENDER_MASTER
 		virtual API GetType(RES_TYPE& type) = 0;
 	};
 
+	class IInitCallback
+	{
+	public:
+		virtual API Init() = 0;
+	};
+
+	class IUpdateCallback
+	{
+	public:
+		virtual API Update() = 0;
+	};
+	
 
 	//////////////////////
 	// Events
@@ -246,6 +263,7 @@ namespace RENDER_MASTER
 		virtual API CreateMesh(ICoreMesh *& pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) = 0;
 		virtual API CreateShader(ICoreShader *&pShader, ShaderDesc& shaderDesc) = 0;
 		virtual API Clear() = 0;
+		virtual API SwapBuffers() = 0;
 		virtual API Free() = 0;
 	};
 
@@ -294,12 +312,13 @@ namespace RENDER_MASTER
 		virtual API RemoveFromList(IResource *pResource) = 0;
 		virtual API FreeAllResources() = 0;
 	};
+
 	
 	//////////////////////
 	// COM stuff
 	//////////////////////
 
-	inline bool GetEngine(ICore*& pCore)
+	inline bool GetCore(ICore*& pCore)
 	{
 		//cout << "Initializing COM" << endl;
 
@@ -379,7 +398,7 @@ namespace RENDER_MASTER
 		return true;
 	}
 
-	inline void FreeEngine(ICore *pCore)
+	inline void FreeCore(ICore *pCore)
 	{
 		pCore->Release();
 		//cout << "Shuting down COM" << endl;

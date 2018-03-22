@@ -16,6 +16,10 @@ namespace fs = std::experimental::filesystem;
 namespace fs = std::filesystem;
 #endif
 
+extern Core *_pCore;
+
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
 
 #ifdef USE_FBX
 
@@ -24,22 +28,17 @@ namespace fs = std::filesystem;
 #define IOS_REF (*(pManager->GetIOSettings()))
 #endif
 
-extern Core *_pCore;
-
 void ResourceManager::_InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene)
 {
-
 	pManager = FbxManager::Create();
+
 	if (!pManager)
 	{
-		_pCore->Log("Error: Unable to create FBX Manager!", LOG_TYPE::LT_FATAL);
-		exit(1);
+		LOG_FATAL("Error: Unable to create FBX Manager!");
+		return;
 	}
 	else
-	{
-		_pCore->Log("Autodesk FBX SDK version ");
-		_pCore->Log(pManager->GetVersion());
-	}
+		LOG_NORMAL_FORMATTED("Autodesk FBX SDK version %s", pManager->GetVersion());
 
 	FbxIOSettings* ios = FbxIOSettings::Create(pManager, IOSROOT);
 	pManager->SetIOSettings(ios);
@@ -50,17 +49,19 @@ void ResourceManager::_InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pS
 
 	//Create an FBX scene. This object holds most objects imported/exported from/to files.
 	pScene = FbxScene::Create(pManager, "My Scene");
+
 	if (!pScene)
 	{
-		_pCore->Log("Error: Unable to create FBX scene!", LOG_TYPE::LT_FATAL);
-		exit(1);
+		LOG_FATAL("Error: Unable to create FBX scene!");
+		return;
 	}
 }
 
 void ResourceManager::_DestroySdkObjects(FbxManager* pManager, bool pExitStatus)
 {
 	if (pManager) pManager->Destroy();
-	if (pExitStatus) _pCore->Log("FBX SDK destroyed");
+	if (pExitStatus)
+		LOG("FBX SDK destroyed");
 }
 
 bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename)
@@ -70,7 +71,6 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	//int lFileFormat = -1;
 	int lAnimStackCount;
 	bool lStatus;
-	char lPassword[1024];
 
 	// Get the file version number generate by the FBX SDK.
 	FbxManager::GetFileFormatVersion(lSDKMajor, lSDKMinor, lSDKRevision);
@@ -85,41 +85,32 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	if (!lImportStatus)
 	{
 		FbxString error = lImporter->GetStatus().GetErrorString();
-		_pCore->Log("Call to FbxImporter::Initialize() failed.", LOG_TYPE::LT_FATAL);
-		sprintf_s(buffer, "Error returned: %s", error.Buffer());
-		_pCore->Log(buffer);
+
+		LOG_FATAL("Call to FbxImporter::Initialize() failed.");
+		LOG_FATAL_FORMATTED("Error returned: %s", error.Buffer());
 
 		if (lImporter->GetStatus().GetCode() == FbxStatus::eInvalidFileVersion)
 		{
-			sprintf_s(buffer, "FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
-			_pCore->Log(buffer);
-			sprintf_s(buffer, "FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
-			_pCore->Log(buffer);
+			LOG_FORMATTED("FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
+			LOG_FORMATTED("FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
 		}
 
 		return false;
 	}
 
-	sprintf_s(buffer, "FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
-	_pCore->Log(buffer);
+	LOG_FORMATTED("FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
 
 	if (lImporter->IsFBX())
 	{
-		sprintf_s(buffer, "FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
-		_pCore->Log(buffer);
+		LOG_FORMATTED("FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
 
 		// From this point, it is possible to access animation stack information without
 		// the expense of loading the entire file.
-
-		_pCore->Log("Animation Stack Information");
-
 		lAnimStackCount = lImporter->GetAnimStackCount();
 
-		sprintf_s(buffer, "Number of Animation Stacks: %d", lAnimStackCount);
-		_pCore->Log(buffer);
-		sprintf_s(buffer, "Current Animation Stack: \"%s\"", lImporter->GetActiveAnimStackName().Buffer());
-		_pCore->Log(buffer);
-
+		LOG("Animation Stack Information:");
+		LOG_FORMATTED("Number of Animation Stacks: %d", lAnimStackCount);
+		LOG_FORMATTED("Current Animation Stack: \"%s\"", lImporter->GetActiveAnimStackName().Buffer());
 
 		// Set the import states. By default, the import states are always set to 
 		// true. The code below shows how to change these states.
@@ -136,29 +127,8 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	lStatus = lImporter->Import(pScene);
 
 	if (lStatus == false && lImporter->GetStatus().GetCode() == FbxStatus::ePasswordError)
-	{
-		_pCore->Log("Please enter password: ");
+		LOG_FATAL("No support entering password!");
 
-		lPassword[0] = '\0';
-
-		FBXSDK_CRT_SECURE_NO_WARNING_BEGIN
-			scanf("%s", lPassword);
-		FBXSDK_CRT_SECURE_NO_WARNING_END
-
-			FbxString lString(lPassword);
-
-		IOS_REF.SetStringProp(IMP_FBX_PASSWORD, lString);
-		IOS_REF.SetBoolProp(IMP_FBX_PASSWORD_ENABLE, true);
-
-		lStatus = lImporter->Import(pScene);
-
-		if (lStatus == false && lImporter->GetStatus().GetCode() == FbxStatus::ePasswordError)
-		{
-			_pCore->Log("Password is wrong, import aborted.", LOG_TYPE::LT_FATAL);
-		}
-	}
-
-	// Destroy the importer.
 	lImporter->Destroy();
 
 	return lStatus;
@@ -166,45 +136,40 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 
 void ResourceManager::_LogSceneHierarchy(FbxScene * pScene)
 {
-	_pCore->Log("Scene hierarchy:");
+	LOG("Scene hierarchy:");
+
 	FbxNode* lRootNode = pScene->GetRootNode();
 
 	for (int i = 0; i < lRootNode->GetChildCount(); i++)
-	{
 		_LogNode(lRootNode->GetChild(i), 0);
-	}
 }
 
 void ResourceManager::_LogNode(FbxNode* pNode, int depth)
 {
 	FbxString lString;
-	int i;
 
-	for (i = 0; i < depth; i++)
-	{
+	for (int i = 0; i < depth; i++)
 		lString += " ";
-	}
+
 	lString += pNode->GetName();
 
 	FbxNodeAttribute::EType lAttributeType = (pNode->GetNodeAttribute()->GetAttributeType());
 
 	switch (lAttributeType)
 	{
-	case FbxNodeAttribute::eMesh:		lString += " (eMesh)"; _pCore->Log(lString.Buffer()); _LogNodeTransform(pNode, depth + 3); _LogMesh((FbxMesh*)pNode->GetNodeAttribute(), depth + 3); break;
-	case FbxNodeAttribute::eMarker:		lString += " (eMarker)"; _pCore->Log(lString.Buffer()); break;
-	case FbxNodeAttribute::eSkeleton:	lString += " (eSkeleton)"; _pCore->Log(lString.Buffer()); break;
-	case FbxNodeAttribute::eNurbs:		lString += " (eNurbs)"; _pCore->Log(lString.Buffer()); break;
-	case FbxNodeAttribute::ePatch:		lString += " (ePatch)"; _pCore->Log(lString.Buffer()); break;
-	case FbxNodeAttribute::eCamera:		lString += " (eCamera)"; _pCore->Log(lString.Buffer()); _LogNodeTransform(pNode, depth + 1); break;
-	case FbxNodeAttribute::eLight:		lString += " (eLight)"; _pCore->Log(lString.Buffer()); break;
-	case FbxNodeAttribute::eLODGroup:	lString += " (eLODGroup)"; _pCore->Log(lString.Buffer()); break;
-	default:							lString += " (unknown)"; _pCore->Log(lString.Buffer()); break;
+	case FbxNodeAttribute::eMesh:		lString += " (eMesh)"; LOG(lString.Buffer()); _LogNodeTransform(pNode, depth + 3); _LogMesh((FbxMesh*)pNode->GetNodeAttribute(), depth + 3); break;
+		case FbxNodeAttribute::eMarker:		lString += " (eMarker)"; LOG(lString.Buffer()); break;
+		case FbxNodeAttribute::eSkeleton:	lString += " (eSkeleton)"; LOG(lString.Buffer()); break;
+		case FbxNodeAttribute::eNurbs:		lString += " (eNurbs)"; LOG(lString.Buffer()); break;
+		case FbxNodeAttribute::ePatch:		lString += " (ePatch)"; LOG(lString.Buffer()); break;
+		case FbxNodeAttribute::eCamera:		lString += " (eCamera)"; LOG(lString.Buffer()); _LogNodeTransform(pNode, depth + 1); break;
+		case FbxNodeAttribute::eLight:		lString += " (eLight)"; LOG(lString.Buffer()); break;
+		case FbxNodeAttribute::eLODGroup:	lString += " (eLODGroup)"; LOG(lString.Buffer()); break;
+		default:							lString += " (unknown)"; LOG(lString.Buffer()); break;
 	}
 
-	for (i = 0; i < pNode->GetChildCount(); i++)
-	{
+	for (int i = 0; i < pNode->GetChildCount(); i++)
 		_LogNode(pNode->GetChild(i), depth + 1);
-	}
 }
 
 void add_tabs(FbxString& buff, int tabs)
@@ -215,8 +180,6 @@ void add_tabs(FbxString& buff, int tabs)
 
 void ResourceManager::_LogMesh(FbxMesh *pMesh, int tabs)
 {
-	FbxString buff;
-
 	int cp = pMesh->GetControlPointsCount();
 	int pc = pMesh->GetPolygonCount();
 	int normal_layers = pMesh->GetElementNormalCount();
@@ -224,91 +187,70 @@ void ResourceManager::_LogMesh(FbxMesh *pMesh, int tabs)
 	int tangent_layers = pMesh->GetElementTangentCount();
 	int binormal_layers = pMesh->GetElementBinormalCount();
 
-	add_tabs(buff, tabs);
-	sprintf_s(buffer, "ControlPoints=%d PolygonCount=%d NormalLayers=%d UVLayers=%d TangentLayers=%d BinormalLayers=%d\r\n", cp, pc, normal_layers, uv_layers, tangent_layers, binormal_layers);
-	buff += buffer;
+	LOG_FORMATTED("ControlPoints=%d PolygonCount=%d NormalLayers=%d UVLayers=%d TangentLayers=%d BinormalLayers=%d\r\n", cp, pc, normal_layers, uv_layers, tangent_layers, binormal_layers);
 
 	for (int i = 0; i< normal_layers; i++)
 	{
-		add_tabs(buff, tabs);
-		sprintf_s(buffer, "Normals=%d\r\n", i);
-		buff += buffer;
-
+		FbxString buff;
 		FbxGeometryElementNormal* ns = pMesh->GetElementNormal(i);
 
-		add_tabs(buff, tabs + 1);
-		FbxGeometryElement::EMappingMode map_mode = ns->GetMappingMode();
-		switch (map_mode)
+		LOG_FORMATTED("Normals=%d", i);		
+
+		switch (ns->GetMappingMode())
 		{
-		case FbxLayerElement::eByControlPoint:	buff += "EMappingMode=eByControlPoint\r\n"; break;
-		case FbxLayerElement::eByPolygonVertex:	buff += "EMappingMode=eByPolygonVertex\r\n"; break;
-		case FbxLayerElement::eNone:			buff += "EMappingMode=eNone\r\n"; break;
-		case FbxLayerElement::eByPolygon:		buff += "EMappingMode=eByPolygon\r\n"; break;
-		case FbxLayerElement::eByEdge:			buff += "EMappingMode=eByEdge\r\n"; break;
-		case FbxLayerElement::eAllSame:			buff += "EMappingMode=eAllSame\r\n"; break;
-		default:								buff += "EMappingMode=unknown\r\n"; break;;
+			case FbxLayerElement::eByControlPoint:	buff += "EMappingMode=eByControlPoint\r\n"; break;
+			case FbxLayerElement::eByPolygonVertex:	buff += "EMappingMode=eByPolygonVertex\r\n"; break;
+			case FbxLayerElement::eNone:			buff += "EMappingMode=eNone\r\n"; break;
+			case FbxLayerElement::eByPolygon:		buff += "EMappingMode=eByPolygon\r\n"; break;
+			case FbxLayerElement::eByEdge:			buff += "EMappingMode=eByEdge\r\n"; break;
+			case FbxLayerElement::eAllSame:			buff += "EMappingMode=eAllSame\r\n"; break;
+			default:								buff += "EMappingMode=unknown\r\n"; break;;
 		}
 
-		add_tabs(buff, tabs + 1);
-		FbxGeometryElement::EReferenceMode ref_mode = ns->GetReferenceMode();
-		switch (ref_mode)
+		switch (ns->GetReferenceMode())
 		{
-		case FbxLayerElement::eDirect:			buff += "EReferenceMode=eDirect "; break;
-		case FbxLayerElement::eIndex:			buff += "EReferenceMode=eIndex "; break;
-		case FbxLayerElement::eIndexToDirect:	buff += "EReferenceMode=eIndexToDirect "; break;
-		default:								buff += "EReferenceMode=unknown "; break;;
+			case FbxLayerElement::eDirect:			buff += " EReferenceMode=eDirect "; break;
+			case FbxLayerElement::eIndex:			buff += " EReferenceMode=eIndex "; break;
+			case FbxLayerElement::eIndexToDirect:	buff += " EReferenceMode=eIndexToDirect "; break;
+			default:								buff += " EReferenceMode=unknown "; break;;
 		}
-	}
-	_pCore->Log(buff.Buffer());
+
+		LOG(buff.Buffer());
+	}	
 }
 
 void ResourceManager::_LogNodeTransform(FbxNode* pNode, int tabs)
 {
-	FbxString buff;
-
 	FbxVector4 lTmpVector = pNode->GetGeometricTranslation(FbxNode::eSourcePivot);
-	
-	add_tabs(buff, tabs);
-	sprintf_s(buffer, "Translation: %f %f %f ", lTmpVector[0], lTmpVector[1], lTmpVector[2]);
-	buff += buffer;
-
 	lTmpVector = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
-	add_tabs(buff, tabs);
-	sprintf_s(buffer, "Rotation: %f %f %f ", lTmpVector[0], lTmpVector[1], lTmpVector[2]);
-	buff += buffer;
-
 	lTmpVector = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
-	add_tabs(buff, tabs);
-	sprintf_s(buffer, "Scaling: %f %f %f ", lTmpVector[0], lTmpVector[1], lTmpVector[2]);
-	buff += buffer;
 
-	_pCore->Log(buff.Buffer());
+	LOG_FORMATTED("Translation: %f %f %f  Rotation: %f %f %f  Scaling: %f %f %f", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
 }
-bool ResourceManager::_FBXLoad(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pPregress)
+bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
 
-	_pCore->Log("Initializing FBX SDK...");
-	_InitializeSdkObjects(lSdkManager, lScene);
+	LOG("Initializing FBX SDK...");
 
+	_InitializeSdkObjects(lSdkManager, lScene);
 
 	FbxString lFilePath(pFileName);
 
-	_pCore->Log("Loading file: ");
-	_pCore->Log(lFilePath.Buffer());
+	LOG_FORMATTED("Loading file: %s", lFilePath.Buffer());
 
 	bool lResult = _LoadScene(lSdkManager, lScene, lFilePath.Buffer());
 
-	if (lResult == false)
-		_pCore->Log("An error occurred while loading the scene...", LOG_TYPE::LT_FATAL);
+	if (!lResult)
+		LOG_FATAL("An error occurred while loading the scene...");
 	else
 	{
 		_LogSceneHierarchy(lScene);
 		//_ImportScene(lScene);
 	}
 
-	_pCore->Log("Destroying FBX SDK...");
+	LOG("Destroying FBX SDK...");
 	_DestroySdkObjects(lSdkManager, lResult);
 
 	//if (!lResult) fail_descr = ELF_FAIL;
@@ -355,8 +297,7 @@ const char * ResourceManager::resourceToStr(IResource * pRes)
 #endif
 
 ResourceManager::ResourceManager()
-{
-		
+{		
 }
 
 ResourceManager::~ResourceManager()
@@ -398,7 +339,7 @@ void ResourceManager::Init()
 
 	_default_meshes.emplace(DEFAULT_RESOURCE_TYPE::DRT_PLANE, pPlane);
 
-	_pCore->Log("ResourceManager initalized");
+	LOG("ResourceManager initalized");
 }
 
 API ResourceManager::GetName(const char *& pTxt)
@@ -411,8 +352,6 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 {
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
 	
-	IModel *_pModel;
-
 	const char *pDataPath;
 	_pCore->GetDataPath(pDataPath);
 	string fullPath = string(pDataPath) + '\\' + string(pFileName);
@@ -420,28 +359,27 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoad(_pModel, fullPath.c_str(), pPregress);
+		bool ret = _FBXLoad(pModel, fullPath.c_str(), pPregress);
 		if (!ret)
 			return S_FALSE;
 	}
 	else
 #endif
-	{		
-		_pCore->LogFormatted("ResourceManager::LoadModel unsupported format \"%s\"", LOG_TYPE::LT_FATAL, file_ext.c_str());
-		
+	{
+		LOG_FATAL_FORMATTED("ResourceManager::LoadModel unsupported format \"%s\"", file_ext.c_str());
 		return S_FALSE;
 	}
 
-	AddToList(_pModel);
+	AddToList(pModel);
 
 	uint meshNumber;
-	_pModel->GetMeshesNumber(meshNumber);
+	pModel->GetMeshesNumber(meshNumber);
 
 	for (uint i = 0; i < meshNumber; i++)
 	{
 		ICoreMesh *pMesh;
 
-		_pModel->GetMesh(pMesh, i);
+		pModel->GetMesh(pMesh, i);
 		AddToList(pMesh);
 	}
 	
@@ -452,11 +390,9 @@ API ResourceManager::CreateDefaultModel(IModel *&pModel, DEFAULT_RESOURCE_TYPE t
 {
 	auto it = _default_meshes.find(type);
 
-	assert(it != _default_meshes.end());
-
 	ICoreMesh *pCoreMesh = it->second;
 	Model *_pModel = new Model(pCoreMesh);
-
+	
 	AddToList(pCoreMesh);
 	AddToList(_pModel);
 
@@ -467,7 +403,7 @@ API ResourceManager::CreateDefaultModel(IModel *&pModel, DEFAULT_RESOURCE_TYPE t
 
 API ResourceManager::LoadShader(ICoreShader *& pShader, const char * pVertName, const char * pGeomName, const char * pFragName)
 {
-	return S_OK;
+	return E_NOTIMPL;
 }
 
 API ResourceManager::AddToList(IResource *pResource)
@@ -476,76 +412,73 @@ API ResourceManager::AddToList(IResource *pResource)
 	if (it == _res_vec.end())
 	{
 		_res_vec.push_back(TResource{ pResource, 1 });
-#ifdef _DEBUG
-		_pCore->LogFormatted("AddToList(): added new resource! type=%s", LOG_TYPE::LT_NORMAL, resourceToStr(pResource));
-#endif
+	
+		DEBUG_LOG("AddToList(): added new resource! type=%s", LOG_TYPE::LT_NORMAL, resourceToStr(pResource));
 	}
 	else
 	{
 		it->refCount++;
-#ifdef _DEBUG
-		_pCore->LogFormatted("AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::LT_NORMAL, it->refCount, resourceToStr(pResource));
-#endif
+	
+		DEBUG_LOG("AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::LT_NORMAL, it->refCount, resourceToStr(pResource));
 	}
 
 	return S_OK;
 }
 
-API ResourceManager::GetRefNumber(IResource * pResource, uint& number)
+API ResourceManager::GetRefNumber(IResource *pResource, uint& number)
 {
 	auto it = std::find_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+
 	if (it == _res_vec.end())
-	{
 		return E_POINTER;
-	}
+
 	assert(it->refCount > 0);
+
 	number = it->refCount;
+
 	return S_OK;
 }
 
 API ResourceManager::DecrementRef(IResource * pResource)
 {
 	auto it = std::find_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+	
 	if (it == _res_vec.end())
-	{
 		return E_POINTER;
-	}
+
 	assert(it->refCount > 0);
+
 	it->refCount--;
 
-#ifdef _DEBUG
-	_pCore->LogFormatted("DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::LT_NORMAL, it->refCount, resourceToStr(pResource));
-#endif
+	DEBUG_LOG("DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::LT_NORMAL, it->refCount, resourceToStr(pResource));
 
 	return S_OK;
 }
 
-API ResourceManager::RemoveFromList(IResource * pResource)
+API ResourceManager::RemoveFromList(IResource *pResource)
 {
-	uint number;
-	GetRefNumber(pResource, number);
+	uint refCount;
+	GetRefNumber(pResource, refCount);
 
-	if (number == 1)
+	if (refCount == 1)
 	{
 		auto it = std::remove_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
 		_res_vec.erase(it, _res_vec.end());
 
-#ifdef _DEBUG
-		_pCore->LogFormatted("RemoveFromList(): deleted! type=%s", LOG_TYPE::LT_NORMAL, resourceToStr(pResource));
-#endif
+		DEBUG_LOG("RemoveFromList(): deleted! type=%s", LOG_TYPE::LT_NORMAL, resourceToStr(pResource));
 	}
 	else
-		_pCore->LogFormatted("RemoveFromList(): not deleted! refNumber=%i type=%s", LOG_TYPE::LT_WARNING, number, resourceToStr(pResource));
+		LOG_WARNING_FORMATTED("RemoveFromList(): not deleted! refNumber=%i type=%s", refCount, resourceToStr(pResource));
 
 	return S_OK;
 }
 
 API ResourceManager::FreeAllResources()
 {
-#ifdef _DEBUG
-	_pCore->LogFormatted("FreeAllResources(): total=%i", LOG_TYPE::LT_NORMAL, _res_vec.size());
-#endif
+	DEBUG_LOG("FreeAllResources(): resorces total=%i", LOG_TYPE::LT_NORMAL, _res_vec.size());
 
+	// first free all resources that have refCount = 1
+	// and so on...
 	while (!_res_vec.empty())
 	{
 		vector<TResource> one_ref_res;
@@ -565,22 +498,22 @@ API ResourceManager::FreeAllResources()
 		// no need this because pRes->Free() removes himself from the vector!
 		//_res_vec.erase(p, _res_vec.end());
 		
-#ifdef _DEBUG
-		static int i = 0;
-		i++;
-		if (i > 20) break;
-		auto res = _res_vec.size();
-		_pCore->LogFormatted("FreeAllResources(): beginIteration=%i resourceToDelete=%i", LOG_TYPE::LT_NORMAL, i, one_ref_res.size(), _res_vec.size());
-#endif
+		#ifdef _DEBUG
+			static int i = 0;
+			i++;
+			if (i > 20) break; // occured some error. maybe circular references => in debug limit number of iterations
+			auto res = _res_vec.size();
+			DEBUG_LOG("FreeAllResources(): beginIteration=%i resourceToDelete=%i", LOG_TYPE::LT_NORMAL, i, one_ref_res.size(), _res_vec.size());
+		#endif
 
 		// free elements in group
 		for (auto res : one_ref_res)
 			res.pRes->Free();
 
-#ifdef _DEBUG
-		auto deleted = res - _res_vec.size();
-		_pCore->LogFormatted("FreeAllResources(): endIteration=%i resourcesDeleted=%i, resourcesLeft=%i", LOG_TYPE::LT_NORMAL, i, deleted, _res_vec.size());
-#endif
+		#ifdef _DEBUG
+			auto deleted = res - _res_vec.size();
+			DEBUG_LOG("FreeAllResources(): endIteration=%i resourcesDeleted=%i, resourcesLeft=%i", LOG_TYPE::LT_NORMAL, i, deleted, _res_vec.size());
+		#endif
 	}
 	
 	return S_OK;

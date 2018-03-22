@@ -21,25 +21,30 @@ API DX11CoreRender::GetName(const char *& pTxt)
 
 API DX11CoreRender::Init(WinHandle* handle)
 {
-	return S_OK;
+	return E_NOTIMPL;
 }
 
 HRESULT DX11CoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode)
 {
-	return S_OK;
+	return E_NOTIMPL;
 }
 
 API DX11CoreRender::CreateShader(ICoreShader *& pShader, ShaderDesc & shaderDesc)
 {
-	return S_OK;
+	return E_NOTIMPL;
 }
 
 HRESULT DX11CoreRender::Clear()
 {
-	return S_OK;
+	return E_NOTIMPL;
+}
+
+HRESULT DX11CoreRender::SwapBuffers()
+{
+	return E_NOTIMPL;
 }
 
 API DX11CoreRender::Free()
 {
-	return S_OK;
+	return E_NOTIMPL;
 }

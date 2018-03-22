@@ -9,9 +9,9 @@ wstring ConvertFromUtf8ToUtf16(const string& str)
 	int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
 	if (size > 0)
 	{
-		std::vector<wchar_t> buffer(size);
-		MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &buffer[0], size);
-		res.assign(buffer.begin(), buffer.end() - 1);
+		std::vector<wchar_t> _log_fbx_buffer(size);
+		MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &_log_fbx_buffer[0], size);
+		res.assign(_log_fbx_buffer.begin(), _log_fbx_buffer.end() - 1);
 	}
 
 	return res;

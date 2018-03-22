@@ -5,10 +5,10 @@
 
 #include <assert.h>
 
-Wnd::Wnd()
+Wnd::Wnd(void(*main_loop)())
 {
+	_main_loop = main_loop;
 }
-
 
 Wnd::~Wnd()
 {
@@ -57,7 +57,6 @@ void Wnd::StartMainLoop()
 
 	while (true)
 	{
-		/*
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			if (msg.message == WM_QUIT)
@@ -70,9 +69,11 @@ void Wnd::StartMainLoop()
 		{
 			//update();
 			//render();
-		}
-		*/
 
+			_main_loop();
+		}
+
+		/*
 		if (GetMessage(&msg, nullptr, 0, 0))
 		{
 			TranslateMessage(&msg);
@@ -80,6 +81,7 @@ void Wnd::StartMainLoop()
 		}
 		else // WM_QUIT
 			break;
+		*/
 	}
 	
 }

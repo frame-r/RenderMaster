@@ -7,7 +7,7 @@ ICore* pCore;
 
 int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {	
-	if (GetEngine(pCore))
+	if (GetCore(pCore))
 	{
 		pCore->Init(INIT_FLAGS::IF_SELF_WINDOW | INIT_FLAGS::IF_CONSOLE, nullptr, "C:\\Users\\Konstantin\\Documents\\RenderMasterProject1");
 		
@@ -22,7 +22,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		resMan->LoadModel(pModel, "box.fbx", nullptr);
 
 		pCore->CloseEngine();
-		FreeEngine(pCore);
+
+		FreeCore(pCore);
 	}
 
 	return 0;

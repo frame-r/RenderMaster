@@ -22,8 +22,6 @@ class ResourceManager : public IResourceManager
 	std::vector<TResource> _res_vec;
 
 #ifdef USE_FBX
-	char buffer[200];
-
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
@@ -53,11 +51,9 @@ public:
 	API LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
 	API LoadShader(ICoreShader *&pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
 	API CreateDefaultModel(IModel *&pModel, DEFAULT_RESOURCE_TYPE type) override;
-
 	API AddToList(IResource *pResource) override;
 	API GetRefNumber(IResource *pResource, uint& number) override;
 	API DecrementRef(IResource *pResource) override;
 	API RemoveFromList(IResource *pResource) override;
-
 	API FreeAllResources() override;
 };

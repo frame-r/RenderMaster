@@ -252,12 +252,12 @@ API GLCoreRender::Init(WinHandle* handle)
 			
 			#define OGLI "OpenGL context created at version " 
 			GLint major, minor;
-			char buffer[sizeof(OGLI) + 4];
+			char _log_fbx_buffer[sizeof(OGLI) + 4];
 			glGetIntegerv(GL_MAJOR_VERSION, &major);
 			glGetIntegerv(GL_MINOR_VERSION, &minor);
-			sprintf_s(buffer, OGLI"%i.%i", major, minor);
+			sprintf_s(_log_fbx_buffer, OGLI"%i.%i", major, minor);
 
-			_pCore->Log(buffer, LOG_TYPE::LT_NORMAL);
+			_pCore->Log(_log_fbx_buffer, LOG_TYPE::LT_NORMAL);
 		}
 		else
 		{
@@ -379,10 +379,14 @@ API GLCoreRender::Clear()
 {
 	CHECK_GL_ERRORS();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	
-	//dbg
-	SwapBuffers(_hdc);
-	
+	CHECK_GL_ERRORS();
+	return S_OK;
+}
+
+API GLCoreRender::SwapBuffers()
+{
+	CHECK_GL_ERRORS();
+	::SwapBuffers(_hdc);
 	CHECK_GL_ERRORS();
 	return S_OK;
 }
@@ -392,6 +396,5 @@ API GLCoreRender::Free()
 	wglMakeCurrent(nullptr, nullptr);
 	wglDeleteContext(_hRC);
 	ReleaseDC(_hWnd, GetDC(_hWnd));
-
 	return S_OK;
 }

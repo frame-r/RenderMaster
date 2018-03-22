@@ -17,6 +17,20 @@ std::string Core::_getFullLogPath()
 	return std::string(_pDataPath) + "\\log.txt";
 }
 
+void Core::_main_loop()
+{
+	for (IUpdateCallback *callback : _update_callbacks)
+		callback->Update();
+
+	_pCoreRender->Clear();
+	_pCoreRender->SwapBuffers();
+}
+
+void Core::_s_main_loop()
+{
+	_pCore->_main_loop();
+}
+
 Core::Core() : _pConsole(nullptr), _pWnd(nullptr), _pResMan(nullptr), _pCoreRender(nullptr)
 {
 	_pCore = this;
@@ -51,7 +65,7 @@ API Core::Init(INIT_FLAGS flags, WinHandle* externHandle, const char *pDataPath)
 
 	if (createWindow)
 	{
-		_pWnd = new Wnd;
+		_pWnd = new Wnd(_s_main_loop);
 		_pWnd->CreateAndShow();
 	}
 
@@ -75,13 +89,6 @@ API Core::Init(INIT_FLAGS flags, WinHandle* externHandle, const char *pDataPath)
 	_pResMan->Init();
 
 	Log("Engine initialized");
-
-
-	// TODO: main loop move away
-	//if (createWindow)
-	//{		
-	//	_pWnd->StartMainLoop();		
-	//}
 
 	return S_OK;
 }
@@ -120,6 +127,29 @@ API Core::Log(const char *pStr, LOG_TYPE type)
 	_evLog.Fire(pStr, type);
 
 	LeaveCriticalSection(&_cs);
+
+	return S_OK;
+}
+
+API Core::AddInitCallback(IInitCallback* pCallback)
+{
+	_init_callbacks.push_back(pCallback);
+	return S_OK;
+}
+
+API Core::AddUpdateCallback(IUpdateCallback* pCallback)
+{
+	_update_callbacks.push_back(pCallback);
+	return S_OK;
+}
+
+API Core::Start()
+{
+	for (IInitCallback *callback : _init_callbacks)
+		callback->Init();
+
+	if (_pWnd)
+		_pWnd->StartMainLoop();
 
 	return S_OK;
 }

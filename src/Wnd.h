@@ -5,10 +5,12 @@
 class Wnd
 {
 	HWND hwnd;
+	void(*_main_loop)() { nullptr };
+
 	static LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
-	Wnd();
+	Wnd(void(*main_loop)());
 	~Wnd();
 
 	inline HWND *handle() { return &hwnd; }
