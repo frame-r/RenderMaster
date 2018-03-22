@@ -34,11 +34,11 @@ void ResourceManager::_InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pS
 
 	if (!pManager)
 	{
-		LOG_FATAL("Error: Unable to create FBX Manager!");
+		LOG_FATAL("[FBX]Error: Unable to create FBX Manager!");
 		return;
 	}
 	else
-		LOG_NORMAL_FORMATTED("Autodesk FBX SDK version %s", pManager->GetVersion());
+		LOG_NORMAL_FORMATTED("[FBX]Autodesk FBX SDK version %s", pManager->GetVersion());
 
 	FbxIOSettings* ios = FbxIOSettings::Create(pManager, IOSROOT);
 	pManager->SetIOSettings(ios);
@@ -52,7 +52,7 @@ void ResourceManager::_InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pS
 
 	if (!pScene)
 	{
-		LOG_FATAL("Error: Unable to create FBX scene!");
+		LOG_FATAL("[FBX]Error: Unable to create FBX scene!");
 		return;
 	}
 }
@@ -61,7 +61,7 @@ void ResourceManager::_DestroySdkObjects(FbxManager* pManager, bool pExitStatus)
 {
 	if (pManager) pManager->Destroy();
 	if (pExitStatus)
-		LOG("FBX SDK destroyed");
+		LOG("[FBX]FBX SDK destroyed");
 }
 
 bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename)
@@ -86,31 +86,31 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	{
 		FbxString error = lImporter->GetStatus().GetErrorString();
 
-		LOG_FATAL("Call to FbxImporter::Initialize() failed.");
+		LOG_FATAL("[FBX]Call to FbxImporter::Initialize() failed.");
 		LOG_FATAL_FORMATTED("Error returned: %s", error.Buffer());
 
 		if (lImporter->GetStatus().GetCode() == FbxStatus::eInvalidFileVersion)
 		{
-			LOG_FORMATTED("FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
-			LOG_FORMATTED("FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
+			LOG_FORMATTED("[FBX]FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
+			LOG_FORMATTED("[FBX]FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
 		}
 
 		return false;
 	}
 
-	LOG_FORMATTED("FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
+	LOG_FORMATTED("[FBX]FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
 
 	if (lImporter->IsFBX())
 	{
-		LOG_FORMATTED("FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
+		LOG_FORMATTED("[FBX]FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
 
 		// From this point, it is possible to access animation stack information without
 		// the expense of loading the entire file.
 		lAnimStackCount = lImporter->GetAnimStackCount();
 
-		LOG("Animation Stack Information:");
-		LOG_FORMATTED("Number of Animation Stacks: %d", lAnimStackCount);
-		LOG_FORMATTED("Current Animation Stack: \"%s\"", lImporter->GetActiveAnimStackName().Buffer());
+		LOG("[FBX]Animation Stack Information:");
+		LOG_FORMATTED("[FBX]Number of Animation Stacks: %d", lAnimStackCount);
+		LOG_FORMATTED("[FBX]Current Animation Stack: \"%s\"", lImporter->GetActiveAnimStackName().Buffer());
 
 		// Set the import states. By default, the import states are always set to 
 		// true. The code below shows how to change these states.
@@ -127,7 +127,7 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	lStatus = lImporter->Import(pScene);
 
 	if (lStatus == false && lImporter->GetStatus().GetCode() == FbxStatus::ePasswordError)
-		LOG_FATAL("No support entering password!");
+		LOG_FATAL("[FBX]No support entering password!");
 
 	lImporter->Destroy();
 
@@ -136,7 +136,7 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 
 void ResourceManager::_LogSceneHierarchy(FbxScene * pScene)
 {
-	LOG("Scene hierarchy:");
+	LOG("[FBX]Scene hierarchy:");
 
 	FbxNode* lRootNode = pScene->GetRootNode();
 
@@ -146,10 +146,7 @@ void ResourceManager::_LogSceneHierarchy(FbxScene * pScene)
 
 void ResourceManager::_LogNode(FbxNode* pNode, int depth)
 {
-	FbxString lString;
-
-	for (int i = 0; i < depth; i++)
-		lString += " ";
+	FbxString lString = "[FBX]";
 
 	lString += pNode->GetName();
 
@@ -187,24 +184,24 @@ void ResourceManager::_LogMesh(FbxMesh *pMesh, int tabs)
 	int tangent_layers = pMesh->GetElementTangentCount();
 	int binormal_layers = pMesh->GetElementBinormalCount();
 
-	LOG_FORMATTED("ControlPoints=%d PolygonCount=%d NormalLayers=%d UVLayers=%d TangentLayers=%d BinormalLayers=%d\r\n", cp, pc, normal_layers, uv_layers, tangent_layers, binormal_layers);
+	LOG_FORMATTED("[FBX]ControlPoints=%d PolygonCount=%d NormalLayers=%d UVLayers=%d TangentLayers=%d BinormalLayers=%d", cp, pc, normal_layers, uv_layers, tangent_layers, binormal_layers);
 
 	for (int i = 0; i< normal_layers; i++)
 	{
-		FbxString buff;
+		FbxString buff = "[FBX]";
 		FbxGeometryElementNormal* ns = pMesh->GetElementNormal(i);
 
-		LOG_FORMATTED("Normals=%d", i);		
+		LOG_FORMATTED("[FBX]Normals=%d", i);		
 
 		switch (ns->GetMappingMode())
 		{
-			case FbxLayerElement::eByControlPoint:	buff += "EMappingMode=eByControlPoint\r\n"; break;
-			case FbxLayerElement::eByPolygonVertex:	buff += "EMappingMode=eByPolygonVertex\r\n"; break;
-			case FbxLayerElement::eNone:			buff += "EMappingMode=eNone\r\n"; break;
-			case FbxLayerElement::eByPolygon:		buff += "EMappingMode=eByPolygon\r\n"; break;
-			case FbxLayerElement::eByEdge:			buff += "EMappingMode=eByEdge\r\n"; break;
-			case FbxLayerElement::eAllSame:			buff += "EMappingMode=eAllSame\r\n"; break;
-			default:								buff += "EMappingMode=unknown\r\n"; break;;
+			case FbxLayerElement::eByControlPoint:	buff += "EMappingMode=eByControlPoint "; break;
+			case FbxLayerElement::eByPolygonVertex:	buff += "EMappingMode=eByPolygonVertex "; break;
+			case FbxLayerElement::eNone:			buff += "EMappingMode=eNone "; break;
+			case FbxLayerElement::eByPolygon:		buff += "EMappingMode=eByPolygon "; break;
+			case FbxLayerElement::eByEdge:			buff += "EMappingMode=eByEdge "; break;
+			case FbxLayerElement::eAllSame:			buff += "EMappingMode=eAllSame "; break;
+			default:								buff += "EMappingMode=unknown "; break;;
 		}
 
 		switch (ns->GetReferenceMode())
@@ -225,32 +222,32 @@ void ResourceManager::_LogNodeTransform(FbxNode* pNode, int tabs)
 	lTmpVector = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
 	lTmpVector = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
 
-	LOG_FORMATTED("Translation: %f %f %f  Rotation: %f %f %f  Scaling: %f %f %f", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
+	LOG_FORMATTED("[FBX]Translation: %f %f %f  Rotation: %f %f %f  Scaling: %f %f %f", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
 }
 bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
 
-	LOG("Initializing FBX SDK...");
+	LOG("[FBX]Initializing FBX SDK...");
 
 	_InitializeSdkObjects(lSdkManager, lScene);
 
 	FbxString lFilePath(pFileName);
 
-	LOG_FORMATTED("Loading file: %s", lFilePath.Buffer());
+	LOG_FORMATTED("[FBX]Loading file: %s", lFilePath.Buffer());
 
 	bool lResult = _LoadScene(lSdkManager, lScene, lFilePath.Buffer());
 
 	if (!lResult)
-		LOG_FATAL("An error occurred while loading the scene...");
+		LOG_FATAL("[FBX]An error occurred while loading the scene...");
 	else
 	{
 		_LogSceneHierarchy(lScene);
 		//_ImportScene(lScene);
 	}
 
-	LOG("Destroying FBX SDK...");
+	LOG("[FBX]Destroying FBX SDK...");
 	_DestroySdkObjects(lSdkManager, lResult);
 
 	//if (!lResult) fail_descr = ELF_FAIL;
