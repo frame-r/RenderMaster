@@ -23,9 +23,8 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Console.h" />
     <ClInclude Include="..\src\Core.h" />
-    <ClInclude Include="..\src\CoreClassFactory.h" />
     <ClInclude Include="..\src\DX11CoreRender.h" />
-    <ClInclude Include="..\src\EvLog.h" />
+    <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\GLCoreRender.h" />
     <ClInclude Include="..\src\GLMesh.h" />
     <ClInclude Include="..\src\GLShader.h" />
@@ -38,10 +37,9 @@
   <ItemGroup>
     <ClCompile Include="..\src\Console.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
-    <ClCompile Include="..\src\CoreClassFactory.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
     <ClCompile Include="..\src\DX11CoreRender.cpp" />
-    <ClCompile Include="..\src\EvLog.cpp" />
+    <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\GLCoreRender.cpp" />
     <ClCompile Include="..\src\GLShader.cpp" />
     <ClCompile Include="..\src\GL\glew.c" />

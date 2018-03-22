@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "EvLog.h"
+#include "Events.h"
 
 class Wnd;
 class ResourceManager;
@@ -32,7 +32,12 @@ public:
 	~Core();
 
 	template <typename... Arguments>
-	void LogFormatted(const char *pStr, LOG_TYPE type, Arguments ... args);
+	void LogFormatted(const char *pStr, LOG_TYPE type, Arguments ... args)
+	{
+		char buf[300];
+		sprintf_s(buf, pStr, args...);
+		Log(buf, type);
+	}
 
 	API Init(INIT_FLAGS flags, WinHandle* handle, const char *pDataPath) override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
@@ -50,10 +55,23 @@ public:
 	STDMETHODIMP_(ULONG) Release() override;
 };
 
-template <typename ... Arguments>
-void Core::LogFormatted(const char* pStr, LOG_TYPE type, Arguments... args)
+
+class CoreClassFactory : public IClassFactory
 {
-	char buf[300];
-	sprintf_s(buf, pStr, args...);
-	Log(buf, type);
-}
+	long m_lRef;
+	long g_lLocks1;
+
+public:
+
+	CoreClassFactory() : m_lRef(0), g_lLocks1(0) {}
+
+	// IUnknown 
+	virtual HRESULT __stdcall QueryInterface(REFIID riid, void** ppv);
+	virtual ULONG __stdcall AddRef();
+	virtual ULONG __stdcall Release();
+
+	// IClassFactory
+	virtual STDMETHODIMP CreateInstance(LPUNKNOWN pUnk, REFIID riid, void** ppv);
+	virtual STDMETHODIMP LockServer(BOOL fLock);
+};
+

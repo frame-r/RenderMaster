@@ -3,8 +3,6 @@
   <ItemGroup>
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Core.h" />
-    <ClInclude Include="..\src\CoreClassFactory.h" />
-    <ClInclude Include="..\src\EvLog.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\GL\glew.h">
       <Filter>CoreRender\GL</Filter>
@@ -30,12 +28,11 @@
     <ClInclude Include="..\include\Engine.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Events.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
-    <ClCompile Include="..\src\CoreClassFactory.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
-    <ClCompile Include="..\src\EvLog.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
     <ClCompile Include="..\src\GL\glew.c">
       <Filter>CoreRender\GL</Filter>
@@ -55,6 +52,7 @@
     </ClCompile>
     <ClCompile Include="..\src\Console.cpp" />
     <ClCompile Include="..\src\Model.cpp" />
+    <ClCompile Include="..\src\Events.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />

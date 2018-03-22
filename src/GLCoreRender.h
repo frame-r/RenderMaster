@@ -1,9 +1,8 @@
 #pragma once
 #include "Common.h"
-
 #include <GL\glew.h>
 
-#define WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN // TODO: move platform depend from this file
 #include <windows.h>
 
 
@@ -21,14 +20,12 @@ public:
 	GLCoreRender();
 	~GLCoreRender();
 	
-	// ISubSystem
-	API GetName(const char *&pTxt) override;
-
 	API Init(WinHandle* handle) override;
 	API CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) override;
 	API CreateShader(ICoreShader *&pShader, ShaderDesc& shaderDesc) override;
 	API Clear() override;
 	API SwapBuffers() override;
 	API Free() override;
+	API GetName(const char *&pTxt) override;
 };
 
