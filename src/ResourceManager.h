@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+
 #include <vector>
 #include <map>
 
@@ -7,12 +8,12 @@
 #include <fbxsdk.h>
 #endif
 
+
 class ResourceManager : public IResourceManager
 {
 	ICoreRender *_pCoreRender;
 	CRITICAL_SECTION _cs;
-
-	std::map<DEFAULT_RESOURCE_TYPE, ICoreMesh*> _default_meshes;
+	std::map<DEFAULT_MODEL, ICoreMesh*> _default_meshes;
 
 	struct TResource
 	{
@@ -21,7 +22,8 @@ class ResourceManager : public IResourceManager
 	};
 	std::vector<TResource> _res_vec;
 
-#ifdef USE_FBX
+
+	#ifdef USE_FBX
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
@@ -33,9 +35,9 @@ class ResourceManager : public IResourceManager
 	void _LogNodeTransform(FbxNode* pNode, int tabs);
 
 	bool _FBXLoad(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pPregress);
-#endif
+	#endif
 
-	static const char* resourceToStr(IResource* pRes);
+	static const char* _resourceToStr(IResource* pRes);
 
 public:
 
@@ -43,17 +45,17 @@ public:
 	~ResourceManager();
 
 	void Init();
-
-	// ISubSystem
-	API GetName(const char *&pTxt) override;
 	
 	// IResourceManager
 	API LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
 	API LoadShader(ICoreShader *&pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
-	API CreateDefaultModel(IModel *&pModel, DEFAULT_RESOURCE_TYPE type) override;
+	API GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type) override;
 	API AddToList(IResource *pResource) override;
 	API GetRefNumber(IResource *pResource, uint& number) override;
 	API DecrementRef(IResource *pResource) override;
 	API RemoveFromList(IResource *pResource) override;
 	API FreeAllResources() override;
+
+	// ISubSystem
+	API GetName(const char *&pName) override;
 };

@@ -29,33 +29,33 @@ std::basic_string<Char> ToLowerCase(std::basic_string<Char> str)
 #endif
 
 #define DEFINE_LOG_HELPERS(CORE_REF) \
-	void LOG(const char *pStr, LOG_TYPE type = LOG_TYPE::LT_NORMAL) \
+	void LOG(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL) \
 	{ \
 		CORE_REF->Log(pStr, type); \
 	} \
 	void LOG_FATAL(const char *pStr) \
 	{ \
-		CORE_REF->Log(pStr, LOG_TYPE::LT_FATAL); \
+		CORE_REF->Log(pStr, LOG_TYPE::FATAL); \
 	} \
 	template <typename... Arguments> \
 	void LOG_FORMATTED(const char *pStr, Arguments ... args) \
 	{ \
-		CORE_REF->LogFormatted(pStr, LOG_TYPE::LT_NORMAL, args...); \
+		CORE_REF->LogFormatted(pStr, LOG_TYPE::NORMAL, args...); \
 	} \
 	template <typename... Arguments> \
 	void LOG_NORMAL_FORMATTED(const char *pStr, Arguments ... args) \
 	{ \
-		CORE_REF->LogFormatted(pStr, LOG_TYPE::LT_NORMAL, args...); \
+		CORE_REF->LogFormatted(pStr, LOG_TYPE::NORMAL, args...); \
 	} \
 	template <typename... Arguments> \
 	void LOG_FATAL_FORMATTED(const char *pStr, Arguments ... args) \
 	{ \
-		CORE_REF->LogFormatted(pStr, LOG_TYPE::LT_FATAL, args...); \
+		CORE_REF->LogFormatted(pStr, LOG_TYPE::FATAL, args...); \
 	} \
 	template <typename... Arguments> \
 	void LOG_WARNING_FORMATTED(const char *pStr, Arguments ... args) \
 	{ \
-		CORE_REF->LogFormatted(pStr, LOG_TYPE::LT_WARNING, args...); \
+		CORE_REF->LogFormatted(pStr, LOG_TYPE::WARNING, args...); \
 	}
 
 

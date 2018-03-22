@@ -9,17 +9,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 {	
 	if (GetCore(pCore))
 	{
-		pCore->Init(INIT_FLAGS::IF_SELF_WINDOW | INIT_FLAGS::IF_CONSOLE, nullptr, "C:\\Users\\Konstantin\\Documents\\RenderMasterProject1");
-		
 		IResourceManager *resMan;
-		pCore->GetSubSystem((ISubSystem*&)resMan, SUBSYSTEM_TYPE::ST_RESOURCE_MANAGER);
+		IModel *pModel, *pModel1, *pModel2;
 
-		IModel *pmdl1, *pmdl2;
-		resMan->CreateDefaultModel(pmdl1, DEFAULT_RESOURCE_TYPE::DRT_PLANE);
-		resMan->CreateDefaultModel(pmdl2, DEFAULT_RESOURCE_TYPE::DRT_PLANE);
-
-		IModel *pModel;
-		resMan->LoadModel(pModel, "box.fbx", nullptr);
+		pCore->Init(INIT_FLAGS::IF_SELF_WINDOW | INIT_FLAGS::IF_CONSOLE, nullptr, "C:\\Users\\Konstantin\\Documents\\RenderMasterProject1");
+				
+		pCore->GetSubSystem((ISubSystem*&)resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+			
+		resMan->LoadModel(pModel, "humanoid.fbx", nullptr);
+		resMan->GetDefaultModel(pModel1, DEFAULT_MODEL::PLANE);
+		resMan->GetDefaultModel(pModel2, DEFAULT_MODEL::PLANE);
 
 		pCore->CloseEngine();
 

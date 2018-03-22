@@ -4,14 +4,8 @@
 #include <Unknwn.h>
 #include <iostream>
 
-#define API HRESULT
-
-typedef unsigned int uint;
-typedef unsigned char uint8;
-typedef HWND WinHandle;
-
 #define USE_FBX
-
+#define API HRESULT
 #define DEFINE_ENUM_OPERATORS(ENUM_NAME) \
 inline ENUM_NAME operator|(ENUM_NAME a, ENUM_NAME b) \
 { \
@@ -22,6 +16,10 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 	return static_cast<ENUM_NAME>(static_cast<int>(a) & static_cast<int>(b)); \
 }
 
+typedef unsigned int uint;
+typedef unsigned char uint8;
+typedef HWND WinHandle;
+
 
 namespace RENDER_MASTER 
 {
@@ -30,7 +28,6 @@ namespace RENDER_MASTER
 	class IInitCallback;
 	class IUpdateCallback;
 	enum class SUBSYSTEM_TYPE;
-
 
 	//////////////////////
 	// Core
@@ -52,11 +49,11 @@ namespace RENDER_MASTER
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
-		enum class LOG_TYPE
+	enum class LOG_TYPE
 	{
-		LT_NORMAL,
-		LT_WARNING,
-		LT_FATAL
+		NORMAL,
+		WARNING,
+		FATAL
 	};
 
 	// {A97B8EB3-93CE-4A45-800D-367084CFB4B1}
@@ -87,8 +84,8 @@ namespace RENDER_MASTER
 
 	enum class SUBSYSTEM_TYPE
 	{
-		ST_CORE_RENDER,
-		ST_RESOURCE_MANAGER
+		CORE_RENDER,
+		RESOURCE_MANAGER
 	};
 
 	class ISubSystem
@@ -102,7 +99,6 @@ namespace RENDER_MASTER
 		RT_CORE_MESH,
 		RT_CORE_TEXTURE,
 		RT_CORE_SHADER,
-
 		RT_GAMEOBJECT,
 		RT_MODEL
 	};
@@ -288,9 +284,9 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
-	enum class DEFAULT_RESOURCE_TYPE
+	enum class DEFAULT_MODEL
 	{
-		DRT_PLANE
+		PLANE
 	};
 
 	class IProgressSubscriber
@@ -305,7 +301,7 @@ namespace RENDER_MASTER
 
 		virtual API LoadModel(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
 		virtual API LoadShader(ICoreShader *&pShader, const char* pVertName, const char* pGeomName, const char* pFragName) = 0;
-		virtual API CreateDefaultModel(IModel *&pModel, DEFAULT_RESOURCE_TYPE type) = 0;
+		virtual API GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type) = 0;
 		virtual API AddToList(IResource *pResource) = 0;
 		virtual API GetRefNumber(IResource *pResource, uint& number) = 0;
 		virtual API DecrementRef(IResource *pResource) = 0;

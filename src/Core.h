@@ -37,7 +37,7 @@ public:
 	API Init(INIT_FLAGS flags, WinHandle* handle, const char *pDataPath) override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataPath(const char *&pStr) override;
-	API Log(const char *pStr, LOG_TYPE type = LOG_TYPE::LT_NORMAL) override;
+	API Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL) override;
 	API AddInitCallback(IInitCallback *pCallback) override;
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;
 	API Start() override;

@@ -6,6 +6,7 @@
 #include <cassert>
 #include <iterator>
 
+
 using namespace std;
 
 #if defined _MSC_VER && _MSC_VER <= 1900
@@ -270,7 +271,7 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgress
 
 	return false;
 }
-const char * ResourceManager::resourceToStr(IResource * pRes)
+const char * ResourceManager::_resourceToStr(IResource * pRes)
 {
 	RES_TYPE type;
 	pRes->GetType(type);
@@ -303,7 +304,7 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::Init()
 {
-	_pCore->GetSubSystem((ISubSystem*&)_pCoreRender, SUBSYSTEM_TYPE::ST_CORE_RENDER);
+	_pCore->GetSubSystem((ISubSystem*&)_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
 
 	InitializeCriticalSection(&_cs);
 
@@ -334,18 +335,18 @@ void ResourceManager::Init()
 
 	_pCoreRender->CreateMesh((ICoreMesh*&)pPlane, desc, indexDesc, DRAW_MODE::DM_TRIANGLES);
 
-	_default_meshes.emplace(DEFAULT_RESOURCE_TYPE::DRT_PLANE, pPlane);
+	_default_meshes.emplace(DEFAULT_MODEL::PLANE, pPlane);
 
 	LOG("ResourceManager initalized");
 }
 
-API ResourceManager::GetName(const char *& pTxt)
+API ResourceManager::GetName(const char *&pName)
 {
-	pTxt = "ResourceManager";
+	pName = "ResourceManager";
 	return S_OK;
 }
 
-API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress)
+API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pProgress)
 {
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
 	
@@ -356,7 +357,7 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoad(pModel, fullPath.c_str(), pPregress);
+		bool ret = _FBXLoad(pModel, fullPath.c_str(), pProgress);
 		if (!ret)
 			return S_FALSE;
 	}
@@ -383,7 +384,7 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 	return S_OK;
 }
 
-API ResourceManager::CreateDefaultModel(IModel *&pModel, DEFAULT_RESOURCE_TYPE type)
+API ResourceManager::GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type)
 {
 	auto it = _default_meshes.find(type);
 
@@ -406,17 +407,16 @@ API ResourceManager::LoadShader(ICoreShader *& pShader, const char * pVertName, 
 API ResourceManager::AddToList(IResource *pResource)
 { 
 	auto it = std::find_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+
 	if (it == _res_vec.end())
 	{
-		_res_vec.push_back(TResource{ pResource, 1 });
-	
-		DEBUG_LOG("AddToList(): added new resource! type=%s", LOG_TYPE::LT_NORMAL, resourceToStr(pResource));
+		_res_vec.push_back(TResource{ pResource, 1 });	
+		DEBUG_LOG("AddToList(): added new resource! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
 	else
 	{
-		it->refCount++;
-	
-		DEBUG_LOG("AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::LT_NORMAL, it->refCount, resourceToStr(pResource));
+		it->refCount++;	
+		DEBUG_LOG("AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::NORMAL, it->refCount, _resourceToStr(pResource));
 	}
 
 	return S_OK;
@@ -447,7 +447,7 @@ API ResourceManager::DecrementRef(IResource * pResource)
 
 	it->refCount--;
 
-	DEBUG_LOG("DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::LT_NORMAL, it->refCount, resourceToStr(pResource));
+	DEBUG_LOG("DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::NORMAL, it->refCount, _resourceToStr(pResource));
 
 	return S_OK;
 }
@@ -462,17 +462,17 @@ API ResourceManager::RemoveFromList(IResource *pResource)
 		auto it = std::remove_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
 		_res_vec.erase(it, _res_vec.end());
 
-		DEBUG_LOG("RemoveFromList(): deleted! type=%s", LOG_TYPE::LT_NORMAL, resourceToStr(pResource));
+		DEBUG_LOG("RemoveFromList(): deleted! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
 	else
-		LOG_WARNING_FORMATTED("RemoveFromList(): not deleted! refNumber=%i type=%s", refCount, resourceToStr(pResource));
+		LOG_WARNING_FORMATTED("RemoveFromList(): not deleted! refNumber=%i type=%s", refCount, _resourceToStr(pResource));
 
 	return S_OK;
 }
 
 API ResourceManager::FreeAllResources()
 {
-	DEBUG_LOG("FreeAllResources(): resorces total=%i", LOG_TYPE::LT_NORMAL, _res_vec.size());
+	DEBUG_LOG("FreeAllResources(): resorces total=%i", LOG_TYPE::NORMAL, _res_vec.size());
 
 	// first free all resources that have refCount = 1
 	// and so on...
@@ -500,7 +500,7 @@ API ResourceManager::FreeAllResources()
 			i++;
 			if (i > 20) break; // occured some error. maybe circular references => in debug limit number of iterations
 			auto res = _res_vec.size();
-			DEBUG_LOG("FreeAllResources(): beginIteration=%i resourceToDelete=%i", LOG_TYPE::LT_NORMAL, i, one_ref_res.size(), _res_vec.size());
+			DEBUG_LOG("FreeAllResources(): beginIteration=%i resourceToDelete=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), _res_vec.size());
 		#endif
 
 		// free elements in group
@@ -509,7 +509,7 @@ API ResourceManager::FreeAllResources()
 
 		#ifdef _DEBUG
 			auto deleted = res - _res_vec.size();
-			DEBUG_LOG("FreeAllResources(): endIteration=%i resourcesDeleted=%i, resourcesLeft=%i", LOG_TYPE::LT_NORMAL, i, deleted, _res_vec.size());
+			DEBUG_LOG("FreeAllResources(): endIteration=%i resourcesDeleted=%i, resourcesLeft=%i", LOG_TYPE::NORMAL, i, deleted, _res_vec.size());
 		#endif
 	}
 	

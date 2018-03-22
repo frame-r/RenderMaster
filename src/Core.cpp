@@ -97,8 +97,8 @@ API Core::GetSubSystem(ISubSystem *& pSubSystem, SUBSYSTEM_TYPE type)
 {
 	switch(type)
 	{
-	case SUBSYSTEM_TYPE::ST_CORE_RENDER: pSubSystem = _pCoreRender; break;
-	case SUBSYSTEM_TYPE::ST_RESOURCE_MANAGER: pSubSystem = _pResMan; break;
+	case SUBSYSTEM_TYPE::CORE_RENDER: pSubSystem = _pCoreRender; break;
+	case SUBSYSTEM_TYPE::RESOURCE_MANAGER: pSubSystem = _pResMan; break;
 	default: return S_FALSE;
 	}
 

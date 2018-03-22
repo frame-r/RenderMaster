@@ -29,7 +29,7 @@ API Model::GetMeshesNumber(uint & number)
 API Model::Free()
 {
 	IResourceManager *pResMan;
-	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::ST_RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 	uint refNum;
 	pResMan->GetRefNumber(this, refNum);

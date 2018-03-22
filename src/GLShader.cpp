@@ -17,7 +17,7 @@ API GLShader::Free()
 	IResourceManager *pResMan;
 	uint refNum;
 
-	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::ST_RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 	pResMan->GetRefNumber(this, refNum);
 
 	if (refNum == 1)

@@ -14,7 +14,7 @@ extern Core *_pCore;
 
 using string = std::string;
 
-#define LOG_FATAL(msg) _pCore->Log(msg, LOG_TYPE::LT_FATAL);
+#define LOG_FATAL(msg) _pCore->Log(msg, LOG_TYPE::FATAL);
 void CHECK_GL_ERRORS()
 {
 	GLenum err = glGetError();
@@ -36,7 +36,7 @@ void CHECK_GL_ERRORS()
 				error = "OpenGL error: " + oss.str();
 			}break;
 		}
-		_pCore->Log(error.c_str(), LOG_TYPE::LT_WARNING);
+		_pCore->Log(error.c_str(), LOG_TYPE::WARNING);
 	}	
 }
 
@@ -65,7 +65,7 @@ bool GLCoreRender::_check_chader_errors(int id, GLenum constant)
 		else if (constant == GL_LINK_STATUS)
 			glGetProgramInfoLog(id, length, &length, buf);
 
-		_pCore->Log(buf, LOG_TYPE::LT_FATAL);
+		_pCore->Log(buf, LOG_TYPE::FATAL);
 
 		delete buf;
 
@@ -257,7 +257,7 @@ API GLCoreRender::Init(WinHandle* handle)
 			glGetIntegerv(GL_MINOR_VERSION, &minor);
 			sprintf_s(_log_fbx_buffer, OGLI"%i.%i", major, minor);
 
-			_pCore->Log(_log_fbx_buffer, LOG_TYPE::LT_NORMAL);
+			_pCore->Log(_log_fbx_buffer, LOG_TYPE::NORMAL);
 		}
 		else
 		{
