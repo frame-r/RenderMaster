@@ -2,8 +2,8 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
 #include <assert.h>
+
 
 Wnd::Wnd(void(*main_loop)())
 {
@@ -57,31 +57,32 @@ void Wnd::StartMainLoop()
 
 	while (true)
 	{
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		if (_main_loop != nullptr)
 		{
-			if (msg.message == WM_QUIT)
-				break;
 
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+			{
+				if (msg.message == WM_QUIT)
+					break;
+
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			else
+			{
+				_main_loop();
+			}
 		}
 		else
 		{
-			//update();
-			//render();
-
-			_main_loop();
+			if (GetMessage(&msg, nullptr, 0, 0))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			else // WM_QUIT
+				break;
 		}
-
-		/*
-		if (GetMessage(&msg, nullptr, 0, 0))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else // WM_QUIT
-			break;
-		*/
 	}
 	
 }

@@ -286,7 +286,7 @@ API GLCoreRender::Init(WinHandle* handle)
 
 API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode)
 {
-	const int indexes = indexDesc.format != MESH_INDEX_FORMAT::MID_NOTHING;
+	const int indexes = indexDesc.format != MESH_INDEX_FORMAT::NOTHING;
 	const int texCoords = dataDesc.texCoordPresented;
 	const int normals = dataDesc.normalsPresented;
 	const int bytes = (12 + texCoords * 8 + normals * 12) * dataDesc.number;
@@ -321,8 +321,8 @@ API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshInde
 		int idxSize = 0;
 		switch (indexDesc.format)
 		{
-			case MESH_INDEX_FORMAT::MID_INT32: idxSize = 32; break;
-			case MESH_INDEX_FORMAT::MID_INT16: idxSize = 16; break;
+			case MESH_INDEX_FORMAT::INT32: idxSize = 32; break;
+			case MESH_INDEX_FORMAT::INT16: idxSize = 16; break;
 		}
 		const int idxBytes = idxSize * indexDesc.number;
 

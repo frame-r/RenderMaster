@@ -12,7 +12,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		IResourceManager *resMan;
 		IModel *pModel, *pModel1, *pModel2;
 
-		pCore->Init(INIT_FLAGS::IF_SELF_WINDOW | INIT_FLAGS::IF_CONSOLE, nullptr, "C:\\Users\\Konstantin\\Documents\\RenderMasterProject1");
+		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "C:\\Users\\Konstantin\\Documents\\RenderMasterProject1", nullptr);
 				
 		pCore->GetSubSystem((ISubSystem*&)resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 			

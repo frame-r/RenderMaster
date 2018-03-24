@@ -5,7 +5,7 @@ extern Core *_pCore;
 
 GLMesh::GLMesh(GLuint VAO, GLuint VBO, GLuint IBO, uint vertexNumber, uint indexNumber, MESH_INDEX_FORMAT indexFormat, DRAW_MODE mode):
 	_VAO(VAO), _VBO(VBO), _IBO(IBO),
-	_vertex(vertexNumber), _index(indexNumber), _indexPresented(indexFormat != MESH_INDEX_FORMAT::MID_NOTHING), _mode(mode)
+	_vertex(vertexNumber), _index(indexNumber), _indexPresented(indexFormat != MESH_INDEX_FORMAT::NOTHING), _mode(mode)
 {
 }
 
@@ -40,6 +40,6 @@ API GLMesh::Free()
 
 API GLMesh::GetType(RES_TYPE& type)
 {
-	type = RES_TYPE::RT_CORE_MESH;
+	type = RES_TYPE::CORE_MESH;
 	return S_OK;
 }

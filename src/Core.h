@@ -1,22 +1,22 @@
 #pragma once
 #include "Common.h"
-#include "Events.h"
 
 class Wnd;
 class ResourceManager;
 class Console;
+class EventLog;
 
 DEFINE_GUID(CLSID_Core,
 	0xa889f560, 0x58e4, 0x11d0, 0xa6, 0x8a, 0x0, 0x0, 0x83, 0x7e, 0x31, 0x0);
 
 class Core : public ICore
 {
-	long _lRef;
-	Console *_pConsole;
-	Wnd *_pWnd;
-	ResourceManager *_pResMan;
-	ICoreRender *_pCoreRender;
-	EvLog _evLog;
+	long _lRef{0};
+	Console *_pConsole{nullptr};
+	Wnd *_pWnd{nullptr};
+	ResourceManager *_pResMan{nullptr};
+	ICoreRender *_pCoreRender{nullptr};
+	EventLog *_evLog{nullptr};
 	CRITICAL_SECTION _cs;
 	char *_pDataPath;
 	std::vector<IInitCallback *> _init_callbacks;
@@ -39,7 +39,7 @@ public:
 		Log(buf, type);
 	}
 
-	API Init(INIT_FLAGS flags, WinHandle* handle, const char *pDataPath) override;
+	API Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* handle) override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataPath(const char *&pStr) override;
 	API Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL) override;
@@ -47,7 +47,6 @@ public:
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;
 	API Start() override;
 	API CloseEngine() override;
-
 	API GetLogPrintedEv(ILogEvent *&pEvent) override;
 
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;

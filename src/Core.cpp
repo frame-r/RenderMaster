@@ -4,6 +4,7 @@
 #include "GLCoreRender.h"
 #include "Wnd.h"
 #include "Console.h"
+#include "Events.h"
 
 #include <iostream>
 #include <fstream>
@@ -31,7 +32,7 @@ void Core::_s_main_loop()
 	_pCore->_main_loop();
 }
 
-Core::Core() : _pConsole(nullptr), _pWnd(nullptr), _pResMan(nullptr), _pCoreRender(nullptr)
+Core::Core()
 {
 	_pCore = this;
 	InitializeCriticalSection(&_cs);
@@ -41,16 +42,16 @@ Core::~Core()
 {
 	delete _pCoreRender;
 	delete _pResMan;
-	delete _pWnd;
 	if (_pWnd) delete _pWnd;
 	if (_pConsole) delete _pConsole;
+	delete _evLog;
 	delete _pDataPath;
 }
 
-API Core::Init(INIT_FLAGS flags, WinHandle* externHandle, const char *pDataPath)
+API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
 {
-	const bool createWindow = (flags & INIT_FLAGS::IF_WINDOW_FLAG) == INIT_FLAGS::IF_SELF_WINDOW;
-	const bool createConsole = (flags & INIT_FLAGS::IF_CONSOLE_FLAG) == INIT_FLAGS::IF_CONSOLE;
+	const bool createWindow = (flags & INIT_FLAGS::WINDOW_FLAG) != INIT_FLAGS::EXTERN_WINDOW;
+	const bool createConsole = (flags & INIT_FLAGS::CREATE_CONSOLE_FLAG) == INIT_FLAGS::CREATE_CONSOLE;
 
 	auto size = strlen(pDataPath);
 	_pDataPath = new char[size + 1];
@@ -58,6 +59,8 @@ API Core::Init(INIT_FLAGS flags, WinHandle* externHandle, const char *pDataPath)
 
 	std::ofstream log(_getFullLogPath());
 	log.close();
+
+	_evLog = new EventLog;
 
 	Log("Start initialization engine...");
 
@@ -76,7 +79,7 @@ API Core::Init(INIT_FLAGS flags, WinHandle* externHandle, const char *pDataPath)
 	}
 
 
-	if ((flags & INIT_FLAGS::IF_GRAPHIC_LIBRARY_FLAG) == INIT_FLAGS::IF_DIRECTX11)
+	if ((flags & INIT_FLAGS::GRAPHIC_LIBRARY_FLAG) == INIT_FLAGS::DIRECTX11)
 		_pCoreRender = new DX11CoreRender;
 	else
 		_pCoreRender = new GLCoreRender;
@@ -97,9 +100,9 @@ API Core::GetSubSystem(ISubSystem *& pSubSystem, SUBSYSTEM_TYPE type)
 {
 	switch(type)
 	{
-	case SUBSYSTEM_TYPE::CORE_RENDER: pSubSystem = _pCoreRender; break;
-	case SUBSYSTEM_TYPE::RESOURCE_MANAGER: pSubSystem = _pResMan; break;
-	default: return S_FALSE;
+		case SUBSYSTEM_TYPE::CORE_RENDER: pSubSystem = _pCoreRender; break;
+		case SUBSYSTEM_TYPE::RESOURCE_MANAGER: pSubSystem = _pResMan; break;
+		default: return S_FALSE;
 	}
 
 	return S_OK;
@@ -124,7 +127,7 @@ API Core::Log(const char *pStr, LOG_TYPE type)
 
 	std::cout << pStr << std::endl;
 
-	_evLog.Fire(pStr, type);
+	_evLog->Fire(pStr, type);
 
 	LeaveCriticalSection(&_cs);
 
@@ -177,7 +180,7 @@ API Core::CloseEngine()
 
 API Core::GetLogPrintedEv(ILogEvent*& pEvent)
 {
-	pEvent = &_evLog;
+	pEvent = _evLog;
 	return S_OK;
 }
 

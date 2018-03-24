@@ -46,7 +46,6 @@ public:
 
 	void Init();
 	
-	// IResourceManager
 	API LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
 	API LoadShader(ICoreShader *&pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
 	API GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type) override;
@@ -55,7 +54,5 @@ public:
 	API DecrementRef(IResource *pResource) override;
 	API RemoveFromList(IResource *pResource) override;
 	API FreeAllResources() override;
-
-	// ISubSystem
 	API GetName(const char *&pName) override;
 };

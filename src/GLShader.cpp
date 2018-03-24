@@ -37,6 +37,6 @@ API GLShader::Free()
 
 API GLShader::GetType(RES_TYPE& type)
 {
-	type = RES_TYPE::RT_CORE_SHADER;
+	type = RES_TYPE::CORE_SHADER;
 	return S_OK;
 }

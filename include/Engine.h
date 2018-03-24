@@ -35,17 +35,16 @@ namespace RENDER_MASTER
 
 	enum class INIT_FLAGS
 	{
-		IF_WINDOW_FLAG = 0x0000000F,
-		IF_SELF_WINDOW = 0x00000001, // engine should create it's own window 
-		IF_EXTERN_WINDOW = 0x00000002, // engine uses client's created window		
+		WINDOW_FLAG = 0x0000000F, 
+		EXTERN_WINDOW = 0x00000002, // engine uses client's created window		
 
-		IF_GRAPHIC_LIBRARY_FLAG = 0x000000F0,
-		IF_OPENGL45 = 0x00000010,
-		IF_DIRECTX11 = 0x00000020,		
+		GRAPHIC_LIBRARY_FLAG = 0x000000F0,
+		OPENGL45 = 0x00000010,
+		DIRECTX11 = 0x00000020,		
 		
-		IF_CONSOLE_FLAG = 0x00000F00,
-		IF_NO_CONSOLE = 0x00000100,  // no need create console
-		IF_CONSOLE = 0x00000200 // engine should create console		
+		CREATE_CONSOLE_FLAG = 0x00000F00,
+		NO_CREATE_CONSOLE = 0x00000100,  // no need create console
+		CREATE_CONSOLE = 0x00000200 // engine should create console		
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
@@ -64,7 +63,7 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API Init(INIT_FLAGS flags, WinHandle* handle, const char *pDataPath) = 0;
+		virtual API Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* handle) = 0;
 		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API GetDataPath(const char *&pStr) = 0;
 		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
@@ -96,11 +95,12 @@ namespace RENDER_MASTER
 
 	enum class RES_TYPE
 	{
-		RT_CORE_MESH,
-		RT_CORE_TEXTURE,
+		CORE_MESH,
+		CORE_TEXTURE,
+		CORE_SHADER,
 		RT_CORE_SHADER,
-		RT_GAMEOBJECT,
-		RT_MODEL
+		GAMEOBJECT,
+		MODEL
 	};
 
 	class IResource
@@ -163,9 +163,9 @@ namespace RENDER_MASTER
 
 	enum class DRAW_MODE
 	{
-		DM_POINTS,
-		DM_LINES,
-		DM_TRIANGLES,
+		POINTS,
+		LINES,
+		TRIANGLES,
 	};
 
 	struct MeshDataDesc
@@ -212,14 +212,14 @@ namespace RENDER_MASTER
 
 	enum class MESH_INDEX_FORMAT
 	{
-		MID_NOTHING,
-		MID_INT32,
-		MID_INT16
+		NOTHING,
+		INT32,
+		INT16
 	};
 
 	struct MeshIndexDesc
 	{
-		MeshIndexDesc() : pData(nullptr), number(0), format(MESH_INDEX_FORMAT::MID_NOTHING) {}
+		MeshIndexDesc() : pData(nullptr), number(0), format(MESH_INDEX_FORMAT::NOTHING) {}
 
 		uint8 *pData;
 		uint number;

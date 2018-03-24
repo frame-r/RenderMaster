@@ -47,7 +47,7 @@ API Model::Free()
 
 API Model::GetType(RES_TYPE & type)
 {
-	type = RES_TYPE::RT_MODEL;
+	type = RES_TYPE::MODEL;
 	return S_OK;
 }
 

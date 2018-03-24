@@ -1,8 +1,13 @@
 #pragma once
+
 #define _CRT_SECURE_NO_WARNINGS
+
 #include "Engine.h"
+
+#include <vector>
 #include <string>
 #include <functional>
+
 
 using namespace RENDER_MASTER;
 

@@ -2,7 +2,7 @@
 #include "Common.h"
 #include <vector>
 
-class EvLog : public ILogEvent
+class EventLog : public ILogEvent
 {
 	std::vector<ILogEventSubscriber *> _subscribers;
 

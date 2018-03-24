@@ -278,16 +278,16 @@ const char * ResourceManager::_resourceToStr(IResource * pRes)
 
 	switch (type)
 	{
-	case RENDER_MASTER::RES_TYPE::RT_CORE_MESH:
-		return "RT_CORE_MESH";
-	case RENDER_MASTER::RES_TYPE::RT_CORE_TEXTURE:
-		return "RT_CORE_TEXTURE";
-	case RENDER_MASTER::RES_TYPE::RT_CORE_SHADER:
-		return "RT_CORE_SHADER";
-	case RENDER_MASTER::RES_TYPE::RT_GAMEOBJECT:
-		return "RT_GAMEOBJECT";
-	case RENDER_MASTER::RES_TYPE::RT_MODEL:
-		return "RT_MODEL";
+	case RENDER_MASTER::RES_TYPE::CORE_MESH:
+		return "CORE_MESH";
+	case RENDER_MASTER::RES_TYPE::CORE_TEXTURE:
+		return "CORE_TEXTURE";
+	case RENDER_MASTER::RES_TYPE::CORE_SHADER:
+		return "CORE_SHADER";
+	case RENDER_MASTER::RES_TYPE::GAMEOBJECT:
+		return "GAMEOBJECT";
+	case RENDER_MASTER::RES_TYPE::MODEL:
+		return "MODEL";
 	}
 
 	return nullptr;
@@ -331,9 +331,9 @@ void ResourceManager::Init()
 	MeshIndexDesc indexDesc;
 	indexDesc.pData = reinterpret_cast<uint8*>(index);
 	indexDesc.number = 6;
-	indexDesc.format = MESH_INDEX_FORMAT::MID_INT16;
+	indexDesc.format = MESH_INDEX_FORMAT::INT16;
 
-	_pCoreRender->CreateMesh((ICoreMesh*&)pPlane, desc, indexDesc, DRAW_MODE::DM_TRIANGLES);
+	_pCoreRender->CreateMesh((ICoreMesh*&)pPlane, desc, indexDesc, DRAW_MODE::TRIANGLES);
 
 	_default_meshes.emplace(DEFAULT_MODEL::PLANE, pPlane);
 
