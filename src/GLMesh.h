@@ -5,14 +5,14 @@
 
 class GLMesh : public ICoreMesh
 {
-	GLuint _VAO;
-	GLuint _VBO;
-	GLuint _IBO;
-	uint _vertex;
-	uint _index;
-	bool _indexPresented;
-	MESH_INDEX_FORMAT _indexFormat;
-	DRAW_MODE _mode;
+	GLuint _VAO {0};
+	GLuint _VBO {0};
+	GLuint _IBO {0};
+	uint _number_of_vertices {0};
+	bool _index_presented {false};
+	uint _number_of_indicies {0};
+	MESH_INDEX_FORMAT _index_format {MESH_INDEX_FORMAT::NOTHING};
+	DRAW_MODE _mode {DRAW_MODE::TRIANGLES};
 
 public:
 	

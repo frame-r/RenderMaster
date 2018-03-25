@@ -7,14 +7,13 @@ DEFINE_LOG_HELPERS(_pCore)
 
 GLMesh::GLMesh(GLuint VAO, GLuint VBO, GLuint IBO, uint vertexNumber, uint indexNumber, MESH_INDEX_FORMAT indexFormat, DRAW_MODE mode):
 	_VAO(VAO), _VBO(VBO), _IBO(IBO),
-	_vertex(vertexNumber), _index(indexNumber), _indexPresented(indexFormat != MESH_INDEX_FORMAT::NOTHING), _mode(mode)
+	_number_of_vertices(vertexNumber), _number_of_indicies(indexNumber), _index_presented(indexFormat != MESH_INDEX_FORMAT::NOTHING), _mode(mode)
 {
 }
 
 API GLMesh::GetNumberOfVertex(uint & vertex)
 {
-	vertex = _vertex;
-
+	vertex = _number_of_vertices;
 	return S_OK;
 }
 
@@ -30,7 +29,7 @@ API GLMesh::Free()
 	{
 		pResMan->RemoveFromList(this);
 
-		if (_indexPresented) glDeleteBuffers(1, &_IBO);
+		if (_index_presented) glDeleteBuffers(1, &_IBO);
 		glDeleteBuffers(1, &_VBO);
 		glDeleteVertexArrays(1, &_VAO);
 	}

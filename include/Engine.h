@@ -1,11 +1,19 @@
 #pragma once
+
 #define WIN32_LEAN_AND_MEAN
 #define INITGUID
 #include <Unknwn.h>
+
 #include <iostream>
 
 #define USE_FBX
+
 #define API HRESULT
+
+typedef unsigned int uint;
+typedef unsigned char uint8;
+typedef HWND WinHandle;
+
 #define DEFINE_ENUM_OPERATORS(ENUM_NAME) \
 inline ENUM_NAME operator|(ENUM_NAME a, ENUM_NAME b) \
 { \
@@ -15,11 +23,6 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 { \
 	return static_cast<ENUM_NAME>(static_cast<int>(a) & static_cast<int>(b)); \
 }
-
-typedef unsigned int uint;
-typedef unsigned char uint8;
-typedef HWND WinHandle;
-
 
 namespace RENDER_MASTER 
 {

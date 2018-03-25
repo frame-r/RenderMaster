@@ -5,10 +5,10 @@
 
 class GLShader : public ICoreShader
 {
-	GLuint _programID;
-	GLuint _vertID;
-	GLuint _geomID;
-	GLuint _fragID;
+	GLuint _programID {0};
+	GLuint _vertID {0};
+	GLuint _geomID {0};
+	GLuint _fragID {0};
 
 public:
 
