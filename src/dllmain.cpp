@@ -1,8 +1,9 @@
 #include "targetver.h"
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
 #include "Core.h"
-#include "CoreClassFactory.h"
 
 
 BOOL APIENTRY DllMain( HMODULE hModule,

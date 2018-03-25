@@ -2,6 +2,8 @@
 #include "Core.h"
 
 extern Core *_pCore;
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
 
 GLMesh::GLMesh(GLuint VAO, GLuint VBO, GLuint IBO, uint vertexNumber, uint indexNumber, MESH_INDEX_FORMAT indexFormat, DRAW_MODE mode):
 	_VAO(VAO), _VBO(VBO), _IBO(IBO),

@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 
+
 class DX11CoreRender : public ICoreRender
 {
 public:

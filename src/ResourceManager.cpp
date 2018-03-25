@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+
 #include "Core.h"
 #include "Model.h"
 
@@ -18,7 +19,6 @@ namespace fs = std::filesystem;
 #endif
 
 extern Core *_pCore;
-
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 

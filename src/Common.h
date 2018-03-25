@@ -4,6 +4,7 @@
 
 #include "Engine.h"
 
+#include <map>
 #include <vector>
 #include <string>
 #include <functional>
@@ -18,25 +19,35 @@ std::basic_string<Char> ToLowerCase(std::basic_string<Char> str)
 	return str;
 }
 
+
 #ifdef _DEBUG
 #define DEFINE_DEBUG_LOG_HELPERS(CORE_REF) \
+	namespace { \
 	template <typename... Arguments> \
 	void DEBUG_LOG(const char *pStr, LOG_TYPE type, Arguments ... args) \
 	{ \
 		CORE_REF->LogFormatted(pStr, type, args...); \
+	} \
 	}
 #else
 #define DEFINE_DEBUG_LOG_HELPERS(CORE_REF) \
+	namespace { \
 	template <typename... Arguments> \
 	void DEBUG_LOG(const char *pStr, LOG_TYPE type, Arguments ... args) \
 	{ \
+	} \
 	}
 #endif
 
 #define DEFINE_LOG_HELPERS(CORE_REF) \
+	namespace { \
 	void LOG(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL) \
 	{ \
 		CORE_REF->Log(pStr, type); \
+	} \
+	void LOG_WARNING(const char *pStr) \
+	{ \
+		CORE_REF->Log(pStr, LOG_TYPE::WARNING); \
 	} \
 	void LOG_FATAL(const char *pStr) \
 	{ \
@@ -61,6 +72,5 @@ std::basic_string<Char> ToLowerCase(std::basic_string<Char> str)
 	void LOG_WARNING_FORMATTED(const char *pStr, Arguments ... args) \
 	{ \
 		CORE_REF->LogFormatted(pStr, LOG_TYPE::WARNING, args...); \
+	} \
 	}
-
-

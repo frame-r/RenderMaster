@@ -2,15 +2,12 @@
 #include "Core.h"
 
 extern Core *_pCore;
-
-Model::Model() : _pMesh(nullptr)
-{
-}
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
 
 Model::Model(ICoreMesh* pMesh) : _pMesh(pMesh)
 {
 }
-
 
 Model::~Model()
 {

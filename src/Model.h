@@ -1,13 +1,13 @@
 #pragma once
 #include "Common.h"
 
+
 class Model : public IModel
 {
 	ICoreMesh *_pMesh;
 
 public:
 
-	Model();
 	Model(ICoreMesh* pMesh);
 	~Model();
 	

@@ -2,12 +2,13 @@
 #include "Core.h"
 
 extern Core *_pCore;
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
 
 DX11CoreRender::DX11CoreRender()
 {
-	_pCore->Log("DX11CoreRender initalized");
+	LOG("DX11CoreRender initalized");
 }
-
 
 DX11CoreRender::~DX11CoreRender()
 {

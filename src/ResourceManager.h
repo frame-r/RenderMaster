@@ -1,9 +1,6 @@
 #pragma once
 #include "Common.h"
 
-#include <vector>
-#include <map>
-
 #ifdef USE_FBX
 #include <fbxsdk.h>
 #endif

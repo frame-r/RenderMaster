@@ -1,20 +1,20 @@
-#include <string>
+#include "GLCoreRender.h"
+
 #include <sstream>
 
 #include <GL\glew.h>
 #include <GL\wglew.h>
 
-#include "GLShader.h"
-#include "GLCoreRender.h"
 #include "Core.h"
+#include "GLShader.h"
 #include "GLMesh.h"
-
-
-extern Core *_pCore;
 
 using string = std::string;
 
-#define LOG_FATAL(msg) _pCore->Log(msg, LOG_TYPE::FATAL);
+extern Core *_pCore;
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
+
 void CHECK_GL_ERRORS()
 {
 	GLenum err = glGetError();
@@ -36,11 +36,11 @@ void CHECK_GL_ERRORS()
 				error = "OpenGL error: " + oss.str();
 			}break;
 		}
-		_pCore->Log(error.c_str(), LOG_TYPE::WARNING);
+		LOG_WARNING(error.c_str());
 	}	
 }
 
-bool GLCoreRender::_check_chader_errors(int id, GLenum constant)
+bool GLCoreRender::_check_shader_errors(int id, GLenum constant)
 {
 	int status;
 
@@ -58,16 +58,16 @@ bool GLCoreRender::_check_chader_errors(int id, GLenum constant)
 		else if (constant == GL_LINK_STATUS)
 			glGetProgramiv(id, GL_INFO_LOG_LENGTH, &length);
 
-		char *buf = new char[length];
+		char *error_message = new char[length];
 
 		if (constant == GL_COMPILE_STATUS)
-			glGetShaderInfoLog(id, length, &length, buf);
+			glGetShaderInfoLog(id, length, &length, error_message);
 		else if (constant == GL_LINK_STATUS)
-			glGetProgramInfoLog(id, length, &length, buf);
+			glGetProgramInfoLog(id, length, &length, error_message);
 
-		_pCore->Log(buf, LOG_TYPE::FATAL);
+		LOG_FATAL(error_message);
 
-		delete buf;
+		delete error_message;
 
 		return false;
 	}
@@ -80,14 +80,14 @@ bool GLCoreRender::_create_shader(GLuint& id, GLenum type, const char** pData, i
 	glShaderSource(_id, numLines, pData, nullptr);
 	glCompileShader(_id);
 
-	if (!_check_chader_errors(_id, GL_COMPILE_STATUS))
+	if (!_check_shader_errors(_id, GL_COMPILE_STATUS))
 	{
 		glDeleteShader(_id);
 		return false;
 	}
 	glAttachShader(programID, _id);
 	glLinkProgram(programID);
-	if (!_check_chader_errors(programID, GL_LINK_STATUS))
+	if (!_check_shader_errors(programID, GL_LINK_STATUS))
 		return false;
 
 	id = _id;
@@ -257,7 +257,7 @@ API GLCoreRender::Init(WinHandle* handle)
 			glGetIntegerv(GL_MINOR_VERSION, &minor);
 			sprintf_s(_log_fbx_buffer, OGLI"%i.%i", major, minor);
 
-			_pCore->Log(_log_fbx_buffer, LOG_TYPE::NORMAL);
+			LOG(_log_fbx_buffer);
 		}
 		else
 		{
@@ -279,7 +279,7 @@ API GLCoreRender::Init(WinHandle* handle)
 
 	CHECK_GL_ERRORS();
 
-	_pCore->Log("GLCoreRender initalized");
+	LOG("GLCoreRender initalized");
 
 	return S_OK;
 }
