@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#define USE_FBX
+//#define USE_FBX
 
 #define API HRESULT
 
@@ -316,6 +316,10 @@ namespace RENDER_MASTER
 	//////////////////////
 	// COM stuff
 	//////////////////////
+	namespace
+	{
+		TCHAR *err = TEXT("success");
+	}
 
 	inline bool GetCore(ICore*& pCore)
 	{
@@ -323,7 +327,8 @@ namespace RENDER_MASTER
 
 		if (FAILED(CoInitialize(NULL)))
 		{
-			std::cout << "Unable to initialize COM" << std::endl;
+			err = TEXT("Unable to initialize COM");
+			std::cout << err << std::endl;
 			return false;
 		}
 
@@ -342,8 +347,11 @@ namespace RENDER_MASTER
 		hr = ::CLSIDFromProgID(szWideProgID, &clsid);
 		if (FAILED(hr))
 		{
+			//TCHAR buf[260];
+			//swprintf(buf, TEXT("Unable to get CLSID from ProgID. HR = %02X"), hr);
+			err = TEXT("Unable to get CLSID from ProgID RenderMaster.Component.1");
 			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << "Unable to get CLSID from ProgID. HR = " << hr << std::endl;
+			std::cout << err << "HR = " << hr << std::endl;
 			return false;
 		}
 
@@ -357,8 +365,9 @@ namespace RENDER_MASTER
 			(void**)&pCFactory);
 		if (FAILED(hr))
 		{
+			err = TEXT("Failed to GetClassObject server instance. HR = ");
 			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << "Failed to GetClassObject server instance. HR = " << hr << std::endl;
+			std::cout << err << hr << std::endl;
 			return false;
 		}
 
@@ -372,8 +381,9 @@ namespace RENDER_MASTER
 
 		if (FAILED(hr))
 		{
+			err = TEXT("Failed to create server instance. HR = ");
 			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << "Failed to create server instance. HR = " << hr << std::endl;
+			std::cout << err << hr << std::endl;
 			return false;
 		}
 
@@ -391,7 +401,8 @@ namespace RENDER_MASTER
 
 		if (FAILED(hr))
 		{
-			std::cout << "QueryInterface() for IMath failed" << std::endl;
+			err = TEXT("QueryInterface() for IID_Core failed");
+			std::cout << err << std::endl;
 			return false;
 		}
 		return true;
