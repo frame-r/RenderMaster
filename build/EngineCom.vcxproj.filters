@@ -29,6 +29,7 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Events.h" />
+    <ClInclude Include="..\src\Filesystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -53,6 +54,8 @@
     <ClCompile Include="..\src\Console.cpp" />
     <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
+    <ClCompile Include="..\src\Filesystem.cpp" />
+    <ClCompile Include="..\src\Common.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />

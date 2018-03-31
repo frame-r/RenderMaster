@@ -1,21 +1,7 @@
 #include "Console.h"
-#include <vector>
 
 using namespace std;
 
-wstring ConvertFromUtf8ToUtf16(const string& str)
-{
-	wstring res;
-	int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
-	if (size > 0)
-	{
-		std::vector<wchar_t> _log_fbx_buffer(size);
-		MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &_log_fbx_buffer[0], size);
-		res.assign(_log_fbx_buffer.begin(), _log_fbx_buffer.end() - 1);
-	}
-
-	return res;
-}
 
 LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -105,10 +91,13 @@ void Console::Init(WinHandle* handle)
 		return;
 	}
 
+	HWND h = 0;
+	if (handle != nullptr)
+		h = *handle;
+
 	_hWnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"ConsoleClass", L"Render Master Console",
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX,
-		1060, 300, 700, 700,
-		*handle, NULL, _hInst, NULL);
+		1060, 300, 700, 700, h, NULL, _hInst, NULL);
 
 	if (!_hWnd)
 	{

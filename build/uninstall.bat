@@ -14,3 +14,5 @@ rem common
 ECHO Unregister CLSID... 
 REG DELETE "HKEY_LOCAL_MACHINE\SOFTWARE\Classes\RenderMaster.Component.1\CLSID" /f
 REG DELETE "HKEY_LOCAL_MACHINE\SOFTWARE\Classes\RenderMaster.Component.1" /f
+
+pause

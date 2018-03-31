@@ -1,7 +1,9 @@
 #pragma once
 #include "Common.h"
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
 
 class Console
 {
@@ -13,8 +15,8 @@ class Console
 	
 	static LRESULT CALLBACK _s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-
 public:
+
 	Console();
 	~Console();
 

@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-//#define USE_FBX
+#define USE_FBX
 
 #define API HRESULT
 
@@ -40,11 +40,9 @@ namespace RENDER_MASTER
 	{
 		WINDOW_FLAG = 0x0000000F, 
 		EXTERN_WINDOW = 0x00000002, // engine uses client's created window		
-
 		GRAPHIC_LIBRARY_FLAG = 0x000000F0,
 		OPENGL45 = 0x00000010,
 		DIRECTX11 = 0x00000020,		
-		
 		CREATE_CONSOLE_FLAG = 0x00000F00,
 		NO_CREATE_CONSOLE = 0x00000100,  // no need create console
 		CREATE_CONSOLE = 0x00000200 // engine should create console		
@@ -69,6 +67,7 @@ namespace RENDER_MASTER
 		virtual API Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* handle) = 0;
 		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API GetDataPath(const char *&pStr) = 0;
+		virtual API GetWorkingPath(const char *&pStr) = 0;
 		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
 		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
 		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
@@ -87,7 +86,8 @@ namespace RENDER_MASTER
 	enum class SUBSYSTEM_TYPE
 	{
 		CORE_RENDER,
-		RESOURCE_MANAGER
+		RESOURCE_MANAGER,
+		FILESYSTEM
 	};
 
 	class ISubSystem
@@ -171,17 +171,6 @@ namespace RENDER_MASTER
 		TRIANGLES,
 	};
 
-	struct MeshDataDesc
-	{
-		MeshDataDesc() : pData(nullptr), number(0), positionOffset(0), positionStride(12),
-			texCoordPresented(false), texCoordOffset(0), texCoordStride(0),
-			normalsPresented(false), normalOffset(0), normalStride(0) {}
-
-		uint8 *pData;
-
-		// number of vertex
-		uint number;
-
 		// At minimum position attribute must be present
 		// Stride is step in bytes to move along the array from vertex to vertex 
 		// Offset also specified in bytes
@@ -200,6 +189,17 @@ namespace RENDER_MASTER
 		// positionOffset = 0, positionStride = 12,
 		// texCoordOffset = vertexNumber * 12, texCoordStride = 8,
 		// normalOffset = vertexNumber * (12 + 8), normalStride = 12
+
+	struct MeshDataDesc
+	{
+		MeshDataDesc() : pData(nullptr), number(0), positionOffset(0), positionStride(12),
+			texCoordPresented(false), texCoordOffset(0), texCoordStride(0),
+			normalsPresented(false), normalOffset(0), normalStride(0) {}
+
+		uint8 *pData;
+
+		// number of vertex
+		uint number;
 
 		uint positionOffset;
 		uint positionStride;
@@ -314,11 +314,49 @@ namespace RENDER_MASTER
 
 	
 	//////////////////////
+	// Filesystem
+	//////////////////////
+
+	enum class FILE_OPEN_MODE
+	{
+		READ = 0b000000000000000000000001,
+		WRITE = 0b000000000000000000000010,
+		APPEND = 0b000000000000000000000100,
+		BINARY = 0b000000000000000000001000,
+	};
+	DEFINE_ENUM_OPERATORS(FILE_OPEN_MODE)
+
+	class IFile
+	{
+	public:
+
+		virtual API Read(uint8 *pMem, uint bytes) = 0;
+		virtual API ReadStr(char *pStr, uint& str_bytes) = 0;
+		virtual API IsEndOfFile(int &eof) = 0;
+		virtual API Write(const uint8 *pMem, uint bytes) = 0;
+		virtual API WriteStr(const char *pStr) = 0;
+		virtual API FileSize(uint &size) = 0;
+		virtual API CloseAndFree() = 0;
+	};
+
+	class IFileSystem : public ISubSystem
+	{
+	public:
+
+		virtual API OpenFile(IFile *&pFile, const char *fullPath, FILE_OPEN_MODE mode) = 0;
+		virtual API FileExist(const char *fullPath, int &exist) = 0;
+		virtual API GetName(const char *&pName) = 0;
+	};
+
+
+	
+	//////////////////////
 	// COM stuff
 	//////////////////////
+
 	namespace
 	{
-		TCHAR *err = TEXT("success");
+		TCHAR *pErrorMessage = TEXT("success");
 	}
 
 	inline bool GetCore(ICore*& pCore)
@@ -327,8 +365,8 @@ namespace RENDER_MASTER
 
 		if (FAILED(CoInitialize(NULL)))
 		{
-			err = TEXT("Unable to initialize COM");
-			std::cout << err << std::endl;
+			pErrorMessage = TEXT("Unable to initialize COM");
+			std::cout << pErrorMessage << std::endl;
 			return false;
 		}
 
@@ -349,9 +387,9 @@ namespace RENDER_MASTER
 		{
 			//TCHAR buf[260];
 			//swprintf(buf, TEXT("Unable to get CLSID from ProgID. HR = %02X"), hr);
-			err = TEXT("Unable to get CLSID from ProgID RenderMaster.Component.1");
+			pErrorMessage = TEXT("Unable to get CLSID from ProgID RenderMaster.Component.1");
 			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << err << "HR = " << hr << std::endl;
+			std::cout << pErrorMessage << "HR = " << hr << std::endl;
 			return false;
 		}
 
@@ -365,9 +403,9 @@ namespace RENDER_MASTER
 			(void**)&pCFactory);
 		if (FAILED(hr))
 		{
-			err = TEXT("Failed to GetClassObject server instance. HR = ");
+			pErrorMessage = TEXT("Failed to GetClassObject server instance. HR = ");
 			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << err << hr << std::endl;
+			std::cout << pErrorMessage << hr << std::endl;
 			return false;
 		}
 
@@ -381,9 +419,9 @@ namespace RENDER_MASTER
 
 		if (FAILED(hr))
 		{
-			err = TEXT("Failed to create server instance. HR = ");
+			pErrorMessage = TEXT("Failed to create server instance. HR = ");
 			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << err << hr << std::endl;
+			std::cout << pErrorMessage << hr << std::endl;
 			return false;
 		}
 
@@ -401,8 +439,8 @@ namespace RENDER_MASTER
 
 		if (FAILED(hr))
 		{
-			err = TEXT("QueryInterface() for IID_Core failed");
-			std::cout << err << std::endl;
+			pErrorMessage = TEXT("QueryInterface() for IID_Core failed");
+			std::cout << pErrorMessage << std::endl;
 			return false;
 		}
 		return true;

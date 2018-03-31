@@ -6,6 +6,7 @@
 #include <GL\wglew.h>
 
 #include "Core.h"
+#include "ResourceManager.h"
 #include "GLShader.h"
 #include "GLMesh.h"
 
@@ -114,6 +115,8 @@ API GLCoreRender::Init(WinHandle* handle)
 {
 	const int major_version = 4;
 	const int minor_version = 5;
+
+	_pCore->GetSubSystem((ISubSystem*&)_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 	_hWnd = *handle;
 
@@ -273,9 +276,11 @@ API GLCoreRender::Init(WinHandle* handle)
 
 	CHECK_GL_ERRORS();
 	
+	ICoreShader *pShader;
+	_pResMan->LoadShader(pShader, "mesh_vertex", nullptr, "mesh_fragment");
+
 	// dbg
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	//glViewport(0, 0, 100, 100);
 
 	CHECK_GL_ERRORS();
 

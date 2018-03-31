@@ -2,6 +2,7 @@
 #include "Common.h"
 
 class Wnd;
+class FileSystem;
 class ResourceManager;
 class Console;
 class EventLog;
@@ -11,14 +12,16 @@ DEFINE_GUID(CLSID_Core,
 
 class Core : public ICore
 {
+	char *_pDataPath{nullptr};
+	char *_pWorkingPath{nullptr};
 	long _lRef{0};
 	Console *_pConsole{nullptr};
 	Wnd *_pWnd{nullptr};
+	FileSystem *_pfSystem{nullptr};
 	ResourceManager *_pResMan{nullptr};
 	ICoreRender *_pCoreRender{nullptr};
 	EventLog *_evLog{nullptr};
 	CRITICAL_SECTION _cs;
-	char *_pDataPath;
 	std::vector<IInitCallback *> _init_callbacks;
 	std::vector<IUpdateCallback *> _update_callbacks;
 	std::string _getFullLogPath();
@@ -28,7 +31,7 @@ class Core : public ICore
 
 public:
 
-	Core();
+	Core(const char *workingPath);
 	~Core();
 
 	template <typename... Arguments>
@@ -42,6 +45,7 @@ public:
 	API Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* handle) override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataPath(const char *&pStr) override;
+	API GetWorkingPath(const char *&pStr) override;
 	API Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL) override;
 	API AddInitCallback(IInitCallback *pCallback) override;
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;

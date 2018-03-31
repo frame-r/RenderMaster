@@ -8,8 +8,11 @@
 
 class ResourceManager : public IResourceManager
 {
-	ICoreRender *_pCoreRender;
+	std::string dataPath;
+	std::string workingPath;
 	CRITICAL_SECTION _cs;
+	ICoreRender *_pCoreRender;
+	IFileSystem *_pFilesystem;
 	std::map<DEFAULT_MODEL, ICoreMesh*> _default_meshes;
 
 	struct TResource

@@ -1,5 +1,6 @@
 #include "ResourceManager.h"
 
+#include "Filesystem.h"
 #include "Core.h"
 #include "Model.h"
 
@@ -22,6 +23,8 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+#define SHADER_DIR "src\\shaders"
+
 #ifdef USE_FBX
 
 #ifdef IOS_REF
@@ -38,8 +41,8 @@ void ResourceManager::_InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pS
 		LOG_FATAL("[FBX]Error: Unable to create FBX Manager!");
 		return;
 	}
-	else
-		LOG_NORMAL_FORMATTED("[FBX]Autodesk FBX SDK version %s", pManager->GetVersion());
+
+	LOG_NORMAL_FORMATTED("[FBX]Autodesk FBX SDK version %s", pManager->GetVersion());
 
 	FbxIOSettings* ios = FbxIOSettings::Create(pManager, IOSROOT);
 	pManager->SetIOSettings(ios);
@@ -271,31 +274,42 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgress
 
 	return false;
 }
+#endif
+
 const char * ResourceManager::_resourceToStr(IResource * pRes)
 {
 	RES_TYPE type;
+
 	pRes->GetType(type);
 
 	switch (type)
 	{
-	case RENDER_MASTER::RES_TYPE::CORE_MESH:
-		return "CORE_MESH";
-	case RENDER_MASTER::RES_TYPE::CORE_TEXTURE:
-		return "CORE_TEXTURE";
-	case RENDER_MASTER::RES_TYPE::CORE_SHADER:
-		return "CORE_SHADER";
-	case RENDER_MASTER::RES_TYPE::GAMEOBJECT:
-		return "GAMEOBJECT";
-	case RENDER_MASTER::RES_TYPE::MODEL:
-		return "MODEL";
+		case RENDER_MASTER::RES_TYPE::CORE_MESH:
+			return "CORE_MESH";
+		case RENDER_MASTER::RES_TYPE::CORE_TEXTURE:
+			return "CORE_TEXTURE";
+		case RENDER_MASTER::RES_TYPE::CORE_SHADER:
+			return "CORE_SHADER";
+		case RENDER_MASTER::RES_TYPE::GAMEOBJECT:
+			return "GAMEOBJECT";
+		case RENDER_MASTER::RES_TYPE::MODEL:
+			return "MODEL";
 	}
 
 	return nullptr;
 }
-#endif
 
 ResourceManager::ResourceManager()
-{		
+{
+	_pCore->GetSubSystem((ISubSystem*&)_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
+
+	const char *pDataPath = nullptr;
+	_pCore->GetDataPath(pDataPath);
+	dataPath = string(pDataPath);
+
+	const char *pWorkingPath = nullptr;
+	_pCore->GetWorkingPath(pWorkingPath);
+	workingPath = string(pWorkingPath);
 }
 
 ResourceManager::~ResourceManager()
@@ -304,9 +318,12 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::Init()
 {
+	InitializeCriticalSection(&_cs);
+
 	_pCore->GetSubSystem((ISubSystem*&)_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
 
-	InitializeCriticalSection(&_cs);
+	// create default plane
+	ICoreMesh *pPlane;
 
 	float vertex[12] = 
 	{
@@ -321,8 +338,6 @@ void ResourceManager::Init()
 		0, 1, 2,
 		0, 2, 3
 	};
-
-	ICoreMesh *pPlane;
 	
 	MeshDataDesc desc;
 	desc.pData = reinterpret_cast<uint8*>(vertex);
@@ -350,9 +365,7 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 {
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
 	
-	const char *pDataPath;
-	_pCore->GetDataPath(pDataPath);
-	string fullPath = string(pDataPath) + '\\' + string(pFileName);
+	string fullPath = dataPath + '\\' + string(pFileName);
 
 #ifdef USE_FBX
 	if (file_ext == "fbx")
@@ -387,7 +400,6 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 API ResourceManager::GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type)
 {
 	auto it = _default_meshes.find(type);
-
 	ICoreMesh *pCoreMesh = it->second;
 	Model *_pModel = new Model(pCoreMesh);
 	
@@ -399,9 +411,43 @@ API ResourceManager::GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type)
 	return S_OK;
 }
 
-API ResourceManager::LoadShader(ICoreShader *& pShader, const char * pVertName, const char * pGeomName, const char * pFragName)
+API ResourceManager::LoadShader(ICoreShader *&pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
-	return E_NOTIMPL;
+	IFile *pFile = nullptr;
+	uint file_size = 0;
+	string shader_text;
+	int file_exist = 0;
+	
+	string shader_path = workingPath + '\\' + SHADER_DIR + '\\' + pVertName + ".shader";
+
+	_pFilesystem->FileExist(shader_path.c_str(), file_exist);
+
+	if (!file_exist)
+	{
+		pShader = nullptr;
+		return S_FALSE;
+	}
+
+	_pFilesystem->OpenFile(pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+
+	pFile->FileSize(file_size);
+
+	shader_text.resize(file_size);
+
+	pFile->Read((uint8 *)shader_text.c_str(), file_size);
+
+	pFile->CloseAndFree();
+
+	// TODO!!!!
+	//auto lines_vec = make_lines_vec(fvert);
+	//auto ptrs_vec = make_ptr_vector(lines);
+
+	//ShaderDesc desc;
+	//desc.
+
+
+
+	return S_OK;
 }
 
 API ResourceManager::AddToList(IResource *pResource)

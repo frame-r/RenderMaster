@@ -1,4 +1,5 @@
 #include "Core.h"
+#include "Filesystem.h"
 #include "ResourceManager.h"
 #include "DX11CoreRender.h"
 #include "GLCoreRender.h"
@@ -32,9 +33,13 @@ void Core::_s_main_loop()
 	_pCore->_main_loop();
 }
 
-Core::Core()
+Core::Core(const char *workingDir)
 {
+	_pWorkingPath = new char[strlen(workingDir) + 1];
+	strcpy(_pWorkingPath, workingDir);
+
 	_pCore = this;
+
 	InitializeCriticalSection(&_cs);
 }
 
@@ -44,8 +49,10 @@ Core::~Core()
 	delete _pResMan;
 	if (_pWnd) delete _pWnd;
 	if (_pConsole) delete _pConsole;
+	delete _pfSystem;
 	delete _evLog;
 	delete _pDataPath;
+	delete[] _pWorkingPath;
 }
 
 API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
@@ -53,16 +60,30 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
 	const bool createWindow = (flags & INIT_FLAGS::WINDOW_FLAG) != INIT_FLAGS::EXTERN_WINDOW;
 	const bool createConsole = (flags & INIT_FLAGS::CREATE_CONSOLE_FLAG) == INIT_FLAGS::CREATE_CONSOLE;
 
-	auto size = strlen(pDataPath);
-	_pDataPath = new char[size + 1];
-	strcpy(_pDataPath, pDataPath);
+	std::string absoluteDataPath = pDataPath;
+	if (is_relative(pDataPath))
+	{
+		absoluteDataPath = make_absolute(pDataPath, _pWorkingPath);
+	}
+	_pDataPath = new char[absoluteDataPath.size() + 1];
+	strcpy(_pDataPath, absoluteDataPath.c_str());
 
 	std::ofstream log(_getFullLogPath());
 	log.close();
 
 	_evLog = new EventLog;
 
+	if (createConsole)
+	{
+		_pConsole = new Console;
+		_pConsole->Init(nullptr);
+	}
+
 	Log("Start initialization engine...");
+	LogFormatted("Working path: %s", LOG_TYPE::NORMAL, _pWorkingPath);
+	LogFormatted("Data path: %s", LOG_TYPE::NORMAL, _pDataPath);
+
+	_pfSystem = new FileSystem(pDataPath);
 
 	_pResMan = new ResourceManager;	
 
@@ -71,13 +92,6 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
 		_pWnd = new Wnd(_s_main_loop);
 		_pWnd->CreateAndShow();
 	}
-
-	if (createConsole)
-	{
-		_pConsole = new Console;
-		_pConsole->Init(_pWnd->handle());
-	}
-
 
 	if ((flags & INIT_FLAGS::GRAPHIC_LIBRARY_FLAG) == INIT_FLAGS::DIRECTX11)
 		_pCoreRender = new DX11CoreRender;
@@ -96,13 +110,16 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
 	return S_OK;
 }
 
-API Core::GetSubSystem(ISubSystem *& pSubSystem, SUBSYSTEM_TYPE type)
+API Core::GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type)
 {
 	switch(type)
 	{
 		case SUBSYSTEM_TYPE::CORE_RENDER: pSubSystem = _pCoreRender; break;
 		case SUBSYSTEM_TYPE::RESOURCE_MANAGER: pSubSystem = _pResMan; break;
-		default: return S_FALSE;
+		case SUBSYSTEM_TYPE::FILESYSTEM: pSubSystem = _pfSystem; break;
+		default:
+			LOG_WARNING("Core::GetSubSystem() unknown subsystem");
+			return S_FALSE;
 	}
 
 	return S_OK;
@@ -111,6 +128,12 @@ API Core::GetSubSystem(ISubSystem *& pSubSystem, SUBSYSTEM_TYPE type)
 API Core::GetDataPath(const char *&pStr)
 {
 	pStr = _pDataPath;
+	return S_OK;
+}
+
+API Core::GetWorkingPath(const char *& pStr)
+{
+	pStr = _pWorkingPath;
 	return S_OK;
 }
 
@@ -164,10 +187,6 @@ API Core::CloseEngine()
 	_pResMan->FreeAllResources();
 
 	_pCoreRender->Free();
-
-#ifdef _DEBUG
-	//system("pause");
-#endif
 
 	if (_pConsole)
 		_pConsole->Destroy();
@@ -251,11 +270,30 @@ STDMETHODIMP CoreClassFactory::CreateInstance(LPUNKNOWN pUnk, REFIID riid, void 
 	HRESULT hr;
 
 	*ppvObj = 0;
+	
+	// Recieve working path from Registry
 
-	pCore = new Core;
+	std::wstring BaseKey(TEXT("SOFTWARE\\Classes\\CLSID\\{A889F560-58E4-11d0-A68A-0000837E3100}\\InProcServer32\\"));
+	std::wstring Value(TEXT("InstalledDir"));
+
+	DWORD buffer_size = 0;
+
+	RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), Value.c_str(), RRF_RT_REG_SZ, 0, nullptr, // pvData == nullptr ? Request buffer size
+		&buffer_size);
+
+	const DWORD buffer_length = buffer_size / sizeof(WCHAR); // length in WCHAR's
+	WCHAR* const text_buffer = new WCHAR[buffer_length];
+
+	RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), Value.c_str(), RRF_RT_REG_SZ, 0, text_buffer, &buffer_size);
+
+	std::string working_dir = ConvertFromUtf16ToUtf8(text_buffer);
+
+	pCore = new Core(working_dir.c_str());
+
+	delete[] text_buffer;
 
 	if (pCore == 0)
-		return(E_OUTOFMEMORY);
+		return E_OUTOFMEMORY;
 
 	hr = pCore->QueryInterface(riid, ppvObj);
 

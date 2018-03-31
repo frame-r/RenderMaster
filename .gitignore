@@ -12,4 +12,5 @@
 *.7z
 
 bin/
+resources/log.txt
 
