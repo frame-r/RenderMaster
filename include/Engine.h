@@ -356,7 +356,7 @@ namespace RENDER_MASTER
 
 	namespace
 	{
-		TCHAR *pErrorMessage = TEXT("success");
+		const TCHAR *pErrorMessage = TEXT("success");
 	}
 
 	inline bool GetCore(ICore*& pCore)
