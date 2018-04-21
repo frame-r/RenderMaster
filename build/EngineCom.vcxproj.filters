@@ -30,6 +30,8 @@
     </ClInclude>
     <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
+    <ClInclude Include="..\src\Render.h" />
+    <ClInclude Include="..\src\SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -56,9 +58,17 @@
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\Common.cpp" />
+    <ClCompile Include="..\src\Render.cpp" />
+    <ClCompile Include="..\src\SceneManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />
+    <None Include="..\src\shaders\mesh_fragment.shader">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\src\shaders\mesh_vertex.shader">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CoreRender">
@@ -69,6 +79,9 @@
     </Filter>
     <Filter Include="CoreRender\GL">
       <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{c9775c28-7faf-4e08-bfda-6fe74bbf010d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

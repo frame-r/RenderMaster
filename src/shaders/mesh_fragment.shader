@@ -29,7 +29,7 @@ void main()
 
 	#ifdef ENG_INPUT_TEXCOORD
 		vec4 tex = texture(texture0, UV);
-		tex.rgb = pow(tex.rgb, vec3(2.2f, 2.2f, 2.2f));
+		tex.rgb = pow(tex.rgb, vec3(2.2f));
 	#endif
 
 	#ifdef ENG_ALPHA_TEST && ENG_INPUT_TEXCOORD
@@ -48,5 +48,4 @@ void main()
 	#endif
 
 	color_out.rgb = pow(color_out.rgb, vec3(1.0f / 2.2f));
-
 }

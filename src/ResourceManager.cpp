@@ -138,17 +138,24 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	return lStatus;
 }
 
-void ResourceManager::_LogSceneHierarchy(FbxScene * pScene)
+void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 {
+	vector<ICoreMesh *> meshes;
+
 	LOG("[FBX]Scene hierarchy:");
 
 	FbxNode* lRootNode = pScene->GetRootNode();
 
 	for (int i = 0; i < lRootNode->GetChildCount(); i++)
-		_LogNode(lRootNode->GetChild(i), 0);
+		_LogNode(meshes, lRootNode->GetChild(i), 0);
+
+	if (meshes.size() == 0)
+		LOG_WARNING("[FBX]No meshes loaded");
+
+	pModel = new Model(meshes);
 }
 
-void ResourceManager::_LogNode(FbxNode* pNode, int depth)
+void ResourceManager::_LogNode(vector<ICoreMesh *>& meshes, FbxNode* pNode, int depth)
 {
 	FbxString lString = "[FBX]";
 
@@ -158,7 +165,7 @@ void ResourceManager::_LogNode(FbxNode* pNode, int depth)
 
 	switch (lAttributeType)
 	{
-	case FbxNodeAttribute::eMesh:		lString += " (eMesh)"; LOG(lString.Buffer()); _LogNodeTransform(pNode, depth + 3); _LogMesh((FbxMesh*)pNode->GetNodeAttribute(), depth + 3); break;
+		case FbxNodeAttribute::eMesh:		lString += " (eMesh)"; LOG(lString.Buffer()); _LogNodeTransform(pNode, depth + 3); _LogMesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), depth + 3); break;
 		case FbxNodeAttribute::eMarker:		lString += " (eMarker)"; LOG(lString.Buffer()); break;
 		case FbxNodeAttribute::eSkeleton:	lString += " (eSkeleton)"; LOG(lString.Buffer()); break;
 		case FbxNodeAttribute::eNurbs:		lString += " (eNurbs)"; LOG(lString.Buffer()); break;
@@ -170,7 +177,7 @@ void ResourceManager::_LogNode(FbxNode* pNode, int depth)
 	}
 
 	for (int i = 0; i < pNode->GetChildCount(); i++)
-		_LogNode(pNode->GetChild(i), depth + 1);
+		_LogNode(meshes, pNode->GetChild(i), depth + 1);
 }
 
 void add_tabs(FbxString& buff, int tabs)
@@ -179,18 +186,139 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void ResourceManager::_LogMesh(FbxMesh *pMesh, int tabs)
+void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, int tabs)
 {
-	int cp = pMesh->GetControlPointsCount();
-	int pc = pMesh->GetPolygonCount();
-	int normal_layers = pMesh->GetElementNormalCount();
-	int uv_layers = pMesh->GetElementUVCount();
-	int tangent_layers = pMesh->GetElementTangentCount();
-	int binormal_layers = pMesh->GetElementBinormalCount();
+	int control_points_count = pMesh->GetControlPointsCount();
+	int polygon_count = pMesh->GetPolygonCount();
+	int normal_element_count = pMesh->GetElementNormalCount();
+	int uv_layer_count = pMesh->GetElementUVCount();
+	int tangent_layers_count = pMesh->GetElementTangentCount();
+	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
-	LOG_FORMATTED("[FBX]ControlPoints=%d PolygonCount=%d NormalLayers=%d UVLayers=%d TangentLayers=%d BinormalLayers=%d", cp, pc, normal_layers, uv_layers, tangent_layers, binormal_layers);
+	LOG_FORMATTED("[FBX]ControlPoints=%d PolygonCount=%d NormalLayers=%d UVLayers=%d TangentLayers=%d BinormalLayers=%d", control_points_count, polygon_count, normal_element_count, uv_layer_count, tangent_layers_count, binormal_layers_count);
 
-	for (int i = 0; i< normal_layers; i++)
+	struct Vertex
+	{
+		float x, y, z;
+		float n_x, n_y, n_z;
+	};
+
+	vector<Vertex> vertecies;
+	vertecies.reserve(polygon_count * 3);
+
+	FbxVector4* p_control_points = pMesh->GetControlPoints();
+
+	int global_vert_id = 0;
+
+	for (int i = 0; i < polygon_count; i++)
+	{
+		int polygon_size = pMesh->GetPolygonSize(i);
+
+		for (int t = 0; t < polygon_size - 2; t++) // triangulate large polygons
+			for (int j = 0; j < 3; j++)
+			{
+				Vertex v;
+
+				int vert_idx = t + j;
+				if (j == 0)
+					vert_idx = 0;
+
+				int fbx_idx = pMesh->GetPolygonVertex(i, vert_idx);
+
+				// position
+				FbxVector4 lCurrentVertex = p_control_points[fbx_idx];
+				v.x = (float)lCurrentVertex[0];
+				v.y = (float)lCurrentVertex[1];
+				v.z = (float)lCurrentVertex[2];
+
+				// normal
+				if (normal_element_count)
+				{
+					FbxGeometryElementNormal* pNormals = pMesh->GetElementNormal(0);
+					FbxVector4 norm;
+
+					switch (pNormals->GetMappingMode())
+					{
+						case FbxGeometryElement::eByControlPoint:
+						{
+							switch (pNormals->GetReferenceMode())
+							{
+								case FbxGeometryElement::eDirect:
+									norm = pNormals->GetDirectArray().GetAt(i);
+								break;
+								case FbxGeometryElement::eIndexToDirect:
+								{
+									int id = pNormals->GetIndexArray().GetAt(i);
+									norm = pNormals->GetDirectArray().GetAt(id);
+								}
+								break;
+								default:
+								break;
+							}
+						}
+						break;
+
+						case FbxGeometryElement::eByPolygonVertex:
+						{
+							switch (pNormals->GetReferenceMode())
+							{
+							case FbxGeometryElement::eDirect:
+								norm = pNormals->GetDirectArray().GetAt(global_vert_id + vert_idx);
+								break;
+							case FbxGeometryElement::eIndexToDirect:
+							{
+								int id = pNormals->GetIndexArray().GetAt(global_vert_id + vert_idx);
+								norm = pNormals->GetDirectArray().GetAt(id);
+							}
+							break;
+							default:
+								break;
+							}
+
+						}
+						break;
+
+						default: assert(false);
+							break;
+					}
+					
+					v.n_x = (float)norm[0];
+					v.n_y = (float)norm[1];
+					v.n_z = (float)norm[2];
+				}
+				
+				vertecies.push_back(v);
+			}
+
+		global_vert_id += polygon_size;
+	}
+
+	// create mesh on VRAM
+	ICoreMesh *pCoreMesh = nullptr;
+	
+	MeshDataDesc vertDesc;
+	vertDesc.pData = reinterpret_cast<uint8*>(&vertecies[0]);
+	vertDesc.number = global_vert_id;
+	vertDesc.positionOffset = 0;
+	vertDesc.positionStride = sizeof(Vertex);
+	vertDesc.normalsPresented = normal_element_count > 0;
+	vertDesc.normalOffset = 4;
+	vertDesc.normalStride = sizeof(Vertex);
+
+	MeshIndexDesc indexDesc;
+	indexDesc.pData = nullptr;
+	indexDesc.number = 0;
+
+	_pCoreRender->CreateMesh((ICoreMesh*&)pCoreMesh, vertDesc, indexDesc, DRAW_MODE::TRIANGLES);
+
+	if (pCoreMesh)
+		meshes.push_back(pCoreMesh);
+	else
+		LOG_WARNING("[FBX]ResourceManager::_LogMesh(): Can not create mesh");
+
+
+	/*
+	for (int i = 0; i< normal_element_count; i++)
 	{
 		FbxString buff = "[FBX]";
 		FbxGeometryElementNormal* ns = pMesh->GetElementNormal(i);
@@ -218,6 +346,7 @@ void ResourceManager::_LogMesh(FbxMesh *pMesh, int tabs)
 
 		LOG(buff.Buffer());
 	}	
+	*/
 }
 
 void ResourceManager::_LogNodeTransform(FbxNode* pNode, int tabs)
@@ -247,7 +376,7 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgress
 		LOG_FATAL("[FBX]An error occurred while loading the scene...");
 	else
 	{
-		_LogSceneHierarchy(lScene);
+		_LogSceneHierarchy(pModel, lScene);
 		//_ImportScene(lScene);
 	}
 
@@ -272,7 +401,7 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgress
 	//	}
 	//}
 
-	return false;
+	return true;
 }
 #endif
 
@@ -301,15 +430,18 @@ const char * ResourceManager::_resourceToStr(IResource * pRes)
 
 ResourceManager::ResourceManager()
 {
+	const char *pString = nullptr;
+
 	_pCore->GetSubSystem((ISubSystem*&)_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
+	
+	_pCore->GetDataDir(pString);
+	dataPath = string(pString);
 
-	const char *pDataPath = nullptr;
-	_pCore->GetDataPath(pDataPath);
-	dataPath = string(pDataPath);
+	_pCore->GetWorkingDir(pString);
+	workingDir = string(pString);
 
-	const char *pWorkingPath = nullptr;
-	_pCore->GetWorkingPath(pWorkingPath);
-	workingPath = string(pWorkingPath);
+	_pCore->GetInstalledDir(pString);
+	installedDir = string(pString);
 }
 
 ResourceManager::~ResourceManager()
@@ -363,9 +495,9 @@ API ResourceManager::GetName(const char *&pName)
 
 API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pProgress)
 {
-	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
-	
+	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));	
 	string fullPath = dataPath + '\\' + string(pFileName);
+	uint meshNumber;
 
 #ifdef USE_FBX
 	if (file_ext == "fbx")
@@ -383,71 +515,77 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 
 	AddToList(pModel);
 
-	uint meshNumber;
 	pModel->GetMeshesNumber(meshNumber);
 
 	for (uint i = 0; i < meshNumber; i++)
 	{
 		ICoreMesh *pMesh;
-
 		pModel->GetMesh(pMesh, i);
 		AddToList(pMesh);
 	}
+
+	ISceneManager *pSceneManager;
+	_pCore->GetSubSystem((ISubSystem*&)pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
+	pSceneManager->AddGameObject(pModel);
 	
 	return S_OK;
 }
+//
+//API ResourceManager::GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type)
+//{
+//	auto it = _default_meshes.find(type);
+//	ICoreMesh *pCoreMesh = it->second;
+//	Model *_pModel = new Model(pCoreMesh);
+//	
+//	AddToList(pCoreMesh);
+//	AddToList(_pModel);
+//
+//	pModel = _pModel;
+//
+//	return S_OK;
+//}
 
-API ResourceManager::GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type)
+API ResourceManager::LoadShaderText(ShaderText &pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
-	auto it = _default_meshes.find(type);
-	ICoreMesh *pCoreMesh = it->second;
-	Model *_pModel = new Model(pCoreMesh);
-	
-	AddToList(pCoreMesh);
-	AddToList(_pModel);
-
-	pModel = _pModel;
-
-	return S_OK;
-}
-
-API ResourceManager::LoadShader(ICoreShader *&pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
-{
-	IFile *pFile = nullptr;
-	uint file_size = 0;
-	string shader_text;
-	int file_exist = 0;
-	
-	string shader_path = workingPath + '\\' + SHADER_DIR + '\\' + pVertName + ".shader";
-
-	_pFilesystem->FileExist(shader_path.c_str(), file_exist);
-
-	if (!file_exist)
+	auto load_shader = [=](char **&text, int& num_lines, const char *pName) -> API
 	{
-		pShader = nullptr;
-		return S_FALSE;
-	}
+		IFile *pFile = nullptr;
+		uint file_size = 0;
+		string shader_text;
+		int file_exist = 0;
+		
+		string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pName + ".shader";
 
-	_pFilesystem->OpenFile(pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+		_pFilesystem->FileExist(shader_path.c_str(), file_exist);
 
-	pFile->FileSize(file_size);
+		if (!file_exist)
+		{
+			LOG_WARNING_FORMATTED("ResourceManager::LoadShaderText(): File doesn't exist '%s'", shader_path.c_str());
+			return S_FALSE;
+		}
 
-	shader_text.resize(file_size);
+		_pFilesystem->OpenFile(pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
 
-	pFile->Read((uint8 *)shader_text.c_str(), file_size);
+		pFile->FileSize(file_size);
 
-	pFile->CloseAndFree();
+		shader_text.resize(file_size);
 
-	// TODO!!!!
-	//auto lines_vec = make_lines_vec(fvert);
-	//auto ptrs_vec = make_ptr_vector(lines);
+		pFile->Read((uint8 *)shader_text.c_str(), file_size);
+		pFile->CloseAndFree();
 
-	//ShaderDesc desc;
-	//desc.
+		split_by_eol(text, num_lines, shader_text);
+		
+		return S_OK;
+	};
 
+	auto ret =	load_shader(pShader.pVertText, pShader.vertNumLines, pVertName);
 
+	if (pGeomName)
+		ret &=	load_shader(pShader.pGeomText, pShader.geomNumLines, pGeomName);
 
-	return S_OK;
+	ret &=		load_shader(pShader.pFragText, pShader.fragNumLines, pFragName);
+
+	return ret;
 }
 
 API ResourceManager::AddToList(IResource *pResource)

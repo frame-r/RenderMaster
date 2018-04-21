@@ -6,6 +6,8 @@
 #include "Wnd.h"
 #include "Console.h"
 #include "Events.h"
+#include "Render.h"
+#include "SceneManager.h"
 
 #include <iostream>
 #include <fstream>
@@ -16,16 +18,15 @@ DEFINE_LOG_HELPERS(_pCore)
 
 std::string Core::_getFullLogPath()
 {
-	return std::string(_pDataPath) + "\\log.txt";
+	return std::string(_pDataDir) + "\\log.txt";
 }
 
 void Core::_main_loop()
 {
 	for (IUpdateCallback *callback : _update_callbacks)
-		callback->Update();
+		callback->Update();	
 
-	_pCoreRender->Clear();
-	_pCoreRender->SwapBuffers();
+	_pRender->RenderFrame();
 }
 
 void Core::_s_main_loop()
@@ -33,10 +34,13 @@ void Core::_s_main_loop()
 	_pCore->_main_loop();
 }
 
-Core::Core(const char *workingDir)
+Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 {
-	_pWorkingPath = new char[strlen(workingDir) + 1];
-	strcpy(_pWorkingPath, workingDir);
+	_pWorkingDir = new char[strlen(pWorkingDir) + 1];
+	strcpy(_pWorkingDir, pWorkingDir);
+
+	_pInstalledDir = new char[strlen(pInstalledDir) + 1];
+	strcpy(_pInstalledDir, pInstalledDir);
 
 	_pCore = this;
 
@@ -45,14 +49,17 @@ Core::Core(const char *workingDir)
 
 Core::~Core()
 {
+	delete _pSceneManager;
+	delete _pRender;
 	delete _pCoreRender;
 	delete _pResMan;
 	if (_pWnd) delete _pWnd;
 	if (_pConsole) delete _pConsole;
 	delete _pfSystem;
 	delete _evLog;
-	delete _pDataPath;
-	delete[] _pWorkingPath;
+	delete _pDataDir;
+	delete _pWorkingDir;
+	delete _pInstalledDir;
 }
 
 API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
@@ -63,10 +70,10 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
 	std::string absoluteDataPath = pDataPath;
 	if (is_relative(pDataPath))
 	{
-		absoluteDataPath = make_absolute(pDataPath, _pWorkingPath);
+		absoluteDataPath = make_absolute(pDataPath, _pWorkingDir);
 	}
-	_pDataPath = new char[absoluteDataPath.size() + 1];
-	strcpy(_pDataPath, absoluteDataPath.c_str());
+	_pDataDir = new char[absoluteDataPath.size() + 1];
+	strcpy(_pDataDir, absoluteDataPath.c_str());
 
 	std::ofstream log(_getFullLogPath());
 	log.close();
@@ -80,8 +87,8 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
 	}
 
 	Log("Start initialization engine...");
-	LogFormatted("Working path: %s", LOG_TYPE::NORMAL, _pWorkingPath);
-	LogFormatted("Data path: %s", LOG_TYPE::NORMAL, _pDataPath);
+	LogFormatted("Working path: %s", LOG_TYPE::NORMAL, _pWorkingDir);
+	LogFormatted("Data path: %s", LOG_TYPE::NORMAL, _pDataDir);
 
 	_pfSystem = new FileSystem(pDataPath);
 
@@ -105,6 +112,10 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
 
 	_pResMan->Init();
 
+	_pSceneManager = new SceneManager();
+
+	_pRender = new Render(_pCoreRender);
+
 	Log("Engine initialized");
 
 	return S_OK;
@@ -117,6 +128,7 @@ API Core::GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type)
 		case SUBSYSTEM_TYPE::CORE_RENDER: pSubSystem = _pCoreRender; break;
 		case SUBSYSTEM_TYPE::RESOURCE_MANAGER: pSubSystem = _pResMan; break;
 		case SUBSYSTEM_TYPE::FILESYSTEM: pSubSystem = _pfSystem; break;
+		case SUBSYSTEM_TYPE::SCENE_MANAGER: pSubSystem = _pSceneManager; break;
 		default:
 			LOG_WARNING("Core::GetSubSystem() unknown subsystem");
 			return S_FALSE;
@@ -125,15 +137,21 @@ API Core::GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type)
 	return S_OK;
 }
 
-API Core::GetDataPath(const char *&pStr)
+API Core::GetDataDir(const char *&pStr)
 {
-	pStr = _pDataPath;
+	pStr = _pDataDir;
 	return S_OK;
 }
 
-API Core::GetWorkingPath(const char *& pStr)
+API Core::GetWorkingDir(const char *& pStr)
 {
-	pStr = _pWorkingPath;
+	pStr = _pWorkingDir;
+	return S_OK;
+}
+
+API Core::GetInstalledDir(const char *& pStr)
+{
+	pStr = _pInstalledDir;
 	return S_OK;
 }
 
@@ -183,6 +201,8 @@ API Core::Start()
 API Core::CloseEngine()
 {
 	Log("Core::CloseEngine()");
+
+	_pSceneManager->Free();
 
 	_pResMan->FreeAllResources();
 
@@ -268,29 +288,32 @@ STDMETHODIMP CoreClassFactory::CreateInstance(LPUNKNOWN pUnk, REFIID riid, void 
 {
 	Core* pCore;
 	HRESULT hr;
-
 	*ppvObj = 0;
 	
-	// Recieve working path from Registry
+	// Recieve working directory from Registry
+	
+	auto get_registry_value = [](TCHAR *key) -> std::string
+	{
+		std::wstring BaseKey(TEXT("SOFTWARE\\Classes\\CLSID\\{A889F560-58E4-11d0-A68A-0000837E3100}\\InProcServer32\\"));
 
-	std::wstring BaseKey(TEXT("SOFTWARE\\Classes\\CLSID\\{A889F560-58E4-11d0-A68A-0000837E3100}\\InProcServer32\\"));
-	std::wstring Value(TEXT("InstalledDir"));
+		DWORD buffer_size = 0;
 
-	DWORD buffer_size = 0;
+		RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), key, RRF_RT_REG_SZ, 0, nullptr, // pvData == nullptr ? Request buffer size
+			&buffer_size);
 
-	RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), Value.c_str(), RRF_RT_REG_SZ, 0, nullptr, // pvData == nullptr ? Request buffer size
-		&buffer_size);
+		const DWORD buffer_length = buffer_size / sizeof(WCHAR); // length in WCHAR's
+		std::unique_ptr<WCHAR[]> text_buffer (new WCHAR[buffer_length]);
 
-	const DWORD buffer_length = buffer_size / sizeof(WCHAR); // length in WCHAR's
-	WCHAR* const text_buffer = new WCHAR[buffer_length];
+		RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), key, RRF_RT_REG_SZ, 0, text_buffer.get(), &buffer_size);
 
-	RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), Value.c_str(), RRF_RT_REG_SZ, 0, text_buffer, &buffer_size);
+		return ConvertFromUtf16ToUtf8(text_buffer.get());
+	};
+	
+	std::string workingDir = get_registry_value(TEXT("WorkingDir"));
+	std::string installedDir = get_registry_value(TEXT("InstalledDir"));
 
-	std::string working_dir = ConvertFromUtf16ToUtf8(text_buffer);
+	pCore = new Core(workingDir.c_str(), installedDir.c_str());
 
-	pCore = new Core(working_dir.c_str());
-
-	delete[] text_buffer;
 
 	if (pCore == 0)
 		return E_OUTOFMEMORY;

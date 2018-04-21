@@ -75,10 +75,10 @@ bool GLCoreRender::_check_shader_errors(int id, GLenum constant)
 	return true;
 }
 
-bool GLCoreRender::_create_shader(GLuint& id, GLenum type, const char** pData, int numLines, GLuint programID)
+bool GLCoreRender::_create_shader(GLuint& id, GLenum type, char** pText, int numLines, GLuint programID)
 {
 	GLuint _id = glCreateShader(type);
-	glShaderSource(_id, numLines, pData, nullptr);
+	glShaderSource(_id, numLines, pText, nullptr);
 	glCompileShader(_id);
 
 	if (!_check_shader_errors(_id, GL_COMPILE_STATUS))
@@ -99,7 +99,6 @@ bool GLCoreRender::_create_shader(GLuint& id, GLenum type, const char** pData, i
 GLCoreRender::GLCoreRender()
 {
 }
-
 
 GLCoreRender::~GLCoreRender()
 {
@@ -276,9 +275,6 @@ API GLCoreRender::Init(WinHandle* handle)
 
 	CHECK_GL_ERRORS();
 	
-	ICoreShader *pShader;
-	_pResMan->LoadShader(pShader, "mesh_vertex", nullptr, "mesh_fragment");
-
 	// dbg
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -294,8 +290,7 @@ API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshInde
 	const int indexes = indexDesc.format != MESH_INDEX_FORMAT::NOTHING;
 	const int texCoords = dataDesc.texCoordPresented;
 	const int normals = dataDesc.normalsPresented;
-	const int bytes = (12 + texCoords * 8 + normals * 12) * dataDesc.number;
-	
+	const int bytes = (12 + texCoords * 8 + normals * 12) * dataDesc.number;	
 	GLuint vao = 0, vbo = 0, ibo = 0;
 
 	CHECK_GL_ERRORS();
@@ -340,35 +335,35 @@ API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshInde
 
 	CHECK_GL_ERRORS();
 
-	GLMesh *pGlMesh = new GLMesh(vao, vbo, ibo, dataDesc.number, indexDesc.number, indexDesc.format, mode);
-	pMesh = pGlMesh;
+	GLMesh *pGLMesh = new GLMesh(vao, vbo, ibo, dataDesc.number, indexDesc.number, indexDesc.format, mode);
+	pMesh = pGLMesh;
 
 	return S_OK;
 }
 
-API GLCoreRender::CreateShader(ICoreShader*& pShader, ShaderDesc& shaderDesc)
+API GLCoreRender::CreateShader(ICoreShader*& pShader, ShaderText& shaderDesc)
 {
 	GLuint vertID = 0;
 	GLuint geomID = 0;
 	GLuint fragID = 0;
 	GLuint programID = glCreateProgram();
 	
-	if (!_create_shader(vertID, GL_VERTEX_SHADER, shaderDesc.pVertStr, shaderDesc.vertNumLines, programID))
+	if (!_create_shader(vertID, GL_VERTEX_SHADER, shaderDesc.pVertText, shaderDesc.vertNumLines, programID))
 	{
 		glDeleteProgram(programID);
 		return S_FALSE;
 	}
 	
-	if (shaderDesc.pGeomStr != nullptr && shaderDesc.geomNumLines > 0)
+	if (shaderDesc.pGeomText != nullptr && shaderDesc.geomNumLines > 0)
 	{
-		if (!_create_shader(geomID, GL_GEOMETRY_SHADER, shaderDesc.pGeomStr, shaderDesc.geomNumLines, programID))
+		if (!_create_shader(geomID, GL_GEOMETRY_SHADER, shaderDesc.pGeomText, shaderDesc.geomNumLines, programID))
 		{
 			glDeleteProgram(programID);
 			return S_FALSE;
 		}
 	}
 	
-	if (!_create_shader(fragID, GL_FRAGMENT_SHADER, shaderDesc.pFragStr, shaderDesc.fragNumLines, programID))
+	if (!_create_shader(fragID, GL_FRAGMENT_SHADER, shaderDesc.pFragText, shaderDesc.fragNumLines, programID))
 	{
 		glDeleteProgram(programID);
 		return S_FALSE;

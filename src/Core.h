@@ -6,32 +6,37 @@ class FileSystem;
 class ResourceManager;
 class Console;
 class EventLog;
+class Render;
+class SceneManager;
 
 DEFINE_GUID(CLSID_Core,
 	0xa889f560, 0x58e4, 0x11d0, 0xa6, 0x8a, 0x0, 0x0, 0x83, 0x7e, 0x31, 0x0);
 
 class Core : public ICore
 {
-	char *_pDataPath{nullptr};
-	char *_pWorkingPath{nullptr};
+	char *_pDataDir{nullptr};
+	char *_pWorkingDir{nullptr};
+	char *_pInstalledDir{nullptr};
 	long _lRef{0};
 	Console *_pConsole{nullptr};
 	Wnd *_pWnd{nullptr};
 	FileSystem *_pfSystem{nullptr};
 	ResourceManager *_pResMan{nullptr};
 	ICoreRender *_pCoreRender{nullptr};
+	Render *_pRender{nullptr};
+	SceneManager *_pSceneManager{nullptr};
 	EventLog *_evLog{nullptr};
 	CRITICAL_SECTION _cs;
 	std::vector<IInitCallback *> _init_callbacks;
 	std::vector<IUpdateCallback *> _update_callbacks;
-	std::string _getFullLogPath();
 
+	std::string _getFullLogPath();
 	void _main_loop();
 	void static _s_main_loop();
 
 public:
 
-	Core(const char *workingPath);
+	Core(const char *workingDir, const char *installedDir);
 	~Core();
 
 	template <typename... Arguments>
@@ -44,8 +49,9 @@ public:
 
 	API Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* handle) override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
-	API GetDataPath(const char *&pStr) override;
-	API GetWorkingPath(const char *&pStr) override;
+	API GetDataDir(const char *&pStr) override;
+	API GetWorkingDir(const char *&pStr) override;
+	API GetInstalledDir(const char *&pStr) override;
 	API Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL) override;
 	API AddInitCallback(IInitCallback *pCallback) override;
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;

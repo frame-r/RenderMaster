@@ -4,11 +4,11 @@
 
 class Model : public IModel
 {
-	ICoreMesh *_pMesh;
+	std::vector<ICoreMesh *> _meshes;
 
 public:
 
-	Model(ICoreMesh* pMesh);
+	Model(std::vector<ICoreMesh *>& meshes);
 	~Model();
 	
 	API GetMesh(ICoreMesh*& pMesh, uint idx) override;

@@ -10,16 +10,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	if (GetCore(pCore))
 	{
 		IResourceManager *resMan;
-		IModel *pModel, *pModel1, *pModel2;
+		IModel *pModel;
+		ISceneManager *sm;
 
 		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "..\\..\\..\\resources", nullptr);
 				
 		pCore->GetSubSystem((ISubSystem*&)resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+		pCore->GetSubSystem((ISubSystem*&)sm, SUBSYSTEM_TYPE::SCENE_MANAGER);
 			
 		resMan->LoadModel(pModel, "box.fbx", nullptr);
-		resMan->GetDefaultModel(pModel1, DEFAULT_MODEL::PLANE);
-		resMan->GetDefaultModel(pModel2, DEFAULT_MODEL::PLANE);
 		
+		uint n;
+		sm->GetGameObjectsNumber(n);
+		
+		pCore->Start();
+
 		pCore->CloseEngine();
 
 		FreeCore(pCore);

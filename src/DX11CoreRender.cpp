@@ -30,7 +30,7 @@ HRESULT DX11CoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, Me
 	return E_NOTIMPL;
 }
 
-API DX11CoreRender::CreateShader(ICoreShader *& pShader, ShaderDesc & shaderDesc)
+API DX11CoreRender::CreateShader(ICoreShader *& pShader, ShaderText & shaderDesc)
 {
 	return E_NOTIMPL;
 }

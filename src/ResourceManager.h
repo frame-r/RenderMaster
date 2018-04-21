@@ -9,10 +9,11 @@
 class ResourceManager : public IResourceManager
 {
 	std::string dataPath;
-	std::string workingPath;
+	std::string workingDir;
+	std::string installedDir;
 	CRITICAL_SECTION _cs;
-	ICoreRender *_pCoreRender;
-	IFileSystem *_pFilesystem;
+	ICoreRender *_pCoreRender{nullptr};
+	IFileSystem *_pFilesystem{nullptr};
 	std::map<DEFAULT_MODEL, ICoreMesh*> _default_meshes;
 
 	struct TResource
@@ -27,14 +28,13 @@ class ResourceManager : public IResourceManager
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
-	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
-
-	void _LogSceneHierarchy(FbxScene* pScene);
-	void _LogNode(FbxNode* pNode, int pDepth);
-	void _LogMesh(FbxMesh *pMesh, int tabs);
-	void _LogNodeTransform(FbxNode* pNode, int tabs);
-
 	bool _FBXLoad(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pPregress);
+
+	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
+	void _LogSceneHierarchy(IModel *&pModel, FbxScene* pScene);
+	void _LogNode(std::vector<ICoreMesh *>& meshes, FbxNode* pNode, int pDepth);
+	void _LogMesh(std::vector<ICoreMesh *>& meshes, FbxMesh *pMesh, int tabs);
+	void _LogNodeTransform(FbxNode* pNode, int tabs);		
 	#endif
 
 	static const char* _resourceToStr(IResource* pRes);
@@ -47,8 +47,7 @@ public:
 	void Init();
 	
 	API LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
-	API LoadShader(ICoreShader *&pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
-	API GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type) override;
+	API LoadShaderText(ShaderText &pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
 	API AddToList(IResource *pResource) override;
 	API GetRefNumber(IResource *pResource, uint& number) override;
 	API DecrementRef(IResource *pResource) override;

@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+// comment this to build without FBX SDK
 #define USE_FBX
 
 #define API HRESULT
@@ -66,8 +67,9 @@ namespace RENDER_MASTER
 
 		virtual API Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* handle) = 0;
 		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
-		virtual API GetDataPath(const char *&pStr) = 0;
-		virtual API GetWorkingPath(const char *&pStr) = 0;
+		virtual API GetDataDir(const char *&pStr) = 0;
+		virtual API GetWorkingDir(const char *&pStr) = 0;
+		virtual API GetInstalledDir(const char *&pStr) = 0;
 		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
 		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
 		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
@@ -85,9 +87,10 @@ namespace RENDER_MASTER
 
 	enum class SUBSYSTEM_TYPE
 	{
+		FILESYSTEM,
 		CORE_RENDER,
 		RESOURCE_MANAGER,
-		FILESYSTEM
+		SCENE_MANAGER
 	};
 
 	class ISubSystem
@@ -101,7 +104,6 @@ namespace RENDER_MASTER
 		CORE_MESH,
 		CORE_TEXTURE,
 		CORE_SHADER,
-		RT_CORE_SHADER,
 		GAMEOBJECT,
 		MODEL
 	};
@@ -171,24 +173,24 @@ namespace RENDER_MASTER
 		TRIANGLES,
 	};
 
-		// At minimum position attribute must be present
-		// Stride is step in bytes to move along the array from vertex to vertex 
-		// Offset also specified in bytes
-		// Stride and offset defines two case:
+	// At minimum position attribute must be present
+	// Stride is step in bytes to move along the array from vertex to vertex 
+	// Offset also specified in bytes
+	// Stride and offset defines two case:
 
-		// 1) Interleaved
-		//
-		// x1, y1, z1, UVx1, UVy1, Nx1, Ny1, Nz1,   x2, y2, z2, UVx2, UVy2, Nx2, Ny2, Nz2, ...
-		// positionOffset = 0, positionStride = 32,
-		// texCoordOffset = 12, texCoordStride = 32,
-		// normalOffset = 20, normalStride = 32
+	// 1) Interleaved
+	//
+	// x1, y1, z1, UVx1, UVy1, Nx1, Ny1, Nz1,   x2, y2, z2, UVx2, UVy2, Nx2, Ny2, Nz2, ...
+	// positionOffset = 0, positionStride = 32,
+	// texCoordOffset = 12, texCoordStride = 32,
+	// normalOffset = 20, normalStride = 32
 
-		// 2) Tightly packed attributes
-		//
-		// x1, y2, z1, x2, y2, z2, ...   UVx1, UVy1, UVx2, UVy2, ...  Nx1, Ny1, Nz1, Nx2, Ny2, Nz2, ...
-		// positionOffset = 0, positionStride = 12,
-		// texCoordOffset = vertexNumber * 12, texCoordStride = 8,
-		// normalOffset = vertexNumber * (12 + 8), normalStride = 12
+	// 2) Tightly packed attributes
+	//
+	// x1, y2, z1, x2, y2, z2, ...   UVx1, UVy1, UVx2, UVy2, ...  Nx1, Ny1, Nz1, Nx2, Ny2, Nz2, ...
+	// positionOffset = 0, positionStride = 12,
+	// texCoordOffset = vertexNumber * 12, texCoordStride = 8,
+	// normalOffset = vertexNumber * (12 + 8), normalStride = 12
 
 	struct MeshDataDesc
 	{
@@ -235,16 +237,16 @@ namespace RENDER_MASTER
 		virtual API GetNumberOfVertex(uint &vertex) = 0;
 	};
 
-	struct ShaderDesc
+	struct ShaderText
 	{
-		const char** pVertStr;
-		int vertNumLines;
+		char** pVertText{nullptr};
+		int vertNumLines{0};
 
-		const char** pGeomStr;
-		int geomNumLines;
+		char** pGeomText{nullptr};
+		int geomNumLines{0};
 
-		const char** pFragStr;
-		int fragNumLines;
+		char** pFragText{nullptr};
+		int fragNumLines{0};
 	};
 
 	class ICoreShader : public IResource
@@ -260,7 +262,7 @@ namespace RENDER_MASTER
 	public:
 		virtual API Init(WinHandle* handle) = 0;
 		virtual API CreateMesh(ICoreMesh *& pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) = 0;
-		virtual API CreateShader(ICoreShader *&pShader, ShaderDesc& shaderDesc) = 0;
+		virtual API CreateShader(ICoreShader *&pShader, ShaderText& shaderDesc) = 0;
 		virtual API Clear() = 0;
 		virtual API SwapBuffers() = 0;
 		virtual API Free() = 0;
@@ -280,6 +282,17 @@ namespace RENDER_MASTER
 	public:
 		virtual API GetMesh(ICoreMesh *&pMesh, uint idx) = 0;
 		virtual API GetMeshesNumber(uint& number) = 0;
+	};
+
+	//////////////////////
+	// Scene Manager
+	//////////////////////
+	class ISceneManager : public ISubSystem
+	{
+	public:
+		virtual API AddGameObject(IGameObject* pGameObject) = 0;
+		virtual API GetGameObjectsNumber(uint& number) = 0;
+		virtual API GetGameObject(IGameObject *&pGameObject, uint idx) = 0;
 	};
 
 
@@ -303,8 +316,7 @@ namespace RENDER_MASTER
 	public:
 
 		virtual API LoadModel(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
-		virtual API LoadShader(ICoreShader *&pShader, const char* pVertName, const char* pGeomName, const char* pFragName) = 0;
-		virtual API GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type) = 0;
+		virtual API LoadShaderText(ShaderText &pShader, const char* pVertName, const char* pGeomName, const char* pFragName) = 0;
 		virtual API AddToList(IResource *pResource) = 0;
 		virtual API GetRefNumber(IResource *pResource, uint& number) = 0;
 		virtual API DecrementRef(IResource *pResource) = 0;
