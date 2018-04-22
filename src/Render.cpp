@@ -404,7 +404,6 @@ void Render::save_text(list<string>& l, const string&& str)
 
 ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 {
-	ShaderText sh;
 	ICoreShader *pShader = nullptr;
 
 	auto get_shader_preprocessed = [&](const char **&ppTextOut, int &num_lines, const char **ppTextIn, const string&& fileName) -> void
@@ -426,14 +425,16 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 		num_lines = (int)l.size();
 	};
 
-	auto it = _shader_pool.find(req);
+	auto it = _shaders_pool.find(req);
 
-	if (it != _shader_pool.end())
+	if (it != _shaders_pool.end())
 	{
 		pShader = it->second;
 	}
 	else
 	{
+		ShaderText sh;
+
 		get_shader_preprocessed(sh.pVertText, sh.vertNumLines, pStandardShaderText.pVertText, "out_v.shader");
 		get_shader_preprocessed(sh.pFragText, sh.fragNumLines, pStandardShaderText.pFragText, "out_f.shader");
 
@@ -444,7 +445,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 
 		_pResMan->AddToList(pShader);
 
-		_shader_pool.emplace(req, pShader);
+		_shaders_pool.emplace(req, pShader);
 	}
 
 	return pShader;

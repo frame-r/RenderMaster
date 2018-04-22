@@ -12,6 +12,11 @@ DEFINE_ENUM_OPERATORS(INPUT_ATTRUBUTE)
 
 class Render
 {
+	ICoreRender *_pCoreRender{nullptr};
+	ISceneManager *_pSceneMan{nullptr};
+	IResourceManager *_pResMan{nullptr};
+	IFileSystem *_fsystem{nullptr};
+	ShaderText pStandardShaderText;
 
 	struct ShaderRequirement
 	{
@@ -27,15 +32,7 @@ class Render
 			return attributes == other.attributes && alphaTest == other.alphaTest;
 		}
 	};
-
-	ICoreRender *_pCoreRender{nullptr};
-	ISceneManager *_pSceneMan{nullptr};
-	IResourceManager *_pResMan{nullptr};
-	IFileSystem *_fsystem{nullptr};
-
-	ShaderText pStandardShaderText;
-
-	std::unordered_map<ShaderRequirement, ICoreShader*, ShaderRequirement> _shader_pool;
+	std::unordered_map<ShaderRequirement, ICoreShader*, ShaderRequirement> _shaders_pool;
 
 	void save_text(std::list<std::string>& l, const std::string&& str);
 	ICoreShader* _get_shader(const ShaderRequirement &req);
