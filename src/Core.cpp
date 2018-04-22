@@ -62,7 +62,7 @@ Core::~Core()
 	delete _pInstalledDir;
 }
 
-API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
+API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle)
 {
 	const bool createWindow = (flags & INIT_FLAGS::WINDOW_FLAG) != INIT_FLAGS::EXTERN_WINDOW;
 	const bool createConsole = (flags & INIT_FLAGS::CREATE_CONSOLE_FLAG) == INIT_FLAGS::CREATE_CONSOLE;
@@ -90,7 +90,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* externHandle)
 	LogFormatted("Working path: %s", LOG_TYPE::NORMAL, _pWorkingDir);
 	LogFormatted("Data path: %s", LOG_TYPE::NORMAL, _pDataDir);
 
-	_pfSystem = new FileSystem(pDataPath);
+	_pfSystem = new FileSystem(_pDataDir);
 
 	_pResMan = new ResourceManager;	
 

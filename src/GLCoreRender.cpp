@@ -75,7 +75,7 @@ bool GLCoreRender::_check_shader_errors(int id, GLenum constant)
 	return true;
 }
 
-bool GLCoreRender::_create_shader(GLuint& id, GLenum type, char** pText, int numLines, GLuint programID)
+bool GLCoreRender::_create_shader(GLuint& id, GLenum type, const char** pText, int numLines, GLuint programID)
 {
 	GLuint _id = glCreateShader(type);
 	glShaderSource(_id, numLines, pText, nullptr);
@@ -110,7 +110,7 @@ API GLCoreRender::GetName(const char *& pTxt)
 	return S_OK;
 }
 
-API GLCoreRender::Init(WinHandle* handle)
+API GLCoreRender::Init(const WinHandle* handle)
 {
 	const int major_version = 4;
 	const int minor_version = 5;
@@ -285,7 +285,7 @@ API GLCoreRender::Init(WinHandle* handle)
 	return S_OK;
 }
 
-API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode)
+API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, DRAW_MODE mode)
 {
 	const int indexes = indexDesc.format != MESH_INDEX_FORMAT::NOTHING;
 	const int texCoords = dataDesc.texCoordPresented;
@@ -341,7 +341,7 @@ API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshInde
 	return S_OK;
 }
 
-API GLCoreRender::CreateShader(ICoreShader*& pShader, ShaderText& shaderDesc)
+API GLCoreRender::CreateShader(ICoreShader*& pShader, const ShaderText& shaderDesc)
 {
 	GLuint vertID = 0;
 	GLuint geomID = 0;

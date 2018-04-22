@@ -26,7 +26,7 @@ std::string make_absolute(const char* pRelDataPath, const char* pWorkingPath)
 }
 
 
-void split_by_eol(char **&text, int &num_lines, const std::string& str)
+void split_by_eol(const char **&text, int &num_lines, const std::string& str)
 {
 	char **ret;
 	char *p_begin_line = const_cast<char*>(&str[0]);
@@ -63,14 +63,14 @@ void split_by_eol(char **&text, int &num_lines, const std::string& str)
 		ret[line][0] = '\0';
 	}
 
-	text = ret;
+	text = const_cast<const char**>(ret);
 	num_lines = number_of_lines;
 }
 
-void delete_ptr_ptr_char(char **pText)
+void delete_char_pp(const char **pText)
 {
 	if (!pText) return;
-	char **c = pText;
+	char **c = const_cast<char**>(pText);
 	while(*c)
 	{
 		delete *c;

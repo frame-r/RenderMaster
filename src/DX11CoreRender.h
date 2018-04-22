@@ -9,9 +9,9 @@ public:
 	DX11CoreRender();
 	~DX11CoreRender();
 	
-	API Init(WinHandle* handle) override;
-	API CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) override;
-	API CreateShader(ICoreShader *&pShader, ShaderText& shaderDesc) override;
+	API Init(const WinHandle* handle) override;
+	API CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, DRAW_MODE mode) override;
+	API CreateShader(ICoreShader *&pShader, const ShaderText& shaderDesc) override;
 	API Clear() override;
 	API SwapBuffers() override;
 	API Free() override;

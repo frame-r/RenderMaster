@@ -67,7 +67,7 @@ Console::~Console()
 {
 }
 
-void Console::Init(WinHandle* handle)
+void Console::Init(const WinHandle* handle)
 {
 	HINSTANCE _hInst = GetModuleHandle(NULL);
 

@@ -15,16 +15,16 @@ class GLCoreRender : public ICoreRender
 	IResourceManager *_pResMan{nullptr};
 
 	bool _check_shader_errors(int id, GLenum constant);
-	bool _create_shader(GLuint &id, GLenum type, char** pText, int numLines, GLuint programID);
+	bool _create_shader(GLuint &id, GLenum type, const char** pText, int numLines, GLuint programID);
 
 public:
 
 	GLCoreRender();
 	~GLCoreRender();
 		
-	API Init(WinHandle* handle) override;
-	API CreateMesh(ICoreMesh *&pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) override;
-	API CreateShader(ICoreShader *&pShader, ShaderText& shaderDesc) override;
+	API Init(const WinHandle* handle) override;
+	API CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, DRAW_MODE mode) override;
+	API CreateShader(ICoreShader *&pShader, const ShaderText& shaderDesc) override;
 	API Clear() override;
 	API SwapBuffers() override;
 	API Free() override;

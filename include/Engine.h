@@ -65,7 +65,7 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* handle) = 0;
+		virtual API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* handle) = 0;
 		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API GetDataDir(const char *&pStr) = 0;
 		virtual API GetWorkingDir(const char *&pStr) = 0;
@@ -135,7 +135,7 @@ namespace RENDER_MASTER
 	class ILogEventSubscriber
 	{
 	public:
-		virtual API Call(const char *pStr, LOG_TYPE type) = 0;
+		virtual API Call(const char *pMessage, LOG_TYPE type) = 0;
 	};
 
 	class ILogEvent
@@ -239,13 +239,13 @@ namespace RENDER_MASTER
 
 	struct ShaderText
 	{
-		char** pVertText{nullptr};
+		const char** pVertText{nullptr};
 		int vertNumLines{0};
 
-		char** pGeomText{nullptr};
+		const char** pGeomText{nullptr};
 		int geomNumLines{0};
 
-		char** pFragText{nullptr};
+		const char** pFragText{nullptr};
 		int fragNumLines{0};
 	};
 
@@ -260,9 +260,9 @@ namespace RENDER_MASTER
 	class ICoreRender : public ISubSystem
 	{
 	public:
-		virtual API Init(WinHandle* handle) = 0;
-		virtual API CreateMesh(ICoreMesh *& pMesh, MeshDataDesc &dataDesc, MeshIndexDesc &indexDesc, DRAW_MODE mode) = 0;
-		virtual API CreateShader(ICoreShader *&pShader, ShaderText& shaderDesc) = 0;
+		virtual API Init(const WinHandle* handle) = 0;
+		virtual API CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, DRAW_MODE mode) = 0;
+		virtual API CreateShader(ICoreShader *&pShader, const ShaderText& shaderDesc) = 0;
 		virtual API Clear() = 0;
 		virtual API SwapBuffers() = 0;
 		virtual API Free() = 0;

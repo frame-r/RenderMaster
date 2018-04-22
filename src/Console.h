@@ -20,7 +20,7 @@ public:
 	Console();
 	~Console();
 
-	void Init(WinHandle* handle);
+	void Init(const WinHandle* handle);
 	void Destroy();
 	void OutputTxt(const char* pStr);
 };

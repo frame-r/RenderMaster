@@ -47,7 +47,7 @@ public:
 		Log(buf, type);
 	}
 
-	API Init(INIT_FLAGS flags, const char *pDataPath, WinHandle* handle) override;
+	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* handle) override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataDir(const char *&pStr) override;
 	API GetWorkingDir(const char *&pStr) override;
