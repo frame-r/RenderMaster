@@ -177,14 +177,14 @@ namespace RENDER_MASTER
 	// Stride is step in bytes to move along the array from vertex to vertex 
 	// Offset also specified in bytes
 	// Stride and offset defines two case:
-
+	//
 	// 1) Interleaved
 	//
 	// x1, y1, z1, UVx1, UVy1, Nx1, Ny1, Nz1,   x2, y2, z2, UVx2, UVy2, Nx2, Ny2, Nz2, ...
 	// positionOffset = 0, positionStride = 32,
 	// texCoordOffset = 12, texCoordStride = 32,
 	// normalOffset = 20, normalStride = 32
-
+	//
 	// 2) Tightly packed attributes
 	//
 	// x1, y2, z1, x2, y2, z2, ...   UVx1, UVy1, UVx2, UVy2, ...  Nx1, Ny1, Nz1, Nx2, Ny2, Nz2, ...
@@ -240,12 +240,10 @@ namespace RENDER_MASTER
 	struct ShaderText
 	{
 		const char** pVertText{nullptr};
-		int vertNumLines{0};
-
 		const char** pGeomText{nullptr};
-		int geomNumLines{0};
-
 		const char** pFragText{nullptr};
+		int vertNumLines{0};
+		int geomNumLines{0};
 		int fragNumLines{0};
 	};
 
@@ -273,8 +271,7 @@ namespace RENDER_MASTER
 	// Game Objects
 	//////////////////////
 	class IGameObject : public IResource
-	{
-		
+	{		
 	};
 
 	class IModel : public IGameObject

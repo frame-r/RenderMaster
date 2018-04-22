@@ -40,9 +40,10 @@ public:
 	~Core();
 
 	template <typename... Arguments>
-	void LogFormatted(const char *pStr, LOG_TYPE type, Arguments ... args)
+	void LogFormatted(const char *pStr, LOG_TYPE type, Arguments ...args)
 	{
-		char buf[300];
+		static char buf[1000];
+		assert(strlen(pStr) < 1000);
 		sprintf_s(buf, pStr, args...);
 		Log(buf, type);
 	}

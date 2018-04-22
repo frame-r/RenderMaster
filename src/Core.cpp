@@ -36,15 +36,15 @@ void Core::_s_main_loop()
 
 Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 {
+	_pCore = this;
+
+	InitializeCriticalSection(&_cs);
+
 	_pWorkingDir = new char[strlen(pWorkingDir) + 1];
 	strcpy(_pWorkingDir, pWorkingDir);
 
 	_pInstalledDir = new char[strlen(pInstalledDir) + 1];
-	strcpy(_pInstalledDir, pInstalledDir);
-
-	_pCore = this;
-
-	InitializeCriticalSection(&_cs);
+	strcpy(_pInstalledDir, pInstalledDir);	
 }
 
 Core::~Core()
@@ -86,9 +86,10 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 		_pConsole->Init(nullptr);
 	}
 
+	LogFormatted("Working dir: %s", LOG_TYPE::NORMAL, _pWorkingDir);
+	LogFormatted("Installed dir: %s", LOG_TYPE::NORMAL, _pInstalledDir);
+	LogFormatted("Data dir: %s", LOG_TYPE::NORMAL, _pDataDir);
 	Log("Start initialization engine...");
-	LogFormatted("Working path: %s", LOG_TYPE::NORMAL, _pWorkingDir);
-	LogFormatted("Data path: %s", LOG_TYPE::NORMAL, _pDataDir);
 
 	_pfSystem = new FileSystem(_pDataDir);
 

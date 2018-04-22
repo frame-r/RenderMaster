@@ -1,7 +1,6 @@
 #include "Render.h"
 #include "Core.h"
 #include <list>
-#include <assert.h>
 
 using std::string;
 using std::list;
@@ -101,7 +100,7 @@ string Preprocessor::get_next_str(strit& it, strit str_end)
 	}
 
 	assert(false); // invalid string
-	return false;
+	return string();
 }
 
 bool Preprocessor::evaluate_define_value(strit& it, strit str_end)
@@ -361,6 +360,7 @@ list<string> make_lines_list(const char **text)
 	list<string> ret;
 
 	char **c = const_cast<char**>(text);
+
 	while (*c)
 	{
 		ret.push_back(string(*c));
@@ -372,13 +372,11 @@ list<string> make_lines_list(const char **text)
 
 const char** make_char_pp(const list<string>& lines)
 {
-	char **ret;
-	int i = 0;
-
-	ret = new char*[lines.size() + 1];
+	char **ret = new char*[lines.size() + 1];	 
 
 	memset(ret, 0, (lines.size() + 1) * sizeof(char*));
 
+	int i = 0;
 	for (auto it = lines.begin(); it != lines.end(); it++)
 	{		
 		ret[i] = new char[it->size() + 1];
@@ -409,7 +407,7 @@ ICoreShader* Render::_get_shader(INPUT_ATTRUBUTE attributes)
 	ShaderText sh;
 	ICoreShader *pShader = nullptr;
 
-	auto get_shader_preprocessed = [](const char **&ppTextOut, int &num_lines, const char **ppTextIn, const string&& fileOut) -> void
+	auto get_shader_preprocessed = [](const char **&ppTextOut, int &num_lines, const char **ppTextIn, const string&& fileName) -> void
 	{
 		list<string> l = make_lines_list(ppTextIn);
 
@@ -420,7 +418,7 @@ ICoreShader* Render::_get_shader(INPUT_ATTRUBUTE attributes)
 		proc.run(l);
 
 		// save to file
-		//save_text(l, std::forward<const string>(fileOut));
+		//save_text(l, std::forward<const string>(fileName));
 
 		ppTextOut = make_char_pp(l);
 		num_lines = (int)l.size();

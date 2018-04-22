@@ -9,6 +9,7 @@
 #include <list>
 #include <string>
 #include <functional>
+#include <assert.h>
 
 
 using namespace RENDER_MASTER;
