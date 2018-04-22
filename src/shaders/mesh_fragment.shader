@@ -33,7 +33,7 @@ void main()
 	#endif
 
 	#ifdef ENG_ALPHA_TEST && ENG_INPUT_TEXCOORD
-		if (tex.a <= 0.5)
+		if (tex.a < 0.5f)
 			discard;
 	#endif
 
