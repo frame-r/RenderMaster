@@ -402,19 +402,21 @@ void Render::save_text(list<string>& l, const string&& str)
 	pFile->CloseAndFree();
 }
 
-ICoreShader* Render::_get_shader(INPUT_ATTRUBUTE attributes)
+ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 {
 	ShaderText sh;
 	ICoreShader *pShader = nullptr;
 
-	auto get_shader_preprocessed = [](const char **&ppTextOut, int &num_lines, const char **ppTextIn, const string&& fileName) -> void
+	auto get_shader_preprocessed = [&](const char **&ppTextOut, int &num_lines, const char **ppTextIn, const string&& fileName) -> void
 	{
 		list<string> l = make_lines_list(ppTextIn);
 
 		Preprocessor proc;
-		//proc.set_define("ENG_ALPHA_TEST");
-		//proc.set_define("ENG_INPUT_NORMAL");
-		//proc.set_define("ENG_INPUT_TEXCOORD");
+
+		if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) proc.set_define("ENG_INPUT_NORMAL");
+		if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) proc.set_define("ENG_INPUT_TEXCOORD");
+		if (req.alphaTest) proc.set_define("ENG_ALPHA_TEST");
+
 		proc.run(l);
 
 		// save to file
@@ -424,15 +426,26 @@ ICoreShader* Render::_get_shader(INPUT_ATTRUBUTE attributes)
 		num_lines = (int)l.size();
 	};
 
-	get_shader_preprocessed(sh.pVertText, sh.vertNumLines, pStandardShaderText.pVertText, "out_v.shader");
-	get_shader_preprocessed(sh.pFragText, sh.fragNumLines, pStandardShaderText.pFragText, "out_f.shader");
+	auto it = _shader_pool.find(req);
 
-	_pCoreRender->CreateShader(pShader, sh);
+	if (it != _shader_pool.end())
+	{
+		pShader = it->second;
+	}
+	else
+	{
+		get_shader_preprocessed(sh.pVertText, sh.vertNumLines, pStandardShaderText.pVertText, "out_v.shader");
+		get_shader_preprocessed(sh.pFragText, sh.fragNumLines, pStandardShaderText.pFragText, "out_f.shader");
 
-	delete_char_pp(sh.pVertText);
-	delete_char_pp(sh.pFragText);
+		_pCoreRender->CreateShader(pShader, sh);
 
-	_pResMan->AddToList(pShader);
+		delete_char_pp(sh.pVertText);
+		delete_char_pp(sh.pFragText);
+
+		_pResMan->AddToList(pShader);
+
+		_shader_pool.emplace(req, pShader);
+	}
 
 	return pShader;
 }
@@ -444,7 +457,10 @@ Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 	_pCore->GetSubSystem((ISubSystem*&)_fsystem, SUBSYSTEM_TYPE::FILESYSTEM);
 
 	_pResMan->LoadShaderText(pStandardShaderText, "mesh_vertex", nullptr, "mesh_fragment");
-	_get_shader(INPUT_ATTRUBUTE::NORMAL);
+
+	//dbg
+	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
+	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
 }
 
 
