@@ -14,7 +14,9 @@ Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 
 Render::~Render()
 {
-	//TODO!!
+	delete_ptr_ptr_char(pStandardShaderText.pVertText);
+	delete_ptr_ptr_char(pStandardShaderText.pGeomText);
+	delete_ptr_ptr_char(pStandardShaderText.pFragText);
 }
 
 void Render::RenderFrame()

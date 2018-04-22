@@ -14,10 +14,9 @@ class Render
 	ICoreRender *_pCoreRender{nullptr};
 	ISceneManager *_pSceneMan{nullptr};
 	IResourceManager *_pResMan{nullptr};
-
 	ShaderText pStandardShaderText;
 
-	ICoreShader* _get_shader(INPUT_ATTRUBUTE attributes, bool texture);
+	ICoreShader* _get_shader(INPUT_ATTRUBUTE attributes);
 
 public:
 

@@ -65,5 +65,18 @@ void split_by_eol(char **&text, int &num_lines, const std::string& str)
 
 	text = ret;
 	num_lines = number_of_lines;
-};
+}
+
+void delete_ptr_ptr_char(char **pText)
+{
+	if (!pText) return;
+	char **c = pText;
+	while(*c)
+	{
+		delete *c;
+		*c = nullptr;
+		c++;
+	}
+	delete pText;
+}
 

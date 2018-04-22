@@ -100,3 +100,4 @@ inline std::wstring ConvertFromUtf8ToUtf16(const std::string& str)
 bool is_relative(const char *pPath);
 std::string make_absolute(const char *pRelDataPath, const char *pWorkingPath);
 void split_by_eol(char **&text, int &num_lines, const std::string& str);
+void delete_ptr_ptr_char(char **pText);
