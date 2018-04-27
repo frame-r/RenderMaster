@@ -547,18 +547,18 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 
 API ResourceManager::LoadShaderText(ShaderText &pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
-	auto load_shader = [=](const char **&text, int& num_lines, const char *pName) -> API
+	auto load_shader = [=](const char **&textOut, int& numLinesOut, const char *pName) -> API
 	{
 		IFile *pFile = nullptr;
-		uint file_size = 0;
-		string shader_text;
-		int file_exist = 0;
+		uint fileSize = 0;
+		string textIn;
+		int filseExist = 0;
 		
 		string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pName + ".shader";
 
-		_pFilesystem->FileExist(shader_path.c_str(), file_exist);
+		_pFilesystem->FileExist(shader_path.c_str(), filseExist);
 
-		if (!file_exist)
+		if (!filseExist)
 		{
 			LOG_WARNING_FORMATTED("ResourceManager::LoadShaderText(): File doesn't exist '%s'", shader_path.c_str());
 			return S_FALSE;
@@ -566,14 +566,14 @@ API ResourceManager::LoadShaderText(ShaderText &pShader, const char *pVertName, 
 
 		_pFilesystem->OpenFile(pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
 
-		pFile->FileSize(file_size);
+		pFile->FileSize(fileSize);
 
-		shader_text.resize(file_size);
+		textIn.resize(fileSize);
 
-		pFile->Read((uint8 *)shader_text.c_str(), file_size);
+		pFile->Read((uint8 *)textIn.c_str(), fileSize);
 		pFile->CloseAndFree();
 
-		split_by_eol(text, num_lines, shader_text);
+		split_by_eol(textOut, numLinesOut, textIn);
 		
 		return S_OK;
 	};
