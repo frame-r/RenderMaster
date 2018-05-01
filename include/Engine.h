@@ -270,8 +270,9 @@ namespace RENDER_MASTER
 	//////////////////////
 	// Game Objects
 	//////////////////////
+	
 	class IGameObject : public IResource
-	{		
+	{
 	};
 
 	class IModel : public IGameObject

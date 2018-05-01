@@ -53,3 +53,4 @@ API Model::GetType(RES_TYPE & type)
 	return S_OK;
 }
 
+

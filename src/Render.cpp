@@ -405,26 +405,6 @@ void Render::save_text(list<string>& l, const string&& str)
 ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 {
 	ICoreShader *pShader = nullptr;
-
-	auto get_shader_preprocessed = [&](const char **&ppTextOut, int &num_lines, const char **ppTextIn, const string&& fileName) -> void
-	{
-		list<string> l = make_lines_list(ppTextIn);
-
-		Preprocessor proc;
-
-		if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) proc.set_define("ENG_INPUT_NORMAL");
-		if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) proc.set_define("ENG_INPUT_TEXCOORD");
-		if (req.alphaTest) proc.set_define("ENG_ALPHA_TEST");
-
-		proc.run(l);
-
-		// save to file
-		//save_text(l, std::forward<const string>(fileName));
-
-		ppTextOut = make_char_pp(l);
-		num_lines = (int)l.size();
-	};
-
 	auto it = _shaders_pool.find(req);
 
 	if (it != _shaders_pool.end())
@@ -433,15 +413,34 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 	}
 	else
 	{
-		ShaderText sh;
+		ShaderText st;
 
-		get_shader_preprocessed(sh.pVertText, sh.vertNumLines, pStandardShaderText.pVertText, "out_v.shader");
-		get_shader_preprocessed(sh.pFragText, sh.fragNumLines, pStandardShaderText.pFragText, "out_f.shader");
+		auto get_shader_preprocessed = [&](const char **&ppTextOut, int &num_lines, const char **ppTextIn, const string&& fileName) -> void
+		{
+			list<string> l = make_lines_list(ppTextIn);
 
-		_pCoreRender->CreateShader(pShader, sh);
+			Preprocessor proc;
 
-		delete_char_pp(sh.pVertText);
-		delete_char_pp(sh.pFragText);
+			if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) proc.set_define("ENG_INPUT_NORMAL");
+			if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) proc.set_define("ENG_INPUT_TEXCOORD");
+			if (req.alphaTest) proc.set_define("ENG_ALPHA_TEST");
+
+			proc.run(l);
+
+			// save to file
+			//save_text(l, std::forward<const string>(fileName));
+
+			ppTextOut = make_char_pp(l);
+			num_lines = (int)l.size();
+		};
+
+		get_shader_preprocessed(st.pVertText, st.vertNumLines, pStandardShaderText.pVertText, "out_v.shader");
+		get_shader_preprocessed(st.pFragText, st.fragNumLines, pStandardShaderText.pFragText, "out_f.shader");
+
+		_pCoreRender->CreateShader(pShader, st);
+
+		delete_char_pp(st.pVertText);
+		delete_char_pp(st.pFragText);
 
 		_pResMan->AddToList(pShader);
 

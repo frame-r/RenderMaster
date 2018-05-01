@@ -21,7 +21,6 @@
       <Filter>CoreRender</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Console.h" />
-    <ClInclude Include="..\src\Model.h" />
     <ClInclude Include="..\src\GLMesh.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
@@ -32,6 +31,12 @@
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\Render.h" />
     <ClInclude Include="..\src\SceneManager.h" />
+    <ClInclude Include="..\src\Model.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameObject.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -54,12 +59,17 @@
       <Filter>CoreRender</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Console.cpp" />
-    <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\Render.cpp" />
     <ClCompile Include="..\src\SceneManager.cpp" />
+    <ClCompile Include="..\src\Model.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameObject.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />
@@ -82,6 +92,9 @@
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{c9775c28-7faf-4e08-bfda-6fe74bbf010d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjects">
+      <UniqueIdentifier>{cca1a3d1-8ff4-415c-a451-87784ca5df02}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
