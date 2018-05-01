@@ -36,6 +36,7 @@
     <ClInclude Include="..\src\Render.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
+    <ClInclude Include="..\src\VMath.h" />
     <ClInclude Include="..\src\Wnd.h" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +52,7 @@
     <ClCompile Include="..\src\GLShader.cpp" />
     <ClCompile Include="..\src\GL\glew.c" />
     <ClCompile Include="..\src\GLMesh.cpp" />
+    <ClCompile Include="..\src\Math.cpp" />
     <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\Render.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />

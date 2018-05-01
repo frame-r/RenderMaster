@@ -37,6 +37,7 @@
     <ClInclude Include="..\src\GameObject.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\VMath.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -70,6 +71,7 @@
     <ClCompile Include="..\src\GameObject.cpp">
       <Filter>GameObjects</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Math.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />
