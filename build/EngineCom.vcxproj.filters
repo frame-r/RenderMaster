@@ -37,7 +37,12 @@
     <ClInclude Include="..\src\GameObject.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\VMath.h" />
+    <ClInclude Include="..\include\vector_math.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Camera.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -68,10 +73,9 @@
     <ClCompile Include="..\src\Model.cpp">
       <Filter>GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\GameObject.cpp">
+    <ClCompile Include="..\src\Camera.cpp">
       <Filter>GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Math.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />

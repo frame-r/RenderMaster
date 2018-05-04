@@ -33,8 +33,12 @@ API GLMesh::Free()
 		glDeleteBuffers(1, &_VBO);
 		glDeleteVertexArrays(1, &_VAO);
 	}
-	else
+	else if (refNum > 1)
 		pResMan->DecrementRef(this);
+	else
+		LOG_WARNING("GLMesh::Free(): refNum == 0");
+
+	delete this;
 
 	return S_OK;
 }

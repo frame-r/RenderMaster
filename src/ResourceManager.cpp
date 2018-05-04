@@ -423,6 +423,8 @@ const char * ResourceManager::_resourceToStr(IResource * pRes)
 			return "GAMEOBJECT";
 		case RENDER_MASTER::RES_TYPE::MODEL:
 			return "MODEL";
+		case RENDER_MASTER::RES_TYPE::CAMERA:
+			return "CAMERA";
 	}
 
 	return nullptr;
@@ -606,6 +608,12 @@ API ResourceManager::AddToList(IResource *pResource)
 	return S_OK;
 }
 
+API ResourceManager::GetNumberOfResources(uint& number)
+{
+	number = (uint) _res_vec.size();
+	return S_OK;
+}
+
 API ResourceManager::GetRefNumber(IResource *pResource, uint& number)
 {
 	auto it = std::find_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
@@ -656,7 +664,7 @@ API ResourceManager::RemoveFromList(IResource *pResource)
 
 API ResourceManager::FreeAllResources()
 {
-	DEBUG_LOG("FreeAllResources(): resorces total=%i", LOG_TYPE::NORMAL, _res_vec.size());
+	DEBUG_LOG("ResourceManager::FreeAllResources(): resources total=%i", LOG_TYPE::NORMAL, _res_vec.size());
 
 	// first free all resources that have refCount = 1
 	// and so on...
@@ -683,17 +691,17 @@ API ResourceManager::FreeAllResources()
 			static int i = 0;
 			i++;
 			if (i > 20) break; // occured some error. maybe circular references => in debug limit number of iterations
-			auto res = _res_vec.size();
-			DEBUG_LOG("FreeAllResources(): beginIteration=%i resourceToDelete=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), _res_vec.size());
+			auto res_before = _res_vec.size();
 		#endif
 
-		// free elements in group
+		// free resources
 		for (auto res : one_ref_res)
 			res.pRes->Free();
 
 		#ifdef _DEBUG
-			auto deleted = res - _res_vec.size();
-			DEBUG_LOG("FreeAllResources(): endIteration=%i resourcesDeleted=%i, resourcesLeft=%i", LOG_TYPE::NORMAL, i, deleted, _res_vec.size());
+			auto res_deleted = res_before - _res_vec.size();
+			int res_deleted_percent = (int)(100 * ((float)res_deleted / res_before));
+			DEBUG_LOG("FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _res_vec.size());
 		#endif
 	}
 	

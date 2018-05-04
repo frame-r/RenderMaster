@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Engine.h" />
+    <ClInclude Include="..\include\vector_math.h" />
+    <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Console.h" />
     <ClInclude Include="..\src\Core.h" />
@@ -36,10 +38,10 @@
     <ClInclude Include="..\src\Render.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
-    <ClInclude Include="..\src\VMath.h" />
     <ClInclude Include="..\src\Wnd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\Camera.cpp" />
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\Console.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
@@ -47,12 +49,10 @@
     <ClCompile Include="..\src\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
-    <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GLCoreRender.cpp" />
     <ClCompile Include="..\src\GLShader.cpp" />
     <ClCompile Include="..\src\GL\glew.c" />
     <ClCompile Include="..\src\GLMesh.cpp" />
-    <ClCompile Include="..\src\Math.cpp" />
     <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\Render.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />

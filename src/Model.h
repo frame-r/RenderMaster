@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "GameObject.h"
 
 
 class Model : public IModel
@@ -15,5 +16,7 @@ public:
 	API GetMeshesNumber(uint& number) override;
 	API Free() override;
 	API GetType(RES_TYPE& type) override;
+
+	IGAMEOBJECT_IMPLEMENTATION
 };
 

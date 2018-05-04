@@ -19,10 +19,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		pCore->GetSubSystem((ISubSystem*&)sm, SUBSYSTEM_TYPE::SCENE_MANAGER);
 			
 		resMan->LoadModel(pModel, "box.fbx", nullptr);
-		
-		uint n;
-		sm->GetGameObjectsNumber(n);
-		
+				
 		pCore->Start();
 
 		pCore->CloseEngine();

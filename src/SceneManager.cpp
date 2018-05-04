@@ -1,7 +1,10 @@
 #include "SceneManager.h"
 #include "Core.h"
+#include "Camera.h"
 
 extern Core *_pCore;
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
 
 API SceneManager::AddGameObject(IGameObject* pGameObject)
 {
@@ -21,24 +24,39 @@ API SceneManager::GetGameObject(IGameObject *&pGameObject, uint idx)
 	return S_OK;
 }
 
+API SceneManager::GetCamera(ICamera*& pCamera)
+{
+	pCamera = _pCam;
+	return S_OK;
+}
+
+SceneManager::SceneManager()
+{
+	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	
+	_pCam = new Camera();
+	pResMan->AddToList(_pCam);
+
+}
+
 void SceneManager::Free()
 {
-	IResourceManager *pResMan;
-	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	DEBUG_LOG("SceneManager::Free(): objects total=%i", LOG_TYPE::NORMAL, _game_objects.size() + 1); // +1 camera
+	#ifdef _DEBUG
+		uint res_before = 0;
+		pResMan->GetNumberOfResources(res_before);
+	#endif
 
 	for(IGameObject *go : _game_objects)
-	{
-		uint refNum;
-		pResMan->GetRefNumber(go, refNum);
+		go->Free();
 
-		if (refNum == 1)
-		{
-			pResMan->RemoveFromList(go);
-			go->Free();
-		}
-		else
-			pResMan->DecrementRef(go);
-	}
+	_pCam->Free();
+
+	#ifdef _DEBUG
+		uint res_after = 0;
+		pResMan->GetNumberOfResources(res_after);
+		DEBUG_LOG("SceneManager::Free(): resources deleted=%i", LOG_TYPE::NORMAL, res_before - res_after);
+	#endif
 }
 
 API SceneManager::GetName(const char*& pName)

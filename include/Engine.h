@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vector_math.h"
+
 #define WIN32_LEAN_AND_MEAN
 #define INITGUID
 #include <Unknwn.h>
@@ -105,7 +107,8 @@ namespace RENDER_MASTER
 		CORE_TEXTURE,
 		CORE_SHADER,
 		GAMEOBJECT,
-		MODEL
+		MODEL,
+		CAMERA
 	};
 
 	class IResource
@@ -273,6 +276,16 @@ namespace RENDER_MASTER
 	
 	class IGameObject : public IResource
 	{
+	public:
+		virtual API SetPosition(const vec3& pos) = 0;
+		virtual API SetRotation(const vec3& rot) = 0;
+		virtual API GetModelMatrix(mat4& mat) = 0;
+	};
+
+	class ICamera : public IGameObject
+	{
+	public:
+		virtual API GetViewProjectionMatrix(mat4& mat, float aspect) = 0;
 	};
 
 	class IModel : public IGameObject
@@ -291,6 +304,7 @@ namespace RENDER_MASTER
 		virtual API AddGameObject(IGameObject* pGameObject) = 0;
 		virtual API GetGameObjectsNumber(uint& number) = 0;
 		virtual API GetGameObject(IGameObject *&pGameObject, uint idx) = 0;
+		virtual API GetCamera(ICamera *&pCamera) = 0;
 	};
 
 
@@ -315,6 +329,7 @@ namespace RENDER_MASTER
 
 		virtual API LoadModel(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
 		virtual API LoadShaderText(ShaderText &pShader, const char* pVertName, const char* pGeomName, const char* pFragName) = 0;
+		virtual API GetNumberOfResources(uint& number) = 0;
 		virtual API AddToList(IResource *pResource) = 0;
 		virtual API GetRefNumber(IResource *pResource, uint& number) = 0;
 		virtual API DecrementRef(IResource *pResource) = 0;

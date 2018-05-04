@@ -31,8 +31,12 @@ API GLShader::Free()
 		if (_geomID != 0) glDeleteShader(_geomID);
 		if (_programID != 0) glDeleteProgram(_programID);
 	}
-	else
+	else if (refNum > 1)
 		pResMan->DecrementRef(this);
+	else
+		LOG_WARNING("GLShader::Free(): refNum == 0");
+
+	delete this;
 
 	return S_OK;
 }

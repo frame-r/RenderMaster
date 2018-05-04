@@ -49,6 +49,7 @@ public:
 	API LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
 	API LoadShaderText(ShaderText &pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
 	API AddToList(IResource *pResource) override;
+	API GetNumberOfResources(uint& number) override;
 	API GetRefNumber(IResource *pResource, uint& number) override;
 	API DecrementRef(IResource *pResource) override;
 	API RemoveFromList(IResource *pResource) override;
