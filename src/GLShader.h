@@ -15,6 +15,8 @@ public:
 	GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID);
 	~GLShader();
 
+	GLuint programID() const { return _programID;	}
+
 	API Free() override;
 	API GetType(RES_TYPE& type) override;
 };

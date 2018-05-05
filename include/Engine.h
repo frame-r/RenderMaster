@@ -169,6 +169,15 @@ namespace RENDER_MASTER
 	// Core Render stuff
 	//////////////////////
 
+	enum class INPUT_ATTRUBUTE
+	{
+		NONE = 0,
+		POSITION = 1 << 0,
+		NORMAL = 1 << 1,
+		TEX_COORD = 1 << 2
+	};
+	DEFINE_ENUM_OPERATORS(INPUT_ATTRUBUTE)
+
 	enum class DRAW_MODE
 	{
 		POINTS,
@@ -225,6 +234,16 @@ namespace RENDER_MASTER
 		INT16
 	};
 
+	enum class SHADER_VARIABLE_TYPE
+	{
+		SVT_INT,
+		SVT_FLOAT,
+		SVT_VECTOR3,
+		SVT_VECTOR4,
+		SVT_MATRIX3X3,
+		SVT_MATRIX4X4,
+	};
+
 	struct MeshIndexDesc
 	{
 		MeshIndexDesc() : pData(nullptr), number(0), format(MESH_INDEX_FORMAT::NOTHING) {}
@@ -238,6 +257,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetNumberOfVertex(uint &vertex) = 0;
+		virtual API GetAttributes(INPUT_ATTRUBUTE &attribs) = 0;
 	};
 
 	struct ShaderText
@@ -264,6 +284,11 @@ namespace RENDER_MASTER
 		virtual API Init(const WinHandle* handle) = 0;
 		virtual API CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, DRAW_MODE mode) = 0;
 		virtual API CreateShader(ICoreShader *&pShader, const ShaderText& shaderDesc) = 0;
+		virtual API SetShader(const ICoreShader *pShader) = 0;
+		virtual API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) = 0;
+		virtual API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
+		virtual API SetMesh(const ICoreMesh* mesh) = 0;
+		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API Clear() = 0;
 		virtual API SwapBuffers() = 0;
 		virtual API Free() = 0;

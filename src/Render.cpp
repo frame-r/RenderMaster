@@ -450,6 +450,41 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 	return pShader;
 }
 
+void Render::_get_meshes(vector<ICoreMesh*>& meshes_vec)
+{
+	uint number{ 0 };
+	_pSceneMan->GetGameObjectsNumber(number);
+
+	for (auto i = 0u; i < number; i++)
+	{
+		IGameObject *go{ nullptr };
+		RES_TYPE type;
+
+		_pSceneMan->GetGameObject(go, i);
+		go->GetType(type);
+
+		if (type == RES_TYPE::MODEL)
+		{
+			IModel *model = reinterpret_cast<IModel*>(go);
+
+			uint meshes;
+			model->GetMeshesNumber(meshes);
+
+			for (auto j = 0u; j < meshes; j++)
+			{
+				ICoreMesh *mesh{ nullptr };
+				model->GetMesh(mesh, j);
+				meshes_vec.push_back(mesh);
+			}
+		}
+	}
+}
+
+void Render::_sort_meshes(vector<ICoreMesh*>& meshes)
+{
+	// not impl
+}
+
 Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 {
 	_pCore->GetSubSystem((ISubSystem*&)_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
@@ -473,6 +508,23 @@ Render::~Render()
 
 void Render::RenderFrame()
 {
+	vector<ICoreMesh*> _meshes;
+
 	_pCoreRender->Clear();
+
+	_get_meshes(_meshes);
+	_sort_meshes(_meshes);
+
+	for(auto *mesh : _meshes)
+	{
+		INPUT_ATTRUBUTE a;
+		mesh->GetAttributes(a);		
+		
+		ICoreShader *shader = _get_shader({a, false});
+
+		_pCoreRender->SetShader(shader);
+		_pCoreRender->SetMesh(mesh);
+	}
+
 	_pCoreRender->SwapBuffers();
 }

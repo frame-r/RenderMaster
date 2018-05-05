@@ -5,15 +5,26 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-GLMesh::GLMesh(GLuint VAO, GLuint VBO, GLuint IBO, uint vertexNumber, uint indexNumber, MESH_INDEX_FORMAT indexFormat, DRAW_MODE mode):
+GLMesh::GLMesh(GLuint VAO, GLuint VBO, GLuint IBO, uint vertexNumber, uint indexNumber, MESH_INDEX_FORMAT indexFormat, DRAW_MODE mode, INPUT_ATTRUBUTE a):
 	_VAO(VAO), _VBO(VBO), _IBO(IBO),
 	_number_of_vertices(vertexNumber), _number_of_indicies(indexNumber), _index_presented(indexFormat != MESH_INDEX_FORMAT::NOTHING), _mode(mode)
 {
+	_attributes = _attributes | INPUT_ATTRUBUTE::POSITION;
+	if ((int)(a & INPUT_ATTRUBUTE::NORMAL))
+		_attributes = _attributes | INPUT_ATTRUBUTE::NORMAL;
+	if ((int)(a & INPUT_ATTRUBUTE::TEX_COORD))
+		_attributes = _attributes | INPUT_ATTRUBUTE::TEX_COORD;
 }
 
 API GLMesh::GetNumberOfVertex(uint & vertex)
 {
 	vertex = _number_of_vertices;
+	return S_OK;
+}
+
+API GLMesh::GetAttributes(INPUT_ATTRUBUTE& attribs)
+{
+	attribs = _attributes;
 	return S_OK;
 }
 

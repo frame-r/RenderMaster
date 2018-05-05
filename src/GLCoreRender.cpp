@@ -335,7 +335,13 @@ API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, co
 
 	CHECK_GL_ERRORS();
 
-	GLMesh *pGLMesh = new GLMesh(vao, vbo, ibo, dataDesc.number, indexDesc.number, indexDesc.format, mode);
+	INPUT_ATTRUBUTE a = INPUT_ATTRUBUTE::POSITION;
+	if (dataDesc.normalsPresented)
+		a = a | INPUT_ATTRUBUTE::NORMAL;
+	if (dataDesc.texCoordPresented)
+		a = a | INPUT_ATTRUBUTE::TEX_COORD;
+
+	GLMesh *pGLMesh = new GLMesh(vao, vbo, ibo, dataDesc.number, indexDesc.number, indexDesc.format, mode, a);
 	pMesh = pGLMesh;
 
 	return S_OK;
@@ -372,6 +378,195 @@ API GLCoreRender::CreateShader(ICoreShader*& pShader, const ShaderText& shaderDe
 	GLShader *pGLShader = new GLShader(programID, vertID, geomID, fragID);
 	pShader = pGLShader;
 
+	return S_OK;
+}
+
+API GLCoreRender::SetShader(const ICoreShader* pShader)
+{
+	if (_current_shader == pShader) return S_OK;
+
+	CHECK_GL_ERRORS();
+	
+	if (!pShader)
+		glUseProgram(0);
+	else
+	{
+		const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
+		glUseProgram(pGLShader->programID());
+	}
+	
+	_current_shader = pShader;
+
+	CHECK_GL_ERRORS();
+	
+	return S_OK;
+}
+
+API GLCoreRender::SetUniform(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type)
+{
+	CHECK_GL_ERRORS();
+
+	const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
+	const GLuint ID = glGetUniformLocation(pGLShader->programID(), name);
+
+	switch (type)
+	{
+
+	case SHADER_VARIABLE_TYPE::SVT_INT:
+		{
+			const int *i = reinterpret_cast<const int*>(pData);
+			glUniform1i(ID, *i);
+		}
+		break;
+
+	case SHADER_VARIABLE_TYPE::SVT_FLOAT:
+		{
+			const float *f = reinterpret_cast<const float*>(pData);
+			glUniform1f(ID, *f);
+		}
+		break;
+	case SHADER_VARIABLE_TYPE::SVT_VECTOR3:
+		{
+			const Vector3 *v3 = reinterpret_cast<const Vector3*>(pData);
+			glUniform3f(ID, v3->x, v3->y, v3->z);
+		}
+		break;
+	case SHADER_VARIABLE_TYPE::SVT_VECTOR4:
+		{
+			const Vector4 *v4 = reinterpret_cast<const Vector4*>(pData);
+			glUniform4f(ID, v4->x, v4->y, v4->z, v4->w);
+		}
+		break;
+
+	case SHADER_VARIABLE_TYPE::SVT_MATRIX3X3:
+		{
+			const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
+			glUniformMatrix3fv(ID, 1, GL_FALSE, &m3->el_1D[0]);
+		}
+		break;
+
+	case SHADER_VARIABLE_TYPE::SVT_MATRIX4X4:
+		{
+			const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
+			glUniformMatrix4fv(ID, 1, GL_FALSE, &m4->el_1D[0]);
+		}
+		break;
+
+	default:
+		LOG_FATAL("GLCoreRender::SetUniform(): unknown shader variable typre");
+		return S_FALSE;
+
+
+	//case SHADER_VARIABLE_TYPE::SVT_TEXTURE:
+	//	tex = reinterpret_cast<const Texture*>(pData);
+	//	glActiveTexture(GL_TEXTURE0 + tex_sampler); // activate next avaliable texture unit
+	//	glBindTexture(GL_TEXTURE_2D, tex->ID); // attach texture to texture unit as GL_TEXTURE_2D
+	//	glUniform1i(ID, tex_sampler);
+	//	//_freeTextureUnit++;
+	//	break;
+
+	//case SVT_TEXTURE3D:
+	//	ERR_GUARDS();
+	//	tex = reinterpret_cast<const Texture*>(pData);
+	//	glActiveTexture(GL_TEXTURE0 + tex_sampler);
+	//	glBindTexture(GL_TEXTURE_3D, tex->ID);
+	//	glUniform1i(ID, tex_sampler);
+	//	ERR_GUARDS();
+	//	break;
+
+	}
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::SetUniformArray(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type, uint number)
+{
+	CHECK_GL_ERRORS();
+
+	const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
+	const GLuint ID = glGetUniformLocation(pGLShader->programID(), name);
+
+	switch (type)
+	{
+
+	case SHADER_VARIABLE_TYPE::SVT_INT:
+	{
+		const int *i = reinterpret_cast<const int*>(pData);
+		glUniform1iv(ID, number, i);
+	}
+	break;
+
+	case SHADER_VARIABLE_TYPE::SVT_FLOAT:
+	{
+		const float *f = reinterpret_cast<const float*>(pData);
+		glUniform1fv(ID, number, f);
+	}
+	break;
+	case SHADER_VARIABLE_TYPE::SVT_VECTOR3:
+	{
+		const Vector3 *v3 = reinterpret_cast<const Vector3*>(pData);
+		glUniform3fv(ID, number, &v3->x);
+	}
+	break;
+	case SHADER_VARIABLE_TYPE::SVT_VECTOR4:
+	{
+		const Vector4 *v4 = reinterpret_cast<const Vector4*>(pData);
+		glUniform4fv(ID, number, &v4->x);
+	}
+	break;
+
+	case SHADER_VARIABLE_TYPE::SVT_MATRIX3X3:
+	{
+		const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
+		glUniformMatrix3fv(ID, 1, GL_FALSE, &m3->el_1D[0]);
+	}
+	break;
+
+	case SHADER_VARIABLE_TYPE::SVT_MATRIX4X4:
+	{
+		const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
+		glUniformMatrix4fv(ID, 1, GL_FALSE, &m4->el_1D[0]);
+	}
+	break;
+
+	default:
+		LOG_FATAL("GLCoreRender::SetUniformArray(): unknown shader variable typre");
+		return S_FALSE;
+	}
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::SetMesh(const ICoreMesh* mesh)
+{
+	CHECK_GL_ERRORS();
+	if (!mesh)
+		glBindVertexArray(0);
+	else
+	{
+		const GLMesh *glMesh = reinterpret_cast<const GLMesh*>(mesh);
+		glBindVertexArray(glMesh->VAO_ID());
+	}
+	CHECK_GL_ERRORS();
+	return S_OK;
+}
+
+API GLCoreRender::Draw(ICoreMesh *mesh)
+{
+	CHECK_GL_ERRORS();
+	if (!mesh)
+		glBindVertexArray(0);
+	else
+	{
+		uint vertex;
+		mesh->GetNumberOfVertex(vertex);
+		glBindVertexArray(vertex);
+	}
+	CHECK_GL_ERRORS();
 	return S_OK;
 }
 

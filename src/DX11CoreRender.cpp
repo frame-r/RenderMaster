@@ -35,6 +35,31 @@ API DX11CoreRender::CreateShader(ICoreShader *& pShader, const ShaderText & shad
 	return E_NOTIMPL;
 }
 
+API DX11CoreRender::SetShader(const ICoreShader* pShader)
+{
+	return E_NOTIMPL;
+}
+
+API DX11CoreRender::SetUniform(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type)
+{
+	return E_NOTIMPL;
+}
+
+API DX11CoreRender::SetUniformArray(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type, uint number)
+{
+	return E_NOTIMPL;
+}
+
+API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
+{
+	return E_NOTIMPL;
+}
+
+API DX11CoreRender::Draw(ICoreMesh* mesh)
+{
+	return E_NOTIMPL;
+}
+
 API DX11CoreRender::Clear()
 {
 	return E_NOTIMPL;

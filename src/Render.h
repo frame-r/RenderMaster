@@ -1,15 +1,6 @@
 #pragma once
 #include "Common.h"
 
-enum class INPUT_ATTRUBUTE
-{
-	POSITION = 1 << 0,
-	NORMAL = 1 << 1,
-	TEX_COORD = 1 << 2
-};
-DEFINE_ENUM_OPERATORS(INPUT_ATTRUBUTE)
-
-
 class Render
 {
 	ICoreRender *_pCoreRender{nullptr};
@@ -36,6 +27,8 @@ class Render
 
 	void save_text(std::list<std::string>& l, const std::string&& str);
 	ICoreShader* _get_shader(const ShaderRequirement &req);
+	void _get_meshes(std::vector<ICoreMesh*>& meshes);
+	void _sort_meshes(std::vector<ICoreMesh*>& meshes);
 
 public:
 
