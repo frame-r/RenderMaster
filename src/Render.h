@@ -8,6 +8,8 @@ class Render
 	IResourceManager *_pResMan{nullptr};
 	IFileSystem *_fsystem{nullptr};
 	ShaderText pStandardShaderText;
+	float _aspect{1.0f};
+	ICoreMesh *_pAxesMesh{nullptr};
 
 	struct ShaderRequirement
 	{
@@ -27,14 +29,24 @@ class Render
 
 	void save_text(std::list<std::string>& l, const std::string&& str);
 	ICoreShader* _get_shader(const ShaderRequirement &req);
-	void _get_meshes(std::vector<ICoreMesh*>& meshes);
-	void _sort_meshes(std::vector<ICoreMesh*>& meshes);
+
+	struct TRenderMesh
+	{
+		ICoreMesh *mesh;
+		mat4 modelMat;
+	};
+
+	void _get_meshes(std::vector<TRenderMesh>& meshes);
+	void _sort_meshes(std::vector<TRenderMesh>& meshes);
+
+	void _draw_axes(const mat4& VP);
 
 public:
 
 	Render(ICoreRender *pCoreRender);
 	~Render();
 
+	void Resize(uint w, uint h);
 	void RenderFrame();
 };
 

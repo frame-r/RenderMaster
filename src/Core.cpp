@@ -122,6 +122,30 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	return S_OK;
 }
 
+API Core::Start()
+{
+	for (IInitCallback *callback : _init_callbacks)
+		callback->Init();
+
+	if (_pWnd)
+	{
+		uint w, h;
+		_pWnd->GetDimension(w, h);
+
+		_pRender->Resize(w, h);
+
+		_pWnd->StartMainLoop();
+	}
+
+	return S_OK;
+}
+
+API Core::RenderFrame()
+{
+	_main_loop();
+	return S_OK;
+}
+
 API Core::GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type)
 {
 	switch(type)
@@ -185,17 +209,6 @@ API Core::AddInitCallback(IInitCallback* pCallback)
 API Core::AddUpdateCallback(IUpdateCallback* pCallback)
 {
 	_update_callbacks.push_back(pCallback);
-	return S_OK;
-}
-
-API Core::Start()
-{
-	for (IInitCallback *callback : _init_callbacks)
-		callback->Init();
-
-	if (_pWnd)
-		_pWnd->StartMainLoop();
-
 	return S_OK;
 }
 

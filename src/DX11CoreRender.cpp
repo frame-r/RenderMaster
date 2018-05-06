@@ -25,7 +25,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	return E_NOTIMPL;
 }
 
-API DX11CoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, DRAW_MODE mode)
+API DX11CoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, VERTEX_TOPOLOGY mode)
 {
 	return E_NOTIMPL;
 }
@@ -56,6 +56,16 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 }
 
 API DX11CoreRender::Draw(ICoreMesh* mesh)
+{
+	return E_NOTIMPL;
+}
+
+API DX11CoreRender::SetDepthState(int enabled)
+{
+	return E_NOTIMPL;
+}
+
+API DX11CoreRender::SetViewport(uint w, uint h)
 {
 	return E_NOTIMPL;
 }

@@ -68,6 +68,8 @@ namespace RENDER_MASTER
 	public:
 
 		virtual API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* handle) = 0;
+		virtual API Start() = 0;
+		virtual API RenderFrame() = 0;
 		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API GetDataDir(const char *&pStr) = 0;
 		virtual API GetWorkingDir(const char *&pStr) = 0;
@@ -75,7 +77,6 @@ namespace RENDER_MASTER
 		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
 		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
 		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
-		virtual API Start() = 0;
 		virtual API CloseEngine() = 0;
 
 		// Events
@@ -174,13 +175,13 @@ namespace RENDER_MASTER
 		NONE = 0,
 		POSITION = 1 << 0,
 		NORMAL = 1 << 1,
-		TEX_COORD = 1 << 2
+		TEX_COORD = 1 << 2,
+		COLOR = 1 << 3
 	};
 	DEFINE_ENUM_OPERATORS(INPUT_ATTRUBUTE)
 
-	enum class DRAW_MODE
+	enum class VERTEX_TOPOLOGY
 	{
-		POINTS,
 		LINES,
 		TRIANGLES,
 	};
@@ -206,25 +207,25 @@ namespace RENDER_MASTER
 
 	struct MeshDataDesc
 	{
-		MeshDataDesc() : pData(nullptr), number(0), positionOffset(0), positionStride(12),
-			texCoordPresented(false), texCoordOffset(0), texCoordStride(0),
-			normalsPresented(false), normalOffset(0), normalStride(0) {}
+		uint8 *pData{nullptr};
 
-		uint8 *pData;
+		uint numberOfVertex{0};
 
-		// number of vertex
-		uint number;
+		uint positionOffset{0};
+		uint positionStride{0};
 
-		uint positionOffset;
-		uint positionStride;
+		bool normalsPresented{false};
+		uint normalOffset{0};
+		uint normalStride{0};
 
-		bool texCoordPresented;
-		uint texCoordOffset;
-		uint texCoordStride;
+		bool texCoordPresented{false};
+		uint texCoordOffset{0};
+		uint texCoordStride{0};
 
-		bool normalsPresented;
-		uint normalOffset;
-		uint normalStride;
+		bool colorPresented{false};
+		uint colorOffset{0};
+		uint colorStride{0};
+
 	};
 
 	enum class MESH_INDEX_FORMAT
@@ -258,6 +259,7 @@ namespace RENDER_MASTER
 	public:
 		virtual API GetNumberOfVertex(uint &vertex) = 0;
 		virtual API GetAttributes(INPUT_ATTRUBUTE &attribs) = 0;
+		virtual API GetVertexTopology(VERTEX_TOPOLOGY &topology) = 0;
 	};
 
 	struct ShaderText
@@ -282,13 +284,15 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API Init(const WinHandle* handle) = 0;
-		virtual API CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, DRAW_MODE mode) = 0;
+		virtual API CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(ICoreShader *&pShader, const ShaderText& shaderDesc) = 0;
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) = 0;
 		virtual API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
+		virtual API SetDepthState(int enabled) = 0;
+		virtual API SetViewport(uint w, uint h) = 0;
 		virtual API Clear() = 0;
 		virtual API SwapBuffers() = 0;
 		virtual API Free() = 0;
@@ -337,9 +341,11 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
-	enum class DEFAULT_MODEL
+	enum class DEFAULT_RES_TYPE
 	{
-		PLANE
+		NONE,
+		PLANE,
+		AXES
 	};
 
 	class IProgressSubscriber
@@ -354,6 +360,7 @@ namespace RENDER_MASTER
 
 		virtual API LoadModel(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
 		virtual API LoadShaderText(ShaderText &pShader, const char* pVertName, const char* pGeomName, const char* pFragName) = 0;
+		virtual API GetDefaultResource(IResource *&pRes, DEFAULT_RES_TYPE type) = 0;
 		virtual API GetNumberOfResources(uint& number) = 0;
 		virtual API AddToList(IResource *pResource) = 0;
 		virtual API GetRefNumber(IResource *pResource, uint& number) = 0;

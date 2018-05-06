@@ -298,18 +298,18 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, int 
 	
 	MeshDataDesc vertDesc;
 	vertDesc.pData = reinterpret_cast<uint8*>(&vertecies[0]);
-	vertDesc.number = global_vert_id;
+	vertDesc.numberOfVertex = global_vert_id;
 	vertDesc.positionOffset = 0;
 	vertDesc.positionStride = sizeof(Vertex);
 	vertDesc.normalsPresented = normal_element_count > 0;
-	vertDesc.normalOffset = 4;
-	vertDesc.normalStride = sizeof(Vertex);
+	vertDesc.normalOffset = (normal_element_count > 0) * 12;
+	vertDesc.normalStride = (normal_element_count > 0) * sizeof(Vertex);
 
 	MeshIndexDesc indexDesc;
 	indexDesc.pData = nullptr;
 	indexDesc.number = 0;
 
-	_pCoreRender->CreateMesh((ICoreMesh*&)pCoreMesh, vertDesc, indexDesc, DRAW_MODE::TRIANGLES);
+	_pCoreRender->CreateMesh((ICoreMesh*&)pCoreMesh, vertDesc, indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
 		meshes.push_back(pCoreMesh);
@@ -456,10 +456,10 @@ void ResourceManager::Init()
 
 	_pCore->GetSubSystem((ISubSystem*&)_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
 
-	// create default plane
+	// create default plane mesh
 	ICoreMesh *pPlane;
 
-	float vertex[12] = 
+	float vertexPlane[12] = 
 	{
 		-1.0f, 1.0f, 0.0f,
 		 1.0f,-1.0f, 0.0f,
@@ -467,24 +467,47 @@ void ResourceManager::Init()
 		 -1.0f, 1.0f, 0.0f
 	};
 
-	short index[6]
+	short indexPlane[6]
 	{
 		0, 1, 2,
 		0, 2, 3
 	};
 	
 	MeshDataDesc desc;
-	desc.pData = reinterpret_cast<uint8*>(vertex);
-	desc.number = 4;
+	desc.pData = reinterpret_cast<uint8*>(vertexPlane);
+	desc.numberOfVertex = 4;
 
 	MeshIndexDesc indexDesc;
-	indexDesc.pData = reinterpret_cast<uint8*>(index);
+	indexDesc.pData = reinterpret_cast<uint8*>(indexPlane);
 	indexDesc.number = 6;
 	indexDesc.format = MESH_INDEX_FORMAT::INT16;
 
-	_pCoreRender->CreateMesh((ICoreMesh*&)pPlane, desc, indexDesc, DRAW_MODE::TRIANGLES);
+	_pCoreRender->CreateMesh((ICoreMesh*&)pPlane, desc, indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
-	_default_meshes.emplace(DEFAULT_MODEL::PLANE, pPlane);
+	_default_resources.emplace_back(pPlane, 0, DEFAULT_RES_TYPE::PLANE);
+
+	// create axes mesh
+	ICoreMesh *pAxes;
+
+	// position, color, position, color, ...
+	float vertexAxes[] = {	0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+							0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+							0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f };
+
+	MeshDataDesc descAxes;
+	descAxes.pData = reinterpret_cast<uint8*>(vertexAxes);
+	descAxes.numberOfVertex = 6;
+	descAxes.positionStride = 24;
+	descAxes.colorPresented = true;
+	descAxes.colorOffset = 12;
+	descAxes.colorStride = 24;
+
+	MeshIndexDesc indexEmpty;
+
+	_pCoreRender->CreateMesh((ICoreMesh*&)pAxes, descAxes, indexEmpty, VERTEX_TOPOLOGY::LINES);
+
+	_default_resources.emplace_back(pAxes, 0, DEFAULT_RES_TYPE::AXES);
+
 
 	LOG("ResourceManager initalized");
 }
@@ -533,7 +556,7 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 	return S_OK;
 }
 //
-//API ResourceManager::GetDefaultModel(IModel *&pModel, DEFAULT_MODEL type)
+//API ResourceManager::GetDefaultModel(IModel *&pModel, DEFAULT_RES_TYPE type)
 //{
 //	auto it = _default_meshes.find(type);
 //	ICoreMesh *pCoreMesh = it->second;
@@ -590,13 +613,32 @@ API ResourceManager::LoadShaderText(ShaderText &pShader, const char *pVertName, 
 	return ret;
 }
 
+API ResourceManager::GetDefaultResource(IResource *&pRes, DEFAULT_RES_TYPE type)
+{
+	if (type == DEFAULT_RES_TYPE::NONE)
+	{
+		pRes = nullptr;
+		LOG_WARNING("ResourceManager::GetDefaultResource(): unknown type of resource");
+		return S_FALSE;
+	}
+
+	auto it = std::find_if(_default_resources.begin(), _default_resources.end(), [type](const TDefaultResource& res) -> bool { return res.type == type; });
+
+	assert(it != _default_resources.end());
+
+	pRes = it->pRes;
+	it->refCount++;
+
+	return S_OK;
+}
+
 API ResourceManager::AddToList(IResource *pResource)
 { 
-	auto it = std::find_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+	auto it = std::find_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
 
-	if (it == _res_vec.end())
+	if (it == _resources.end())
 	{
-		_res_vec.push_back(TResource{ pResource, 1 });	
+		_resources.push_back(TResource{ pResource, 1 });	
 		DEBUG_LOG("AddToList(): added new resource! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
 	else
@@ -610,15 +652,15 @@ API ResourceManager::AddToList(IResource *pResource)
 
 API ResourceManager::GetNumberOfResources(uint& number)
 {
-	number = (uint) _res_vec.size();
+	number = (uint) _resources.size();
 	return S_OK;
 }
 
 API ResourceManager::GetRefNumber(IResource *pResource, uint& number)
 {
-	auto it = std::find_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+	auto it = std::find_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
 
-	if (it == _res_vec.end())
+	if (it == _resources.end())
 		return E_POINTER;
 
 	assert(it->refCount > 0);
@@ -630,9 +672,9 @@ API ResourceManager::GetRefNumber(IResource *pResource, uint& number)
 
 API ResourceManager::DecrementRef(IResource * pResource)
 {
-	auto it = std::find_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+	auto it = std::find_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
 	
-	if (it == _res_vec.end())
+	if (it == _resources.end())
 		return E_POINTER;
 
 	assert(it->refCount > 0);
@@ -651,8 +693,8 @@ API ResourceManager::RemoveFromList(IResource *pResource)
 
 	if (refCount == 1)
 	{
-		auto it = std::remove_if(_res_vec.begin(), _res_vec.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
-		_res_vec.erase(it, _res_vec.end());
+		auto it = std::remove_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+		_resources.erase(it, _resources.end());
 
 		DEBUG_LOG("RemoveFromList(): deleted! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
@@ -664,11 +706,11 @@ API ResourceManager::RemoveFromList(IResource *pResource)
 
 API ResourceManager::FreeAllResources()
 {
-	DEBUG_LOG("ResourceManager::FreeAllResources(): resources total=%i", LOG_TYPE::NORMAL, _res_vec.size());
+	DEBUG_LOG("ResourceManager::FreeAllResources(): resources total=%i", LOG_TYPE::NORMAL, _resources.size());
 
 	// first free all resources that have refCount = 1
 	// and so on...
-	while (!_res_vec.empty())
+	while (!_resources.empty())
 	{
 		vector<TResource> one_ref_res;
 
@@ -678,32 +720,36 @@ API ResourceManager::FreeAllResources()
 		// all elements that should not be moved come before 
 		// all elements that should be moved come after
 		// stable_partition maintains relative order in each group
-		auto p = std::stable_partition(_res_vec.begin(), _res_vec.end(), [&](const auto& x) { return !ref_is_1(x); });
+		auto p = std::stable_partition(_resources.begin(), _resources.end(), [&](const auto& x) { return !ref_is_1(x); });
 
 		// move range elements that sould be removed
-		one_ref_res.insert(one_ref_res.end(), std::make_move_iterator(p), std::make_move_iterator(_res_vec.end()));
+		one_ref_res.insert(one_ref_res.end(), std::make_move_iterator(p), std::make_move_iterator(_resources.end()));
 		
 		// erase the moved-from elements.
 		// no need this because pRes->Free() removes himself from the vector!
-		//_res_vec.erase(p, _res_vec.end());
+		//_resources.erase(p, _resources.end());
 		
 		#ifdef _DEBUG
 			static int i = 0;
 			i++;
-			if (i > 20) break; // occured some error. maybe circular references => in debug limit number of iterations
-			auto res_before = _res_vec.size();
+			if (i > 20) return S_FALSE; // occured some error. maybe circular references => in debug limit number of iterations
+			auto res_before = _resources.size();
 		#endif
 
 		// free resources
-		for (auto res : one_ref_res)
+		for (auto& res : one_ref_res)
 			res.pRes->Free();
 
 		#ifdef _DEBUG
-			auto res_deleted = res_before - _res_vec.size();
+			auto res_deleted = res_before - _resources.size();
 			int res_deleted_percent = (int)(100 * ((float)res_deleted / res_before));
-			DEBUG_LOG("FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _res_vec.size());
+			DEBUG_LOG("FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _resources.size());
 		#endif
 	}
+
+	// free deafult resources
+	for (auto& res : _default_resources)
+		res.pRes->Free();
 	
 	return S_OK;
 }

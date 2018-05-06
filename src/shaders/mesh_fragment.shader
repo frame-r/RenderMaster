@@ -1,35 +1,49 @@
 #version 330
 
-#ifdef ENG_INPUT_NORMAL
-	smooth in vec3 N;
-#endif
-
-#ifdef ENG_INPUT_TEXCOORD
-	smooth in vec2 UV;
-#endif
+// defines:
+// ENG_INPUT_NORMAL
+// ENG_INPUT_TEXCOORD
+// ENG_INPUT_COLOR
+// ENG_ALPHA_TEST
 
 #ifdef ENG_INPUT_NORMAL
 	uniform vec3 nL;
+	smooth in vec3 NormalOut;
 #endif
-
-uniform vec4 main_color;
 
 #ifdef ENG_INPUT_TEXCOORD
 	uniform sampler2D texture0;
+	smooth in vec2 TexCoordOut;
 #endif
+
+#ifdef ENG_INPUT_COLOR
+	smooth in vec3 ColorOut;
+#endif
+	
+uniform vec4 main_color;
 
 out vec4 color_out;
 
 
 void main()
 {
+	const vec3 ambient = vec3(0.1f, 0.1f, 0.1f);
+
+	vec3 diffuse = main_color.rgb;
+
 	#ifdef ENG_INPUT_NORMAL
-		vec3 nN = normalize(N);
+		vec3 nN = normalize(NormalOut);
+		diffuse = diffuse * vec3(max(dot(nN, nL), 0));
 	#endif
 
 	#ifdef ENG_INPUT_TEXCOORD
-		vec4 tex = texture(texture0, UV);
+		vec4 tex = texture(texture0, TexCoordOut);
 		tex.rgb = pow(tex.rgb, vec3(2.2f));
+		diffuse = diffuse * tex.rgb;
+	#endif
+
+	#ifdef ENG_INPUT_COLOR
+		diffuse = diffuse * ColorOut;
 	#endif
 
 	#ifdef ENG_ALPHA_TEST && ENG_INPUT_TEXCOORD
@@ -37,15 +51,5 @@ void main()
 			discard;
 	#endif
 
-	#ifdef ENG_INPUT_NORMAL && ENG_INPUT_TEXCOORD
-		color_out = vec4(vec3(max(dot(nN, nL), 0)), 1) * tex * main_color;
-	#elif ENG_INPUT_NORMAL && !ENG_INPUT_TEXCOORD
-		color_out = vec4(vec3(max(dot(nN, nL), 0)), 1) * main_color;
-	#elif ENG_INPUT_TEXCOORD
-		color_out = tex * main_color;
-	#else
-		color_out = main_color;
-	#endif
-
-	color_out.rgb = pow(color_out.rgb, vec3(1.0f / 2.2f));
+	color_out = vec4(diffuse + ambient, 1);
 }

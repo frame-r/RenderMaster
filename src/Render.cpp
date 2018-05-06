@@ -423,6 +423,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 
 			if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) proc.set_define("ENG_INPUT_NORMAL");
 			if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) proc.set_define("ENG_INPUT_TEXCOORD");
+			if ((int)(req.attributes & INPUT_ATTRUBUTE::COLOR)) proc.set_define("ENG_INPUT_COLOR");
 			if (req.alphaTest) proc.set_define("ENG_ALPHA_TEST");
 
 			proc.run(l);
@@ -450,7 +451,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 	return pShader;
 }
 
-void Render::_get_meshes(vector<ICoreMesh*>& meshes_vec)
+void Render::_get_meshes(vector<TRenderMesh>& meshes_vec)
 {
 	uint number{ 0 };
 	_pSceneMan->GetGameObjectsNumber(number);
@@ -474,13 +475,17 @@ void Render::_get_meshes(vector<ICoreMesh*>& meshes_vec)
 			{
 				ICoreMesh *mesh{ nullptr };
 				model->GetMesh(mesh, j);
-				meshes_vec.push_back(mesh);
+
+				mat4 mat;
+				model->GetModelMatrix(mat);
+
+				meshes_vec.push_back({mesh, mat});
 			}
 		}
 	}
 }
 
-void Render::_sort_meshes(vector<ICoreMesh*>& meshes)
+void Render::_sort_meshes(vector<TRenderMesh>& meshes)
 {
 	// not impl
 }
@@ -496,6 +501,8 @@ Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 	//dbg
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
+
+	_pResMan->GetDefaultResource((IResource*&)_pAxesMesh, DEFAULT_RES_TYPE::AXES);
 }
 
 
@@ -506,25 +513,77 @@ Render::~Render()
 	delete_char_pp(pStandardShaderText.pFragText);
 }
 
+void Render::_draw_axes(const mat4& VP)
+{
+	INPUT_ATTRUBUTE a;
+	_pAxesMesh->GetAttributes(a);
+
+	ICoreShader *shader = _get_shader({ a, false });
+	_pCoreRender->SetShader(shader);
+
+	_pCoreRender->SetUniform("MVP", &VP.el_1D[0], shader, SHADER_VARIABLE_TYPE::SVT_MATRIX4X4);
+
+	vec4 main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	_pCoreRender->SetUniform("main_color", &main_color.x, shader, SHADER_VARIABLE_TYPE::SVT_VECTOR4);
+
+	_pCoreRender->SetDepthState(false);
+
+	_pCoreRender->Draw(_pAxesMesh);
+
+	_pCoreRender->SetDepthState(true);
+}
+
+void Render::Resize(uint w, uint h)
+{
+	_pCoreRender->SetViewport(w, h);
+	_aspect = (float)w / h;
+}
+
 void Render::RenderFrame()
 {
-	vector<ICoreMesh*> _meshes;
+	vector<TRenderMesh> _meshes;
+
+	ICamera *cam{nullptr};
+	_pSceneMan->GetCamera(cam);
+
+	mat4 VP;
+	cam->GetViewProjectionMatrix(VP, _aspect);
 
 	_pCoreRender->Clear();
 
 	_get_meshes(_meshes);
 	_sort_meshes(_meshes);
 
-	for(auto *mesh : _meshes)
+	for(auto &mesh : _meshes)
 	{
 		INPUT_ATTRUBUTE a;
-		mesh->GetAttributes(a);		
+		mesh.mesh->GetAttributes(a);		
 		
 		ICoreShader *shader = _get_shader({a, false});
 
 		_pCoreRender->SetShader(shader);
-		_pCoreRender->SetMesh(mesh);
+		_pCoreRender->SetMesh(mesh.mesh);
+
+		mat4 MVP = VP * mesh.modelMat;
+
+		_pCoreRender->SetUniform("MVP", &MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::SVT_MATRIX4X4);
+
+		if ((int)(a & INPUT_ATTRUBUTE::NORMAL))
+		{
+			mat4 NM;
+			_pCoreRender->SetUniform("NM", &NM.el_1D[0], shader, SHADER_VARIABLE_TYPE::SVT_MATRIX4X4);
+
+			vec3 nL = vec3(0.1f, 0.8f, -1.0f).Normalized();
+			_pCoreRender->SetUniform("nL", &nL.x, shader, SHADER_VARIABLE_TYPE::SVT_VECTOR3);
+
+			vec4 main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			_pCoreRender->SetUniform("main_color", &main_color.x, shader, SHADER_VARIABLE_TYPE::SVT_VECTOR4);
+		}
+
+		_pCoreRender->Draw(mesh.mesh);
 	}
+
+	_draw_axes(VP);
 
 	_pCoreRender->SwapBuffers();
 }

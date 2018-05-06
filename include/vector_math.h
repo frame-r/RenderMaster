@@ -29,10 +29,7 @@ struct Vector3
 	static Vector3 up() { return Vector3(0.0f, 1.0f, 0.0f); }
 	static Vector3 down() { return Vector3(0.0f, -1.0f, 0.0f); }
 
-	Vector3()
-	{
-		x = y = z = 0.0f;
-	}
+	Vector3() = default;
 
 	Vector3(float v)
 	{

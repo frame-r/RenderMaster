@@ -49,14 +49,15 @@ public:
 	}
 
 	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* handle) override;
+	API Start() override;
+	API RenderFrame() override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataDir(const char *&pStr) override;
 	API GetWorkingDir(const char *&pStr) override;
 	API GetInstalledDir(const char *&pStr) override;
-	API Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL) override;
+	API Log(const char *pText, LOG_TYPE type = LOG_TYPE::NORMAL) override;
 	API AddInitCallback(IInitCallback *pCallback) override;
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;
-	API Start() override;
 	API CloseEngine() override;
 	API GetLogPrintedEv(ILogEvent *&pEvent) override;
 

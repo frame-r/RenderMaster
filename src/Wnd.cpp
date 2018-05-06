@@ -91,3 +91,13 @@ void Wnd::Destroy()
 {
 	DestroyWindow(hwnd);
 }
+
+void Wnd::GetDimension(uint& w, uint& h)
+{
+	RECT rect;
+
+	GetClientRect(hwnd, &rect);
+	
+	w = rect.right - rect.left;
+	h = rect.bottom - rect.top;
+}

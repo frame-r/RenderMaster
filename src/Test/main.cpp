@@ -20,7 +20,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 			
 		resMan->LoadModel(pModel, "box.fbx", nullptr);
 				
-		pCore->Start();
+		pCore->Start(); // begin main loop
 
 		pCore->CloseEngine();
 

@@ -6,7 +6,7 @@ class Camera : public ICamera
 {
 	const float _zNear = 0.03f;
 	const float _zFar = 200.f;
-	const float _fovAngle = 45.0f;
+	const float _fovAngle = 60.0f;
 
 public:
 

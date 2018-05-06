@@ -18,6 +18,7 @@ DEFINE_LOG_HELPERS(_pCore)
 
 void CHECK_GL_ERRORS()
 {
+#ifdef _DEBUG
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR)
 	{
@@ -37,8 +38,10 @@ void CHECK_GL_ERRORS()
 				error = "OpenGL error: " + oss.str();
 			}break;
 		}
-		LOG_WARNING(error.c_str());
-	}	
+		LOG_FATAL(error.c_str());
+		assert(false);
+	}
+#endif
 }
 
 bool GLCoreRender::_check_shader_errors(int id, GLenum constant)
@@ -277,6 +280,10 @@ API GLCoreRender::Init(const WinHandle* handle)
 	
 	// dbg
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glDisable(GL_CULL_FACE);
+
+	glEnable(GL_DEPTH_TEST);
+	glClearDepth(1.0f);
 
 	CHECK_GL_ERRORS();
 
@@ -285,12 +292,13 @@ API GLCoreRender::Init(const WinHandle* handle)
 	return S_OK;
 }
 
-API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, DRAW_MODE mode)
+API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, VERTEX_TOPOLOGY mode)
 {
 	const int indexes = indexDesc.format != MESH_INDEX_FORMAT::NOTHING;
-	const int texCoords = dataDesc.texCoordPresented;
 	const int normals = dataDesc.normalsPresented;
-	const int bytes = (12 + texCoords * 8 + normals * 12) * dataDesc.number;	
+	const int texCoords = dataDesc.texCoordPresented;
+	const int colors = dataDesc.colorPresented;
+	const int bytes = (12 + texCoords * 8 + normals * 12 + colors * 12) * dataDesc.numberOfVertex;	
 	GLuint vao = 0, vbo = 0, ibo = 0;
 
 	CHECK_GL_ERRORS();
@@ -304,18 +312,27 @@ API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, co
 	const GLenum glBufferType = GL_STATIC_DRAW; // TODO: GL_DYNAMIC_DRAW;
 	glBufferData(GL_ARRAY_BUFFER, bytes, reinterpret_cast<const void*>(dataDesc.pData), glBufferType); // send data to VRAM
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, dataDesc.positionStride, reinterpret_cast<void*>(dataDesc.pData + dataDesc.positionOffset));
-
-	if (texCoords)
-	{
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, dataDesc.texCoordStride, reinterpret_cast<void*>(dataDesc.pData + dataDesc.texCoordOffset));
-	}
-
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, dataDesc.positionStride, reinterpret_cast<const void*>((long long)dataDesc.positionOffset));
+	glEnableVertexAttribArray(0);
+	
 	if (normals)
 	{
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, dataDesc.normalStride, reinterpret_cast<void*>(dataDesc.pData + dataDesc.normalOffset));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, dataDesc.normalStride, reinterpret_cast<const void*>((long long)dataDesc.normalOffset));
+		glEnableVertexAttribArray(1);
+	}
+	
+	if (texCoords)
+	{
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, dataDesc.texCoordStride, reinterpret_cast<const void*>((long long)dataDesc.texCoordOffset));
+		glEnableVertexAttribArray(2);
 	}
 
+	if (colors)
+	{
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, dataDesc.colorStride, reinterpret_cast<const void*>((long long)dataDesc.colorOffset));
+		glEnableVertexAttribArray(3);
+	}
+	
 	if (indexes)
 	{
 		int idxSize = 0;
@@ -340,8 +357,10 @@ API GLCoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, co
 		a = a | INPUT_ATTRUBUTE::NORMAL;
 	if (dataDesc.texCoordPresented)
 		a = a | INPUT_ATTRUBUTE::TEX_COORD;
+	if (dataDesc.colorPresented)
+		a = a | INPUT_ATTRUBUTE::COLOR;
 
-	GLMesh *pGLMesh = new GLMesh(vao, vbo, ibo, dataDesc.number, indexDesc.number, indexDesc.format, mode, a);
+	GLMesh *pGLMesh = new GLMesh(vao, vbo, ibo, dataDesc.numberOfVertex, indexDesc.number, indexDesc.format, mode, a);
 	pMesh = pGLMesh;
 
 	return S_OK;
@@ -352,6 +371,9 @@ API GLCoreRender::CreateShader(ICoreShader*& pShader, const ShaderText& shaderDe
 	GLuint vertID = 0;
 	GLuint geomID = 0;
 	GLuint fragID = 0;
+
+	CHECK_GL_ERRORS();
+
 	GLuint programID = glCreateProgram();
 	
 	if (!_create_shader(vertID, GL_VERTEX_SHADER, shaderDesc.pVertText, shaderDesc.vertNumLines, programID))
@@ -374,6 +396,8 @@ API GLCoreRender::CreateShader(ICoreShader*& pShader, const ShaderText& shaderDe
 		glDeleteProgram(programID);
 		return S_FALSE;
 	}
+
+	CHECK_GL_ERRORS();
 
 	GLShader *pGLShader = new GLShader(programID, vertID, geomID, fragID);
 	pShader = pGLShader;
@@ -453,7 +477,7 @@ API GLCoreRender::SetUniform(const char* name, const void* pData, const ICoreSha
 		break;
 
 	default:
-		LOG_FATAL("GLCoreRender::SetUniform(): unknown shader variable typre");
+		LOG_WARNING("GLCoreRender::SetUniform(): unknown shader variable type");
 		return S_FALSE;
 
 
@@ -520,14 +544,14 @@ API GLCoreRender::SetUniformArray(const char* name, const void* pData, const ICo
 	case SHADER_VARIABLE_TYPE::SVT_MATRIX3X3:
 	{
 		const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
-		glUniformMatrix3fv(ID, 1, GL_FALSE, &m3->el_1D[0]);
+		glUniformMatrix3fv(ID, number, GL_FALSE, &m3->el_1D[0]);
 	}
 	break;
 
 	case SHADER_VARIABLE_TYPE::SVT_MATRIX4X4:
 	{
 		const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
-		glUniformMatrix4fv(ID, 1, GL_FALSE, &m4->el_1D[0]);
+		glUniformMatrix4fv(ID, number, GL_FALSE, &m4->el_1D[0]);
 	}
 	break;
 
@@ -562,11 +586,41 @@ API GLCoreRender::Draw(ICoreMesh *mesh)
 		glBindVertexArray(0);
 	else
 	{
-		uint vertex;
-		mesh->GetNumberOfVertex(vertex);
-		glBindVertexArray(vertex);
+		GLMesh *pGLMesh = reinterpret_cast<GLMesh*>(mesh);
+		glBindVertexArray(pGLMesh->VAO_ID());
+
+		uint vertecies;
+		mesh->GetNumberOfVertex(vertecies);
+
+		VERTEX_TOPOLOGY topology;
+		mesh->GetVertexTopology(topology);
+
+		if (topology == VERTEX_TOPOLOGY::TRIANGLES)
+			glDrawArrays(GL_TRIANGLES, 0, vertecies);
+		else
+			glDrawArrays(GL_LINES, 0, vertecies);
 	}
 	CHECK_GL_ERRORS();
+	return S_OK;
+}
+
+API GLCoreRender::SetDepthState(int enabled)
+{
+	CHECK_GL_ERRORS();
+
+	if (enabled)
+		glEnable(GL_DEPTH_TEST);
+	else
+		glDisable(GL_DEPTH_TEST);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::SetViewport(uint w, uint h)
+{
+	glViewport(0, 0, w, h);
 	return S_OK;
 }
 

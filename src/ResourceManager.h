@@ -11,17 +11,27 @@ class ResourceManager : public IResourceManager
 	std::string dataPath;
 	std::string workingDir;
 	std::string installedDir;
+	
 	CRITICAL_SECTION _cs;
+	
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
-	std::map<DEFAULT_MODEL, ICoreMesh*> _default_meshes;
+	
+	struct TDefaultResource
+	{
+		IResource *pRes{nullptr};
+		uint refCount{0};
+		DEFAULT_RES_TYPE type{DEFAULT_RES_TYPE::NONE};
+		TDefaultResource(IResource* pResIn, uint refCountIn, DEFAULT_RES_TYPE typeIn) : pRes(pResIn), refCount(refCountIn), type(typeIn) {}
+	};
+	std::vector<TDefaultResource> _default_resources;
 
 	struct TResource
 	{
 		IResource *pRes;
 		uint refCount;
 	};
-	std::vector<TResource> _res_vec;
+	std::vector<TResource> _resources;
 
 
 	#ifdef USE_FBX
@@ -48,6 +58,7 @@ public:
 	
 	API LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
 	API LoadShaderText(ShaderText &pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
+	API GetDefaultResource(IResource *&pRes, DEFAULT_RES_TYPE type) override;
 	API AddToList(IResource *pResource) override;
 	API GetNumberOfResources(uint& number) override;
 	API GetRefNumber(IResource *pResource, uint& number) override;
