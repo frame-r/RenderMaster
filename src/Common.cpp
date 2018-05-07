@@ -12,9 +12,9 @@ bool is_relative(const char *pPath)
 	return wfsPath.is_relative();
 }
 
-std::string make_absolute(const char* pRelDataPath, const char* pWorkingPath)
+std::string make_absolute(const char* pRelDataPath, const char* pBasePath)
 {
-	std::wstring workingPath = ConvertFromUtf8ToUtf16(pWorkingPath);
+	std::wstring workingPath = ConvertFromUtf8ToUtf16(pBasePath);
 	std::wstring relPath = ConvertFromUtf8ToUtf16(pRelDataPath);
 
 	fs::path fbase(workingPath);

@@ -70,7 +70,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	std::string absoluteDataPath = pDataPath;
 	if (is_relative(pDataPath))
 	{
-		absoluteDataPath = make_absolute(pDataPath, _pWorkingDir);
+		absoluteDataPath = make_absolute(pDataPath, _pInstalledDir);
 	}
 	_pDataDir = new char[absoluteDataPath.size() + 1];
 	strcpy(_pDataDir, absoluteDataPath.c_str());
