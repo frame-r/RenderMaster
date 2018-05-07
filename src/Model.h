@@ -13,7 +13,7 @@ public:
 	~Model();
 	
 	API GetMesh(ICoreMesh*& pMesh, uint idx) override;
-	API GetMeshesNumber(uint& number) override;
+	API GetNumberOfMesh(uint& number) override;
 	API Free() override;
 	API GetType(RES_TYPE& type) override;
 

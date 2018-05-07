@@ -469,7 +469,7 @@ void Render::_get_meshes(vector<TRenderMesh>& meshes_vec)
 			IModel *model = reinterpret_cast<IModel*>(go);
 
 			uint meshes;
-			model->GetMeshesNumber(meshes);
+			model->GetNumberOfMesh(meshes);
 
 			for (auto j = 0u; j < meshes; j++)
 			{
@@ -521,10 +521,10 @@ void Render::_draw_axes(const mat4& VP)
 	ICoreShader *shader = _get_shader({ a, false });
 	_pCoreRender->SetShader(shader);
 
-	_pCoreRender->SetUniform("MVP", &VP.el_1D[0], shader, SHADER_VARIABLE_TYPE::SVT_MATRIX4X4);
+	_pCoreRender->SetUniform("MVP", &VP.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
 
 	vec4 main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	_pCoreRender->SetUniform("main_color", &main_color.x, shader, SHADER_VARIABLE_TYPE::SVT_VECTOR4);
+	_pCoreRender->SetUniform("main_color", &main_color.x, shader, SHADER_VARIABLE_TYPE::VECTOR4);
 
 	_pCoreRender->SetDepthState(false);
 
@@ -554,33 +554,37 @@ void Render::RenderFrame()
 	_get_meshes(_meshes);
 	_sort_meshes(_meshes);
 
-	for(auto &mesh : _meshes)
+	for(auto &renderMesh : _meshes)
 	{
 		INPUT_ATTRUBUTE a;
-		mesh.mesh->GetAttributes(a);		
+		renderMesh.mesh->GetAttributes(a);		
 		
 		ICoreShader *shader = _get_shader({a, false});
 
 		_pCoreRender->SetShader(shader);
-		_pCoreRender->SetMesh(mesh.mesh);
+		_pCoreRender->SetMesh(renderMesh.mesh);
 
-		mat4 MVP = VP * mesh.modelMat;
-		
-		_pCoreRender->SetUniform("MVP", &MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::SVT_MATRIX4X4);
+
+		// uniforms
+
+		mat4 MVP = VP * renderMesh.modelMat;
+
+		_pCoreRender->SetUniform("MVP", &MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
+
+		vec4 main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		_pCoreRender->SetUniform("main_color", &main_color.x, shader, SHADER_VARIABLE_TYPE::VECTOR4);
 
 		if ((int)(a & INPUT_ATTRUBUTE::NORMAL))
 		{
 			mat4 NM;
-			_pCoreRender->SetUniform("NM", &NM.el_1D[0], shader, SHADER_VARIABLE_TYPE::SVT_MATRIX4X4);
+			_pCoreRender->SetUniform("NM", &NM.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
 
 			vec3 nL = vec3(0.1f, 0.8f, -1.0f).Normalized();
-			_pCoreRender->SetUniform("nL", &nL.x, shader, SHADER_VARIABLE_TYPE::SVT_VECTOR3);
+			_pCoreRender->SetUniform("nL", &nL.x, shader, SHADER_VARIABLE_TYPE::VECTOR3);
 
-			vec4 main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-			_pCoreRender->SetUniform("main_color", &main_color.x, shader, SHADER_VARIABLE_TYPE::SVT_VECTOR4);
 		}
 
-		_pCoreRender->Draw(mesh.mesh);
+		_pCoreRender->Draw(renderMesh.mesh);
 	}
 
 	_draw_axes(VP);

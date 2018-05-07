@@ -167,7 +167,7 @@ namespace RENDER_MASTER
 
 
 	//////////////////////
-	// Core Render stuff
+	// Core Render
 	//////////////////////
 
 	enum class INPUT_ATTRUBUTE
@@ -189,7 +189,7 @@ namespace RENDER_MASTER
 	// At minimum position attribute must be present
 	// Stride is step in bytes to move along the array from vertex to vertex 
 	// Offset also specified in bytes
-	// Stride and offset defines two case:
+	// Stride and offset defines two general case:
 	//
 	// 1) Interleaved
 	//
@@ -198,7 +198,7 @@ namespace RENDER_MASTER
 	// texCoordOffset = 12, texCoordStride = 32,
 	// normalOffset = 20, normalStride = 32
 	//
-	// 2) Tightly packed attributes
+	// 2) Tightly packed
 	//
 	// x1, y2, z1, x2, y2, z2, ...   UVx1, UVy1, UVx2, UVy2, ...  Nx1, Ny1, Nz1, Nx2, Ny2, Nz2, ...
 	// positionOffset = 0, positionStride = 12,
@@ -225,7 +225,6 @@ namespace RENDER_MASTER
 		bool colorPresented{false};
 		uint colorOffset{0};
 		uint colorStride{0};
-
 	};
 
 	enum class MESH_INDEX_FORMAT
@@ -237,27 +236,25 @@ namespace RENDER_MASTER
 
 	enum class SHADER_VARIABLE_TYPE
 	{
-		SVT_INT,
-		SVT_FLOAT,
-		SVT_VECTOR3,
-		SVT_VECTOR4,
-		SVT_MATRIX3X3,
-		SVT_MATRIX4X4,
+		INT,
+		FLOAT,
+		VECTOR3,
+		VECTOR4,
+		MATRIX3X3,
+		MATRIX4X4,
 	};
 
 	struct MeshIndexDesc
 	{
-		MeshIndexDesc() : pData(nullptr), number(0), format(MESH_INDEX_FORMAT::NOTHING) {}
-
-		uint8 *pData;
-		uint number;
-		MESH_INDEX_FORMAT format;
+		uint8 *pData{nullptr};
+		uint number{0};
+		MESH_INDEX_FORMAT format{MESH_INDEX_FORMAT::NOTHING};
 	};
 
 	class ICoreMesh : public IResource
 	{
 	public:
-		virtual API GetNumberOfVertex(uint &vertex) = 0;
+		virtual API GetNumberOfVertex(uint &number) = 0;
 		virtual API GetAttributes(INPUT_ATTRUBUTE &attribs) = 0;
 		virtual API GetVertexTopology(VERTEX_TOPOLOGY &topology) = 0;
 	};
@@ -321,12 +318,13 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetMesh(ICoreMesh *&pMesh, uint idx) = 0;
-		virtual API GetMeshesNumber(uint& number) = 0;
+		virtual API GetNumberOfMesh(uint& number) = 0;
 	};
 
 	//////////////////////
 	// Scene Manager
 	//////////////////////
+
 	class ISceneManager : public ISubSystem
 	{
 	public:
@@ -376,10 +374,10 @@ namespace RENDER_MASTER
 
 	enum class FILE_OPEN_MODE
 	{
-		READ = 0b000000000000000000000001,
-		WRITE = 0b000000000000000000000010,
-		APPEND = 0b000000000000000000000100,
-		BINARY = 0b000000000000000000001000,
+		READ = 1 << 0,
+		WRITE = 1 << 1,
+		APPEND = 1 << 2,
+		BINARY = 1 << 3,
 	};
 	DEFINE_ENUM_OPERATORS(FILE_OPEN_MODE)
 
@@ -404,7 +402,6 @@ namespace RENDER_MASTER
 		virtual API FileExist(const char *fullPath, int &exist) = 0;
 		virtual API GetName(const char *&pName) = 0;
 	};
-
 
 	
 	//////////////////////
@@ -451,7 +448,7 @@ namespace RENDER_MASTER
 		}
 
 		IClassFactory* pCFactory;
-		// Get the class factory for the Math class
+		// Get the class factory for the Core class
 
 		hr = CoGetClassObject(clsid,
 			CLSCTX_INPROC,
@@ -471,7 +468,7 @@ namespace RENDER_MASTER
 		IUnknown* pUnk;
 		hr = pCFactory->CreateInstance(NULL, IID_IUnknown, (void**)&pUnk);
 
-		//// Release the class factory
+		// Release the class factory
 		pCFactory->Release();
 
 		if (FAILED(hr))

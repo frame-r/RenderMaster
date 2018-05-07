@@ -9,9 +9,9 @@
 
 class GLCoreRender : public ICoreRender
 {
-	HDC _hdc;
-	HGLRC _hRC;
-	HWND _hWnd;
+	HDC _hdc{};
+	HGLRC _hRC{};
+	HWND _hWnd{};
 
 	const ICoreShader *_current_shader{nullptr};
 

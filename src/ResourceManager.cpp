@@ -540,7 +540,7 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 
 	AddToList(pModel);
 
-	pModel->GetMeshesNumber(meshNumber);
+	pModel->GetNumberOfMesh(meshNumber);
 
 	for (uint i = 0; i < meshNumber; i++)
 	{

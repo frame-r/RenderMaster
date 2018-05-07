@@ -118,11 +118,15 @@ API GLCoreRender::Init(const WinHandle* handle)
 	const int major_version = 4;
 	const int minor_version = 5;
 
+	int closest_pixel_format = 0;
+	const bool msaa = false; // set true to init with MSAA
+	const int msaa_samples = 16;
+
 	_pCore->GetSubSystem((ISubSystem*&)_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 	_hWnd = *handle;
 
-	PIXELFORMATDESCRIPTOR pfd = {};
+	PIXELFORMATDESCRIPTOR pfd{};
 
 	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
 	pfd.nVersion = 1;
@@ -133,10 +137,6 @@ API GLCoreRender::Init(const WinHandle* handle)
 	pfd.iLayerType = PFD_MAIN_PLANE;
 
 	_hdc = GetDC(_hWnd);
-
-	int closest_pixel_format = 0;
-	const bool msaa = false;
-	const int msaa_samples = 16;
 
 	if (!msaa)
 	{
@@ -257,12 +257,12 @@ API GLCoreRender::Init(const WinHandle* handle)
 			
 			#define OGLI "OpenGL context created at version " 
 			GLint major, minor;
-			char _log_fbx_buffer[sizeof(OGLI) + 4];
+			char gl_version_buffer[sizeof(OGLI) + 4];
 			glGetIntegerv(GL_MAJOR_VERSION, &major);
 			glGetIntegerv(GL_MINOR_VERSION, &minor);
-			sprintf_s(_log_fbx_buffer, OGLI"%i.%i", major, minor);
+			sprintf_s(gl_version_buffer, OGLI"%i.%i", major, minor);
 
-			LOG(_log_fbx_buffer);
+			LOG(gl_version_buffer);
 		}
 		else
 		{
@@ -277,13 +277,13 @@ API GLCoreRender::Init(const WinHandle* handle)
 	}
 
 	CHECK_GL_ERRORS();
+
+	glEnable(GL_DEPTH_TEST);
+	glClearDepth(1.0f);
 	
 	// dbg
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glDisable(GL_CULL_FACE);
-
-	glEnable(GL_DEPTH_TEST);
-	glClearDepth(1.0f);
 
 	CHECK_GL_ERRORS();
 
@@ -387,6 +387,7 @@ API GLCoreRender::CreateShader(ICoreShader*& pShader, const ShaderText& shaderDe
 		if (!_create_shader(geomID, GL_GEOMETRY_SHADER, shaderDesc.pGeomText, shaderDesc.geomNumLines, programID))
 		{
 			glDeleteProgram(programID);
+			glDeleteShader(vertID);
 			return S_FALSE;
 		}
 	}
@@ -394,6 +395,9 @@ API GLCoreRender::CreateShader(ICoreShader*& pShader, const ShaderText& shaderDe
 	if (!_create_shader(fragID, GL_FRAGMENT_SHADER, shaderDesc.pFragText, shaderDesc.fragNumLines, programID))
 	{
 		glDeleteProgram(programID);
+		glDeleteShader(vertID);
+		if (geomID)
+			glDeleteShader(geomID);
 		return S_FALSE;
 	}
 
@@ -436,40 +440,40 @@ API GLCoreRender::SetUniform(const char* name, const void* pData, const ICoreSha
 	switch (type)
 	{
 
-	case SHADER_VARIABLE_TYPE::SVT_INT:
+	case SHADER_VARIABLE_TYPE::INT:
 		{
 			const int *i = reinterpret_cast<const int*>(pData);
 			glUniform1i(ID, *i);
 		}
 		break;
 
-	case SHADER_VARIABLE_TYPE::SVT_FLOAT:
+	case SHADER_VARIABLE_TYPE::FLOAT:
 		{
 			const float *f = reinterpret_cast<const float*>(pData);
 			glUniform1f(ID, *f);
 		}
 		break;
-	case SHADER_VARIABLE_TYPE::SVT_VECTOR3:
+	case SHADER_VARIABLE_TYPE::VECTOR3:
 		{
 			const Vector3 *v3 = reinterpret_cast<const Vector3*>(pData);
 			glUniform3f(ID, v3->x, v3->y, v3->z);
 		}
 		break;
-	case SHADER_VARIABLE_TYPE::SVT_VECTOR4:
+	case SHADER_VARIABLE_TYPE::VECTOR4:
 		{
 			const Vector4 *v4 = reinterpret_cast<const Vector4*>(pData);
 			glUniform4f(ID, v4->x, v4->y, v4->z, v4->w);
 		}
 		break;
 
-	case SHADER_VARIABLE_TYPE::SVT_MATRIX3X3:
+	case SHADER_VARIABLE_TYPE::MATRIX3X3:
 		{
 			const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
 			glUniformMatrix3fv(ID, 1, GL_TRUE, &m3->el_1D[0]);
 		}
 		break;
 
-	case SHADER_VARIABLE_TYPE::SVT_MATRIX4X4:
+	case SHADER_VARIABLE_TYPE::MATRIX4X4:
 		{
 			const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
 			glUniformMatrix4fv(ID, 1, GL_TRUE, &m4->el_1D[0]);
@@ -481,7 +485,7 @@ API GLCoreRender::SetUniform(const char* name, const void* pData, const ICoreSha
 		return S_FALSE;
 
 
-	//case SHADER_VARIABLE_TYPE::SVT_TEXTURE:
+	//case SHADER_VARIABLE_TYPE::TEXTURE:
 	//	tex = reinterpret_cast<const Texture*>(pData);
 	//	glActiveTexture(GL_TEXTURE0 + tex_sampler); // activate next avaliable texture unit
 	//	glBindTexture(GL_TEXTURE_2D, tex->ID); // attach texture to texture unit as GL_TEXTURE_2D
@@ -489,7 +493,7 @@ API GLCoreRender::SetUniform(const char* name, const void* pData, const ICoreSha
 	//	//_freeTextureUnit++;
 	//	break;
 
-	//case SVT_TEXTURE3D:
+	//case TEXTURE3D:
 	//	ERR_GUARDS();
 	//	tex = reinterpret_cast<const Texture*>(pData);
 	//	glActiveTexture(GL_TEXTURE0 + tex_sampler);
@@ -515,40 +519,40 @@ API GLCoreRender::SetUniformArray(const char* name, const void* pData, const ICo
 	switch (type)
 	{
 
-	case SHADER_VARIABLE_TYPE::SVT_INT:
+	case SHADER_VARIABLE_TYPE::INT:
 	{
 		const int *i = reinterpret_cast<const int*>(pData);
 		glUniform1iv(ID, number, i);
 	}
 	break;
 
-	case SHADER_VARIABLE_TYPE::SVT_FLOAT:
+	case SHADER_VARIABLE_TYPE::FLOAT:
 	{
 		const float *f = reinterpret_cast<const float*>(pData);
 		glUniform1fv(ID, number, f);
 	}
 	break;
-	case SHADER_VARIABLE_TYPE::SVT_VECTOR3:
+	case SHADER_VARIABLE_TYPE::VECTOR3:
 	{
 		const Vector3 *v3 = reinterpret_cast<const Vector3*>(pData);
 		glUniform3fv(ID, number, &v3->x);
 	}
 	break;
-	case SHADER_VARIABLE_TYPE::SVT_VECTOR4:
+	case SHADER_VARIABLE_TYPE::VECTOR4:
 	{
 		const Vector4 *v4 = reinterpret_cast<const Vector4*>(pData);
 		glUniform4fv(ID, number, &v4->x);
 	}
 	break;
 
-	case SHADER_VARIABLE_TYPE::SVT_MATRIX3X3:
+	case SHADER_VARIABLE_TYPE::MATRIX3X3:
 	{
 		const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
 		glUniformMatrix3fv(ID, number, GL_TRUE, &m3->el_1D[0]);
 	}
 	break;
 
-	case SHADER_VARIABLE_TYPE::SVT_MATRIX4X4:
+	case SHADER_VARIABLE_TYPE::MATRIX4X4:
 	{
 		const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
 		glUniformMatrix4fv(ID, number, GL_TRUE, &m4->el_1D[0]);

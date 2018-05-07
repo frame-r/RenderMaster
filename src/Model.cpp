@@ -19,7 +19,7 @@ API Model::GetMesh(ICoreMesh*& pMesh, uint idx)
 	return S_OK;
 }
 
-API Model::GetMeshesNumber(uint & number)
+API Model::GetNumberOfMesh(uint & number)
 {
 	number = (uint)_meshes.size();
 	return S_OK;
