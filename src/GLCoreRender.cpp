@@ -465,14 +465,14 @@ API GLCoreRender::SetUniform(const char* name, const void* pData, const ICoreSha
 	case SHADER_VARIABLE_TYPE::SVT_MATRIX3X3:
 		{
 			const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
-			glUniformMatrix3fv(ID, 1, GL_FALSE, &m3->el_1D[0]);
+			glUniformMatrix3fv(ID, 1, GL_TRUE, &m3->el_1D[0]);
 		}
 		break;
 
 	case SHADER_VARIABLE_TYPE::SVT_MATRIX4X4:
 		{
 			const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
-			glUniformMatrix4fv(ID, 1, GL_FALSE, &m4->el_1D[0]);
+			glUniformMatrix4fv(ID, 1, GL_TRUE, &m4->el_1D[0]);
 		}
 		break;
 
@@ -544,14 +544,14 @@ API GLCoreRender::SetUniformArray(const char* name, const void* pData, const ICo
 	case SHADER_VARIABLE_TYPE::SVT_MATRIX3X3:
 	{
 		const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
-		glUniformMatrix3fv(ID, number, GL_FALSE, &m3->el_1D[0]);
+		glUniformMatrix3fv(ID, number, GL_TRUE, &m3->el_1D[0]);
 	}
 	break;
 
 	case SHADER_VARIABLE_TYPE::SVT_MATRIX4X4:
 	{
 		const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
-		glUniformMatrix4fv(ID, number, GL_FALSE, &m4->el_1D[0]);
+		glUniformMatrix4fv(ID, number, GL_TRUE, &m4->el_1D[0]);
 	}
 	break;
 
@@ -568,6 +568,7 @@ API GLCoreRender::SetUniformArray(const char* name, const void* pData, const ICo
 API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 {
 	CHECK_GL_ERRORS();
+
 	if (!mesh)
 		glBindVertexArray(0);
 	else
@@ -575,7 +576,9 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 		const GLMesh *glMesh = reinterpret_cast<const GLMesh*>(mesh);
 		glBindVertexArray(glMesh->VAO_ID());
 	}
+
 	CHECK_GL_ERRORS();
+
 	return S_OK;
 }
 

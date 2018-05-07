@@ -14,40 +14,46 @@ API Camera::GetViewProjectionMatrix(mat4& mat, float aspect)
 	mat4 P;
 	mat4 V;
 
+	// OpenGL projection  matrix
 	const float DEGTORAD = 3.1415926f / 180.0f;
 	float const tanHalfFovy = tan(DEGTORAD* _fovAngle / 2);
 	P.el_2D[0][0] = 1.0f / (aspect * tanHalfFovy);
 	P.el_2D[1][1] = 1.0f / (tanHalfFovy);
-	P.el_2D[2][2] = (_zFar + _zNear) / (_zFar - _zNear);
-	P.el_2D[2][3] = 1.0f;
-	P.el_2D[3][2] = -(2.0f * _zFar * _zNear) / (_zFar - _zNear);
+	P.el_2D[2][2] = -(_zFar + _zNear) / (_zNear - _zFar);
+	P.el_2D[3][2] = 1.0f;
+	P.el_2D[2][3] = (2.0f * _zFar * _zNear) / (_zNear - _zFar);
 	P.el_2D[3][3] = 0.0f;
 
-	//V.el_2D[0][3] = -20.0f;
-	//V.el_2D[1][3] = -20.0f;
-
-	vec3 position(-9.5f, 9.5f, -12.5f);
+	vec3 position(10.5f, 2.0f, -12.5f);
 	vec3 forward = position.Normalized() * -1.0f;
 
 	look_at(V, position, position + forward);
 
-	mat = V*P;
+	/*
+	vec4 zf(1.0f, 0.0f, _zFar, 1.0f);
+	vec4 zn(1.0f, 0.0f, _zNear, 1.0f);
+	vec4 zm(1.0f, 0.0f, (_zNear + _zFar) * 0.5f, 1.0f);
 
-	vec4 ze(0.0f, 0.0f, 0.0f, 1.0f);
-	ze = mat * ze;
+	vec4 rf = P * zf;
+	rf /= rf.w;
+
+	vec4 rn = P * zn;
+	rn /= rn.w;
+
+	vec4 rm = P * zm;
+	rm /= rm.w;
+
+	vec4 or(0.0f, 0.0f, 0.0f, 1.0f);
+	vec4 ox (1.0f, 0.0f, 0.0f, 1.0f);
+	
+	vec4 ze = mat * or;
 	ze /= ze.w;
 
-	vec4 x(1.0f, 0.0f, 0.0f, 1.0f);
-	x = mat * x;
-	x /= x.w;
+	vec4 z1 = mat * ox;
+	z1 /= z1.w;
+	*/
 
-	vec4 y(0.0f, 1.0f, 0.0f, 1.0f);
-	y = mat * y;
-	y /= y.w;
-
-	vec4 z(0.0f, 0.0f, 1.0f, 1.0f);
-	z = mat * z;
-	z /= z.w;
+	mat = P * V;
 
 	return S_OK;
 }

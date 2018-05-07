@@ -195,13 +195,12 @@ struct Matrix4x4
 	Vector4 operator*(const Vector4& v) const
 	{
 		Vector4 ret(0.0f, 0.0f, 0.0f, 0.0f);
+
 		for (auto i = 0; i < 4; i++)
 		{
-			ret.x += el_2D[i][0] * v.xyzw[i];
-			ret.y += el_2D[i][1] * v.xyzw[i];
-			ret.z += el_2D[i][2] * v.xyzw[i];
-			ret.w += el_2D[i][3] * v.xyzw[i];
+			ret.xyzw[i] = v.x * el_2D[i][0] + v.y * el_2D[i][1] + v.z * el_2D[i][2] + v.w * el_2D[i][3];
 		}
+
 		return ret;
 	}
 
@@ -212,9 +211,11 @@ struct Matrix4x4
 		{
 			for (int j = 0; j < 4; j++)
 			{
-				res.el_2D[i][j] = 0;
-				for (int k = 0; k < 4; k++)
-					res.el_2D[i][j] += el_2D[i][k] * m.el_2D[k][j];
+				res.el_2D[i][j] =
+					el_2D[i][0] * m.el_2D[0][j] +
+					el_2D[i][1] * m.el_2D[1][j] +
+					el_2D[i][2] * m.el_2D[2][j] +
+					el_2D[i][3] * m.el_2D[3][j];
 			}
 		}
 		return res;
@@ -406,7 +407,7 @@ struct Matrix3x3
 		return *this;
 	}
 
-	Matrix3x3 MakeInverse()
+	Matrix3x3 Inversed()
 	{
 		Matrix3x3 ret(*this);
 		ret.Inverse();
@@ -452,9 +453,7 @@ struct Matrix3x3
 		Vector3 ret;
 		for (auto i = 0; i < 3; i++)
 		{
-			ret.x += el_2D[0][i] * v.xyz[i];
-			ret.y += el_2D[1][i] * v.xyz[i];
-			ret.z += el_2D[2][i] * v.xyz[i];
+			ret.xyz[i] = el_2D[i][0] * v.x + el_2D[i][1] * v.y + el_2D[i][2] * v.z;
 		}
 		return ret;
 	}

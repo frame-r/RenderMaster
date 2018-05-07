@@ -88,16 +88,16 @@ void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center)
 	Vector3 Y(Z.Cross(X));
 	Y.Normalize();
 	Result.el_2D[0][0] = X.x;
-	Result.el_2D[1][0] = X.y;
-	Result.el_2D[2][0] = X.z;
-	Result.el_2D[0][1] = Y.x;
+	Result.el_2D[0][1] = X.y;
+	Result.el_2D[0][2] = X.z;
+	Result.el_2D[1][0] = Y.x;
 	Result.el_2D[1][1] = Y.y;
-	Result.el_2D[2][1] = Y.z;
-	Result.el_2D[0][2] = Z.x;
-	Result.el_2D[1][2] = Z.y;
+	Result.el_2D[1][2] = Y.z;
+	Result.el_2D[2][0] = Z.x;
+	Result.el_2D[2][1] = Z.y;
 	Result.el_2D[2][2] = Z.z;
-	Result.el_2D[3][0] = -X.Dot(eye);
-	Result.el_2D[3][1] = -Y.Dot(eye);
-	Result.el_2D[3][2] = -Z.Dot(eye);
+	Result.el_2D[0][3] = -X.Dot(eye);
+	Result.el_2D[1][3] = -Y.Dot(eye);
+	Result.el_2D[2][3] = -Z.Dot(eye);
 }
 

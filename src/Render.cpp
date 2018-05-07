@@ -565,7 +565,7 @@ void Render::RenderFrame()
 		_pCoreRender->SetMesh(mesh.mesh);
 
 		mat4 MVP = VP * mesh.modelMat;
-
+		
 		_pCoreRender->SetUniform("MVP", &MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::SVT_MATRIX4X4);
 
 		if ((int)(a & INPUT_ATTRUBUTE::NORMAL))
