@@ -20,6 +20,10 @@ struct Vector3
 		float xyz[3] = {0.0f, 0.0f, 0.0f};
 	};
 
+	Vector3() = default;
+	Vector3(float v) : x(v), y(v), z(v) {}
+	Vector3(float xIn, float yIn, float zIn) : x(xIn), y(yIn), z(zIn) {}
+
 	static Vector3 one() { return Vector3(1.0f, 1.0f, 1.0f); }
 	static Vector3 zero() { return Vector3(0.0f, 0.0f, 0.0f); }
 	static Vector3 forward() { return Vector3(0.0f, 0.0f, 1.0f); }
@@ -29,21 +33,7 @@ struct Vector3
 	static Vector3 up() { return Vector3(0.0f, 1.0f, 0.0f); }
 	static Vector3 down() { return Vector3(0.0f, -1.0f, 0.0f); }
 
-	Vector3() = default;
-
-	Vector3(float v)
-	{
-		x = y = z = v;
-	}
-
-	Vector3(float xIn, float yIn, float zIn)
-	{
-		x = xIn;
-		y = yIn;
-		z = zIn;
-	}
-
-	Vector3 &operator += (const Vector3 &point)
+	Vector3 &operator+=(const Vector3 &point)
 	{
 		x += point.x;
 		y += point.y;
@@ -51,12 +41,12 @@ struct Vector3
 		return *this;
 	}
 
-	Vector3 operator + (const Vector3 &point) const
+	Vector3 operator+(const Vector3 &point) const
 	{
 		return Vector3(*this) += point;
 	}
 
-	Vector3 &operator -= (const Vector3 &point)
+	Vector3 &operator-=(const Vector3 &point)
 	{
 		x -= point.x;
 		y -= point.y;
@@ -64,12 +54,12 @@ struct Vector3
 		return *this;
 	}
 
-	Vector3 operator - (const Vector3 &point) const
+	Vector3 operator-(const Vector3 &point) const
 	{
 		return Vector3(*this) -= point;
 	}
 
-	Vector3 &operator *= (const Vector3 &point)
+	Vector3 &operator*=(const Vector3 &point)
 	{
 		x *= point.x;
 		y *= point.y;
@@ -77,12 +67,12 @@ struct Vector3
 		return *this;
 	}
 
-	Vector3 operator * (const Vector3 &point) const
+	Vector3 operator*(const Vector3 &point) const
 	{
 		return Vector3(*this) *= point;
 	}
 
-	Vector3 &operator *= (float value)
+	Vector3 &operator*=(float value)
 	{
 		x *= value;
 		y *= value;
@@ -90,7 +80,7 @@ struct Vector3
 		return *this;
 	}
 
-	Vector3 operator * (float value) const
+	Vector3 operator*(float value) const
 	{
 		return Vector3(*this) *= value;
 	}
@@ -113,7 +103,7 @@ struct Vector3
 		return Vector3(y * point.z - z * point.y, z * point.x - x * point.z, x * point.y - y * point.x);
 	}
 
-	Vector3 &Normalize()
+	Vector3& Normalize()
 	{
 		float len = Lenght();
 		x /= len;
@@ -124,12 +114,8 @@ struct Vector3
 
 	Vector3 Normalized() const
 	{
-		Vector3 ret(*this);
 		float len = Lenght();
-		ret.x /= len;
-		ret.y /= len;
-		ret.z /= len;
-		return ret;
+		return Vector3(x / len, y / len, z / len);
 	}
 
 	float Dot(const Vector3& point) const
@@ -152,30 +138,12 @@ struct Vector4
 		{
 			float x, y, z, w;
 		};
-		float xyzw[4];
+		float xyzw[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 	};
 
-	Vector4()
-	{
-		x = y = z = 0;
-		w = 1.0f;
-	}
-
-	Vector4(float x, float y, float z, float w)
-	{
-		this->x = x;
-		this->y = y;
-		this->z = z;
-		this->w = w;
-	}
-
-	Vector4(const Vector3& v3)
-	{
-		x = v3.x;
-		y = v3.y;
-		z = v3.z;
-		w = 1.0f;
-	}
+	Vector4() = default;
+	Vector4(float xIn, float yIn, float zIn, float wIn) : x(xIn), y(yIn), z(zIn), w(wIn) {}
+	Vector4(const Vector3& v3) : x(v3.x), y(v3.y), z(v3.z), w(1.0f) {}
 
 	Vector4& operator/=(float value)
 	{
@@ -237,7 +205,7 @@ struct Matrix4x4
 		return ret;
 	}
 
-	Matrix4x4 operator* (const Matrix4x4& m) const
+	Matrix4x4 operator*(const Matrix4x4& m) const
 	{
 		Matrix4x4 res;
 		for (int i = 0; i < 4; i++)
@@ -389,7 +357,7 @@ struct Matrix3x3
 	};
 
 	Matrix3x3() = default;
-	
+
 	Matrix3x3(float f)
 	{
 		el_2D[0][0] = el_2D[0][1] = el_2D[0][2] = 0.0f;
