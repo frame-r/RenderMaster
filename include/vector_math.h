@@ -392,17 +392,17 @@ struct Matrix3x3
 
 	Matrix3x3& Inverse()
 	{
-		Matrix3x3 cache(*this);
+		Matrix3x3 tmp(*this);
 		float inv_det = 1.0f / Det();
-		el_2D[0][0] = cache.el_2D[1][1] * cache.el_2D[2][2] - cache.el_2D[1][2] * cache.el_2D[2][1];
-		el_2D[0][1] = cache.el_2D[0][2] * cache.el_2D[2][1] - cache.el_2D[0][1] * cache.el_2D[2][2];
-		el_2D[0][2] = cache.el_2D[0][1] * cache.el_2D[1][2] - cache.el_2D[0][2] * cache.el_2D[1][1];
-		el_2D[1][0] = cache.el_2D[1][2] * cache.el_2D[2][0] - cache.el_2D[1][0] * cache.el_2D[2][2];
-		el_2D[1][1] = cache.el_2D[0][0] * cache.el_2D[2][2] - cache.el_2D[0][2] * cache.el_2D[2][0];
-		el_2D[1][2] = cache.el_2D[0][2] * cache.el_2D[1][0] - cache.el_2D[0][0] * cache.el_2D[1][2];
-		el_2D[2][0] = cache.el_2D[1][0] * cache.el_2D[2][1] - cache.el_2D[1][1] * cache.el_2D[2][0];
-		el_2D[2][1] = cache.el_2D[0][0] * cache.el_2D[1][2] - cache.el_2D[1][0] * cache.el_2D[0][2];
-		el_2D[2][2] = cache.el_2D[0][0] * cache.el_2D[1][1] - cache.el_2D[0][1] * cache.el_2D[1][0];
+		el_2D[0][0] = tmp.el_2D[1][1] * tmp.el_2D[2][2] - tmp.el_2D[1][2] * tmp.el_2D[2][1];
+		el_2D[0][1] = tmp.el_2D[0][2] * tmp.el_2D[2][1] - tmp.el_2D[0][1] * tmp.el_2D[2][2];
+		el_2D[0][2] = tmp.el_2D[0][1] * tmp.el_2D[1][2] - tmp.el_2D[0][2] * tmp.el_2D[1][1];
+		el_2D[1][0] = tmp.el_2D[1][2] * tmp.el_2D[2][0] - tmp.el_2D[1][0] * tmp.el_2D[2][2];
+		el_2D[1][1] = tmp.el_2D[0][0] * tmp.el_2D[2][2] - tmp.el_2D[0][2] * tmp.el_2D[2][0];
+		el_2D[1][2] = tmp.el_2D[0][2] * tmp.el_2D[1][0] - tmp.el_2D[0][0] * tmp.el_2D[1][2];
+		el_2D[2][0] = tmp.el_2D[1][0] * tmp.el_2D[2][1] - tmp.el_2D[1][1] * tmp.el_2D[2][0];
+		el_2D[2][1] = tmp.el_2D[0][0] * tmp.el_2D[1][2] - tmp.el_2D[1][0] * tmp.el_2D[0][2];
+		el_2D[2][2] = tmp.el_2D[0][0] * tmp.el_2D[1][1] - tmp.el_2D[0][1] * tmp.el_2D[1][0];
 		*this *= inv_det;
 		return *this;
 	}
@@ -416,13 +416,13 @@ struct Matrix3x3
 
 	Matrix3x3& Transpose()
 	{
-		Matrix3x3 cache(*this);
-		el_2D[0][1] = cache.el_2D[1][0];
-		el_2D[0][2] = cache.el_2D[2][0];
-		el_2D[1][0] = cache.el_2D[0][1];
-		el_2D[1][2] = cache.el_2D[2][1];
-		el_2D[2][0] = cache.el_2D[0][2];
-		el_2D[2][1] = cache.el_2D[1][2];
+		Matrix3x3 tmp(*this);
+		el_2D[0][1] = tmp.el_2D[1][0];
+		el_2D[0][2] = tmp.el_2D[2][0];
+		el_2D[1][0] = tmp.el_2D[0][1];
+		el_2D[1][2] = tmp.el_2D[2][1];
+		el_2D[2][0] = tmp.el_2D[0][2];
+		el_2D[2][1] = tmp.el_2D[1][2];
 		return *this;
 	}
 

@@ -6,10 +6,7 @@
 #include "Core.h"
 
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-					 )
+BOOL APIENTRY DllMain( HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
 	switch (ul_reason_for_call)
 	{
@@ -25,26 +22,21 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 EXTERN_C  HRESULT STDAPICALLTYPE DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
 {
 	HRESULT hr;
-	CoreClassFactory *pCF;
+	CoreClassFactory *pCF{nullptr};
 
-	pCF = 0;
-
-	// Make sure the CLSID is for our Expression component
 	if (rclsid != CLSID_Core)
-		return(E_FAIL);
+		return E_FAIL;
 
 	pCF = new CoreClassFactory;
 
 	if (pCF == 0)
-		return(E_OUTOFMEMORY);
+		return E_OUTOFMEMORY;
 
 	hr = pCF->QueryInterface(riid, ppv);
 
-	// Check for failure of QueryInterface
 	if (FAILED(hr))
 	{
 		delete pCF;
-		pCF = 0;
 	}
 
 	return hr;
@@ -54,4 +46,3 @@ EXTERN_C HRESULT STDAPICALLTYPE DllCanUnloadNow(void)
 {
 	return S_OK;
 }
-
