@@ -13,10 +13,12 @@ class GLCoreRender : public ICoreRender
 	HGLRC _hRC{};
 	HWND _hWnd{};
 
+	IResourceManager *_pResMan{ nullptr };
+
+	uint w{0}, h{0};
+
 	const ICoreShader *_current_shader{nullptr};
-
-	IResourceManager *_pResMan{nullptr};
-
+	
 	bool _check_shader_errors(int id, GLenum constant);
 	bool _create_shader(GLuint &id, GLenum type, const char** pText, int numLines, GLuint programID);
 

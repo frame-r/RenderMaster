@@ -625,20 +625,28 @@ API GLCoreRender::SetDepthState(int enabled)
 	return S_OK;
 }
 
-API GLCoreRender::SetViewport(uint w, uint h)
+API GLCoreRender::SetViewport(uint wIn, uint hIn)
 {
-	glViewport(0, 0, w, h);
+	if (w == wIn && h == hIn) return S_OK;
+
+	glViewport(0, 0, wIn, hIn);
+	w = wIn;
+	h = hIn;
+
 	return S_OK;
 }
 
-API GLCoreRender::GetViewport(uint & w, uint & h)
+API GLCoreRender::GetViewport(uint& wOut, uint& hOut)
 {
 	CHECK_GL_ERRORS();
 
-	GLint vp[4];
-	glGetIntegerv(GL_VIEWPORT, vp);
+	wOut = w;
+	hOut = h;
+
+	//GLint vp[4];
+	//glGetIntegerv(GL_VIEWPORT, vp);
 	//x = vp[0]; y = vp[1];
-	w = vp[2]; h = vp[3];
+	//w = vp[2]; h = vp[3];
 
 	CHECK_GL_ERRORS();
 
