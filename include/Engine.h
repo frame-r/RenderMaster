@@ -290,6 +290,7 @@ namespace RENDER_MASTER
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
+		virtual API GetViewport(uint& w, uint& h) = 0;
 		virtual API Clear() = 0;
 		virtual API SwapBuffers() = 0;
 		virtual API Free() = 0;

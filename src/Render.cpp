@@ -388,13 +388,13 @@ const char** make_char_pp(const list<string>& lines)
 	return const_cast<const char**>(ret);
 }
 
-void Render::save_text(list<string>& l, const string&& str)
+void Render::_export_shader_to_file(list<string>& text, const string&& file)
 {
 	IFile *pFile;
 	
-	_fsystem->OpenFile(pFile, str.c_str(), FILE_OPEN_MODE::WRITE);
+	_fsystem->OpenFile(pFile, file.c_str(), FILE_OPEN_MODE::WRITE);
 
-	for (auto& ll : l)
+	for (auto& ll : text)
 	{
 		pFile->Write((uint8 *)ll.c_str(), (uint)ll.size());
 	}
@@ -451,9 +451,9 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 	return pShader;
 }
 
-void Render::_get_meshes(vector<TRenderMesh>& meshes_vec)
+void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 {
-	uint number{ 0 };
+	uint number{0};
 	_pSceneMan->GetGameObjectsNumber(number);
 
 	for (auto i = 0u; i < number; i++)
@@ -533,25 +533,27 @@ void Render::_draw_axes(const mat4& VP)
 	_pCoreRender->SetDepthState(true);
 }
 
-void Render::Resize(uint w, uint h)
-{
-	_pCoreRender->SetViewport(w, h);
-	_aspect = (float)w / h;
-}
+//void Render::Resize(uint w, uint h)
+//{
+//	_pCoreRender->SetViewport(w, h);
+//	_aspect = (float)w / h;
+//}
 
-void Render::RenderFrame()
+void Render::RenderFrame(ICamera *pCamera)
 {
 	vector<TRenderMesh> _meshes;
-
-	ICamera *cam{nullptr};
-	_pSceneMan->GetCamera(cam);
-
-	mat4 VP;
-	cam->GetViewProjectionMatrix(VP, _aspect);
-
+	
 	_pCoreRender->Clear();
 
-	_get_meshes(_meshes);
+	uint w, h;
+	_pCoreRender->GetViewport(w, h);
+
+	float aspect = (float)w / h;
+
+	mat4 VP;
+	pCamera->GetViewProjectionMatrix(VP, aspect);
+
+	_create_render_mesh_vec(_meshes);
 	_sort_meshes(_meshes);
 
 	for(auto &renderMesh : _meshes)

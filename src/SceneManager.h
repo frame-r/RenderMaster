@@ -4,8 +4,9 @@
 class SceneManager : public ISceneManager
 {
 	std::vector<IGameObject*> _game_objects;
-	IResourceManager *pResMan{nullptr};
-	ICamera *_pCam{nullptr};
+	ICamera *_pCam{ nullptr };
+
+	IResourceManager *pResMan{nullptr};	
 
 public:
 

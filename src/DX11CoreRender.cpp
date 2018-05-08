@@ -70,6 +70,11 @@ API DX11CoreRender::SetViewport(uint w, uint h)
 	return E_NOTIMPL;
 }
 
+API DX11CoreRender::GetViewport(uint & w, uint & h)
+{
+	return E_NOTIMPL;
+}
+
 API DX11CoreRender::Clear()
 {
 	return E_NOTIMPL;

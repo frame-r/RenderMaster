@@ -24,9 +24,12 @@ std::string Core::_getFullLogPath()
 void Core::_main_loop()
 {
 	for (IUpdateCallback *callback : _update_callbacks)
-		callback->Update();	
+		callback->Update();
+	
+	ICamera *cam;
+	_pSceneManager->GetCamera(cam);
 
-	_pRender->RenderFrame();
+	_pRender->RenderFrame(cam);
 }
 
 void Core::_s_main_loop()
@@ -132,7 +135,7 @@ API Core::Start()
 		uint w, h;
 		_pWnd->GetDimension(w, h);
 
-		_pRender->Resize(w, h);
+		_pCoreRender->SetViewport(w, h);
 
 		_pWnd->StartMainLoop();
 	}

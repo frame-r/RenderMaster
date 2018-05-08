@@ -8,30 +8,31 @@
 
 class ResourceManager : public IResourceManager
 {
-	std::string dataPath;
-	std::string workingDir;
-	std::string installedDir;
-	
-	CRITICAL_SECTION _cs;
-	
-	ICoreRender *_pCoreRender{nullptr};
-	IFileSystem *_pFilesystem{nullptr};
-	
-	struct TDefaultResource
-	{
-		IResource *pRes{nullptr};
-		uint refCount{0};
-		DEFAULT_RES_TYPE type{DEFAULT_RES_TYPE::NONE};
-		TDefaultResource(IResource* pResIn, uint refCountIn, DEFAULT_RES_TYPE typeIn) : pRes(pResIn), refCount(refCountIn), type(typeIn) {}
-	};
-	std::vector<TDefaultResource> _default_resources;
-
 	struct TResource
 	{
 		IResource *pRes;
 		uint refCount;
 	};
 	std::vector<TResource> _resources;
+
+	struct TDefaultResource
+	{
+		TDefaultResource(IResource* pResIn, uint refCountIn, DEFAULT_RES_TYPE typeIn) : pRes(pResIn), refCount(refCountIn), type(typeIn) {}
+
+		IResource *pRes{nullptr};
+		uint refCount{0};
+		DEFAULT_RES_TYPE type{DEFAULT_RES_TYPE::NONE};		
+	};
+	std::vector<TDefaultResource> _default_resources;
+
+	std::string dataPath;
+	std::string workingDir;
+	std::string installedDir;
+
+	ICoreRender *_pCoreRender{nullptr};
+	IFileSystem *_pFilesystem{nullptr};
+
+	CRITICAL_SECTION _cs{};
 
 
 	#ifdef USE_FBX

@@ -16,8 +16,8 @@ class Core : public ICore
 {
 	char *_pDataDir{nullptr};
 	char *_pWorkingDir{nullptr};
-	char *_pInstalledDir{nullptr};
-	long _lRef{0};
+	char *_pInstalledDir{nullptr};	
+
 	Console *_pConsole{nullptr};
 	Wnd *_pWnd{nullptr};
 	FileSystem *_pfSystem{nullptr};
@@ -25,10 +25,15 @@ class Core : public ICore
 	ICoreRender *_pCoreRender{nullptr};
 	Render *_pRender{nullptr};
 	SceneManager *_pSceneManager{nullptr};
+
 	EventLog *_evLog{nullptr};
-	CRITICAL_SECTION _cs;
+
+	CRITICAL_SECTION _cs{};
+
 	std::vector<IInitCallback *> _init_callbacks;
 	std::vector<IUpdateCallback *> _update_callbacks;
+
+	long _lRef{0};
 
 	std::string _getFullLogPath();
 	void _main_loop();

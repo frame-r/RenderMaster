@@ -631,6 +631,20 @@ API GLCoreRender::SetViewport(uint w, uint h)
 	return S_OK;
 }
 
+API GLCoreRender::GetViewport(uint & w, uint & h)
+{
+	CHECK_GL_ERRORS();
+
+	GLint vp[4];
+	glGetIntegerv(GL_VIEWPORT, vp);
+	//x = vp[0]; y = vp[1];
+	w = vp[2]; h = vp[3];
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
 API GLCoreRender::Clear()
 {
 	CHECK_GL_ERRORS();

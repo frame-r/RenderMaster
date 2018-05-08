@@ -4,17 +4,19 @@
 class Render
 {
 	ICoreRender *_pCoreRender{nullptr};
-	ISceneManager *_pSceneMan{nullptr};
 	IResourceManager *_pResMan{nullptr};
+	ISceneManager *_pSceneMan{nullptr};
 	IFileSystem *_fsystem{nullptr};
+
 	ShaderText pStandardShaderText;
-	float _aspect{1.0f};
-	ICoreMesh *_pAxesMesh{nullptr};
+	ICoreMesh *_pAxesMesh{ nullptr };
+
+	float _aspect{1.0f};	
 
 	struct ShaderRequirement
 	{
-		INPUT_ATTRUBUTE attributes;
-		bool alphaTest;
+		INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::NONE};
+		bool alphaTest{false};
 
 		size_t operator()(const ShaderRequirement& k) const
 		{
@@ -26,19 +28,17 @@ class Render
 		}
 	};
 	std::unordered_map<ShaderRequirement, ICoreShader*, ShaderRequirement> _shaders_pool;
-
-	void save_text(std::list<std::string>& l, const std::string&& str);
-	ICoreShader* _get_shader(const ShaderRequirement &req);
-
+	
 	struct TRenderMesh
 	{
-		ICoreMesh *mesh;
+		ICoreMesh *mesh{nullptr};
 		mat4 modelMat;
 	};
 
-	void _get_meshes(std::vector<TRenderMesh>& meshes);
+	ICoreShader* _get_shader(const ShaderRequirement &req);
+	void _export_shader_to_file(std::list<std::string>& text, const std::string&& file);	
+	void _create_render_mesh_vec(std::vector<TRenderMesh>& meshes);
 	void _sort_meshes(std::vector<TRenderMesh>& meshes);
-
 	void _draw_axes(const mat4& VP);
 
 public:
@@ -46,7 +46,6 @@ public:
 	Render(ICoreRender *pCoreRender);
 	~Render();
 
-	void Resize(uint w, uint h);
-	void RenderFrame();
+	void RenderFrame(ICamera *pCamera);
 };
 
