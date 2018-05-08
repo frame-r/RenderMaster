@@ -11,13 +11,13 @@
 
 using namespace std;
 
-#if defined _MSC_VER && _MSC_VER <= 1900
-// VS 2015 ships filesystem as TS
+//#if defined _MSC_VER && _MSC_VER <= 1900
+//// VS 2015 ships filesystem as TS
 namespace fs = std::experimental::filesystem;
-#else
+//#else
 // for fully C++17 conformant toolchain
-namespace fs = std::filesystem;
-#endif
+//namespace fs = std::filesystem;
+//#endif
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)

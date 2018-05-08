@@ -11,6 +11,7 @@
 *.opendb
 *.7z
 
+.vs/
 bin/
 resources/log.txt
 
