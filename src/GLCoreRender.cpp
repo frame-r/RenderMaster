@@ -16,6 +16,11 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+namespace
+{
+	PIXELFORMATDESCRIPTOR pfd{};
+};
+
 void CHECK_GL_ERRORS()
 {
 #ifdef _DEBUG
@@ -101,10 +106,56 @@ bool GLCoreRender::_create_shader(GLuint& id, GLenum type, const char** pText, i
 
 GLCoreRender::GLCoreRender()
 {
+	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	pfd.nVersion = 1;
+	pfd.dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 32;
+	pfd.cDepthBits = 24;
+	pfd.iLayerType = PFD_MAIN_PLANE;
 }
 
 GLCoreRender::~GLCoreRender()
 {
+}
+
+API GLCoreRender::MakeCurrent(const WinHandle* handle)
+{
+	HDC new_hdc = GetDC(*handle);
+	
+	int new_dc_pixel_format = GetPixelFormat(new_hdc);
+
+	if (new_dc_pixel_format != pixel_format)
+	{
+		int closest_pixel_format = ChoosePixelFormat(new_hdc, &pfd);
+
+		if (closest_pixel_format == 0)
+		{
+			LOG_FATAL("Wrong ChoosePixelFormat() result");
+			return S_FALSE;
+		}
+
+		if (!SetPixelFormat(new_hdc, closest_pixel_format, &pfd))
+		{
+			LOG_FATAL("Wrong SetPixelFormat() result");
+			return S_FALSE;
+		}
+	}
+
+	auto res = wglMakeCurrent(new_hdc, _hRC);
+
+	if (!res) 
+	{
+		LOG_FATAL("Couldn't perform wglMakeCurrent(_hdc, _hRC);");
+		return S_FALSE;
+	}
+
+	CHECK_GL_ERRORS();
+
+	_hWnd = *handle;
+	_hdc = new_hdc;
+
+	return S_OK;
 }
 
 API GLCoreRender::GetName(const char *& pTxt)
@@ -121,35 +172,23 @@ API GLCoreRender::Init(const WinHandle* handle)
 	const bool msaa = false; // set true to init with MSAA
 	const int msaa_samples = 16;
 
-	int closest_pixel_format = 0;
-
 	_hWnd = *handle;
 
 	_pCore->GetSubSystem((ISubSystem*&)_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-
-	PIXELFORMATDESCRIPTOR pfd{};
-
-	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-	pfd.nVersion = 1;
-	pfd.dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = 32;
-	pfd.cDepthBits = 24;
-	pfd.iLayerType = PFD_MAIN_PLANE;
 
 	_hdc = GetDC(_hWnd);
 
 	if (!msaa)
 	{
-		closest_pixel_format = ChoosePixelFormat(_hdc, &pfd);
+		pixel_format = ChoosePixelFormat(_hdc, &pfd);
 
-		if (closest_pixel_format == 0)
+		if (pixel_format == 0)
 		{
 			LOG_FATAL("Wrong ChoosePixelFormat() result");
 			return S_FALSE;
 		}
 
-		if (!SetPixelFormat(_hdc, closest_pixel_format, &pfd))
+		if (!SetPixelFormat(_hdc, pixel_format, &pfd))
 		{
 			LOG_FATAL("Wrong SetPixelFormat() result");
 			return S_FALSE;
@@ -208,7 +247,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 			};
 
 			int numFormats = 0;
-			int chosen = wglChoosePixelFormatARB(_hdc, iPixelFormatAttribList, NULL, 1, &closest_pixel_format, (UINT*)&numFormats);
+			int chosen = wglChoosePixelFormatARB(_hdc, iPixelFormatAttribList, NULL, 1, &pixel_format, (UINT*)&numFormats);
 			if (!chosen || numFormats <= 0)
 			{
 				LOG_FATAL("Wrong wglChoosePixelFormatARB() result");
@@ -227,7 +266,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 		DestroyWindow(hwnd_fake);
 	}
 
-	if (!SetPixelFormat(_hdc, closest_pixel_format, &pfd))
+	if (!SetPixelFormat(_hdc, pixel_format, &pfd))
 	{
 		LOG_FATAL("Wrong SetPixelFormat() result");
 		return S_FALSE;

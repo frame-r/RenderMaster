@@ -35,7 +35,7 @@ float Core::update_fps()
 		std::string fps_str = std::to_string(fps);
 		std::wstring fps_strw = std::wstring(L"Test [") + std::wstring(fps_str.begin(), fps_str.end()) + std::wstring(L"]");
 
-		_pWnd->SetCaption(fps_strw.c_str());
+		_pMainWindow->SetCaption(fps_strw.c_str());
 	}
 
 	start = std::chrono::steady_clock::now();
@@ -56,7 +56,7 @@ void Core::_main_loop()
 		callback();
 	
 	ICamera *cam;
-	_pSceneManager->GetCamera(cam);
+	_pSceneManager->GetDefaultCamera(cam);
 
 	_pRender->RenderFrame(cam);
 }
@@ -105,7 +105,7 @@ Core::~Core()
 	delete _pRender;
 	delete _pCoreRender;
 	delete _pResMan;
-	if (_pWnd) delete _pWnd;
+	if (_pMainWindow) delete _pMainWindow;
 	if (_pConsole) delete _pConsole;
 	delete _pInput;
 	delete _pfSystem;
@@ -150,9 +150,9 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 
 	if (createWindow)
 	{
-		_pWnd = new Wnd(_s_main_loop);
-		_pWnd->AddMessageCallback(_s_message_callback);
-		_pWnd->CreateAndShow();
+		_pMainWindow = new Wnd(_s_main_loop);
+		_pMainWindow->AddMessageCallback(_s_message_callback);
+		_pMainWindow->CreateAndShow();
 	}
 
 	_pInput = new Input;
@@ -163,7 +163,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 		_pCoreRender = new GLCoreRender;
 
 	if (createWindow)
-		_pCoreRender->Init(_pWnd->handle());
+		_pCoreRender->Init(_pMainWindow->handle());
 	else
 		_pCoreRender->Init(externHandle);
 
@@ -185,25 +185,35 @@ API Core::Start()
 
 	//timer_fps.Start();
 
-	if (_pWnd)
+	if (_pMainWindow)
 	{
 		uint w, h;
-		_pWnd->GetDimension(w, h);
+		_pMainWindow->GetDimension(w, h);
 
 		_pCoreRender->SetViewport(w, h);
 
-		_pWnd->StartMainLoop();
+		_pMainWindow->StartMainLoop();
 	}
 
 	return S_OK;
 }
 
-API Core::RenderFrame()
+API Core::RenderFrame(const WinHandle* extern_handle, ICamera *pCamera)
 {
-	ICamera *cam;
-	_pSceneManager->GetCamera(cam);
+	_pCoreRender->MakeCurrent(extern_handle);
 
-	_pRender->RenderFrame(cam);
+#ifdef WIN32
+	RECT r;
+	GetWindowRect(*extern_handle, &r);
+	int w = r.right - r.left;
+	int h = r.bottom - r.top;
+#else
+	assert(false); // not impl
+#endif // WIN32
+
+	_pCoreRender->SetViewport(w, h);
+
+	_pRender->RenderFrame(pCamera);
 
 	return S_OK;
 }
@@ -288,8 +298,8 @@ API Core::CloseEngine()
 	if (_pConsole)
 		_pConsole->Destroy();
 
-	if (_pWnd)
-		_pWnd->Destroy();
+	if (_pMainWindow)
+		_pMainWindow->Destroy();
 
 	return S_OK;
 }

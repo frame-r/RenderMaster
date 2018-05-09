@@ -12,8 +12,9 @@ class GLCoreRender : public ICoreRender
 	HDC _hdc{};
 	HGLRC _hRC{};
 	HWND _hWnd{};
+	int pixel_format{0};
 
-	IResourceManager *_pResMan{ nullptr };
+	IResourceManager *_pResMan{nullptr};
 
 	uint w{0}, h{0};
 
@@ -26,7 +27,7 @@ public:
 
 	GLCoreRender();
 	~GLCoreRender();
-		
+
 	API Init(const WinHandle* handle) override;
 	API CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(ICoreShader *&pShader, const ShaderText& shaderDesc) override;
@@ -36,6 +37,7 @@ public:
 	API SetMesh(const ICoreMesh* mesh) override;
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
+	API MakeCurrent(const WinHandle* handle) override;
 	API SetViewport(uint w, uint h) override;
 	API GetViewport(uint& w, uint& h) override;
 	API Clear() override;

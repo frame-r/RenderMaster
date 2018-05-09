@@ -14,6 +14,11 @@ DX11CoreRender::~DX11CoreRender()
 {
 }
 
+API DX11CoreRender::MakeCurrent(const WinHandle * handle)
+{
+	return E_NOTIMPL;
+}
+
 API DX11CoreRender::GetName(const char *& pTxt)
 {
 	pTxt = "DX11CoreRender";

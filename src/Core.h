@@ -20,7 +20,7 @@ class Core : public ICore
 	char *_pInstalledDir{nullptr};	
 
 	Console *_pConsole{nullptr};
-	Wnd *_pWnd{nullptr};
+	Wnd *_pMainWindow{nullptr};
 	FileSystem *_pfSystem{nullptr};
 	ResourceManager *_pResMan{nullptr};
 	ICoreRender *_pCoreRender{nullptr};
@@ -59,12 +59,12 @@ public:
 		sprintf_s(buf, pStr, args...);
 		Log(buf, type);
 	}
-	Wnd* MainWindow() { return _pWnd; }
+	Wnd* MainWindow() { return _pMainWindow; }
 	void AddUpdateCallback(std::function<void()>&& calback) { _update_callbacks.push_back(std::forward<std::function<void()>>(calback)); }
 
-	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* handle) override;
+	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) override;
 	API Start() override;
-	API RenderFrame() override;
+	API RenderFrame(const WinHandle* externHandle, ICamera *pCamera) override;
 	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataDir(const char *&pStr) override;
 	API GetWorkingDir(const char *&pStr) override;

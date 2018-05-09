@@ -6,6 +6,12 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+API SceneManager::GetDefaultCamera(ICamera*& pCamera)
+{
+	pCamera = _pCam;
+	return S_OK;
+}
+
 API SceneManager::AddGameObject(IGameObject* pGameObject)
 {
 	_game_objects.push_back(pGameObject);
@@ -21,12 +27,6 @@ API SceneManager::GetGameObjectsNumber(uint& number)
 API SceneManager::GetGameObject(IGameObject *&pGameObject, uint idx)
 {
 	pGameObject = _game_objects.at(idx);
-	return S_OK;
-}
-
-API SceneManager::GetCamera(ICamera*& pCamera)
-{
-	pCamera = _pCam;
 	return S_OK;
 }
 
