@@ -15,6 +15,18 @@
 
 using namespace RENDER_MASTER;
 
+enum class WINDOW_MESSAGE
+{
+	SIZE,
+	KEY_DOWN,
+	KEY_UP,
+	MOUSE_MOVE,
+	MOUSE_DOWN,
+	MOUSE_UP
+};
+
+typedef void(*WindowMessageCallback)(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+
 template<typename Char>
 std::basic_string<Char> ToLowerCase(std::basic_string<Char> str)
 {

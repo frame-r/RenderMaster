@@ -43,6 +43,7 @@
     <ClInclude Include="..\src\Camera.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Input.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -76,6 +77,7 @@
     <ClCompile Include="..\src\Camera.cpp">
       <Filter>GameObjects</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />

@@ -8,6 +8,7 @@
 #include "Events.h"
 #include "Render.h"
 #include "SceneManager.h"
+#include "Input.h"
 
 #include <iostream>
 #include <fstream>
@@ -16,6 +17,32 @@ Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+
+float Core::update_fps()
+{
+	static const float upd_interv = 0.3f;
+	static float accum = 0.0f;	
+
+	std::chrono::duration<float> _durationSec = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start);
+	float sec = _durationSec.count();
+
+	accum += sec;
+
+	if (accum > upd_interv)
+	{
+		accum = 0.0f;
+		int fps = static_cast<int>(1.0f / sec);
+		std::string fps_str = std::to_string(fps);
+		std::wstring fps_strw = std::wstring(L"Test [") + std::wstring(fps_str.begin(), fps_str.end()) + std::wstring(L"]");
+
+		_pWnd->SetCaption(fps_strw.c_str());
+	}
+
+	start = std::chrono::steady_clock::now();
+
+	return sec;
+}
+
 std::string Core::_getFullLogPath()
 {
 	return std::string(_pDataDir) + "\\log.txt";
@@ -23,8 +50,10 @@ std::string Core::_getFullLogPath()
 
 void Core::_main_loop()
 {
-	for (IUpdateCallback *callback : _update_callbacks)
-		callback->Update();
+	update_fps();
+
+	for (auto &callback : _update_callbacks)
+		callback();
 	
 	ICamera *cam;
 	_pSceneManager->GetCamera(cam);
@@ -35,6 +64,26 @@ void Core::_main_loop()
 void Core::_s_main_loop()
 {
 	_pCore->_main_loop();
+}
+
+void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
+{
+	switch (type)
+	{
+	case WINDOW_MESSAGE::SIZE:
+		if (_pCoreRender)
+			_pCoreRender->SetViewport(param1, param2);
+		LogFormatted("Window size changed: x=%i y=%i", LOG_TYPE::NORMAL, param1, param2);
+		break;
+
+	default:
+		break;
+	}	
+}
+
+void Core::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
+{
+	_pCore->_message_callback(type, param1, param2, pData);
 }
 
 Core::Core(const char *pWorkingDir, const char *pInstalledDir)
@@ -58,6 +107,7 @@ Core::~Core()
 	delete _pResMan;
 	if (_pWnd) delete _pWnd;
 	if (_pConsole) delete _pConsole;
+	delete _pInput;
 	delete _pfSystem;
 	delete _evLog;
 	delete _pDataDir;
@@ -101,8 +151,11 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	if (createWindow)
 	{
 		_pWnd = new Wnd(_s_main_loop);
+		_pWnd->AddMessageCallback(_s_message_callback);
 		_pWnd->CreateAndShow();
 	}
+
+	_pInput = new Input;
 
 	if ((flags & INIT_FLAGS::GRAPHIC_LIBRARY_FLAG) == INIT_FLAGS::DIRECTX11)
 		_pCoreRender = new DX11CoreRender;
@@ -130,6 +183,8 @@ API Core::Start()
 	for (IInitCallback *callback : _init_callbacks)
 		callback->Init();
 
+	//timer_fps.Start();
+
 	if (_pWnd)
 	{
 		uint w, h;
@@ -145,7 +200,11 @@ API Core::Start()
 
 API Core::RenderFrame()
 {
-	_main_loop();
+	ICamera *cam;
+	_pSceneManager->GetCamera(cam);
+
+	_pRender->RenderFrame(cam);
+
 	return S_OK;
 }
 
@@ -156,6 +215,7 @@ API Core::GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type)
 		case SUBSYSTEM_TYPE::CORE_RENDER: pSubSystem = _pCoreRender; break;
 		case SUBSYSTEM_TYPE::RESOURCE_MANAGER: pSubSystem = _pResMan; break;
 		case SUBSYSTEM_TYPE::FILESYSTEM: pSubSystem = _pfSystem; break;
+		case SUBSYSTEM_TYPE::INPUT: pSubSystem = _pInput; break;
 		case SUBSYSTEM_TYPE::SCENE_MANAGER: pSubSystem = _pSceneManager; break;
 		default:
 			LOG_WARNING("Core::GetSubSystem() unknown subsystem");
@@ -211,7 +271,7 @@ API Core::AddInitCallback(IInitCallback* pCallback)
 
 API Core::AddUpdateCallback(IUpdateCallback* pCallback)
 {
-	_update_callbacks.push_back(pCallback);
+	_update_callbacks.push_back(std::bind(&IUpdateCallback::Update, pCallback));
 	return S_OK;
 }
 

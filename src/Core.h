@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include <chrono>
 
 class Wnd;
 class FileSystem;
@@ -25,19 +26,25 @@ class Core : public ICore
 	ICoreRender *_pCoreRender{nullptr};
 	Render *_pRender{nullptr};
 	SceneManager *_pSceneManager{nullptr};
+	IInput *_pInput{nullptr};
 
 	EventLog *_evLog{nullptr};
 
 	CRITICAL_SECTION _cs{};
 
 	std::vector<IInitCallback *> _init_callbacks;
-	std::vector<IUpdateCallback *> _update_callbacks;
+	std::vector<std::function<void()>> _update_callbacks;
 
 	long _lRef{0};
 
+	std::chrono::steady_clock::time_point start;
+
+	float update_fps();
 	std::string _getFullLogPath();
 	void _main_loop();
 	void static _s_main_loop();
+	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 
 public:
 
@@ -52,6 +59,8 @@ public:
 		sprintf_s(buf, pStr, args...);
 		Log(buf, type);
 	}
+	Wnd* MainWindow() { return _pWnd; }
+	void AddUpdateCallback(std::function<void()>&& calback) { _update_callbacks.push_back(std::forward<std::function<void()>>(calback)); }
 
 	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* handle) override;
 	API Start() override;

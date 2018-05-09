@@ -8,6 +8,10 @@ class Camera : public ICamera
 	const float _zFar = 200.f;
 	const float _fovAngle = 60.0f;
 
+	IInput *_pInput{nullptr};
+
+	void _update();
+
 public:
 
 	Camera();

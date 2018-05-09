@@ -5,8 +5,23 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+void Camera::_update()
+{
+	int right_pressd{}, forward_pressed{};
+
+	_pInput->IsKeyPressed(KEYBOARD_KEY_CODES::KEY_LEFT, right_pressd);
+
+
+	if (right_pressd)
+		_pos.x += 0.1f;
+}
+
 Camera::Camera()
 {
+	_pCore->AddUpdateCallback(std::bind(&Camera::_update, this));
+	_pCore->GetSubSystem((ISubSystem*&)_pInput, SUBSYSTEM_TYPE::INPUT);
+
+	_pos = vec3(10.5f, 2.0f, -12.5f);
 }
 
 API Camera::GetViewProjectionMatrix(mat4& mat, float aspect)
@@ -24,10 +39,9 @@ API Camera::GetViewProjectionMatrix(mat4& mat, float aspect)
 	P.el_2D[2][3] = (2.0f * _zFar * _zNear) / (_zNear - _zFar);
 	P.el_2D[3][3] = 0.0f;
 
-	vec3 position(10.5f, 2.0f, -12.5f);
-	vec3 forward = position.Normalized() * -1.0f;
+	vec3 forward = _pos.Normalized() * -1.0f;
 
-	look_at(V, position, position + forward);
+	look_at(V, _pos, _pos + forward);
 
 	/*
 	vec4 zf(1.0f, 0.0f, _zFar, 1.0f);

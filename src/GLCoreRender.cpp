@@ -118,13 +118,14 @@ API GLCoreRender::Init(const WinHandle* handle)
 	const int major_version = 4;
 	const int minor_version = 5;
 
-	int closest_pixel_format = 0;
 	const bool msaa = false; // set true to init with MSAA
 	const int msaa_samples = 16;
 
-	_pCore->GetSubSystem((ISubSystem*&)_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	int closest_pixel_format = 0;
 
 	_hWnd = *handle;
+
+	_pCore->GetSubSystem((ISubSystem*&)_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 	PIXELFORMATDESCRIPTOR pfd{};
 
@@ -282,7 +283,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 	glClearDepth(1.0f);
 	
 	// dbg
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.1f, 0.5f, 0.5f, 1.0f);
 	glDisable(GL_CULL_FACE);
 
 	CHECK_GL_ERRORS();
@@ -422,11 +423,11 @@ API GLCoreRender::SetShader(const ICoreShader* pShader)
 		const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
 		glUseProgram(pGLShader->programID());
 	}
-	
-	_current_shader = pShader;
 
 	CHECK_GL_ERRORS();
 	
+	_current_shader = pShader;
+		
 	return S_OK;
 }
 
@@ -589,6 +590,7 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 API GLCoreRender::Draw(ICoreMesh *mesh)
 {
 	CHECK_GL_ERRORS();
+
 	if (!mesh)
 		glBindVertexArray(0);
 	else
@@ -607,7 +609,9 @@ API GLCoreRender::Draw(ICoreMesh *mesh)
 		else
 			glDrawArrays(GL_LINES, 0, vertecies);
 	}
+	
 	CHECK_GL_ERRORS();
+	
 	return S_OK;
 }
 
