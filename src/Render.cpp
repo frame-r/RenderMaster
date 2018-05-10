@@ -429,7 +429,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			proc.run(l);
 
 			// save to file
-			//save_text(l, std::forward<const string>(fileName));
+			//_export_shader_to_file(l, std::forward<const string>(fileName));
 
 			ppTextOut = make_char_pp(l);
 			num_lines = (int)l.size();
