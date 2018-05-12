@@ -90,6 +90,8 @@ Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 {
 	_pCore = this;
 
+	_evLog = new EventLog;
+
 	InitializeCriticalSection(&_cs);
 
 	_pWorkingDir = new char[strlen(pWorkingDir) + 1];
@@ -130,8 +132,6 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 
 	std::ofstream log(_getFullLogPath());
 	log.close();
-
-	_evLog = new EventLog;
 
 	if (createConsole)
 	{
