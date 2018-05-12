@@ -7,7 +7,7 @@
 #include <windows.h>
 
 
-class GLCoreRender : public ICoreRender
+class GLCoreRender final : public ICoreRender
 {
 	HDC _hdc{};
 	HGLRC _hRC{};

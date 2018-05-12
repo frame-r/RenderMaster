@@ -51,7 +51,7 @@ void CHECK_GL_ERRORS()
 
 bool GLCoreRender::_check_shader_errors(int id, GLenum constant)
 {
-	int status;
+	int status = GL_TRUE;
 
 	if (constant == GL_COMPILE_STATUS)
 		glGetShaderiv(id, GL_COMPILE_STATUS, &status);

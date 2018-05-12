@@ -559,7 +559,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pFileName, IProg
 
 API ResourceManager::LoadShaderText(OUT ShaderText *pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
-	auto load_shader = [=](const char **&textOut, int& numLinesOut, const char *pName) -> API
+	auto load_shader = [=](const char **&textOut, int& numLinesOut, const char *pName) -> APIRESULT
 	{
 		IFile *pFile = nullptr;
 		uint fileSize = 0;

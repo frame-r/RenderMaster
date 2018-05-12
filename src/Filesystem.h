@@ -6,7 +6,7 @@
 namespace fs = std::experimental::filesystem;
 
 
-class FileSystem : public IFileSystem
+class FileSystem final: public IFileSystem
 {
 	std::string _dataPath;
 
@@ -19,7 +19,7 @@ public:
 	API GetName(OUT const char **pName) override;
 };
 
-class File : public IFile
+class File final : public IFile
 {
 	std::fstream _file;
 	fs::path _fs_full_path;

@@ -6,7 +6,7 @@
 #endif
 
 
-class ResourceManager : public IResourceManager
+class ResourceManager final : public IResourceManager
 {
 	struct TResource
 	{

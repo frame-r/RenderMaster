@@ -4,6 +4,8 @@
 // Don't include this file directly.
 // Instead include Engine.h
 
+#pragma warning(disable : 4201)
+
 struct Vector3;
 struct Vector4;
 struct Matrix3x3;
@@ -463,3 +465,6 @@ typedef Vector3 vec3;
 typedef Vector4 vec4;
 typedef Matrix3x3 mat3;
 typedef Matrix4x4 mat4;
+
+
+#pragma warning(default : 4201)

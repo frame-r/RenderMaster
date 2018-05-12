@@ -2,7 +2,7 @@
 #include "Common.h"
 
 
-class DX11CoreRender : public ICoreRender
+class DX11CoreRender final : public ICoreRender
 {
 public:
 

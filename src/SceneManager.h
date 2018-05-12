@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 
-class SceneManager : public ISceneManager
+class SceneManager final : public ISceneManager
 {
 	std::vector<IGameObject*> _game_objects;
 	ICamera *_pCam{ nullptr };

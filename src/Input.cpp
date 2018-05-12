@@ -8,7 +8,7 @@ DEFINE_LOG_HELPERS(_pCore)
 
 Input* Input::instance{nullptr};
 
-void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void * pData)
+void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData)
 {
 	switch (type)
 	{

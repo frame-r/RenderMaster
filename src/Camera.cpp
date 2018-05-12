@@ -7,7 +7,7 @@ DEFINE_LOG_HELPERS(_pCore)
 
 void Camera::_update()
 {
-	int right_pressd{}, forward_pressed{};
+	int right_pressd{};
 
 	_pInput->IsKeyPressed(&right_pressd, KEYBOARD_KEY_CODES::KEY_LEFT);
 

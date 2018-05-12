@@ -11,7 +11,8 @@
 // comment this to build without FBX SDK
 #define USE_FBX
 
-#define API HRESULT
+#define APIRESULT HRESULT
+#define API HRESULT __stdcall 
 
 typedef unsigned int uint;
 typedef unsigned char uint8;
