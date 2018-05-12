@@ -19,9 +19,9 @@ API DX11CoreRender::MakeCurrent(const WinHandle * handle)
 	return E_NOTIMPL;
 }
 
-API DX11CoreRender::GetName(const char *& pTxt)
+API DX11CoreRender::GetName(OUT const char **pTxt)
 {
-	pTxt = "DX11CoreRender";
+	*pTxt = "DX11CoreRender";
 	return S_OK;
 }
 
@@ -30,12 +30,12 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	return E_NOTIMPL;
 }
 
-API DX11CoreRender::CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, VERTEX_TOPOLOGY mode)
+API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
 {
 	return E_NOTIMPL;
 }
 
-API DX11CoreRender::CreateShader(ICoreShader *& pShader, const ShaderText & shaderDesc)
+API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc)
 {
 	return E_NOTIMPL;
 }
@@ -75,7 +75,7 @@ API DX11CoreRender::SetViewport(uint w, uint h)
 	return E_NOTIMPL;
 }
 
-API DX11CoreRender::GetViewport(uint & w, uint & h)
+API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 {
 	return E_NOTIMPL;
 }

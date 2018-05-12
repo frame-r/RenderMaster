@@ -13,27 +13,27 @@ Model::~Model()
 {
 }
 
-API Model::GetMesh(ICoreMesh*& pMesh, uint idx)
+API Model::GetMesh(OUT ICoreMesh  **pMesh, uint idx)
 {
-	pMesh = _meshes.at(idx);
+	*pMesh = _meshes.at(idx);
 	return S_OK;
 }
 
-API Model::GetNumberOfMesh(uint & number)
+API Model::GetNumberOfMesh(OUT uint *number)
 {
-	number = (uint)_meshes.size();
+	*number = (uint)_meshes.size();
 	return S_OK;
 }
 
 API Model::Free()
 {
 	IResourceManager *pResMan;
-	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 	for (ICoreMesh *pMesh : _meshes)
 	{
 		uint refNum;
-		pResMan->GetRefNumber(this, refNum);
+		pResMan->GetRefNumber(&refNum, this);
 
 		if (refNum == 1)
 		{
@@ -47,9 +47,9 @@ API Model::Free()
 	return S_OK;
 }
 
-API Model::GetType(RES_TYPE & type)
+API Model::GetType(OUT RES_TYPE *type)
 {
-	type = RES_TYPE::MODEL;
+	*type = RES_TYPE::MODEL;
 	return S_OK;
 }
 

@@ -64,16 +64,16 @@ public:
 
 	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) override;
 	API Start() override;
-	API RenderFrame(const WinHandle* externHandle, ICamera *pCamera) override;
-	API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) override;
-	API GetDataDir(const char *&pStr) override;
-	API GetWorkingDir(const char *&pStr) override;
-	API GetInstalledDir(const char *&pStr) override;
+	API RenderFrame(const WinHandle* externHandle, const ICamera *pCamera) override;
+	API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) override;
+	API GetDataDir(OUT char **pStr) override;
+	API GetWorkingDir(OUT char **pStr) override;
+	API GetInstalledDir(OUT char **pStr) override;
 	API Log(const char *pText, LOG_TYPE type = LOG_TYPE::NORMAL) override;
 	API AddInitCallback(IInitCallback *pCallback) override;
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;
 	API CloseEngine() override;
-	API GetLogPrintedEv(ILogEvent *&pEvent) override;
+	API GetLogPrintedEv(OUT ILogEvent **pEvent) override;
 
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 	STDMETHODIMP_(ULONG) AddRef() override;

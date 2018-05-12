@@ -12,10 +12,10 @@ public:
 	Model(std::vector<ICoreMesh *>& meshes);
 	~Model();
 	
-	API GetMesh(ICoreMesh*& pMesh, uint idx) override;
-	API GetNumberOfMesh(uint& number) override;
+	API GetMesh(OUT ICoreMesh **pMesh, uint idx) override;
+	API GetNumberOfMesh(OUT uint *number) override;
 	API Free() override;
-	API GetType(RES_TYPE& type) override;
+	API GetType(OUT RES_TYPE *type) override;
 
 	IGAMEOBJECT_IMPLEMENTATION
 };

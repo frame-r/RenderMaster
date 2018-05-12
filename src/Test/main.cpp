@@ -7,7 +7,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 {
 	ICore* pCore;
 
-	if (GetCore(pCore))
+	if (GetCore(&pCore))
 	{
 		IResourceManager *resMan;
 		IModel *pModel;
@@ -15,10 +15,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "resources", nullptr);
 				
-		pCore->GetSubSystem((ISubSystem*&)resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-		pCore->GetSubSystem((ISubSystem*&)sm, SUBSYSTEM_TYPE::SCENE_MANAGER);
+		pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+		pCore->GetSubSystem((ISubSystem**)&sm, SUBSYSTEM_TYPE::SCENE_MANAGER);
 			
-		resMan->LoadModel(pModel, "box.fbx", nullptr);
+		resMan->LoadModel(&pModel, "box.fbx", nullptr);
 
 		mat4 m(1.0f);
 		m.el_2D[2][3] = 1.0f;

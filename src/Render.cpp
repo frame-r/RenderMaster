@@ -392,7 +392,7 @@ void Render::_export_shader_to_file(list<string>& text, const string&& file)
 {
 	IFile *pFile;
 	
-	_fsystem->OpenFile(pFile, file.c_str(), FILE_OPEN_MODE::WRITE);
+	_fsystem->OpenFile(&pFile, file.c_str(), FILE_OPEN_MODE::WRITE);
 
 	for (auto& ll : text)
 	{
@@ -438,7 +438,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 		get_shader_preprocessed(st.pVertText, st.vertNumLines, pStandardShaderText.pVertText, "out_v.shader");
 		get_shader_preprocessed(st.pFragText, st.fragNumLines, pStandardShaderText.pFragText, "out_f.shader");
 
-		_pCoreRender->CreateShader(pShader, st);
+		_pCoreRender->CreateShader(&pShader, &st);
 
 		delete_char_pp(st.pVertText);
 		delete_char_pp(st.pFragText);
@@ -454,30 +454,30 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 {
 	uint number{0};
-	_pSceneMan->GetGameObjectsNumber(number);
+	_pSceneMan->GetGameObjectsNumber(&number);
 
 	for (auto i = 0u; i < number; i++)
 	{
 		IGameObject *go{ nullptr };
 		RES_TYPE type;
 
-		_pSceneMan->GetGameObject(go, i);
-		go->GetType(type);
+		_pSceneMan->GetGameObject(&go, i);
+		go->GetType(&type);
 
 		if (type == RES_TYPE::MODEL)
 		{
 			IModel *model = reinterpret_cast<IModel*>(go);
 
 			uint meshes;
-			model->GetNumberOfMesh(meshes);
+			model->GetNumberOfMesh(&meshes);
 
 			for (auto j = 0u; j < meshes; j++)
 			{
 				ICoreMesh *mesh{ nullptr };
-				model->GetMesh(mesh, j);
+				model->GetMesh(&mesh, j);
 
 				mat4 mat;
-				model->GetModelMatrix(mat);
+				model->GetModelMatrix(&mat);
 
 				meshes_vec.push_back({mesh, mat});
 			}
@@ -492,17 +492,17 @@ void Render::_sort_meshes(vector<TRenderMesh>& meshes)
 
 Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 {
-	_pCore->GetSubSystem((ISubSystem*&)_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
-	_pCore->GetSubSystem((ISubSystem*&)_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-	_pCore->GetSubSystem((ISubSystem*&)_fsystem, SUBSYSTEM_TYPE::FILESYSTEM);
+	_pCore->GetSubSystem((ISubSystem**)&_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&_fsystem, SUBSYSTEM_TYPE::FILESYSTEM);
 
-	_pResMan->LoadShaderText(pStandardShaderText, "mesh_vertex", nullptr, "mesh_fragment");
+	_pResMan->LoadShaderText(&pStandardShaderText, "mesh_vertex", nullptr, "mesh_fragment");
 
 	//dbg
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
 
-	_pResMan->GetDefaultResource((IResource*&)_pAxesMesh, DEFAULT_RES_TYPE::AXES);
+	_pResMan->GetDefaultResource((IResource**)&_pAxesMesh, DEFAULT_RES_TYPE::AXES);
 }
 
 
@@ -516,7 +516,7 @@ Render::~Render()
 void Render::_draw_axes(const mat4& VP)
 {
 	INPUT_ATTRUBUTE a;
-	_pAxesMesh->GetAttributes(a);
+	_pAxesMesh->GetAttributes(&a);
 
 	ICoreShader *shader = _get_shader({ a, false });
 	_pCoreRender->SetShader(shader);
@@ -533,25 +533,19 @@ void Render::_draw_axes(const mat4& VP)
 	_pCoreRender->SetDepthState(true);
 }
 
-//void Render::Resize(uint w, uint h)
-//{
-//	_pCoreRender->SetViewport(w, h);
-//	_aspect = (float)w / h;
-//}
-
-void Render::RenderFrame(ICamera *pCamera)
+void Render::RenderFrame(const ICamera *pCamera)
 {
 	vector<TRenderMesh> _meshes;
 	
 	_pCoreRender->Clear();
 
 	uint w, h;
-	_pCoreRender->GetViewport(w, h);
+	_pCoreRender->GetViewport(&w, &h);
 
 	float aspect = (float)w / h;
 
 	mat4 VP;
-	pCamera->GetViewProjectionMatrix(VP, aspect);
+	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&VP, aspect);
 
 	_create_render_mesh_vec(_meshes);
 	_sort_meshes(_meshes);
@@ -559,7 +553,7 @@ void Render::RenderFrame(ICamera *pCamera)
 	for(auto &renderMesh : _meshes)
 	{
 		INPUT_ATTRUBUTE a;
-		renderMesh.mesh->GetAttributes(a);		
+		renderMesh.mesh->GetAttributes(&a);		
 		
 		ICoreShader *shader = _get_shader({a, false});
 

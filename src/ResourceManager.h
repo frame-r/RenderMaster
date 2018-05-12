@@ -24,16 +24,13 @@ class ResourceManager : public IResourceManager
 		DEFAULT_RES_TYPE type{DEFAULT_RES_TYPE::NONE};		
 	};
 	std::vector<TDefaultResource> _default_resources;
-
-	std::string dataPath;
-	std::string workingDir;
-	std::string installedDir;
-
+	
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
 
 	CRITICAL_SECTION _cs{};
 
+	static const char* _resourceToStr(IResource* pRes);
 
 	#ifdef USE_FBX
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
@@ -48,8 +45,6 @@ class ResourceManager : public IResourceManager
 	void _LogNodeTransform(FbxNode* pNode, int tabs);		
 	#endif
 
-	static const char* _resourceToStr(IResource* pRes);
-
 public:
 
 	ResourceManager();
@@ -57,14 +52,14 @@ public:
 
 	void Init();
 	
-	API LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
-	API LoadShaderText(ShaderText &pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
-	API GetDefaultResource(IResource *&pRes, DEFAULT_RES_TYPE type) override;
+	API LoadModel(OUT IModel **pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
+	API LoadShaderText(OUT ShaderText *pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
+	API GetDefaultResource(OUT IResource **pRes, DEFAULT_RES_TYPE type) override;
 	API AddToList(IResource *pResource) override;
-	API GetNumberOfResources(uint& number) override;
-	API GetRefNumber(IResource *pResource, uint& number) override;
+	API GetNumberOfResources(OUT uint *number) override;
+	API GetRefNumber(OUT uint *number, const IResource *pResource) override;
 	API DecrementRef(IResource *pResource) override;
 	API RemoveFromList(IResource *pResource) override;
 	API FreeAllResources() override;
-	API GetName(const char *&pName) override;
+	API GetName(OUT const char **pName) override;
 };

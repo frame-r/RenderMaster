@@ -10,21 +10,21 @@ vec3 _scale{ 1.0f, 1.0f, 1.0f }; \
 \
 public: \
 \
-API SetPosition(const vec3& pos) override \
+API SetPosition(const vec3 *pos) override \
 { \
-	_pos = pos; \
+	_pos = *pos; \
 	return S_OK; \
 } \
-API SetRotation(const vec3& rot) override \
+API SetRotation(const vec3 *rot) override \
 { \
-	_rot = rot; \
+	_rot = *rot; \
 	_rot.x = fmod(_rot.x, 360.0f); \
 	_rot.y = fmod(_rot.y, 360.0f); \
 	_rot.z = fmod(_rot.z, 360.0f); \
 	return S_OK; \
 } \
 \
-API GetModelMatrix(mat4& mat) override \
+API GetModelMatrix(OUT mat4 *mat) override \
 { \
 	mat4 R; \
 	mat4 T; \
@@ -63,7 +63,7 @@ API GetModelMatrix(mat4& mat) override \
 	S.el_2D[1][1] = _scale.y; \
 	S.el_2D[2][2] = _scale.z; \
 \
-	mat =  T * R * S; \
+	*mat =  T * R * S; \
 \
 	return S_OK; \
 }

@@ -11,31 +11,31 @@ GLMesh::GLMesh(GLuint VAO, GLuint VBO, GLuint IBO, uint vertexNumber, uint index
 {
 }
 
-API GLMesh::GetNumberOfVertex(uint & vertex)
+API GLMesh::GetNumberOfVertex(OUT uint *vertex)
 {
-	vertex = _number_of_vertices;
+	*vertex = _number_of_vertices;
 	return S_OK;
 }
 
-API GLMesh::GetAttributes(INPUT_ATTRUBUTE& attribs)
+API GLMesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
 {
-	attribs = _attributes;
+	*attribs = _attributes;
 	return S_OK;
 }
 
-API GLMesh::GetVertexTopology(VERTEX_TOPOLOGY& topology)
+API GLMesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 {
-	topology = _topology;
+	*topology = _topology;
 	return S_OK;
 }
 
 API GLMesh::Free()
 {
 	IResourceManager *pResMan;
-	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 	uint refNum;
-	pResMan->GetRefNumber(this, refNum);
+	pResMan->GetRefNumber(&refNum, this);
 
 	if (refNum == 1)
 	{
@@ -55,8 +55,8 @@ API GLMesh::Free()
 	return S_OK;
 }
 
-API GLMesh::GetType(RES_TYPE& type)
+API GLMesh::GetType(OUT RES_TYPE *type)
 {
-	type = RES_TYPE::CORE_MESH;
+	*type = RES_TYPE::CORE_MESH;
 	return S_OK;
 }

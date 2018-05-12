@@ -309,7 +309,7 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, int 
 	indexDesc.pData = nullptr;
 	indexDesc.number = 0;
 
-	_pCoreRender->CreateMesh((ICoreMesh*&)pCoreMesh, vertDesc, indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
+	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
 		meshes.push_back(pCoreMesh);
@@ -405,11 +405,11 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgress
 }
 #endif
 
-const char * ResourceManager::_resourceToStr(IResource * pRes)
+const char* ResourceManager::_resourceToStr(IResource *pRes)
 {
 	RES_TYPE type;
 
-	pRes->GetType(type);
+	pRes->GetType(&type);
 
 	switch (type)
 	{
@@ -434,16 +434,8 @@ ResourceManager::ResourceManager()
 {
 	const char *pString = nullptr;
 
-	_pCore->GetSubSystem((ISubSystem*&)_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
+	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
 	
-	_pCore->GetDataDir(pString);
-	dataPath = string(pString);
-
-	_pCore->GetWorkingDir(pString);
-	workingDir = string(pString);
-
-	_pCore->GetInstalledDir(pString);
-	installedDir = string(pString);
 }
 
 ResourceManager::~ResourceManager()
@@ -454,7 +446,7 @@ void ResourceManager::Init()
 {
 	InitializeCriticalSection(&_cs);
 
-	_pCore->GetSubSystem((ISubSystem*&)_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
+	_pCore->GetSubSystem((ISubSystem**)&_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
 
 	// create default plane mesh
 	ICoreMesh *pPlane;
@@ -482,7 +474,7 @@ void ResourceManager::Init()
 	indexDesc.number = 6;
 	indexDesc.format = MESH_INDEX_FORMAT::INT16;
 
-	_pCoreRender->CreateMesh((ICoreMesh*&)pPlane, desc, indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
+	_pCoreRender->CreateMesh((ICoreMesh**)&pPlane, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	_default_resources.emplace_back(pPlane, 0, DEFAULT_RES_TYPE::PLANE);
 
@@ -504,7 +496,7 @@ void ResourceManager::Init()
 
 	MeshIndexDesc indexEmpty;
 
-	_pCoreRender->CreateMesh((ICoreMesh*&)pAxes, descAxes, indexEmpty, VERTEX_TOPOLOGY::LINES);
+	_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES);
 
 	_default_resources.emplace_back(pAxes, 0, DEFAULT_RES_TYPE::AXES);
 
@@ -512,22 +504,29 @@ void ResourceManager::Init()
 	LOG("ResourceManager initalized");
 }
 
-API ResourceManager::GetName(const char *&pName)
+API ResourceManager::GetName(OUT const char **pName)
 {
-	pName = "ResourceManager";
+	*pName = "ResourceManager";
 	return S_OK;
 }
 
-API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgressSubscriber *pProgress)
+API ResourceManager::LoadModel(OUT IModel **pModel, const char *pFileName, IProgressSubscriber *pProgress)
 {
-	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));	
+	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
+	
+	char *pString;
+	_pCore->GetDataDir(&pString);
+	string dataPath = string(pString);
+
 	string fullPath = dataPath + '\\' + string(pFileName);
 	uint meshNumber;
+
+	IModel *model{nullptr};
 
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoad(pModel, fullPath.c_str(), pProgress);
+		bool ret = _FBXLoad(model, fullPath.c_str(), pProgress);
 		if (!ret)
 			return S_FALSE;
 	}
@@ -538,39 +537,27 @@ API ResourceManager::LoadModel(IModel *&pModel, const char *pFileName, IProgress
 		return S_FALSE;
 	}
 
-	AddToList(pModel);
+	AddToList(model);
 
-	pModel->GetNumberOfMesh(meshNumber);
+	model->GetNumberOfMesh(&meshNumber);
 
 	for (uint i = 0; i < meshNumber; i++)
 	{
 		ICoreMesh *pMesh;
-		pModel->GetMesh(pMesh, i);
+		model->GetMesh(&pMesh, i);
 		AddToList(pMesh);
 	}
 
 	ISceneManager *pSceneManager;
-	_pCore->GetSubSystem((ISubSystem*&)pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
-	pSceneManager->AddGameObject(pModel);
+	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
+	pSceneManager->AddGameObject(model);
 	
+	*pModel = model;
+
 	return S_OK;
 }
-//
-//API ResourceManager::GetDefaultModel(IModel *&pModel, DEFAULT_RES_TYPE type)
-//{
-//	auto it = _default_meshes.find(type);
-//	ICoreMesh *pCoreMesh = it->second;
-//	Model *_pModel = new Model(pCoreMesh);
-//	
-//	AddToList(pCoreMesh);
-//	AddToList(_pModel);
-//
-//	pModel = _pModel;
-//
-//	return S_OK;
-//}
 
-API ResourceManager::LoadShaderText(ShaderText &pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
+API ResourceManager::LoadShaderText(OUT ShaderText *pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
 	auto load_shader = [=](const char **&textOut, int& numLinesOut, const char *pName) -> API
 	{
@@ -579,9 +566,13 @@ API ResourceManager::LoadShaderText(ShaderText &pShader, const char *pVertName, 
 		string textIn;
 		int filseExist = 0;
 		
+		char *pString;
+		_pCore->GetInstalledDir(&pString);
+		string installedDir = string(pString);
+
 		string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pName + ".shader";
 
-		_pFilesystem->FileExist(shader_path.c_str(), filseExist);
+		_pFilesystem->FileExist(const_cast<char*>(shader_path.c_str()), &filseExist);
 
 		if (!filseExist)
 		{
@@ -589,9 +580,9 @@ API ResourceManager::LoadShaderText(ShaderText &pShader, const char *pVertName, 
 			return S_FALSE;
 		}
 
-		_pFilesystem->OpenFile(pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+		_pFilesystem->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
 
-		pFile->FileSize(fileSize);
+		pFile->FileSize(&fileSize);
 
 		textIn.resize(fileSize);
 
@@ -603,17 +594,17 @@ API ResourceManager::LoadShaderText(ShaderText &pShader, const char *pVertName, 
 		return S_OK;
 	};
 
-	auto ret =	load_shader(pShader.pVertText, pShader.vertNumLines, pVertName);
+	auto ret =	load_shader(pShader->pVertText, pShader->vertNumLines, pVertName);
 
 	if (pGeomName)
-		ret &=	load_shader(pShader.pGeomText, pShader.geomNumLines, pGeomName);
+		ret &=	load_shader(pShader->pGeomText, pShader->geomNumLines, pGeomName);
 
-	ret &=		load_shader(pShader.pFragText, pShader.fragNumLines, pFragName);
+	ret &=		load_shader(pShader->pFragText, pShader->fragNumLines, pFragName);
 
 	return ret;
 }
 
-API ResourceManager::GetDefaultResource(IResource *&pRes, DEFAULT_RES_TYPE type)
+API ResourceManager::GetDefaultResource(OUT IResource **pRes, DEFAULT_RES_TYPE type)
 {
 	if (type == DEFAULT_RES_TYPE::NONE)
 	{
@@ -626,7 +617,7 @@ API ResourceManager::GetDefaultResource(IResource *&pRes, DEFAULT_RES_TYPE type)
 
 	assert(it != _default_resources.end());
 
-	pRes = it->pRes;
+	*pRes = it->pRes;
 	it->refCount++;
 
 	return S_OK;
@@ -650,13 +641,13 @@ API ResourceManager::AddToList(IResource *pResource)
 	return S_OK;
 }
 
-API ResourceManager::GetNumberOfResources(uint& number)
+API ResourceManager::GetNumberOfResources(OUT uint *number)
 {
-	number = (uint) _resources.size();
+	*number = (uint) _resources.size();
 	return S_OK;
 }
 
-API ResourceManager::GetRefNumber(IResource *pResource, uint& number)
+API ResourceManager::GetRefNumber(OUT uint *number, const IResource *pResource)
 {
 	auto it = std::find_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
 
@@ -665,12 +656,12 @@ API ResourceManager::GetRefNumber(IResource *pResource, uint& number)
 
 	assert(it->refCount > 0);
 
-	number = it->refCount;
+	*number = it->refCount;
 
 	return S_OK;
 }
 
-API ResourceManager::DecrementRef(IResource * pResource)
+API ResourceManager::DecrementRef(IResource *pResource)
 {
 	auto it = std::find_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
 	
@@ -689,7 +680,7 @@ API ResourceManager::DecrementRef(IResource * pResource)
 API ResourceManager::RemoveFromList(IResource *pResource)
 {
 	uint refCount;
-	GetRefNumber(pResource, refCount);
+	GetRefNumber(&refCount, pResource);
 
 	if (refCount == 1)
 	{

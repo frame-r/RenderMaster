@@ -21,9 +21,9 @@ public:
 
 	GLuint VAO_ID() const { return _VAO; }
 
-	API GetNumberOfVertex(uint &number) override;
-	API GetAttributes(INPUT_ATTRUBUTE &attribs) override;
-	API GetVertexTopology(VERTEX_TOPOLOGY &topology) override;
+	API GetNumberOfVertex(OUT uint *number) override;
+	API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) override;
+	API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) override;
 	API Free() override;
-	API GetType(RES_TYPE& type) override;
+	API GetType(OUT RES_TYPE *type) override;
 };

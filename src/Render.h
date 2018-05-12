@@ -46,6 +46,6 @@ public:
 	Render(ICoreRender *pCoreRender);
 	~Render();
 
-	void RenderFrame(ICamera *pCamera);
+	void RenderFrame(const ICamera *pCamera);
 };
 

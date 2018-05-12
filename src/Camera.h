@@ -16,9 +16,9 @@ public:
 
 	Camera();
 
-	API GetViewProjectionMatrix(mat4& mat, float aspect) override;
+	API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) override;
 	API Free() override;
-	API GetType(RES_TYPE& type) override;
+	API GetType(OUT RES_TYPE *type) override;
 
 	IGAMEOBJECT_IMPLEMENTATION
 };

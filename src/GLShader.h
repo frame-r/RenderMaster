@@ -18,6 +18,6 @@ public:
 	GLuint programID() const { return _programID;	}
 
 	API Free() override;
-	API GetType(RES_TYPE& type) override;
+	API GetType(OUT RES_TYPE *type) override;
 };
 

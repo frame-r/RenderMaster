@@ -19,8 +19,8 @@ API GLShader::Free()
 	IResourceManager *pResMan;
 	uint refNum;
 
-	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-	pResMan->GetRefNumber(this, refNum);
+	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	pResMan->GetRefNumber(&refNum, this);
 
 	if (refNum == 1)
 	{
@@ -41,8 +41,8 @@ API GLShader::Free()
 	return S_OK;
 }
 
-API GLShader::GetType(RES_TYPE& type)
+API GLShader::GetType(OUT RES_TYPE *type)
 {
-	type = RES_TYPE::CORE_SHADER;
+	*type = RES_TYPE::CORE_SHADER;
 	return S_OK;
 }

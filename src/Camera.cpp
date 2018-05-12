@@ -9,7 +9,7 @@ void Camera::_update()
 {
 	int right_pressd{}, forward_pressed{};
 
-	_pInput->IsKeyPressed(KEYBOARD_KEY_CODES::KEY_LEFT, right_pressd);
+	_pInput->IsKeyPressed(&right_pressd, KEYBOARD_KEY_CODES::KEY_LEFT);
 
 
 	if (right_pressd)
@@ -19,12 +19,12 @@ void Camera::_update()
 Camera::Camera()
 {
 	_pCore->AddUpdateCallback(std::bind(&Camera::_update, this));
-	_pCore->GetSubSystem((ISubSystem*&)_pInput, SUBSYSTEM_TYPE::INPUT);
+	_pCore->GetSubSystem((ISubSystem**)&_pInput, SUBSYSTEM_TYPE::INPUT);
 
 	_pos = vec3(10.5f, 2.0f, -12.5f);
 }
 
-API Camera::GetViewProjectionMatrix(mat4& mat, float aspect)
+API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 {
 	mat4 P;
 	mat4 V;
@@ -67,7 +67,7 @@ API Camera::GetViewProjectionMatrix(mat4& mat, float aspect)
 	z1 /= z1.w;
 	*/
 
-	mat = P * V;
+	*mat = P * V;
 
 	return S_OK;
 }
@@ -75,10 +75,10 @@ API Camera::GetViewProjectionMatrix(mat4& mat, float aspect)
 API Camera::Free()
 {
 	IResourceManager *pResMan;
-	_pCore->GetSubSystem((ISubSystem*&)pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 	uint refNum;
-	pResMan->GetRefNumber(this, refNum);
+	pResMan->GetRefNumber(&refNum, this);
 
 	if (refNum == 1)
 		pResMan->RemoveFromList(this);
@@ -92,8 +92,8 @@ API Camera::Free()
 	return S_OK;
 }
 
-API Camera::GetType(RES_TYPE & type)
+API Camera::GetType(OUT RES_TYPE *type)
 {
-	type = RES_TYPE::CAMERA;
+	*type = RES_TYPE::CAMERA;
 	return S_OK;
 }

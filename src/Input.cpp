@@ -54,20 +54,20 @@ Input::~Input()
 {
 }
 
-API Input::IsKeyPressed(KEYBOARD_KEY_CODES key, int& isPressed)
+API Input::IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key)
 {
-	isPressed = _keys[(int)key] > 0;
+	*isPressed = _keys[(int)key] > 0;
 	return S_OK;
 }
 
-API Input::IsMoisePressed(MOUSE_BUTTON type, int& isPressed)
+API Input::IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type)
 {
-	isPressed = _mouse[(int)type] > 0;
+	*isPressed = _mouse[(int)type] > 0;
 	return S_OK;
 }
 
-API Input::GetName(const char *&pName)
+API Input::GetName(OUT const char **pName)
 {
-	pName = "Input";
+	*pName = "Input";
 	return S_OK;
 }

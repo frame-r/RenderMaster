@@ -56,7 +56,7 @@ void Core::_main_loop()
 		callback();
 	
 	ICamera *cam;
-	_pSceneManager->GetDefaultCamera(cam);
+	_pSceneManager->GetDefaultCamera(&cam);
 
 	_pRender->RenderFrame(cam);
 }
@@ -198,7 +198,7 @@ API Core::Start()
 	return S_OK;
 }
 
-API Core::RenderFrame(const WinHandle* extern_handle, ICamera *pCamera)
+API Core::RenderFrame(const WinHandle* extern_handle, const ICamera *pCamera)
 {
 	_pCoreRender->MakeCurrent(extern_handle);
 
@@ -218,15 +218,15 @@ API Core::RenderFrame(const WinHandle* extern_handle, ICamera *pCamera)
 	return S_OK;
 }
 
-API Core::GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type)
+API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 {
 	switch(type)
 	{
-		case SUBSYSTEM_TYPE::CORE_RENDER: pSubSystem = _pCoreRender; break;
-		case SUBSYSTEM_TYPE::RESOURCE_MANAGER: pSubSystem = _pResMan; break;
-		case SUBSYSTEM_TYPE::FILESYSTEM: pSubSystem = _pfSystem; break;
-		case SUBSYSTEM_TYPE::INPUT: pSubSystem = _pInput; break;
-		case SUBSYSTEM_TYPE::SCENE_MANAGER: pSubSystem = _pSceneManager; break;
+		case SUBSYSTEM_TYPE::CORE_RENDER: *pSubSystem = _pCoreRender; break;
+		case SUBSYSTEM_TYPE::RESOURCE_MANAGER: *pSubSystem = _pResMan; break;
+		case SUBSYSTEM_TYPE::FILESYSTEM: *pSubSystem = _pfSystem; break;
+		case SUBSYSTEM_TYPE::INPUT: *pSubSystem = _pInput; break;
+		case SUBSYSTEM_TYPE::SCENE_MANAGER: *pSubSystem = _pSceneManager; break;
 		default:
 			LOG_WARNING("Core::GetSubSystem() unknown subsystem");
 			return S_FALSE;
@@ -235,21 +235,21 @@ API Core::GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type)
 	return S_OK;
 }
 
-API Core::GetDataDir(const char *&pStr)
+API Core::GetDataDir(OUT char **pStr)
 {
-	pStr = _pDataDir;
+	*pStr = _pDataDir;
 	return S_OK;
 }
 
-API Core::GetWorkingDir(const char *& pStr)
+API Core::GetWorkingDir(OUT char **pStr)
 {
-	pStr = _pWorkingDir;
+	*pStr = _pWorkingDir;
 	return S_OK;
 }
 
-API Core::GetInstalledDir(const char *& pStr)
+API Core::GetInstalledDir(OUT char **pStr)
 {
-	pStr = _pInstalledDir;
+	*pStr = _pInstalledDir;
 	return S_OK;
 }
 
@@ -304,9 +304,9 @@ API Core::CloseEngine()
 	return S_OK;
 }
 
-API Core::GetLogPrintedEv(ILogEvent*& pEvent)
+API Core::GetLogPrintedEv(OUT ILogEvent **pEvent)
 {
-	pEvent = _evLog;
+	*pEvent = _evLog;
 	return S_OK;
 }
 

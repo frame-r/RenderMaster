@@ -17,7 +17,7 @@ public:
 	Input();
 	~Input();
 
-	API IsKeyPressed(KEYBOARD_KEY_CODES key, int& isPressed) override;
-	API IsMoisePressed(MOUSE_BUTTON type, int& isPressed) override;
-	API GetName(const char *&pName) override;
+	API IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) override;
+	API IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) override;
+	API GetName(OUT const char **pName) override;
 };

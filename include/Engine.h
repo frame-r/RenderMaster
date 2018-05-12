@@ -74,18 +74,18 @@ namespace RENDER_MASTER
 
 		virtual API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) = 0;
 		virtual API Start() = 0;
-		virtual API RenderFrame(const WinHandle* externHandle, ICamera *pCamera) = 0;
-		virtual API GetSubSystem(ISubSystem *&pSubSystem, SUBSYSTEM_TYPE type) = 0;
-		virtual API GetDataDir(const char *&pStr) = 0;
-		virtual API GetWorkingDir(const char *&pStr) = 0;
-		virtual API GetInstalledDir(const char *&pStr) = 0;
+		virtual API RenderFrame(const WinHandle *externHandle, const ICamera *pCamera) = 0;
+		virtual API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) = 0;
+		virtual API GetDataDir(OUT char **pStr) = 0;
+		virtual API GetWorkingDir(OUT char **pStr) = 0;
+		virtual API GetInstalledDir(OUT char **pStr) = 0;
 		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
 		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
 		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
 		virtual API CloseEngine() = 0;
 
 		// Events
-		virtual API GetLogPrintedEv(ILogEvent *&pEvent) = 0;
+		virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
 	};
 
 
@@ -105,7 +105,7 @@ namespace RENDER_MASTER
 	class ISubSystem
 	{
 	public:
-		virtual API GetName(const char *&pName) = 0;
+		virtual API GetName(OUT const char **pName) = 0;
 	};
 
 	enum class RES_TYPE
@@ -122,7 +122,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API Free() = 0;
-		virtual API GetType(RES_TYPE& type) = 0;
+		virtual API GetType(OUT RES_TYPE *type) = 0;
 	};
 
 	class IInitCallback
@@ -260,9 +260,9 @@ namespace RENDER_MASTER
 	class ICoreMesh : public IResource
 	{
 	public:
-		virtual API GetNumberOfVertex(uint &number) = 0;
-		virtual API GetAttributes(INPUT_ATTRUBUTE &attribs) = 0;
-		virtual API GetVertexTopology(VERTEX_TOPOLOGY &topology) = 0;
+		virtual API GetNumberOfVertex(OUT uint *number) = 0;
+		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
+		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
 	};
 
 	struct ShaderText
@@ -288,8 +288,8 @@ namespace RENDER_MASTER
 	public:
 		
 		virtual API Init(const WinHandle* handle) = 0;
-		virtual API CreateMesh(ICoreMesh *&pMesh, const MeshDataDesc &dataDesc, const MeshIndexDesc &indexDesc, VERTEX_TOPOLOGY mode) = 0;
-		virtual API CreateShader(ICoreShader *&pShader, const ShaderText& shaderDesc) = 0;
+		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
+		virtual API CreateShader(OUT ICoreShader **pShader, const ShaderText* shaderDesc) = 0;
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) = 0;
 		virtual API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
@@ -298,7 +298,7 @@ namespace RENDER_MASTER
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API MakeCurrent(const WinHandle* handle) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
-		virtual API GetViewport(uint& w, uint& h) = 0;
+		virtual API GetViewport(OUT uint* w, OUT uint* h) = 0;
 		virtual API Clear() = 0;
 		virtual API SwapBuffers() = 0;
 		virtual API Free() = 0;
@@ -312,22 +312,22 @@ namespace RENDER_MASTER
 	class IGameObject : public IResource
 	{
 	public:
-		virtual API SetPosition(const vec3& pos) = 0;
-		virtual API SetRotation(const vec3& rot) = 0;
-		virtual API GetModelMatrix(mat4& mat) = 0;
+		virtual API SetPosition(const vec3 *pos) = 0;
+		virtual API SetRotation(const vec3 *rot) = 0;
+		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
 	};
 
 	class ICamera : public IGameObject
 	{
 	public:
-		virtual API GetViewProjectionMatrix(mat4& mat, float aspect) = 0;
+		virtual API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
 	};
 
 	class IModel : public IGameObject
 	{
 	public:
-		virtual API GetMesh(ICoreMesh *&pMesh, uint idx) = 0;
-		virtual API GetNumberOfMesh(uint& number) = 0;
+		virtual API GetMesh(OUT ICoreMesh **pMesh, uint idx) = 0;
+		virtual API GetNumberOfMesh(OUT uint *number) = 0;
 	};
 
 	//////////////////////
@@ -337,10 +337,10 @@ namespace RENDER_MASTER
 	class ISceneManager : public ISubSystem
 	{
 	public:
-		virtual API GetDefaultCamera(ICamera *&pCamera) = 0;
+		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 		virtual API AddGameObject(IGameObject* pGameObject) = 0;
-		virtual API GetGameObjectsNumber(uint& number) = 0;
-		virtual API GetGameObject(IGameObject *&pGameObject, uint idx) = 0;
+		virtual API GetGameObjectsNumber(OUT uint *number) = 0;
+		virtual API GetGameObject(OUT IGameObject **pGameObject, uint idx) = 0;
 	};
 
 
@@ -365,12 +365,12 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API LoadModel(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
-		virtual API LoadShaderText(ShaderText &pShader, const char* pVertName, const char* pGeomName, const char* pFragName) = 0;
-		virtual API GetDefaultResource(IResource *&pRes, DEFAULT_RES_TYPE type) = 0;
-		virtual API GetNumberOfResources(uint& number) = 0;
+		virtual API LoadModel(OUT IModel **pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
+		virtual API LoadShaderText(OUT ShaderText *pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
+		virtual API GetDefaultResource(OUT IResource **pRes, DEFAULT_RES_TYPE type) = 0;
+		virtual API GetNumberOfResources(OUT uint *number) = 0;
 		virtual API AddToList(IResource *pResource) = 0;
-		virtual API GetRefNumber(IResource *pResource, uint& number) = 0;
+		virtual API GetRefNumber(OUT uint *number, const IResource *pResource) = 0;
 		virtual API DecrementRef(IResource *pResource) = 0;
 		virtual API RemoveFromList(IResource *pResource) = 0;
 		virtual API FreeAllResources() = 0;
@@ -394,12 +394,12 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API Read(uint8 *pMem, uint bytes) = 0;
-		virtual API ReadStr(char *pStr, uint& str_bytes) = 0;
-		virtual API IsEndOfFile(int &eof) = 0;
+		virtual API Read(OUT uint8 *pMem, uint bytes) = 0;
+		virtual API ReadStr(OUT char *pStr, OUT uint *str_bytes) = 0;
+		virtual API IsEndOfFile(OUT int *eof) = 0;
 		virtual API Write(const uint8 *pMem, uint bytes) = 0;
 		virtual API WriteStr(const char *pStr) = 0;
-		virtual API FileSize(uint &size) = 0;
+		virtual API FileSize(OUT uint *size) = 0;
 		virtual API CloseAndFree() = 0;
 	};
 
@@ -407,9 +407,8 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API OpenFile(IFile *&pFile, const char *fullPath, FILE_OPEN_MODE mode) = 0;
-		virtual API FileExist(const char *fullPath, int &exist) = 0;
-		virtual API GetName(const char *&pName) = 0;
+		virtual API OpenFile(OUT IFile **pFile, const char *fullPath, FILE_OPEN_MODE mode) = 0;
+		virtual API FileExist(const char *fullPath, OUT int *exist) = 0;
 	};
 
 
@@ -548,8 +547,8 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API IsKeyPressed(KEYBOARD_KEY_CODES key, int& isPressed) = 0;
-		virtual API IsMoisePressed(MOUSE_BUTTON type, int& isPressed) = 0;
+		virtual API IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) = 0;
+		virtual API IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) = 0;
 
 	};
 
@@ -563,7 +562,7 @@ namespace RENDER_MASTER
 		const TCHAR *pErrorMessage = TEXT("success");
 	}
 
-	inline bool GetCore(ICore*& pCore)
+	inline bool GetCore(OUT ICore** pCore)
 	{
 		if (FAILED(CoInitialize(NULL)))
 		{
@@ -625,8 +624,8 @@ namespace RENDER_MASTER
 			return false;
 		}
 		
-		pCore = NULL;
-		hr = pUnk->QueryInterface(IID_Core, (LPVOID*)&pCore);
+		*pCore = NULL;
+		hr = pUnk->QueryInterface(IID_Core, (LPVOID*)pCore);
 		pUnk->Release();
 		
 		if (FAILED(hr))

@@ -14,10 +14,10 @@ public:
 
 	void Free();
 
-	API GetDefaultCamera(ICamera *&pCamera) override;
+	API GetDefaultCamera(OUT ICamera **pCamera) override;
 	API AddGameObject(IGameObject *pGameObject) override;
-	API GetGameObjectsNumber(uint& number) override;
-	API GetGameObject(IGameObject *&pGameObject, uint idx) override;
-	API GetName(const char *&pName) override;
+	API GetGameObjectsNumber(OUT uint *number) override;
+	API GetGameObject(OUT IGameObject **pGameObject, uint idx) override;
+	API GetName(OUT const char **pName) override;
 };
 

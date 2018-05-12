@@ -12,7 +12,7 @@ FileSystem::FileSystem(const std::string& dataPath) :
 {
 }
 
-API FileSystem::OpenFile(IFile*& pFile, const char* pPath, FILE_OPEN_MODE mode)
+API FileSystem::OpenFile(OUT IFile **pFile, const char* pPath, FILE_OPEN_MODE mode)
 {
 	const bool read = (mode & FILE_OPEN_MODE::READ) == FILE_OPEN_MODE::READ;
 	const bool write = (mode & FILE_OPEN_MODE::WRITE) == FILE_OPEN_MODE::WRITE;
@@ -55,13 +55,13 @@ API FileSystem::OpenFile(IFile*& pFile, const char* pPath, FILE_OPEN_MODE mode)
 		cpp_mode |= ofstream::binary;
 
 	File *_pFile = new File(wfsFullPath.u8string().c_str(), cpp_mode, wfsFullPath);
-	pFile = _pFile;
+	*pFile = _pFile;
 
 	return S_OK;
 
 }
 
-API FileSystem::FileExist(const char* fullPath, int& exist)
+API FileSystem::FileExist(const char* fullPath, OUT int *exist)
 {
 	wstring wpPath = ConvertFromUtf8ToUtf16(fullPath);
 
@@ -74,14 +74,14 @@ API FileSystem::FileExist(const char* fullPath, int& exist)
 		wfsFullPath = wstring(wdataPath + L'\\' + wpPath);
 	}
 
-	exist = exists(wfsFullPath);
+	*exist = exists(wfsFullPath);
 
 	return S_OK;
 }
 
-API FileSystem::GetName(const char*& pName)
+API FileSystem::GetName(OUT const char **pName)
 {
-	pName = "FileSystem";
+	*pName = "FileSystem";
 	return S_OK;
 }
 
@@ -100,7 +100,7 @@ File::File(const char *pName, ios_base::openmode& cpp_mode, const fs::path& full
 	#endif
 }
 
-API File::Read(uint8* pMem, uint bytes)
+API File::Read(OUT uint8 *pMem, uint bytes)
 {
 	_file.read((char *)pMem, bytes);
 
@@ -114,11 +114,11 @@ API File::Read(uint8* pMem, uint bytes)
 	return S_OK;
 }
 
-API File::ReadStr(char* pStr, uint& bytes)
+API File::ReadStr(OUT char *pStr, OUT uint *bytes)
 {
 	uint file_size = 0;
 
-	FileSize(file_size);
+	FileSize(&file_size);
 
 	_file.read(pStr, file_size);
 
@@ -126,18 +126,18 @@ API File::ReadStr(char* pStr, uint& bytes)
 
 	pStr[read_bytes] = '\0';
 
-	bytes = (uint)read_bytes + 1;
+	*bytes = (uint)read_bytes + 1;
 
 	return S_OK;
 }
 
-API File::IsEndOfFile(int& eof)
+API File::IsEndOfFile(OUT int *eof)
 {
-	eof = _file.eof();
+	*eof = _file.eof();
 	return S_OK;
 }
 
-API File::Write(const uint8* pMem, uint bytes)
+API File::Write(const uint8 *pMem, uint bytes)
 {
 	_file.write((const char *)pMem, bytes);
 	return S_OK;
@@ -149,9 +149,9 @@ API File::WriteStr(const char *pStr)
 	return S_OK;
 }
 
-API File::FileSize(uint& size)
+API File::FileSize(OUT uint *size)
 {
-	size = (uint)file_size(_fs_full_path);
+	*size = (uint)file_size(_fs_full_path);
 	return S_OK;
 }
 
