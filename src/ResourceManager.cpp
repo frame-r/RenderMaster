@@ -197,7 +197,7 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 	lTmpVector = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
 	//LOG_FORMATTED("[FBX]T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
 
-	LOG_FORMATTED("[FBX] (eMesh) %10s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f) CP=%5d POLYS=%5d NORMAL=%d UV=%d TANG=%d BINORM=%d", 
+	DEBUG_LOG_FORMATTED("[FBX] (eMesh) %10s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f) CP=%5d POLYS=%5d NORMAL=%d UV=%d TANG=%d BINORM=%d", 
 		pNode->GetName(),
 		lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2],
 		control_points_count, polygon_count, normal_element_count, uv_layer_count, tangent_layers_count, binormal_layers_count);
@@ -303,7 +303,7 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 	
 	MeshDataDesc vertDesc;
 	vertDesc.pData = reinterpret_cast<uint8*>(&vertecies[0]);
-	vertDesc.numberOfVertex = global_vert_id;
+	vertDesc.numberOfVertex = vertecies.size();
 	vertDesc.positionOffset = 0;
 	vertDesc.positionStride = sizeof(Vertex);
 	vertDesc.normalsPresented = normal_element_count > 0;
@@ -328,7 +328,7 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 		FbxString buff = "[FBX]";
 		FbxGeometryElementNormal* ns = pMesh->GetElementNormal(i);
 
-		LOG_FORMATTED("[FBX]Normals=%d", i);		
+		DEBUG_LOG_FORMATTED("[FBX]Normals=%d", i);		
 
 		switch (ns->GetMappingMode())
 		{
@@ -360,7 +360,7 @@ void ResourceManager::_LogNodeTransform(FbxNode* pNode, int tabs)
 	lTmpVector = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
 	lTmpVector = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
 
-	LOG_FORMATTED("[FBX] (eCamera) T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
+	DEBUG_LOG_FORMATTED("[FBX] (eCamera) T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
 }
 bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress)
 {
@@ -630,17 +630,17 @@ API ResourceManager::GetDefaultResource(OUT IResource **pRes, DEFAULT_RES_TYPE t
 
 API ResourceManager::AddToList(IResource *pResource)
 { 
-	auto it = std::find_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+	auto it = _resources.find(pResource);
 
 	if (it == _resources.end())
 	{
-		_resources.push_back(TResource{ pResource, 1 });	
+		_resources[pResource] = TResource{pResource, 1};
 		DEBUG_LOG("AddToList(): added new resource! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
 	else
 	{
-		it->refCount++;	
-		DEBUG_LOG("AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::NORMAL, it->refCount, _resourceToStr(pResource));
+		it->second.refCount++;
+		DEBUG_LOG("AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::NORMAL, it->second.refCount, _resourceToStr(pResource));
 	}
 
 	return S_OK;
@@ -654,30 +654,33 @@ API ResourceManager::GetNumberOfResources(OUT uint *number)
 
 API ResourceManager::GetRefNumber(OUT uint *number, const IResource *pResource)
 {
-	auto it = std::find_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+	auto it = _resources.find(pResource);
 
 	if (it == _resources.end())
+	{
+		*number = 0;
 		return E_POINTER;
+	}
 
-	assert(it->refCount > 0);
+	assert(it->second.refCount > 0);
 
-	*number = it->refCount;
+	*number = it->second.refCount;
 
 	return S_OK;
 }
 
 API ResourceManager::DecrementRef(IResource *pResource)
 {
-	auto it = std::find_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
+	auto it = _resources.find(pResource);
 	
 	if (it == _resources.end())
 		return E_POINTER;
 
-	assert(it->refCount > 0);
+	assert(it->second.refCount > 0);
 
-	it->refCount--;
+	it->second.refCount--;
 
-	DEBUG_LOG("DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::NORMAL, it->refCount, _resourceToStr(pResource));
+	DEBUG_LOG("DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::NORMAL, it->second.refCount, _resourceToStr(pResource));
 
 	return S_OK;
 }
@@ -689,8 +692,7 @@ API ResourceManager::RemoveFromList(IResource *pResource)
 
 	if (refCount == 1)
 	{
-		auto it = std::remove_if(_resources.begin(), _resources.end(), [pResource](const TResource& res) -> bool { return res.pRes == pResource; });
-		_resources.erase(it, _resources.end());
+		_resources.erase(pResource);
 
 		DEBUG_LOG("RemoveFromList(): deleted! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
@@ -708,22 +710,13 @@ API ResourceManager::FreeAllResources()
 	// and so on...
 	while (!_resources.empty())
 	{
-		vector<TResource> one_ref_res;
-
-		auto ref_is_1 = [](const TResource& res) {return res.refCount == 1; };
-
-		// partition: 
-		// all elements that should not be moved come before 
-		// all elements that should be moved come after
-		// stable_partition maintains relative order in each group
-		auto p = std::stable_partition(_resources.begin(), _resources.end(), [&](const auto& x) { return !ref_is_1(x); });
-
-		// move range elements that sould be removed
-		one_ref_res.insert(one_ref_res.end(), std::make_move_iterator(p), std::make_move_iterator(_resources.end()));
+		vector<IResource*> one_ref_res;
 		
-		// erase the moved-from elements.
-		// no need this because pRes->Free() removes himself from the vector!
-		//_resources.erase(p, _resources.end());
+		for (auto& res : _resources)
+		{
+			if (res.second.refCount == 1)
+				one_ref_res.push_back(res.second.pRes);
+		}
 		
 		#ifdef _DEBUG
 			static int i = 0;
@@ -733,8 +726,11 @@ API ResourceManager::FreeAllResources()
 		#endif
 
 		// free resources
-		for (auto& res : one_ref_res)
-			res.pRes->Free();
+		for (auto* pRes : one_ref_res)
+		{
+			_resources.erase(pRes);
+			pRes->Free();
+		}
 
 		#ifdef _DEBUG
 			auto res_deleted = res_before - _resources.size();

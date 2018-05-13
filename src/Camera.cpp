@@ -32,7 +32,7 @@ void Camera::_update()
 	vec3 forward_direction = vec3(M * vec4(0.0f, 0.0f, 1.0f, 0.0f));
 	vec3 up_direction = vec3(0.0f, 1.0f, 0.0f);
 
-	const float speed = 0.3f;
+	const float speed = 15.3f;
 
 	if (left_pressd)
 		_pos -= orth_direction * speed;

@@ -13,7 +13,7 @@ class ResourceManager final : public IResourceManager
 		IResource *pRes;
 		uint refCount;
 	};
-	std::vector<TResource> _resources;
+	std::unordered_map<const IResource*, TResource> _resources;
 
 	struct TDefaultResource
 	{

@@ -73,12 +73,21 @@ inline void standard_free_and_delete(IResource *pRes, std::function<void()> actu
 	{ \
 		CORE_REF->LogFormatted(pStr, type, args...); \
 	} \
+	template <typename... Arguments> \
+	void DEBUG_LOG_FORMATTED(const char *pStr, Arguments ... args) \
+	{ \
+		CORE_REF->LogFormatted(pStr, LOG_TYPE::NORMAL, args...); \
+	} \	
 	}
 #else
 #define DEFINE_DEBUG_LOG_HELPERS(CORE_REF) \
 	namespace { \
 	template <typename... Arguments> \
 	void DEBUG_LOG(const char *pStr, LOG_TYPE type, Arguments ... args) \
+	{ \
+	} \
+	template <typename... Arguments> \
+	void DEBUG_LOG_FORMATTED(const char *pStr, Arguments ... args) \
 	{ \
 	} \
 	}
