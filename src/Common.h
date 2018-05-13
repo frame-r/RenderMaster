@@ -22,7 +22,12 @@ enum class WINDOW_MESSAGE
 	KEY_UP,
 	MOUSE_MOVE,
 	MOUSE_DOWN,
-	MOUSE_UP
+	MOUSE_UP,
+	WINDOW_DEACTIVATED,
+	WINDOW_ACTIVATED,
+	WINDOW_MINIMIZED,
+	WINDOW_UNMINIMIZED,
+	WINDOW_REDRAW
 };
 
 typedef void(*WindowMessageCallback)(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);

@@ -4,9 +4,9 @@
 #define IGAMEOBJECT_IMPLEMENTATION \
 private: \
 \
-vec3 _pos{ 0.0f, 0.0f, 0.0f }; \
-vec3 _rot{ 0.0f, 0.0f, 0.0f }; \
-vec3 _scale{ 1.0f, 1.0f, 1.0f }; \
+vec3 _pos{0.0f, 0.0f, 0.0f}; \
+vec3 _rot{0.0f, 0.0f, 0.0f}; \
+vec3 _scale{1.0f, 1.0f, 1.0f}; \
 \
 public: \
 \
@@ -45,15 +45,19 @@ API GetModelMatrix(OUT mat4 *mat) override \
 	sz = sinf(theta); \
 	cz = cosf(theta); \
 \
-	R.el_2D[0][0] = cy * cz; \
-	R.el_2D[1][0] = sx*sy*cz + cx*sz; \
-	R.el_2D[2][0] = -cx*sy*cz + sx*sz; \
-	R.el_2D[0][1] = -cy*sz; \
-	R.el_2D[1][1] = -sx*sy*sz + cx*cz; \
-	R.el_2D[2][1] = cx*sy*sz + sx*cz; \
-	R.el_2D[0][2] = sy; \
-	R.el_2D[1][2] = -sx*cy; \
-	R.el_2D[2][2] = cx*cy; \
+	mat4 rx; \
+	rx.el_2D[1][1] = cx; \
+	rx.el_2D[1][2] = -sx; \
+	rx.el_2D[2][1] = sx; \
+	rx.el_2D[2][2] = cx; \
+\
+	mat4 ry; \
+	ry.el_2D[0][0] = cy; \
+	ry.el_2D[0][2] = sy; \
+	ry.el_2D[2][0] = -sy; \
+	ry.el_2D[2][2] = cy; \
+\
+	R = ry * rx; \
 \
 	T.el_2D[0][3] = _pos.x; \
 	T.el_2D[1][3] = _pos.y; \

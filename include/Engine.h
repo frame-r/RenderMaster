@@ -550,6 +550,7 @@ namespace RENDER_MASTER
 
 		virtual API IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) = 0;
 		virtual API IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) = 0;
+		virtual API GetMouseDeltaPos(OUT vec2 *dPos) = 0;
 
 	};
 

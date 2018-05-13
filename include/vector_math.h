@@ -11,6 +11,26 @@ struct Vector4;
 struct Matrix3x3;
 struct Matrix4x4;
 
+
+struct Vector4
+{
+	union
+	{
+		struct
+		{
+			float x, y, z, w;
+		};
+		float xyzw[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+	};
+
+	Vector4() = default;
+	Vector4(float xIn, float yIn, float zIn, float wIn);
+	Vector4(const Vector3& v3);
+
+	Vector4& operator/=(float value);
+	Vector4& operator/(float value) const;
+};
+
 struct Vector3
 {
 	union
@@ -25,15 +45,16 @@ struct Vector3
 	Vector3() = default;
 	Vector3(float v) : x(v), y(v), z(v) {}
 	Vector3(float xIn, float yIn, float zIn) : x(xIn), y(yIn), z(zIn) {}
+	Vector3(const Vector4& v4) : x(v4.x), y(v4.y), z(v4.z) {}
 
-	static Vector3 one() { return Vector3(1.0f, 1.0f, 1.0f); }
-	static Vector3 zero() { return Vector3(0.0f, 0.0f, 0.0f); }
-	static Vector3 forward() { return Vector3(0.0f, 0.0f, 1.0f); }
-	static Vector3 back() { return Vector3(0.0f, 0.0f, -1.0f); }
-	static Vector3 right() { return Vector3(1.0f, 0.0f, 0.0f); }
-	static Vector3 left() { return Vector3(-1.0f, 0.0f, 0.0f); }
-	static Vector3 up() { return Vector3(0.0f, 1.0f, 0.0f); }
-	static Vector3 down() { return Vector3(0.0f, -1.0f, 0.0f); }
+	static Vector3 one()		{ return Vector3(1.0f, 1.0f, 1.0f); }
+	static Vector3 zero()		{ return Vector3(0.0f, 0.0f, 0.0f); }
+	static Vector3 forward()	{ return Vector3(0.0f, 0.0f, 1.0f); }
+	static Vector3 back()		{ return Vector3(0.0f, 0.0f, -1.0f); }
+	static Vector3 right()		{ return Vector3(1.0f, 0.0f, 0.0f); }
+	static Vector3 left()		{ return Vector3(-1.0f, 0.0f, 0.0f); }
+	static Vector3 up()			{ return Vector3(0.0f, 1.0f, 0.0f); }
+	static Vector3 down()		{ return Vector3(0.0f, -1.0f, 0.0f); }
 
 	Vector3 &operator+=(const Vector3 &point)
 	{
@@ -131,36 +152,40 @@ struct Vector3
 	}
 };
 
-
-struct Vector4
+struct Vector2
 {
 	union
 	{
 		struct
 		{
-			float x, y, z, w;
+			float x, y;
 		};
-		float xyzw[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+		float xy[2] = {0.0f, 0.0f};
 	};
 
-	Vector4() = default;
-	Vector4(float xIn, float yIn, float zIn, float wIn) : x(xIn), y(yIn), z(zIn), w(wIn) {}
-	Vector4(const Vector3& v3) : x(v3.x), y(v3.y), z(v3.z), w(1.0f) {}
-
-	Vector4& operator/=(float value)
-	{
-		x /= value;
-		y /= value;
-		z /= value;
-		w /= value;
-		return *this;
-	}
-
-	Vector4& operator/(float value) const
-	{
-		return Vector4(*this) /= value;
-	}
+	Vector2() = default;
+	Vector2(float v) : x(v), y(v) {}
+	Vector2(float xIn, float yIn) : x(xIn), y(yIn) {}
+	Vector2(const Vector3& v3) : x(v3.x), y(v3.y) {}
 };
+
+inline Vector4::Vector4(float xIn, float yIn, float zIn, float wIn) : x(xIn), y(yIn), z(zIn), w(wIn) {}
+
+inline Vector4::Vector4(const Vector3& v3) : x(v3.x), y(v3.y), z(v3.z), w(1.0f) {}
+
+inline Vector4& Vector4::operator/=(float value)
+{
+	x /= value;
+	y /= value;
+	z /= value;
+	w /= value;
+	return *this;
+}
+
+inline Vector4& Vector4::operator/(float value) const
+{
+	return Vector4(*this) /= value;
+}
 
 struct Matrix4x4
 {
@@ -226,7 +251,7 @@ struct Matrix4x4
 	Matrix4x4 Inverse() const
 	{
 		float inv[16], invOut[16], det;
-
+		// TODO: rewrite
 		inv[0] = el_1D[5] * el_1D[10] * el_1D[15] -
 			el_1D[5] * el_1D[11] * el_1D[14] -
 			el_1D[9] * el_1D[6] * el_1D[15] +
@@ -461,6 +486,7 @@ struct Matrix3x3
 	}
 };
 
+typedef Vector2 vec2;
 typedef Vector3 vec3;
 typedef Vector4 vec4;
 typedef Matrix3x3 mat3;

@@ -8,6 +8,15 @@ DEFINE_LOG_HELPERS(_pCore)
 
 Input* Input::instance{nullptr};
 
+void Input::_update()
+{
+	_mouseDeltaPos.x = float(_cursorX) - _oldPos.x;
+	_mouseDeltaPos.y = float(_cursorY) - _oldPos.y;
+	_oldPos.x = (float)_cursorX;
+	_oldPos.y = (float)_cursorY;
+	//LOG_FORMATTED("_cursorX=%i _cursorY=%i _mouseDeltaPos(%f, %f) _oldPos(%f, %f)", _cursorX, _cursorY, _mouseDeltaPos.x, _mouseDeltaPos.y, _oldPos.x, _oldPos.y);
+}
+
 void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData)
 {
 	switch (type)
@@ -46,8 +55,11 @@ void Input::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param
 Input::Input()
 {
 	instance = this;
+
 	if (_pCore->MainWindow())
 		_pCore->MainWindow()->AddMessageCallback(_s_message_callback);
+
+	_pCore->AddUpdateCallback(std::bind(&Input::_update, this));
 }
 
 Input::~Input()
@@ -63,6 +75,12 @@ API Input::IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key)
 API Input::IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type)
 {
 	*isPressed = _mouse[(int)type] > 0;
+	return S_OK;
+}
+
+API Input::GetMouseDeltaPos(OUT vec2 *dPos)
+{
+	*dPos = _mouseDeltaPos;
 	return S_OK;
 }
 

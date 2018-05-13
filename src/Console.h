@@ -23,5 +23,7 @@ public:
 	void Init(const WinHandle* handle);
 	void Destroy();
 	void OutputTxt(const char* pStr);
+	void Show();
+	void Hide();
 };
 

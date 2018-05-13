@@ -35,7 +35,7 @@ LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		GetClientRect(this_ptr->_hWnd, &rect);
 		MoveWindow(this_ptr->_hMemo, 0, 0, rect.right, rect.bottom - 0, true);
 	}
-		break;
+	break;
 
 	case WM_DESTROY:
 		DeleteObject(this_ptr->_hFont);
@@ -165,5 +165,16 @@ void Console::OutputTxt(const char* pStr)
 	//}
 
 	_iPrevLineSize = (int)strlen(pStr);
+}
+
+void Console::Show()
+{
+	ShowWindow(_hWnd, SW_SHOW);
+	UpdateWindow(_hWnd);
+}
+
+void Console::Hide()
+{
+	ShowWindow(_hWnd, SW_HIDE);
 }
 

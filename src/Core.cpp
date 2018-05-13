@@ -73,7 +73,23 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 	case WINDOW_MESSAGE::SIZE:
 		if (_pCoreRender)
 			_pCoreRender->SetViewport(param1, param2);
-		LogFormatted("Window size changed: x=%i y=%i", LOG_TYPE::NORMAL, param1, param2);
+		//LogFormatted("Window size changed: x=%i y=%i", LOG_TYPE::NORMAL, param1, param2);
+		break;
+
+	case WINDOW_MESSAGE::WINDOW_UNMINIMIZED:
+		if (_pConsole)
+			_pConsole->Show();
+		break;
+
+	case WINDOW_MESSAGE::WINDOW_MINIMIZED:
+		if (_pConsole)
+			_pConsole->Hide();
+		break;
+
+	case WINDOW_MESSAGE::WINDOW_REDRAW:
+		ICamera * cam;
+		_pSceneManager->GetDefaultCamera(&cam);
+		_pRender->RenderFrame(cam);
 		break;
 
 	default:
@@ -144,16 +160,17 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	LogFormatted("Data dir: %s", LOG_TYPE::NORMAL, _pDataDir);
 	Log("Start initialization engine...");
 
-	_pfSystem = new FileSystem(_pDataDir);
-
-	_pResMan = new ResourceManager;	
-
 	if (createWindow)
 	{
 		_pMainWindow = new Wnd(_s_main_loop);
 		_pMainWindow->AddMessageCallback(_s_message_callback);
 		_pMainWindow->CreateAndShow();
 	}
+
+
+	_pfSystem = new FileSystem(_pDataDir);
+
+	_pResMan = new ResourceManager;	
 
 	_pInput = new Input;
 
@@ -172,6 +189,9 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	_pSceneManager = new SceneManager();
 
 	_pRender = new Render(_pCoreRender);
+
+	if (createWindow)
+		_pMainWindow->Show();
 
 	Log("Engine initialized");
 

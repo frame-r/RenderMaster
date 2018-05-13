@@ -23,6 +23,7 @@ public:
 	HWND *handle() { return &hwnd; }
 
 	void CreateAndShow();
+	void Show();
 	void StartMainLoop();
 	void Destroy();
 	void GetDimension(uint& w, uint& h);

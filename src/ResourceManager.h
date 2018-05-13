@@ -37,7 +37,6 @@ class ResourceManager final : public IResourceManager
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
 	bool _FBXLoad(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pPregress);
-
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
 	void _LogSceneHierarchy(IModel *&pModel, FbxScene* pScene);
 	void _LogNode(std::vector<ICoreMesh *>& meshes, FbxNode* pNode, int pDepth);

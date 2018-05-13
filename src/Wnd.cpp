@@ -9,6 +9,8 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+#define UPDATE_TIMER_ID 1
+
 KEYBOARD_KEY_CODES ASCIIKeyToEngKey(unsigned char key)
 {
 	switch (key)
@@ -143,8 +145,10 @@ void Wnd::_invoke_mesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void
 		c(type, param1, param2, pData);
 }
 
+
 LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	
 	if (message == WM_CLOSE)
 	{
 		PostQuitMessage(0);
@@ -162,6 +166,26 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 	{
+		switch (wParam)
+		{
+		case SIZE_MAXHIDE:
+			//LOG("WM_SIZE::SIZE_MAXHIDE");
+			break;
+		case SIZE_MAXIMIZED:
+			//LOG("WM_SIZE::SIZE_MAXIMIZED");
+			break;
+		case SIZE_MAXSHOW:
+			//LOG("WM_SIZE::SIZE_MAXSHOW");
+			break;
+		case SIZE_MINIMIZED:
+			//LOG("WM_SIZE::SIZE_MINIMIZED");
+			_invoke_mesage(WINDOW_MESSAGE::WINDOW_MINIMIZED, 0, 0, nullptr);
+			break;
+		case SIZE_RESTORED:
+			//LOG("WM_SIZE::SIZE_RESTORED");
+			_invoke_mesage(WINDOW_MESSAGE::WINDOW_UNMINIMIZED, 0, 0, nullptr);
+			break;
+		}
 		_invoke_mesage(WINDOW_MESSAGE::SIZE, LOWORD(lParam), HIWORD(lParam), (void*)lParam);
 	}
 	break;
@@ -202,10 +226,13 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_LBUTTONDOWN:
+		//LOG("WM_LBUTTONDOWN");
+		SetCapture(hWnd);
 		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 0, 0, nullptr);
 		break;
 
 	case WM_RBUTTONDOWN:
+		
 		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 1, 0, nullptr);
 		break;
 
@@ -214,6 +241,8 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_LBUTTONUP:
+		//LOG("WM_LBUTTONUP");
+		ReleaseCapture();
 		_invoke_mesage(WINDOW_MESSAGE::MOUSE_UP, 0, 0, nullptr);
 		break;
 
@@ -224,6 +253,65 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MBUTTONUP:
 		_invoke_mesage(WINDOW_MESSAGE::MOUSE_UP, 2, 0, nullptr);
 		break;
+
+	case WM_MOUSELEAVE:
+		//LOG("WM_MOUSELEAVE");
+		break;
+
+	case WM_MOUSEHOVER:
+		//LOG("WM_MOUSEHOVER");
+		break;
+
+	case WM_ACTIVATE:
+	{
+		int fActive = LOWORD(wParam);
+		if (fActive) LOG("WM_ACTIVATE true");
+		else LOG("WM_ACTIVATE false");
+		if (fActive)
+			_invoke_mesage(WINDOW_MESSAGE::WINDOW_ACTIVATED, 0, 0, nullptr);
+		else
+			_invoke_mesage(WINDOW_MESSAGE::WINDOW_DEACTIVATED, 0, 0, nullptr);
+	}
+	break;
+
+	case WM_ACTIVATEAPP:
+	{
+		int fActive = LOWORD(wParam);
+		if (fActive) LOG("WM_ACTIVATEAPP true");
+		else LOG("WM_ACTIVATEAPP false");
+	}
+	break;
+
+	case WM_ENTERSIZEMOVE:
+		//_invoke_mesage(WINDOW_MESSAGE::WINDOW_DEACTIVATED, 0, 0, nullptr);
+		SetTimer(hWnd, UPDATE_TIMER_ID, USER_TIMER_MINIMUM, NULL);
+		break;
+
+	case WM_EXITSIZEMOVE:
+		//_invoke_mesage(WINDOW_MESSAGE::WINDOW_ACTIVATED, 0, 0, nullptr);
+		KillTimer(hWnd, UPDATE_TIMER_ID);
+		break;
+
+	case WM_TIMER:
+		if (wParam == UPDATE_TIMER_ID)
+		{
+			//LOG("WM_TIMER redraw");
+			_invoke_mesage(WINDOW_MESSAGE::WINDOW_REDRAW, 0, 0, nullptr);
+		}
+		break;
+
+	case WM_PAINT:
+		ValidateRect(hWnd, NULL);
+		return 0;
+
+	case WM_ERASEBKGND:
+		return 1;
+
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+
+
 
 	default:
 		break;
@@ -259,6 +347,10 @@ void Wnd::CreateAndShow()
 	hwnd = CreateWindow(TEXT("Simple class name"), TEXT("Test"), WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
 
+}
+
+void Wnd::Show()
+{
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
 }
