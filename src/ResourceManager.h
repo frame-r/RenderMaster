@@ -40,7 +40,7 @@ class ResourceManager final : public IResourceManager
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
 	void _LogSceneHierarchy(IModel *&pModel, FbxScene* pScene);
 	void _LogNode(std::vector<ICoreMesh *>& meshes, FbxNode* pNode, int pDepth);
-	void _LogMesh(std::vector<ICoreMesh *>& meshes, FbxMesh *pMesh, int tabs);
+	void _LogMesh(std::vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxNode *pNode);
 	void _LogNodeTransform(FbxNode* pNode, int tabs);		
 	#endif
 

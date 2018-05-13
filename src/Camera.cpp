@@ -66,7 +66,7 @@ Camera::Camera()
 	_pCore->AddUpdateCallback(std::bind(&Camera::_update, this));
 	_pCore->GetSubSystem((ISubSystem**)&_pInput, SUBSYSTEM_TYPE::INPUT);
 
-	//_rot = vec3(25.0f, -22.4f, 0.0f);
+	_rot = vec3(25.0f, -22.4f, 0.0f);
 	_pos = vec3(9.37f, 9.61f, -14.27f);
 }
 
@@ -123,20 +123,7 @@ API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 
 API Camera::Free()
 {
-	IResourceManager *pResMan;
-	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-
-	uint refNum;
-	pResMan->GetRefNumber(&refNum, this);
-
-	if (refNum == 1)
-		pResMan->RemoveFromList(this);
-	else if (refNum > 1)
-		pResMan->DecrementRef(this);
-	else
-		LOG_WARNING("Camera::Free(): refNum == 0");
-
-	delete this;
+	standard_free_and_delete(this, std::function<void()>(), _pCore);
 
 	return S_OK;
 }

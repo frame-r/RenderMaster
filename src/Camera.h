@@ -4,8 +4,8 @@
 
 class Camera : public ICamera
 {
-	const float _zNear = 0.03f;
-	const float _zFar = 200.f;
+	const float _zNear = 0.10f;
+	const float _zFar = 1000.f;
 	const float _fovAngle = 60.0f;
 
 	IInput *_pInput{nullptr};

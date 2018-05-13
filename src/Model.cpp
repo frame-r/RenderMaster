@@ -27,22 +27,10 @@ API Model::GetNumberOfMesh(OUT uint *number)
 
 API Model::Free()
 {
-	IResourceManager *pResMan;
-	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	for (auto *mesh : _meshes)
+		mesh->Free();
 
-	for (ICoreMesh *pMesh : _meshes)
-	{
-		uint refNum;
-		pResMan->GetRefNumber(&refNum, this);
-
-		if (refNum == 1)
-		{
-			pResMan->RemoveFromList(this);
-			pMesh->Free();
-		}
-		else
-			pResMan->DecrementRef(this);
-	}
+	standard_free_and_delete(this, std::function<void()>(), _pCore);
 
 	return S_OK;
 }

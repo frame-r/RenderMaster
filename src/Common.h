@@ -39,6 +39,31 @@ std::basic_string<Char> ToLowerCase(std::basic_string<Char> str)
 	return str;
 }
 
+inline void standard_free_and_delete(IResource *pRes, std::function<void()> actually_delete_proc, ICore *_pCore)
+{
+	IResourceManager *pResMan;
+	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+
+	uint refNum;
+	pResMan->GetRefNumber(&refNum, pRes);
+
+	if (refNum == 1)
+	{
+		pResMan->RemoveFromList(pRes);
+		if (actually_delete_proc)
+			actually_delete_proc();
+	}
+	else if (refNum > 1)
+		pResMan->DecrementRef(pRes);
+	else
+	{
+		pResMan->RemoveFromList(pRes);
+		_pCore->Log("standard_free_and_delete: refNum == 0",LOG_TYPE::WARNING);
+	}
+
+	delete pRes;
+}
+
 
 #ifdef _DEBUG
 #define DEFINE_DEBUG_LOG_HELPERS(CORE_REF) \

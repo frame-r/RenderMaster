@@ -16,27 +16,15 @@ GLShader::~GLShader()
 
 API GLShader::Free()
 {
-	IResourceManager *pResMan;
-	uint refNum;
-
-	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-	pResMan->GetRefNumber(&refNum, this);
-
-	if (refNum == 1)
+	auto free_gl_mesh = [&]() -> void
 	{
-		pResMan->RemoveFromList(this);
-
 		if (_vertID != 0) glDeleteShader(_vertID);
 		if (_fragID != 0) glDeleteShader(_fragID);
 		if (_geomID != 0) glDeleteShader(_geomID);
 		if (_programID != 0) glDeleteProgram(_programID);
-	}
-	else if (refNum > 1)
-		pResMan->DecrementRef(this);
-	else
-		LOG_WARNING("GLShader::Free(): refNum == 0");
+	};
 
-	delete this;
+	standard_free_and_delete(this, free_gl_mesh, _pCore);
 
 	return S_OK;
 }

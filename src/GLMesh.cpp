@@ -31,26 +31,14 @@ API GLMesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 
 API GLMesh::Free()
 {
-	IResourceManager *pResMan;
-	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-
-	uint refNum;
-	pResMan->GetRefNumber(&refNum, this);
-
-	if (refNum == 1)
+	auto free_gl_mesh = [&]() -> void
 	{
-		pResMan->RemoveFromList(this);
-
 		if (_index_presented) glDeleteBuffers(1, &_IBO);
 		glDeleteBuffers(1, &_VBO);
 		glDeleteVertexArrays(1, &_VAO);
-	}
-	else if (refNum > 1)
-		pResMan->DecrementRef(this);
-	else
-		LOG_WARNING("GLMesh::Free(): refNum == 0");
+	};
 
-	delete this;
+	standard_free_and_delete(this, free_gl_mesh, _pCore);
 
 	return S_OK;
 }

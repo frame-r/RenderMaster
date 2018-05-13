@@ -97,7 +97,7 @@ void Console::Init(const WinHandle* handle)
 
 	_hWnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"ConsoleClass", L"Render Master Console",
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX,
-		1060, 300, 700, 700, h, NULL, _hInst, NULL);
+		1060, 300, 1000, 700, h, NULL, _hInst, NULL);
 
 	if (!_hWnd)
 	{
@@ -129,6 +129,8 @@ void Console::Init(const WinHandle* handle)
 	//_pOldEditProc = (void *)SetWindowLongPtr(_hEdit, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)CConsoleWindow::_s_WndEditProc);
 
 	SendMessage(_hEdit, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
+
+	SendMessage(_hMemo, EM_LIMITTEXT, 200000, 0);
 
 	//ResetSizeAndPos();
 

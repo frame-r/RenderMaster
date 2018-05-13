@@ -72,8 +72,3 @@ API GetModelMatrix(OUT mat4 *mat) override \
 	return S_OK; \
 }
 
-
-class GameObject : public IGameObject
-{
-	IGAMEOBJECT_IMPLEMENTATION
-};

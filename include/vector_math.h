@@ -4,7 +4,7 @@
 // Don't include this file directly.
 // Instead include Engine.h
 
-#pragma warning(disable : 4201)
+#pragma warning(disable : 4201) // ignore non standard unnamed struct in union
 
 struct Vector3;
 struct Vector4;

@@ -157,23 +157,20 @@ void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 
 void ResourceManager::_LogNode(vector<ICoreMesh *>& meshes, FbxNode* pNode, int depth)
 {
-	FbxString lString = "[FBX]";
-
-	lString += pNode->GetName();
-
+	FbxString lString;
 	FbxNodeAttribute::EType lAttributeType = (pNode->GetNodeAttribute()->GetAttributeType());
 
 	switch (lAttributeType)
 	{
-		case FbxNodeAttribute::eMesh:		lString += " (eMesh)"; LOG(lString.Buffer()); _LogNodeTransform(pNode, depth + 3); _LogMesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), depth + 3); break;
-		case FbxNodeAttribute::eMarker:		lString += " (eMarker)"; LOG(lString.Buffer()); break;
-		case FbxNodeAttribute::eSkeleton:	lString += " (eSkeleton)"; LOG(lString.Buffer()); break;
-		case FbxNodeAttribute::eNurbs:		lString += " (eNurbs)"; LOG(lString.Buffer()); break;
-		case FbxNodeAttribute::ePatch:		lString += " (ePatch)"; LOG(lString.Buffer()); break;
-		case FbxNodeAttribute::eCamera:		lString += " (eCamera)"; LOG(lString.Buffer()); _LogNodeTransform(pNode, depth + 1); break;
-		case FbxNodeAttribute::eLight:		lString += " (eLight)"; LOG(lString.Buffer()); break;
-		case FbxNodeAttribute::eLODGroup:	lString += " (eLODGroup)"; LOG(lString.Buffer()); break;
-		default:							lString += " (unknown)"; LOG(lString.Buffer()); break;
+		case FbxNodeAttribute::eMesh:		_LogMesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), pNode); break;
+		case FbxNodeAttribute::eMarker:		LOG(("[FBX] (eMarker) " + lString + pNode->GetName()).Buffer()); break;
+		case FbxNodeAttribute::eSkeleton:	LOG(("[FBX] (eSkeleton) " + lString + pNode->GetName()).Buffer()); break;
+		case FbxNodeAttribute::eNurbs:		LOG(("[FBX] (eNurbs) " + lString + pNode->GetName()).Buffer()); break;
+		case FbxNodeAttribute::ePatch:		LOG(("[FBX] (ePatch) " + lString + pNode->GetName()).Buffer()); break;
+		case FbxNodeAttribute::eCamera:		_LogNodeTransform(pNode, depth + 1); break;
+		case FbxNodeAttribute::eLight:		LOG(("[FBX] (eLight) " + lString + pNode->GetName()).Buffer()); break;
+		case FbxNodeAttribute::eLODGroup:	LOG(("[FBX] (eLODGroup) " + lString + pNode->GetName()).Buffer()); break;
+		default:							LOG(("[FBX] (UNKNOWN!) " + lString + pNode->GetName()).Buffer()); break;
 	}
 
 	for (int i = 0; i < pNode->GetChildCount(); i++)
@@ -186,7 +183,7 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, int tabs)
+void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxNode *pNode)
 {
 	int control_points_count = pMesh->GetControlPointsCount();
 	int polygon_count = pMesh->GetPolygonCount();
@@ -195,7 +192,15 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, int 
 	int tangent_layers_count = pMesh->GetElementTangentCount();
 	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
-	LOG_FORMATTED("[FBX]ControlPoints=%d PolygonCount=%d NormalLayers=%d UVLayers=%d TangentLayers=%d BinormalLayers=%d", control_points_count, polygon_count, normal_element_count, uv_layer_count, tangent_layers_count, binormal_layers_count);
+	FbxVector4 lTmpVector = pNode->GetGeometricTranslation(FbxNode::eSourcePivot);
+	lTmpVector = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
+	lTmpVector = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
+	//LOG_FORMATTED("[FBX]T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
+
+	LOG_FORMATTED("[FBX] (eMesh) %10s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f) CP=%5d POLYS=%5d NORMAL=%d UV=%d TANG=%d BINORM=%d", 
+		pNode->GetName(),
+		lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2],
+		control_points_count, polygon_count, normal_element_count, uv_layer_count, tangent_layers_count, binormal_layers_count);
 
 	struct Vertex
 	{
@@ -355,7 +360,7 @@ void ResourceManager::_LogNodeTransform(FbxNode* pNode, int tabs)
 	lTmpVector = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
 	lTmpVector = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
 
-	LOG_FORMATTED("[FBX]Translation: %f %f %f  Rotation: %f %f %f  Scaling: %f %f %f", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
+	LOG_FORMATTED("[FBX] (eCamera) T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
 }
 bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress)
 {
