@@ -77,7 +77,7 @@ inline void standard_free_and_delete(IResource *pRes, std::function<void()> actu
 	void DEBUG_LOG_FORMATTED(const char *pStr, Arguments ... args) \
 	{ \
 		CORE_REF->LogFormatted(pStr, LOG_TYPE::NORMAL, args...); \
-	} \	
+	} \
 	}
 #else
 #define DEFINE_DEBUG_LOG_HELPERS(CORE_REF) \

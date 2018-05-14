@@ -15,7 +15,7 @@ class Render
 
 	struct ShaderRequirement
 	{
-		INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::NONE};
+		INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::CUSTOM};
 		bool alphaTest{false};
 
 		size_t operator()(const ShaderRequirement& k) const

@@ -12,19 +12,10 @@ class ResourceManager final : public IResourceManager
 	{
 		IResource *pRes;
 		uint refCount;
+		DEFAULT_RES_TYPE type{DEFAULT_RES_TYPE::CUSTOM};
 	};
 	std::unordered_map<const IResource*, TResource> _resources;
-
-	struct TDefaultResource
-	{
-		TDefaultResource(IResource* pResIn, uint refCountIn, DEFAULT_RES_TYPE typeIn) : pRes(pResIn), refCount(refCountIn), type(typeIn) {}
-
-		IResource *pRes{nullptr};
-		uint refCount{0};
-		DEFAULT_RES_TYPE type{DEFAULT_RES_TYPE::NONE};		
-	};
-	std::vector<TDefaultResource> _default_resources;
-	
+		
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
 

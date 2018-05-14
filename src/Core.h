@@ -19,6 +19,7 @@ class Core : public ICore
 	char *_pWorkingDir{nullptr};
 	char *_pInstalledDir{nullptr};	
 
+	// subsystems
 	Console *_pConsole{nullptr};
 	Wnd *_pMainWindow{nullptr};
 	FileSystem *_pfSystem{nullptr};

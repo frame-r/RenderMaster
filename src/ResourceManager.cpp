@@ -298,12 +298,11 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 		global_vert_id += polygon_size;
 	}
 
-	// create mesh on VRAM
 	ICoreMesh *pCoreMesh = nullptr;
 	
 	MeshDataDesc vertDesc;
 	vertDesc.pData = reinterpret_cast<uint8*>(&vertecies[0]);
-	vertDesc.numberOfVertex = vertecies.size();
+	vertDesc.numberOfVertex = (uint)vertecies.size();
 	vertDesc.positionOffset = 0;
 	vertDesc.positionStride = sizeof(Vertex);
 	vertDesc.normalsPresented = normal_element_count > 0;
@@ -320,38 +319,6 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 		meshes.push_back(pCoreMesh);
 	else
 		LOG_WARNING("[FBX]ResourceManager::_LogMesh(): Can not create mesh");
-
-
-	/*
-	for (int i = 0; i< normal_element_count; i++)
-	{
-		FbxString buff = "[FBX]";
-		FbxGeometryElementNormal* ns = pMesh->GetElementNormal(i);
-
-		DEBUG_LOG_FORMATTED("[FBX]Normals=%d", i);		
-
-		switch (ns->GetMappingMode())
-		{
-			case FbxLayerElement::eByControlPoint:	buff += "EMappingMode=eByControlPoint "; break;
-			case FbxLayerElement::eByPolygonVertex:	buff += "EMappingMode=eByPolygonVertex "; break;
-			case FbxLayerElement::eNone:			buff += "EMappingMode=eNone "; break;
-			case FbxLayerElement::eByPolygon:		buff += "EMappingMode=eByPolygon "; break;
-			case FbxLayerElement::eByEdge:			buff += "EMappingMode=eByEdge "; break;
-			case FbxLayerElement::eAllSame:			buff += "EMappingMode=eAllSame "; break;
-			default:								buff += "EMappingMode=unknown "; break;;
-		}
-
-		switch (ns->GetReferenceMode())
-		{
-			case FbxLayerElement::eDirect:			buff += " EReferenceMode=eDirect "; break;
-			case FbxLayerElement::eIndex:			buff += " EReferenceMode=eIndex "; break;
-			case FbxLayerElement::eIndexToDirect:	buff += " EReferenceMode=eIndexToDirect "; break;
-			default:								buff += " EReferenceMode=unknown "; break;;
-		}
-
-		LOG(buff.Buffer());
-	}	
-	*/
 }
 
 void ResourceManager::_LogNodeTransform(FbxNode* pNode, int tabs)
@@ -438,9 +405,7 @@ const char* ResourceManager::_resourceToStr(IResource *pRes)
 ResourceManager::ResourceManager()
 {
 	const char *pString = nullptr;
-
-	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
-	
+	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);	
 }
 
 ResourceManager::~ResourceManager()
@@ -481,7 +446,7 @@ void ResourceManager::Init()
 
 	_pCoreRender->CreateMesh((ICoreMesh**)&pPlane, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
-	_default_resources.emplace_back(pPlane, 0, DEFAULT_RES_TYPE::PLANE);
+	_resources[pPlane] = TResource{pPlane, 0, DEFAULT_RES_TYPE::PLANE};
 
 	// create axes mesh
 	ICoreMesh *pAxes;
@@ -503,8 +468,7 @@ void ResourceManager::Init()
 
 	_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES);
 
-	_default_resources.emplace_back(pAxes, 0, DEFAULT_RES_TYPE::AXES);
-
+	_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES};
 
 	LOG("ResourceManager initalized");
 }
@@ -609,21 +573,21 @@ API ResourceManager::LoadShaderText(OUT ShaderText *pShader, const char *pVertNa
 	return ret;
 }
 
-API ResourceManager::GetDefaultResource(OUT IResource **pRes, DEFAULT_RES_TYPE type)
+API ResourceManager::GetDefaultResource(OUT IResource **pResource, DEFAULT_RES_TYPE type)
 {
-	if (type == DEFAULT_RES_TYPE::NONE)
+	if (type == DEFAULT_RES_TYPE::CUSTOM)
 	{
-		pRes = nullptr;
+		pResource = nullptr;
 		LOG_WARNING("ResourceManager::GetDefaultResource(): unknown type of resource");
 		return S_FALSE;
 	}
 
-	auto it = std::find_if(_default_resources.begin(), _default_resources.end(), [type](const TDefaultResource& res) -> bool { return res.type == type; });
+	auto it = std::find_if(_resources.begin(), _resources.end(), [type](const std::pair<const IResource *, TResource>& res) -> bool { return res.second.type == type; });
 
-	assert(it != _default_resources.end());
+	assert(it != _resources.end());
 
-	*pRes = it->pRes;
-	it->refCount++;
+	*pResource = it->second.pRes;
+	it->second.refCount++;
 
 	return S_OK;
 }
@@ -634,7 +598,7 @@ API ResourceManager::AddToList(IResource *pResource)
 
 	if (it == _resources.end())
 	{
-		_resources[pResource] = TResource{pResource, 1};
+		_resources[pResource] = TResource{pResource, 1, DEFAULT_RES_TYPE::CUSTOM};
 		DEBUG_LOG("AddToList(): added new resource! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
 	else
@@ -661,9 +625,7 @@ API ResourceManager::GetRefNumber(OUT uint *number, const IResource *pResource)
 		*number = 0;
 		return E_POINTER;
 	}
-
-	assert(it->second.refCount > 0);
-
+	
 	*number = it->second.refCount;
 
 	return S_OK;
@@ -693,11 +655,13 @@ API ResourceManager::RemoveFromList(IResource *pResource)
 	if (refCount == 1)
 	{
 		_resources.erase(pResource);
-
 		DEBUG_LOG("RemoveFromList(): deleted! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
 	else
-		LOG_WARNING_FORMATTED("RemoveFromList(): not deleted! refNumber=%i type=%s", refCount, _resourceToStr(pResource));
+	{
+		_resources.erase(pResource);
+		LOG_WARNING_FORMATTED("RemoveFromList(): may be warning (refNumber=%i)! deleted! type=%s", refCount, _resourceToStr(pResource));
+	}
 
 	return S_OK;
 }
@@ -714,7 +678,7 @@ API ResourceManager::FreeAllResources()
 		
 		for (auto& res : _resources)
 		{
-			if (res.second.refCount == 1)
+			if (res.second.refCount <= 1)
 				one_ref_res.push_back(res.second.pRes);
 		}
 		
@@ -728,8 +692,8 @@ API ResourceManager::FreeAllResources()
 		// free resources
 		for (auto* pRes : one_ref_res)
 		{
-			_resources.erase(pRes);
 			pRes->Free();
+			_resources.erase(pRes);
 		}
 
 		#ifdef _DEBUG
@@ -738,10 +702,6 @@ API ResourceManager::FreeAllResources()
 			DEBUG_LOG("FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _resources.size());
 		#endif
 	}
-
-	// free deafult resources
-	for (auto& res : _default_resources)
-		res.pRes->Free();
-	
+		
 	return S_OK;
 }

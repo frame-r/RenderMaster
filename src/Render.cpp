@@ -559,10 +559,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 
 		_pCoreRender->SetShader(shader);
 		_pCoreRender->SetMesh(renderMesh.mesh);
-
-
-		// uniforms
-
+		
 		mat4 MVP = VP * renderMesh.modelMat;
 
 		_pCoreRender->SetUniform("MVP", &MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);

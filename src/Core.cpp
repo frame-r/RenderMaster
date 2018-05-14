@@ -18,90 +18,6 @@ DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
 
-float Core::update_fps()
-{
-	static const float upd_interv = 0.3f;
-	static float accum = 0.0f;	
-
-	std::chrono::duration<float> _durationSec = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start);
-	float sec = _durationSec.count();
-
-	accum += sec;
-
-	if (accum > upd_interv)
-	{
-		accum = 0.0f;
-		int fps = static_cast<int>(1.0f / sec);
-		std::string fps_str = std::to_string(fps);
-		std::wstring fps_strw = std::wstring(L"Test [") + std::wstring(fps_str.begin(), fps_str.end()) + std::wstring(L"]");
-
-		_pMainWindow->SetCaption(fps_strw.c_str());
-	}
-
-	start = std::chrono::steady_clock::now();
-
-	return sec;
-}
-
-std::string Core::_getFullLogPath()
-{
-	return std::string(_pDataDir) + "\\log.txt";
-}
-
-void Core::_main_loop()
-{
-	update_fps();
-
-	for (auto &callback : _update_callbacks)
-		callback();
-	
-	ICamera *cam;
-	_pSceneManager->GetDefaultCamera(&cam);
-
-	_pRender->RenderFrame(cam);
-}
-
-void Core::_s_main_loop()
-{
-	_pCore->_main_loop();
-}
-
-void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
-{
-	switch (type)
-	{
-	case WINDOW_MESSAGE::SIZE:
-		if (_pCoreRender)
-			_pCoreRender->SetViewport(param1, param2);
-		//LogFormatted("Window size changed: x=%i y=%i", LOG_TYPE::NORMAL, param1, param2);
-		break;
-
-	case WINDOW_MESSAGE::WINDOW_UNMINIMIZED:
-		if (_pConsole)
-			_pConsole->Show();
-		break;
-
-	case WINDOW_MESSAGE::WINDOW_MINIMIZED:
-		if (_pConsole)
-			_pConsole->Hide();
-		break;
-
-	case WINDOW_MESSAGE::WINDOW_REDRAW:
-		ICamera * cam;
-		_pSceneManager->GetDefaultCamera(&cam);
-		_pRender->RenderFrame(cam);
-		break;
-
-	default:
-		break;
-	}	
-}
-
-void Core::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
-{
-	_pCore->_message_callback(type, param1, param2, pData);
-}
-
 Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 {
 	_pCore = this;
@@ -167,7 +83,6 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 		_pMainWindow->CreateAndShow();
 	}
 
-
 	_pfSystem = new FileSystem(_pDataDir);
 
 	_pResMan = new ResourceManager;	
@@ -209,9 +124,7 @@ API Core::Start()
 	{
 		uint w, h;
 		_pMainWindow->GetDimension(w, h);
-
 		_pCoreRender->SetViewport(w, h);
-
 		_pMainWindow->StartMainLoop();
 	}
 
@@ -232,7 +145,6 @@ API Core::RenderFrame(const WinHandle* extern_handle, const ICamera *pCamera)
 #endif // WIN32
 
 	_pCoreRender->SetViewport(w, h);
-
 	_pRender->RenderFrame(pCamera);
 
 	return S_OK;
@@ -253,6 +165,65 @@ API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 	}
 
 	return S_OK;
+}
+
+void Core::_main_loop()
+{
+	update_fps();
+
+	for (auto &callback : _update_callbacks)
+		callback();
+
+	ICamera *cam;
+	_pSceneManager->GetDefaultCamera(&cam);
+
+	_pRender->RenderFrame(cam);
+}
+
+void Core::_s_main_loop()
+{
+	_pCore->_main_loop();
+}
+
+void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
+{
+	switch (type)
+	{
+	case WINDOW_MESSAGE::SIZE:
+		if (_pCoreRender)
+			_pCoreRender->SetViewport(param1, param2);
+		//LogFormatted("Window size changed: x=%i y=%i", LOG_TYPE::NORMAL, param1, param2);
+		break;
+
+	case WINDOW_MESSAGE::WINDOW_UNMINIMIZED:
+		if (_pConsole)
+			_pConsole->Show();
+		break;
+
+	case WINDOW_MESSAGE::WINDOW_MINIMIZED:
+		if (_pConsole)
+			_pConsole->Hide();
+		break;
+
+	case WINDOW_MESSAGE::WINDOW_REDRAW:
+		ICamera * cam;
+		_pSceneManager->GetDefaultCamera(&cam);
+		_pRender->RenderFrame(cam);
+		break;
+
+	default:
+		break;
+	}
+}
+
+void Core::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
+{
+	_pCore->_message_callback(type, param1, param2, pData);
+}
+
+std::string Core::_getFullLogPath()
+{
+	return std::string(_pDataDir) + "\\log.txt";
 }
 
 API Core::GetDataDir(OUT char **pStr)
@@ -328,6 +299,31 @@ API Core::GetLogPrintedEv(OUT ILogEvent **pEvent)
 {
 	*pEvent = _evLog;
 	return S_OK;
+}
+
+float Core::update_fps()
+{
+	static const float upd_interv = 0.3f;
+	static float accum = 0.0f;
+
+	std::chrono::duration<float> _durationSec = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start);
+	float sec = _durationSec.count();
+
+	accum += sec;
+
+	if (accum > upd_interv)
+	{
+		accum = 0.0f;
+		int fps = static_cast<int>(1.0f / sec);
+		std::string fps_str = std::to_string(fps);
+		std::wstring fps_strw = std::wstring(L"Test [") + std::wstring(fps_str.begin(), fps_str.end()) + std::wstring(L"]");
+
+		_pMainWindow->SetCaption(fps_strw.c_str());
+	}
+
+	start = std::chrono::steady_clock::now();
+
+	return sec;
 }
 
 HRESULT Core::QueryInterface(REFIID riid, void ** ppv)

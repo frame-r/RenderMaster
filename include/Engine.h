@@ -179,7 +179,7 @@ namespace RENDER_MASTER
 
 	enum class INPUT_ATTRUBUTE
 	{
-		NONE		= 0,
+		CUSTOM		= 0,
 		POSITION	= 1 << 0,
 		NORMAL		= 1 << 1,
 		TEX_COORD	= 1 << 2,
@@ -315,6 +315,8 @@ namespace RENDER_MASTER
 	public:
 		virtual API SetPosition(const vec3 *pos) = 0;
 		virtual API SetRotation(const vec3 *rot) = 0;
+		virtual API GetPosition(OUT vec3 *pos) = 0;
+		virtual API GetRotation(OUT vec3 *rot) = 0;
 		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
 	};
 
@@ -351,7 +353,7 @@ namespace RENDER_MASTER
 
 	enum class DEFAULT_RES_TYPE
 	{
-		NONE,
+		CUSTOM,
 		PLANE,
 		AXES
 	};

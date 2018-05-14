@@ -24,6 +24,18 @@ API SetRotation(const vec3 *rot) override \
 	return S_OK; \
 } \
 \
+API GetPosition(OUT vec3 *pos) override \
+{ \
+	*pos = _pos; \
+	return S_OK; \
+} \
+\
+API GetRotation(OUT vec3 *rot) override \
+{ \
+	*rot = _rot; \
+	return S_OK; \
+} \
+\
 API GetModelMatrix(OUT mat4 *mat) override \
 { \
 	mat4 R; \
