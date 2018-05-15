@@ -138,7 +138,8 @@ void Console::Init(const WinHandle* handle)
 }
 
 void Console::Destroy()
-{//TODO
+{
+	DestroyWindow(_hWnd);
 }
 
 void Console::OutputTxt(const char* pStr)
@@ -178,5 +179,10 @@ void Console::Show()
 void Console::Hide()
 {
 	ShowWindow(_hWnd, SW_HIDE);
+}
+
+void Console::BringToFront()
+{
+	SetActiveWindow(_hWnd);
 }
 

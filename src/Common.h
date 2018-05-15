@@ -27,7 +27,8 @@ enum class WINDOW_MESSAGE
 	WINDOW_ACTIVATED,
 	WINDOW_MINIMIZED,
 	WINDOW_UNMINIMIZED,
-	WINDOW_REDRAW
+	WINDOW_REDRAW,
+	WINDOW_CLOSE
 };
 
 typedef void(*WindowMessageCallback)(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);

@@ -470,7 +470,7 @@ void ResourceManager::Init()
 
 	_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES};
 
-	LOG("ResourceManager initalized");
+	LOG("Resource Manager initalized");
 }
 
 API ResourceManager::GetName(OUT const char **pName)

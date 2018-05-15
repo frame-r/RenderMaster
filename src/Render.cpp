@@ -8,7 +8,8 @@ using std::vector;
 using strit = string::iterator;
 
 extern Core *_pCore;
-
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
 
 /////////////////////////
 // Preprocessor
@@ -495,7 +496,17 @@ Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 	_pCore->GetSubSystem((ISubSystem**)&_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 	_pCore->GetSubSystem((ISubSystem**)&_fsystem, SUBSYSTEM_TYPE::FILESYSTEM);
+}
 
+Render::~Render()
+{
+	delete_char_pp(pStandardShaderText.pVertText);
+	delete_char_pp(pStandardShaderText.pGeomText);
+	delete_char_pp(pStandardShaderText.pFragText);
+}
+
+void Render::Init()
+{
 	_pResMan->LoadShaderText(&pStandardShaderText, "mesh_vertex", nullptr, "mesh_fragment");
 
 	//dbg
@@ -503,14 +514,8 @@ Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
 
 	_pResMan->GetDefaultResource((IResource**)&_pAxesMesh, DEFAULT_RES_TYPE::AXES);
-}
 
-
-Render::~Render()
-{
-	delete_char_pp(pStandardShaderText.pVertText);
-	delete_char_pp(pStandardShaderText.pGeomText);
-	delete_char_pp(pStandardShaderText.pFragText);
+	LOG("Render initialized");
 }
 
 void Render::_draw_axes(const mat4& VP)

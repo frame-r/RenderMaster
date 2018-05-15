@@ -3,6 +3,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <Windowsx.h>
 #include <assert.h>
 
 extern Core *_pCore;
@@ -152,6 +153,7 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	if (message == WM_CLOSE)
 	{
 		PostQuitMessage(0);
+		_invoke_mesage(WINDOW_MESSAGE::WINDOW_CLOSE, 0, 0, nullptr);
 		return 0;
 	}
 
@@ -222,7 +224,7 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_MOUSEMOVE:
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_MOVE, LOWORD(lParam), HIWORD(lParam), nullptr);
+		_invoke_mesage(WINDOW_MESSAGE::MOUSE_MOVE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), nullptr);
 		break;
 
 	case WM_LBUTTONDOWN:

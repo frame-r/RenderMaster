@@ -12,6 +12,7 @@ public:
 
 	SceneManager();
 
+	void Init();
 	void Free();
 
 	API GetDefaultCamera(OUT ICamera **pCamera) override;

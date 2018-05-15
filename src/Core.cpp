@@ -71,10 +71,10 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 		_pConsole->Init(nullptr);
 	}
 
-	LogFormatted("Working dir: %s", LOG_TYPE::NORMAL, _pWorkingDir);
-	LogFormatted("Installed dir: %s", LOG_TYPE::NORMAL, _pInstalledDir);
-	LogFormatted("Data dir: %s", LOG_TYPE::NORMAL, _pDataDir);
 	Log("Start initialization engine...");
+	LogFormatted("Working directory:    %s", LOG_TYPE::NORMAL, _pWorkingDir);
+	LogFormatted("Installed directory:  %s", LOG_TYPE::NORMAL, _pInstalledDir);
+	LogFormatted("Data directory:       %s", LOG_TYPE::NORMAL, _pDataDir);	
 
 	if (createWindow)
 	{
@@ -102,8 +102,10 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	_pResMan->Init();
 
 	_pSceneManager = new SceneManager();
+	_pSceneManager->Init();
 
 	_pRender = new Render(_pCoreRender);
+	_pRender->Init();
 
 	if (createWindow)
 		_pMainWindow->Show();
@@ -211,6 +213,11 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 		_pRender->RenderFrame(cam);
 		break;
 
+	case WINDOW_MESSAGE::WINDOW_CLOSE:
+		if (_pConsole)
+			_pConsole->BringToFront();
+		break;
+
 	default:
 		break;
 	}
@@ -278,19 +285,21 @@ API Core::AddUpdateCallback(IUpdateCallback* pCallback)
 
 API Core::CloseEngine()
 {
-	Log("Core::CloseEngine()");
+	Log("Start closing Engine...");
 
+	if (_pMainWindow)
+		_pMainWindow->Destroy();
+	
 	_pSceneManager->Free();
 
 	_pResMan->FreeAllResources();
 
 	_pCoreRender->Free();
 
+	Log("Engine Closed");
+
 	if (_pConsole)
 		_pConsole->Destroy();
-
-	if (_pMainWindow)
-		_pMainWindow->Destroy();
 
 	return S_OK;
 }

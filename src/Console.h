@@ -25,5 +25,6 @@ public:
 	void OutputTxt(const char* pStr);
 	void Show();
 	void Hide();
+	void BringToFront();
 };
 

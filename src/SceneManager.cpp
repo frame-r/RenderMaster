@@ -33,10 +33,13 @@ API SceneManager::GetGameObject(OUT IGameObject **pGameObject, uint idx)
 SceneManager::SceneManager()
 {
 	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-	
+}
+
+void SceneManager::Init()
+{
 	_pCam = new Camera();
 	pResMan->AddToList(_pCam);
-
+	LOG("Scene Manager initialized");
 }
 
 void SceneManager::Free()

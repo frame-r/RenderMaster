@@ -18,12 +18,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 		pCore->GetSubSystem((ISubSystem**)&sm, SUBSYSTEM_TYPE::SCENE_MANAGER);
 			
-		resMan->LoadModel(&pModel, "sponza.fbx", nullptr);
-
-		mat4 m(1.0f);
-		m.el_2D[2][3] = 1.0f;
-		vec4 v(0.0f, 0.0f, 1.0f, 1.0f);
-		vec4 v1 = m * v;
+		resMan->LoadModel(&pModel, "box.fbx", nullptr);
 				
 		pCore->Start(); // begin main loop
 

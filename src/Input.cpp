@@ -38,6 +38,7 @@ void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2,
 		break;
 
 	case WINDOW_MESSAGE::MOUSE_MOVE:
+		//LOG_FORMATTED("x=%i y=%i", param1, param2);
 		_cursorX = param1;
 		_cursorY = param2;
 		break;
