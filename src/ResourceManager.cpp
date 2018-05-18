@@ -141,13 +141,16 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 {
 	vector<ICoreMesh *> meshes;
+	FbxString lString;
 
 	LOG("[FBX]Scene hierarchy:");
 
 	FbxNode* lRootNode = pScene->GetRootNode();
+	_LogNode(meshes, lRootNode, 0);
 
-	for (int i = 0; i < lRootNode->GetChildCount(); i++)
-		_LogNode(meshes, lRootNode->GetChild(i), 0);
+	//_LogNodeTransform(lRootNode, ("[FBX] (root node!) " + lString + lRootNode->GetName()).Buffer());
+	//for (int i = 0; i < lRootNode->GetChildCount(); i++)
+	//	_LogNode(meshes, lRootNode->GetChild(i), 0);
 
 	if (meshes.size() == 0)
 		LOG_WARNING("[FBX]No meshes loaded");
@@ -158,7 +161,9 @@ void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 void ResourceManager::_LogNode(vector<ICoreMesh *>& meshes, FbxNode* pNode, int depth)
 {
 	FbxString lString;
-	FbxNodeAttribute::EType lAttributeType = (pNode->GetNodeAttribute()->GetAttributeType());
+	FbxNodeAttribute* node = pNode->GetNodeAttribute();
+	FbxNodeAttribute::EType lAttributeType = FbxNodeAttribute::eUnknown;
+	if (node) lAttributeType = node->GetAttributeType();
 
 	switch (lAttributeType)
 	{
@@ -167,14 +172,19 @@ void ResourceManager::_LogNode(vector<ICoreMesh *>& meshes, FbxNode* pNode, int 
 		case FbxNodeAttribute::eSkeleton:	LOG(("[FBX] (eSkeleton) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eNurbs:		LOG(("[FBX] (eNurbs) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::ePatch:		LOG(("[FBX] (ePatch) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::eCamera:		_LogNodeTransform(pNode, depth + 1); break;
+		case FbxNodeAttribute::eCamera:		_LogNodeTransform(pNode, ("[FBX] (eCamera) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eLight:		LOG(("[FBX] (eLight) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eLODGroup:	LOG(("[FBX] (eLODGroup) " + lString + pNode->GetName()).Buffer()); break;
-		default:							LOG(("[FBX] (UNKNOWN!) " + lString + pNode->GetName()).Buffer()); break;
+		default:							_LogNodeTransform(pNode, ("[FBX] (unknown!) " + lString + pNode->GetName()).Buffer()); break;
 	}
 
-	for (int i = 0; i < pNode->GetChildCount(); i++)
-		_LogNode(meshes, pNode->GetChild(i), depth + 1);
+	int childs = pNode->GetChildCount();
+	if (childs)
+	{
+		LOG_FORMATTED("[FBX] for node=%s childs=%i", pNode->GetName(), childs);
+		for (int i = 0; i < childs; i++)
+			_LogNode(meshes, pNode->GetChild(i), depth + 1);
+	}
 }
 
 void add_tabs(FbxString& buff, int tabs)
@@ -192,14 +202,14 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 	int tangent_layers_count = pMesh->GetElementTangentCount();
 	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
-	FbxVector4 lTmpVector = pNode->GetGeometricTranslation(FbxNode::eSourcePivot);
-	lTmpVector = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
-	lTmpVector = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
+	FbxVector4 tr = pNode->EvaluateLocalTranslation();
+	FbxVector4 rot = pNode->EvaluateLocalRotation();
+	FbxVector4 sc = pNode->EvaluateLocalScaling();
 	//LOG_FORMATTED("[FBX]T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
 
-	DEBUG_LOG_FORMATTED("[FBX] (eMesh) %10s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f) CP=%5d POLYS=%5d NORMAL=%d UV=%d TANG=%d BINORM=%d", 
+	DEBUG_LOG_FORMATTED("[FBX] (eMesh) %-10.10s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f) CP=%5d POLYS=%5d NORMAL=%d UV=%d TANG=%d BINORM=%d", 
 		pNode->GetName(),
-		lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2],
+		tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2],
 		control_points_count, polygon_count, normal_element_count, uv_layer_count, tangent_layers_count, binormal_layers_count);
 
 	struct Vertex
@@ -211,9 +221,10 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 	vector<Vertex> vertecies;
 	vertecies.reserve(polygon_count * 3);
 
-	FbxVector4* p_control_points = pMesh->GetControlPoints();
+	FbxVector4* control_points_array = pMesh->GetControlPoints();
+	FbxGeometryElementNormal* pNormals = pMesh->GetElementNormal(0);
 
-	int global_vert_id = 0;
+	int vertex_counter = 0;
 
 	for (int i = 0; i < polygon_count; i++)
 	{
@@ -224,14 +235,14 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 			{
 				Vertex v;
 
-				int vert_idx = t + j;
+				int local_vert_idx = t + j;
 				if (j == 0)
-					vert_idx = 0;
+					local_vert_idx = 0;
 
-				int fbx_idx = pMesh->GetPolygonVertex(i, vert_idx);
+				int ctrl_point_idx = pMesh->GetPolygonVertex(i, local_vert_idx);
 
 				// position
-				FbxVector4 lCurrentVertex = p_control_points[fbx_idx];
+				FbxVector4 lCurrentVertex = control_points_array[ctrl_point_idx];
 				v.x = (float)lCurrentVertex[0];
 				v.y = (float)lCurrentVertex[1];
 				v.z = (float)lCurrentVertex[2];
@@ -239,8 +250,7 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 				// normal
 				if (normal_element_count)
 				{
-					FbxGeometryElementNormal* pNormals = pMesh->GetElementNormal(0);
-					FbxVector4 norm;
+					FbxVector4 normal_fbx;
 
 					switch (pNormals->GetMappingMode())
 					{
@@ -249,12 +259,12 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 							switch (pNormals->GetReferenceMode())
 							{
 								case FbxGeometryElement::eDirect:
-									norm = pNormals->GetDirectArray().GetAt(i);
+									normal_fbx = pNormals->GetDirectArray().GetAt(ctrl_point_idx);
 								break;
 								case FbxGeometryElement::eIndexToDirect:
 								{
-									int id = pNormals->GetIndexArray().GetAt(i);
-									norm = pNormals->GetDirectArray().GetAt(id);
+									int id = pNormals->GetIndexArray().GetAt(ctrl_point_idx);
+									normal_fbx = pNormals->GetDirectArray().GetAt(id);
 								}
 								break;
 								default:
@@ -268,12 +278,12 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 							switch (pNormals->GetReferenceMode())
 							{
 							case FbxGeometryElement::eDirect:
-								norm = pNormals->GetDirectArray().GetAt(global_vert_id + vert_idx);
+								normal_fbx = pNormals->GetDirectArray().GetAt(vertex_counter + local_vert_idx);
 								break;
 							case FbxGeometryElement::eIndexToDirect:
 							{
-								int id = pNormals->GetIndexArray().GetAt(global_vert_id + vert_idx);
-								norm = pNormals->GetDirectArray().GetAt(id);
+								int id = pNormals->GetIndexArray().GetAt(vertex_counter + local_vert_idx);
+								normal_fbx = pNormals->GetDirectArray().GetAt(id);
 							}
 							break;
 							default:
@@ -287,15 +297,15 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 							break;
 					}
 					
-					v.n_x = (float)norm[0];
-					v.n_y = (float)norm[1];
-					v.n_z = (float)norm[2];
+					v.n_x = (float)normal_fbx[0];
+					v.n_y = (float)normal_fbx[1];
+					v.n_z = (float)normal_fbx[2];
 				}
 				
 				vertecies.push_back(v);
 			}
 
-		global_vert_id += polygon_size;
+		vertex_counter += polygon_size;
 	}
 
 	ICoreMesh *pCoreMesh = nullptr;
@@ -321,13 +331,13 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 		LOG_WARNING("[FBX]ResourceManager::_LogMesh(): Can not create mesh");
 }
 
-void ResourceManager::_LogNodeTransform(FbxNode* pNode, int tabs)
+void ResourceManager::_LogNodeTransform(FbxNode* pNode, const char *str)
 {
-	FbxVector4 lTmpVector = pNode->GetGeometricTranslation(FbxNode::eSourcePivot);
-	lTmpVector = pNode->GetGeometricRotation(FbxNode::eSourcePivot);
-	lTmpVector = pNode->GetGeometricScaling(FbxNode::eSourcePivot);
+	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
+	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
+	FbxVector4 sc = pNode->EvaluateGlobalTransform().GetS();
 
-	DEBUG_LOG_FORMATTED("[FBX] (eCamera) T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
+	DEBUG_LOG_FORMATTED("%s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", str, tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2]);
 }
 bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress)
 {

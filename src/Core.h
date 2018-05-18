@@ -57,7 +57,7 @@ public:
 	{
 		static char buf[1000];
 		assert(strlen(pStr) < 1000);
-		sprintf_s(buf, pStr, args...);
+		sprintf(buf, pStr, args...);
 		Log(buf, type);
 	}
 	Wnd* MainWindow() { return _pMainWindow; }
