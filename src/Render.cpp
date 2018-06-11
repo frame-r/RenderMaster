@@ -563,7 +563,6 @@ void Render::RenderFrame(const ICamera *pCamera)
 		ICoreShader *shader = _get_shader({a, false});
 
 		_pCoreRender->SetShader(shader);
-		_pCoreRender->SetMesh(renderMesh.mesh);
 		
 		mat4 MVP = VP * renderMesh.modelMat;
 

@@ -21,9 +21,7 @@ DEFINE_LOG_HELPERS(_pCore)
 Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 {
 	_pCore = this;
-
-	_evLog = new EventLog;
-
+	
 	InitializeCriticalSection(&_cs);
 
 	_pWorkingDir = new char[strlen(pWorkingDir) + 1];
@@ -43,7 +41,6 @@ Core::~Core()
 	if (_pConsole) delete _pConsole;
 	delete _pInput;
 	delete _pfSystem;
-	delete _evLog;
 	delete _pDataDir;
 	delete _pWorkingDir;
 	delete _pInstalledDir;
@@ -306,7 +303,7 @@ API Core::CloseEngine()
 
 API Core::GetLogPrintedEv(OUT ILogEvent **pEvent)
 {
-	*pEvent = _evLog;
+	*pEvent = _evLog.get();
 	return S_OK;
 }
 

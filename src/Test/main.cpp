@@ -18,7 +18,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 		pCore->GetSubSystem((ISubSystem**)&sm, SUBSYSTEM_TYPE::SCENE_MANAGER);
 			
-		resMan->LoadModel(&pModel, "Z3_fbx.fbx", nullptr);
+		resMan->LoadModel(&pModel, "sponza.fbx", nullptr);
 				
 		pCore->Start(); // begin main loop
 

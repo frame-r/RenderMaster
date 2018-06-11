@@ -1,8 +1,13 @@
 #pragma once
 #include "Common.h"
+#include "Events.h"
 
 #define IGAMEOBJECT_IMPLEMENTATION \
 private: \
+\
+std::unique_ptr<PositionEvent> _posEv{new PositionEvent}; \
+\
+std::string _name{"GameObject"}; \
 \
 vec3 _pos{0.0f, 0.0f, 0.0f}; \
 vec3 _rot{0.0f, 0.0f, 0.0f}; \
@@ -10,9 +15,19 @@ vec3 _scale{1.0f, 1.0f, 1.0f}; \
 \
 public: \
 \
+API GetName(OUT const char **pName) override \
+{ \
+	*pName = _name.c_str(); \
+	return S_OK; \
+} \
+\
 API SetPosition(const vec3 *pos) override \
 { \
-	_pos = *pos; \
+	if (!_pos.Aproximately(*pos)) \
+	{ \
+		_pos = *pos; \
+		_posEv->Fire(&_pos); \
+	} \
 	return S_OK; \
 } \
 API SetRotation(const vec3 *rot) override \
@@ -82,5 +97,11 @@ API GetModelMatrix(OUT mat4 *mat) override \
 	*mat =  T * R * S; \
 \
 	return S_OK; \
+} \
+\
+API GetPositionEv(OUT IPositionEvent **pEvent) override \
+{ \
+		*pEvent = _posEv.get(); \
+		return S_OK; \
 }
 

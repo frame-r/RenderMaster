@@ -322,7 +322,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 	glClearDepth(1.0f);
 	
 	// dbg
-	glClearColor(0.1f, 0.5f, 0.5f, 1.0f);
+	//glClearColor(0.1f, 0.5f, 0.5f, 1.0f);
 	glDisable(GL_CULL_FACE);
 
 	CHECK_GL_ERRORS();

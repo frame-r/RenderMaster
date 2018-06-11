@@ -15,6 +15,7 @@ public:
 	void Init();
 	void Free();
 
+	API SaveScene(const char *name) override;
 	API GetDefaultCamera(OUT ICamera **pCamera) override;
 	API AddGameObject(IGameObject *pGameObject) override;
 	API GetGameObjectsNumber(OUT uint *number) override;

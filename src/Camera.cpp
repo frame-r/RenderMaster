@@ -34,23 +34,27 @@ void Camera::_update()
 
 	const float speed = 15.3f;
 
+	vec3 pos = _pos;
+
 	if (left_pressd)
-		_pos -= orth_direction * speed;
+		pos -= orth_direction * speed;
 
 	if (right_pressd)
-		_pos += orth_direction * speed;
+		pos += orth_direction * speed;
 
 	if (forward_pressd)
-		_pos += forward_direction * speed;
+		pos += forward_direction * speed;
 
 	if (back_pressd)
-		_pos -= forward_direction * speed;
+		pos -= forward_direction * speed;
 
 	if (down_pressed)
-		_pos -= up_direction * speed;
+		pos -= up_direction * speed;
 
 	if (up_pressed)
-		_pos += up_direction * speed;
+		pos += up_direction * speed;
+
+	SetPosition(&pos);
 
 	if (mouse_pressed)
 	{
@@ -63,6 +67,8 @@ void Camera::_update()
 
 Camera::Camera()
 {
+	_name = "Camera";
+
 	_pCore->AddUpdateCallback(std::bind(&Camera::_update, this));
 	_pCore->GetSubSystem((ISubSystem**)&_pInput, SUBSYSTEM_TYPE::INPUT);
 

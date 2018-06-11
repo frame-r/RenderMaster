@@ -1,12 +1,12 @@
 #pragma once
 #include "Common.h"
+#include "Events.h"
 #include <chrono>
 
 class Wnd;
 class FileSystem;
 class ResourceManager;
 class Console;
-class EventLog;
 class Render;
 class SceneManager;
 
@@ -29,7 +29,7 @@ class Core : public ICore
 	SceneManager *_pSceneManager{nullptr};
 	IInput *_pInput{nullptr};
 
-	EventLog *_evLog{nullptr};
+	std::unique_ptr<LogEvent> _evLog{new LogEvent};
 
 	CRITICAL_SECTION _cs{};
 

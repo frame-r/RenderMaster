@@ -6,6 +6,12 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+API SceneManager::SaveScene(const char *name)
+{
+
+	return S_OK;
+}
+
 API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 {
 	*pCamera = _pCam;
@@ -39,6 +45,7 @@ void SceneManager::Init()
 {
 	_pCam = new Camera();
 	pResMan->AddToList(_pCam);
+	AddGameObject(_pCam);
 	LOG("Scene Manager initialized");
 }
 
@@ -53,7 +60,7 @@ void SceneManager::Free()
 	for(IGameObject *go : _game_objects)
 		go->Free();
 
-	_pCam->Free();
+	_game_objects.clear();
 
 	#ifdef _DEBUG
 		uint res_after = 0;

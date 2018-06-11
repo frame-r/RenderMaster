@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath> // sqrt
+//#include "../../Visual Studio 2017/Projects/ConsoleApplication3/ConsoleApplication3/quat.h" 
 
 // Don't include this file directly.
 // Instead include Engine.h
@@ -82,6 +83,11 @@ struct Vector3
 		return Vector3(*this) -= point;
 	}
 
+	Vector3 operator-() const
+	{
+		return Vector3(-x, -y, -z);
+	}
+
 	Vector3 &operator*=(const Vector3 &point)
 	{
 		x *= point.x;
@@ -149,6 +155,12 @@ struct Vector3
 	float Lenght() const
 	{
 		return sqrt(x * x + y * y + z * z);
+	}
+
+	bool Aproximately(const Vector3& r) const
+	{
+		const float eps = 0.000001f;
+		return std::abs(r.x - x) < eps && std::abs(r.y - y) < eps && std::abs(r.z - z) < eps;
 	}
 };
 

@@ -29,6 +29,52 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 	return static_cast<ENUM_NAME>(static_cast<int>(a) & static_cast<int>(b)); \
 }
 
+#define DEFINE_EVENT(NAME) \
+class NAME ## Subscriber \
+{ \
+public: \
+	virtual API Call() = 0; \
+}; \
+\
+class NAME \
+{ \
+public: \
+	\
+	virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+	virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+};
+
+#define DEFINE_EVENT1(NAME, ARG) \
+class NAME ## Subscriber \
+{ \
+public: \
+	virtual API Call(ARG) = 0; \
+}; \
+\
+class NAME \
+{ \
+public: \
+	\
+	virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+	virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+};
+
+#define DEFINE_EVENT2(NAME, ARG1, ARG2) \
+class NAME ## Subscriber \
+{ \
+public: \
+	virtual API Call(ARG1, ARG2) = 0; \
+}; \
+ \
+class NAME \
+{ \
+public: \
+ \
+	virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+	virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+};
+
+
 namespace RENDER_MASTER 
 {
 	class ISubSystem;
@@ -143,34 +189,9 @@ namespace RENDER_MASTER
 	// Events
 	//////////////////////
 
-	class ILogEventSubscriber
-	{
-	public:
-		virtual API Call(const char *pMessage, LOG_TYPE type) = 0;
-	};
-
-	class ILogEvent
-	{
-	public:
-
-		virtual API Subscribe(ILogEventSubscriber *pSubscriber) = 0;
-		virtual API Unsubscribe(ILogEventSubscriber *pSubscriber) = 0;
-	};
-
-
-	class IEventSubscriber
-	{
-	public:
-		virtual API Call() = 0;
-	};
-
-	class IEvent
-	{
-	public:
-
-		virtual API Subscribe(IEventSubscriber *pSubscriber) = 0;
-		virtual API Unsubscribe(IEventSubscriber *pSubscriber) = 0;
-	};
+	DEFINE_EVENT(IEvent)
+	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pPos)
+	DEFINE_EVENT2(ILogEvent, const char *pMessage, LOG_TYPE type)
 
 
 	//////////////////////
@@ -313,11 +334,15 @@ namespace RENDER_MASTER
 	class IGameObject : public IResource
 	{
 	public:
+		virtual API GetName(OUT const char **pName) = 0;
 		virtual API SetPosition(const vec3 *pos) = 0;
 		virtual API SetRotation(const vec3 *rot) = 0;
 		virtual API GetPosition(OUT vec3 *pos) = 0;
 		virtual API GetRotation(OUT vec3 *rot) = 0;
 		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
+
+		// Events
+		virtual API GetPositionEv(OUT IPositionEvent **pEvent) = 0;
 	};
 
 	class ICamera : public IGameObject
@@ -340,6 +365,7 @@ namespace RENDER_MASTER
 	class ISceneManager : public ISubSystem
 	{
 	public:
+		virtual API SaveScene(const char *name) = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 		virtual API AddGameObject(IGameObject* pGameObject) = 0;
 		virtual API GetGameObjectsNumber(OUT uint *number) = 0;

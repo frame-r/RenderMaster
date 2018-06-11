@@ -202,9 +202,12 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 	int tangent_layers_count = pMesh->GetElementTangentCount();
 	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
-	FbxVector4 tr = pNode->EvaluateLocalTranslation();
-	FbxVector4 rot = pNode->EvaluateLocalRotation();
-	FbxVector4 sc = pNode->EvaluateLocalScaling();
+	//FbxDouble3 tr = pNode->LclTranslation.Get();
+	//FbxDouble3 rot = pNode->LclRotation.Get();
+	//FbxDouble3 sc = pNode->LclScaling.Get();
+	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
+	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
+	FbxVector4 sc = pNode->EvaluateGlobalTransform().GetS();
 	//LOG_FORMATTED("[FBX]T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2], lTmpVector[0], lTmpVector[1], lTmpVector[2]);
 
 	DEBUG_LOG_FORMATTED("[FBX] (eMesh) %-10.10s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f) CP=%5d POLYS=%5d NORMAL=%d UV=%d TANG=%d BINORM=%d", 
