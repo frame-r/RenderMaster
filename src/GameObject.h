@@ -7,13 +7,13 @@ class GameObjectBase : public T
 {
 protected:
 
-	std::unique_ptr<PositionEvent> _posEv{new PositionEvent};
-
 	std::string _name{"GameObject"};
 
 	vec3 _pos{0.0f, 0.0f, 0.0f};
 	vec3 _rot{0.0f, 0.0f, 0.0f};
 	vec3 _scale{1.0f, 1.0f, 1.0f};
+	
+	std::unique_ptr<PositionEvent> _positionEvent{new PositionEvent};
 
 public:
 
@@ -45,7 +45,7 @@ inline API GameObjectBase<T>::SetPosition(const vec3 * pos)
 	if (!_pos.Aproximately(*pos))
 	{
 		_pos = *pos;
-		_posEv->Fire(&_pos);
+		_positionEvent->Fire(&_pos);
 	}
 	return S_OK;
 }
@@ -126,6 +126,6 @@ inline API GameObjectBase<T>::GetModelMatrix(OUT mat4 * mat)
 template<typename T>
 inline API GameObjectBase<T>::GetPositionEv(OUT IPositionEvent ** pEvent)
 {
-	*pEvent = _posEv.get();
+	*pEvent = _positionEvent.get();
 	return S_OK;
 }
