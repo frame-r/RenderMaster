@@ -267,8 +267,8 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_ACTIVATE:
 	{
 		int fActive = LOWORD(wParam);
-		if (fActive) LOG("WM_ACTIVATE true");
-		else LOG("WM_ACTIVATE false");
+		//if (fActive) LOG("WM_ACTIVATE true");
+		//else LOG("WM_ACTIVATE false");
 		if (fActive)
 			_invoke_mesage(WINDOW_MESSAGE::WINDOW_ACTIVATED, 0, 0, nullptr);
 		else
@@ -279,8 +279,8 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_ACTIVATEAPP:
 	{
 		int fActive = LOWORD(wParam);
-		if (fActive) LOG("WM_ACTIVATEAPP true");
-		else LOG("WM_ACTIVATEAPP false");
+		//if (fActive) LOG("WM_ACTIVATEAPP true");
+		//else LOG("WM_ACTIVATEAPP false");
 	}
 	break;
 

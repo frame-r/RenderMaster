@@ -51,7 +51,7 @@ void SceneManager::Init()
 
 void SceneManager::Free()
 {
-	DEBUG_LOG("SceneManager::Free(): objects total=%i", LOG_TYPE::NORMAL, _game_objects.size() + 1); // +1 camera
+	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _game_objects.size());
 	#ifdef _DEBUG
 		uint res_before = 0;
 		pResMan->GetNumberOfResources(&res_before);
@@ -65,7 +65,7 @@ void SceneManager::Free()
 	#ifdef _DEBUG
 		uint res_after = 0;
 		pResMan->GetNumberOfResources(&res_after);
-		DEBUG_LOG("SceneManager::Free(): resources deleted=%i", LOG_TYPE::NORMAL, res_before - res_after);
+		DEBUG_LOG("SceneManager::Free(): objects deleted=%i", LOG_TYPE::NORMAL, res_before - res_after);
 	#endif
 }
 

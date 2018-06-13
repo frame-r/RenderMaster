@@ -612,12 +612,12 @@ API ResourceManager::AddToList(IResource *pResource)
 	if (it == _resources.end())
 	{
 		_resources[pResource] = TResource{pResource, 1, DEFAULT_RES_TYPE::CUSTOM};
-		DEBUG_LOG("AddToList(): added new resource! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
+		DEBUG_LOG("ResourceManager::AddToList(): added new resource! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
 	else
 	{
 		it->second.refCount++;
-		DEBUG_LOG("AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::NORMAL, it->second.refCount, _resourceToStr(pResource));
+		DEBUG_LOG("ResourceManager::AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::NORMAL, it->second.refCount, _resourceToStr(pResource));
 	}
 
 	return S_OK;
@@ -655,7 +655,7 @@ API ResourceManager::DecrementRef(IResource *pResource)
 
 	it->second.refCount--;
 
-	DEBUG_LOG("DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::NORMAL, it->second.refCount, _resourceToStr(pResource));
+	DEBUG_LOG("ResourceManager::DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::NORMAL, it->second.refCount, _resourceToStr(pResource));
 
 	return S_OK;
 }
@@ -668,12 +668,12 @@ API ResourceManager::RemoveFromList(IResource *pResource)
 	if (refCount == 1)
 	{
 		_resources.erase(pResource);
-		DEBUG_LOG("RemoveFromList(): deleted! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
+		DEBUG_LOG("ResourceManager::RemoveFromList(): deleted! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
 	}
 	else
 	{
 		_resources.erase(pResource);
-		LOG_WARNING_FORMATTED("RemoveFromList(): may be warning (refNumber=%i)! deleted! type=%s", refCount, _resourceToStr(pResource));
+		LOG_WARNING_FORMATTED("ResourceManager::RemoveFromList(): deleted! type=%s. may be warning(refNumber = %i)!", _resourceToStr(pResource), refCount);
 	}
 
 	return S_OK;
@@ -712,7 +712,7 @@ API ResourceManager::FreeAllResources()
 		#ifdef _DEBUG
 			auto res_deleted = res_before - _resources.size();
 			int res_deleted_percent = (int)(100 * ((float)res_deleted / res_before));
-			DEBUG_LOG("FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _resources.size());
+			DEBUG_LOG("ResourceManager::FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _resources.size());
 		#endif
 	}
 		

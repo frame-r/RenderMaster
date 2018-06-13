@@ -3,7 +3,7 @@
 #include "GameObject.h"
 
 
-class Model : public IModel
+class Model : public GameObjectBase<IModel>
 {
 	std::vector<ICoreMesh *> _meshes;
 
@@ -16,7 +16,5 @@ public:
 	API GetNumberOfMesh(OUT uint *number) override;
 	API Free() override;
 	API GetType(OUT RES_TYPE *type) override;
-
-	IGAMEOBJECT_IMPLEMENTATION
 };
 
