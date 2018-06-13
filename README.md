@@ -2,11 +2,10 @@
 
 Graphic engine based on COM (Component Object Model). 
 
-## Install
-Clone repositiory. Build solution Engine.sln located in build/ directory. Then you should register Engine.dll in Windows Registry. Just run install.bat as Administrator.
-Now everything is ready to work with the engine. See example build/Test.vcxproj for more details.
+## Build and Install
+Clone repositiory. Build solution Engine.sln located in build/ directory. I use Visual Studio 2017 (15.6.6), but I'm sure that the engine is compiled with VS 2015. Then you should register Engine.dll in Windows Registry. Just run install.bat as Administrator. Now everything is ready to work with the engine. See example build/Test.vcxproj for more details.
 
-### FBX SDK
+## FBX SDK
 By default Engine solution configured to find FBX SDK at C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\. To build engine without FBX SDK comment '#define USE_FBX' in include\Engine.h and remove libfbxsdk-md.lib from Engine project settings (Linker -> Input -> Additional Dependencies)
 
 ## Uninstall
@@ -23,17 +22,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 {
 	ICore* pCore;
 
-	if (GetCore(pCore))
+	if (GetCore(&pCore))
 	{
 		IResourceManager *resMan;
 		IModel *pModel;
 
-		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "..\\..\\..\\resources", nullptr);
+		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "resources", nullptr);				
+		pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+
+		resMan->LoadModel(&pModel, "box.fbx", nullptr);
 				
-		pCore->GetSubSystem((ISubSystem*&)resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-			
-		resMan->LoadModel(pModel, "box.fbx", nullptr);
-		
+		pCore->Start(); // begin main loop
 		pCore->CloseEngine();
 
 		FreeCore(pCore);
@@ -45,4 +44,5 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	return 0;
 }
 ```
+![Alt text](box.png?raw=true "Test")
 

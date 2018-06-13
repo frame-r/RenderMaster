@@ -11,17 +11,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	{
 		IResourceManager *resMan;
 		IModel *pModel;
-		ISceneManager *sm;
 
-		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "resources", nullptr);
-				
+		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "resources", nullptr);				
 		pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-		pCore->GetSubSystem((ISubSystem**)&sm, SUBSYSTEM_TYPE::SCENE_MANAGER);
-			
-		resMan->LoadModel(&pModel, "sponza.fbx", nullptr);
+
+		resMan->LoadModel(&pModel, "box.fbx", nullptr);
 				
 		pCore->Start(); // begin main loop
-
 		pCore->CloseEngine();
 
 		FreeCore(pCore);
