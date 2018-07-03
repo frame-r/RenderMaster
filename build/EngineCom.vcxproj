@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Engine.h" />
+    <ClInclude Include="..\include\quat.h" />
     <ClInclude Include="..\include\vector_math.h" />
     <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\Common.h" />
@@ -39,6 +40,8 @@
     <ClInclude Include="..\src\Render.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
+    <ClInclude Include="..\src\Serialization.h" />
+    <ClInclude Include="..\src\tree.h" />
     <ClInclude Include="..\src\Wnd.h" />
   </ItemGroup>
   <ItemGroup>

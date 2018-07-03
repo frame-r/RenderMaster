@@ -5,8 +5,14 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+void Model::_update()
+{
+
+}
+
 Model::Model(std::vector<ICoreMesh *>& meshes) : _meshes(meshes)
 {
+	_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
 }
 
 Model::~Model()

@@ -28,41 +28,52 @@ void Camera::_update()
 	mat4 M;
 	GetModelMatrix(&M);
 
-	vec3 orth_direction = vec3(M * vec4(1.0f, 0.0f, 0.0f, 0.0f));
-	vec3 forward_direction = vec3(M * vec4(0.0f, 0.0f, 1.0f, 0.0f));
-	vec3 up_direction = vec3(0.0f, 1.0f, 0.0f);
-
-	const float speed = 15.3f;
-
-	vec3 pos = _pos;
-
-	if (left_pressd)
-		pos -= orth_direction * speed;
-
-	if (right_pressd)
-		pos += orth_direction * speed;
-
-	if (forward_pressd)
-		pos += forward_direction * speed;
-
-	if (back_pressd)
-		pos -= forward_direction * speed;
-
-	if (down_pressed)
-		pos -= up_direction * speed;
-
-	if (up_pressed)
-		pos += up_direction * speed;
-
-	SetPosition(&pos);
-
-	if (mouse_pressed)
 	{
-		//LOG_FORMATTED("_rot=(%f, %f)", _rot.x, _rot.y);
-		_rot.y = fmod(_rot.y + 0.1f * dM.x, 360.0f);
-		_rot.x = fmod(_rot.x + 0.1f * dM.y, 360.0f);
+		// directions in world space
+		vec3 orth_direction = GetRightDirection(M); // X local
+		vec3 forward_direction = GetBackDirection(M); // -Z local
+		vec3 up_direction = vec3(0.0f, 0.0f, 1.0f); // Z world
+
+		const float moveSpeed = 1.3f;
+
+		vec3 pos = _pos;
+
+		if (left_pressd)
+			pos -= orth_direction * moveSpeed;
+
+		if (right_pressd)
+			pos += orth_direction * moveSpeed;
+
+		if (forward_pressd)
+			pos += forward_direction * moveSpeed;
+
+		if (back_pressd)
+			pos -= forward_direction * moveSpeed;
+
+		if (down_pressed)
+			pos -= up_direction * moveSpeed;
+
+		if (up_pressed)
+			pos += up_direction * moveSpeed;
+
+		SetPosition(&pos);
 	}
 
+	{
+		const float rotSpeed = 0.1f;
+
+		if (mouse_pressed)
+		{
+			//	//LOG_FORMATTED("_rot=(%f, %f)", _rot.x, _rot.y);
+				//_rot.y = fmod(_rot.y + 0.1f * dM.x, 360.0f);
+				//_rot.x = fmod(_rot.x + 0.1f * dM.y, 360.0f);
+
+
+				//quat dqY = quat::FromEuler(0.0f, dM.x * rotSpeed, 0.0);
+				//quat dqX = quat::FromEuler(dM.y * rotSpeed, 0.0f, 0.0);
+				//_rot = _rot * dqX * dqY;
+		}
+	}
 }
 
 Camera::Camera()
@@ -72,31 +83,34 @@ Camera::Camera()
 	_pCore->AddUpdateCallback(std::bind(&Camera::_update, this));
 	_pCore->GetSubSystem((ISubSystem**)&_pInput, SUBSYSTEM_TYPE::INPUT);
 
-	_rot = vec3(25.0f, -22.4f, 0.0f);
-	_pos = vec3(9.37f, 9.61f, -14.27f);
+	//_rot = vec3(25.0f, -22.4f, 0.0f);
+	//_pos = vec3(9.37f, 9.61f, -14.27f);
+	_pos = vec3(10.0f, -25.0f, 5.0f);
+	_rot = quat(90.0f, 0.0f, 0.0f);
+
+	vec3 euler = _rot.ToEuler();
+	LOG_FORMATTED("_rot(euler) = (%f, %f, %f)", euler.x, euler.y, euler.z);
+
 }
 
 API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 {
 	mat4 P;
-	mat4 V;
 
 	// OpenGL projection  matrix
-	const float DEGTORAD = 3.1415926f / 180.0f;
-	float const tanHalfFovy = tan(DEGTORAD* _fovAngle / 2);
-	P.el_2D[0][0] = 1.0f / (aspect * tanHalfFovy);
-	P.el_2D[1][1] = 1.0f / (tanHalfFovy);
-	P.el_2D[2][2] = -(_zFar + _zNear) / (_zNear - _zFar);
-	P.el_2D[3][2] = 1.0f;
-	P.el_2D[2][3] = (2.0f * _zFar * _zNear) / (_zNear - _zFar);
-	P.el_2D[3][3] = 0.0f;
+	//const float DEGTORAD = 3.1415926f / 180.0f;
+	//float const tanHalfFovy = tan(DEGTORAD* _fovAngle / 2);
+	//P.el_2D[0][0] = 1.0f / (aspect * tanHalfFovy);
+	//P.el_2D[1][1] = 1.0f / (tanHalfFovy);
+	//P.el_2D[2][2] = -(_zFar + _zNear) / (_zNear - _zFar);
+	//P.el_2D[3][2] = 1.0f;
+	//P.el_2D[2][3] = (2.0f * _zFar * _zNear) / (_zNear - _zFar);
+	//P.el_2D[3][3] = 0.0f;
 
-	mat4 M;
-	GetModelMatrix(&M);
+	P = perspective(_fovAngle * DEGTORAD, aspect, _zNear, _zFar);
 
-	vec3 forward = vec3(M * vec4(0.0f, 0.0f, 1.0f, 0.0f));
-
-	look_at(V, _pos, _pos + forward);
+	mat4 V;
+	GetInvModelMatrix(&V);
 
 	/*
 	vec4 zf(1.0f, 0.0f, _zFar, 1.0f);

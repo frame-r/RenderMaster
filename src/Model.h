@@ -7,6 +7,8 @@ class Model : public GameObjectBase<IModel>
 {
 	std::vector<ICoreMesh *> _meshes;
 
+	void _update();
+
 public:
 
 	Model(std::vector<ICoreMesh *>& meshes);

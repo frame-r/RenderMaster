@@ -44,6 +44,11 @@
       <Filter>GameObjects</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Input.h" />
+    <ClInclude Include="..\include\quat.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\tree.h" />
+    <ClInclude Include="..\src\Serialization.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />

@@ -1,28 +1,54 @@
 #pragma once
 #include "Common.h"
 #include "Events.h"
+#include "Serialization.h"
 
 template <typename T>
-class GameObjectBase : public T
+class GameObjectBase : public Serializable<T>, public T
 {
 protected:
 
 	std::string _name{"GameObject"};
 
-	vec3 _pos{0.0f, 0.0f, 0.0f};
-	vec3 _rot{0.0f, 0.0f, 0.0f};
+	vec3 _pos;
+	quat _rot;
 	vec3 _scale{1.0f, 1.0f, 1.0f};
 	
 	std::unique_ptr<PositionEvent> _positionEvent{new PositionEvent};
 
 public:
 
+	GameObjectBase()
+	{
+		add_entry("positon", &GameObjectBase::_pos);
+		add_entry("rotation", &GameObjectBase::_rot);
+		add_entry("scale", &GameObjectBase::_scale);
+	}
+
 	API GetName(OUT const char **pName) override;
+	API SetName(const char *pName) override;
 	API SetPosition(const vec3 *pos) override;
-	API SetRotation(const vec3 *rot) override;
+	API SetRotation(const quat *rot) override;
 	API GetPosition(OUT vec3 *pos) override;
-	API GetRotation(OUT vec3 *rot) override;
+	API GetRotation(OUT quat *rot) override;
+
+	//
+	// Model Matrix
+	// Matrix transforms coordinates local -> world
+	// p' (world) = mat * p (local)
+	// last column - translate in world space
+	// columns - (Right, Forward, Up) vectors in world space
+	//
 	API GetModelMatrix(OUT mat4 *mat) override;
+
+	//
+	// Inverse of Model Matrix
+	// Matrix transforms coordinates world -> local
+	// p' (local) = mat * p (world)
+	//
+	API GetInvModelMatrix(OUT mat4 *mat) override;
+
+
 	API GetPositionEv(OUT IPositionEvent **pEvent) override;
 };
 
@@ -39,6 +65,13 @@ inline API GameObjectBase<T>::GetName(OUT const char ** pName)
 	return S_OK;
 }
 
+template <typename T>
+inline API GameObjectBase<T>::SetName(const char* pName)
+{
+	_name = std::string(pName);
+	return S_OK;
+}
+
 template<typename T>
 inline API GameObjectBase<T>::SetPosition(const vec3 * pos)
 {
@@ -51,12 +84,9 @@ inline API GameObjectBase<T>::SetPosition(const vec3 * pos)
 }
 
 template<typename T>
-inline API GameObjectBase<T>::SetRotation(const vec3 * rot)
+inline API GameObjectBase<T>::SetRotation(const quat *rot)
 {
 	_rot = *rot;
-	_rot.x = fmod(_rot.x, 360.0f);
-	_rot.y = fmod(_rot.y, 360.0f);
-	_rot.z = fmod(_rot.z, 360.0f);
 	return S_OK;
 }
 
@@ -68,47 +98,20 @@ inline API GameObjectBase<T>::GetPosition(OUT vec3 * pos)
 }
 
 template<typename T>
-inline API GameObjectBase<T>::GetRotation(OUT vec3 * rot)
+inline API GameObjectBase<T>::GetRotation(OUT quat *rot)
 {
 	*rot = _rot;
 	return S_OK;
 }
 
 template<typename T>
-inline API GameObjectBase<T>::GetModelMatrix(OUT mat4 * mat)
+inline API GameObjectBase<T>::GetModelMatrix(OUT mat4 *mat)
 {
 	mat4 R;
 	mat4 T;
 	mat4 S;
 
-	const float DEG2RAD = 3.141593f / 180;
-	float sx, sy, sz, cx, cy, cz, theta;
-
-	theta = _rot.x * DEG2RAD;
-	sx = sinf(theta);
-	cx = cosf(theta);
-
-	theta = _rot.y * DEG2RAD;
-	sy = sinf(theta);
-	cy = cosf(theta);
-
-	theta = _rot.z * DEG2RAD;
-	sz = sinf(theta);
-	cz = cosf(theta);
-
-	mat4 rx;
-	rx.el_2D[1][1] = cx;
-	rx.el_2D[1][2] = -sx;
-	rx.el_2D[2][1] = sx;
-	rx.el_2D[2][2] = cx;
-
-	mat4 ry;
-	ry.el_2D[0][0] = cy;
-	ry.el_2D[0][2] = sy;
-	ry.el_2D[2][0] = -sy;
-	ry.el_2D[2][2] = cy;
-
-	R = ry * rx;
+	R = _rot.ToMatrix();
 
 	T.el_2D[0][3] = _pos.x;
 	T.el_2D[1][3] = _pos.y;
@@ -124,7 +127,19 @@ inline API GameObjectBase<T>::GetModelMatrix(OUT mat4 * mat)
 }
 
 template<typename T>
-inline API GameObjectBase<T>::GetPositionEv(OUT IPositionEvent ** pEvent)
+inline API GameObjectBase<T>::GetInvModelMatrix(OUT mat4 *mat)
+{
+	mat4 M;
+
+	GetModelMatrix(&M);
+
+	*mat = M.Inverse();
+
+	return S_OK;
+}
+
+template<typename T>
+inline API GameObjectBase<T>::GetPositionEv(OUT IPositionEvent **pEvent)
 {
 	*pEvent = _positionEvent.get();
 	return S_OK;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector_math.h"
+#include "quat.h"
 
 #define WIN32_LEAN_AND_MEAN
 #define INITGUID
@@ -82,6 +83,7 @@ namespace RENDER_MASTER
 	class IInitCallback;
 	class IUpdateCallback;
 	class ICamera;
+	class IGameObject;
 	enum class SUBSYSTEM_TYPE;
 
 
@@ -191,6 +193,7 @@ namespace RENDER_MASTER
 
 	DEFINE_EVENT(IEvent)
 	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pPos)
+	DEFINE_EVENT1(IGameObjectEvent, OUT IGameObject *pGameObject)
 	DEFINE_EVENT2(ILogEvent, const char *pMessage, LOG_TYPE type)
 
 
@@ -214,6 +217,9 @@ namespace RENDER_MASTER
 		TRIANGLES,
 	};
 
+	//
+	// MeshDataDesc - description of vertex buffer
+	//
 	// At minimum position attribute must be present
 	// Stride is step in bytes to move along the array from vertex to vertex 
 	// Offset also specified in bytes
@@ -335,11 +341,13 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetName(OUT const char **pName) = 0;
+		virtual API SetName(const char *pName) = 0;
 		virtual API SetPosition(const vec3 *pos) = 0;
-		virtual API SetRotation(const vec3 *rot) = 0;
+		virtual API SetRotation(const quat *rot) = 0;
 		virtual API GetPosition(OUT vec3 *pos) = 0;
-		virtual API GetRotation(OUT vec3 *rot) = 0;
+		virtual API GetRotation(OUT quat *rot) = 0;
 		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
+		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
 
 		// Events
 		virtual API GetPositionEv(OUT IPositionEvent **pEvent) = 0;
@@ -367,9 +375,12 @@ namespace RENDER_MASTER
 	public:
 		virtual API SaveScene(const char *name) = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
-		virtual API AddGameObject(IGameObject* pGameObject) = 0;
-		virtual API GetGameObjectsNumber(OUT uint *number) = 0;
-		virtual API GetGameObject(OUT IGameObject **pGameObject, uint idx) = 0;
+		virtual API AddRootGameObject(IGameObject* pGameObject) = 0;
+		virtual API GetChilds(OUT uint *number, IGameObject *parent) = 0;
+		virtual API GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx) = 0;
+
+		//events
+		virtual API GetGameObjectAddedEvent(OUT IGameObjectEvent **pEvent) = 0;
 	};
 
 

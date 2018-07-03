@@ -1,6 +1,5 @@
 #pragma once
 #include <cmath> // sqrt
-//#include "../../Visual Studio 2017/Projects/ConsoleApplication3/ConsoleApplication3/quat.h" 
 
 // Don't include this file directly.
 // Instead include Engine.h
@@ -48,14 +47,14 @@ struct Vector3
 	Vector3(float xIn, float yIn, float zIn) : x(xIn), y(yIn), z(zIn) {}
 	Vector3(const Vector4& v4) : x(v4.x), y(v4.y), z(v4.z) {}
 
-	static Vector3 one()		{ return Vector3(1.0f, 1.0f, 1.0f); }
-	static Vector3 zero()		{ return Vector3(0.0f, 0.0f, 0.0f); }
-	static Vector3 forward()	{ return Vector3(0.0f, 0.0f, 1.0f); }
-	static Vector3 back()		{ return Vector3(0.0f, 0.0f, -1.0f); }
-	static Vector3 right()		{ return Vector3(1.0f, 0.0f, 0.0f); }
-	static Vector3 left()		{ return Vector3(-1.0f, 0.0f, 0.0f); }
-	static Vector3 up()			{ return Vector3(0.0f, 1.0f, 0.0f); }
-	static Vector3 down()		{ return Vector3(0.0f, -1.0f, 0.0f); }
+	//static Vector3 one()		{ return Vector3(1.0f, 1.0f, 1.0f); }
+	//static Vector3 zero()		{ return Vector3(0.0f, 0.0f, 0.0f); }
+	//static Vector3 forward()	{ return Vector3(0.0f, 1.0f, 0.0f); }
+	//static Vector3 back()		{ return Vector3(0.0f, -1.0f, 0.0f); }
+	//static Vector3 right()		{ return Vector3(1.0f, 0.0f, 0.0f); }
+	//static Vector3 left()		{ return Vector3(-1.0f, 0.0f, 0.0f); }
+	//static Vector3 up()			{ return Vector3(0.0f, 0.0f, 1.0f); }
+	//static Vector3 down()		{ return Vector3(0.0f, 0.0f, -1.0f); }
 
 	Vector3 &operator+=(const Vector3 &point)
 	{
@@ -229,6 +228,11 @@ struct Matrix4x4
 		el_2D[3][0] = f1;
 		el_2D[3][1] = f2;
 		el_2D[3][2] = f3;
+	}
+
+	Vector4 Column(int i) const
+	{
+		return Vector4(el_2D[0][i], el_2D[1][i], el_2D[2][i], el_2D[3][i]);
 	}
 
 	Vector4 operator*(const Vector4& v) const

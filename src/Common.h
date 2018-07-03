@@ -10,8 +10,7 @@
 #include <list>
 #include <string>
 #include <functional>
-#include <assert.h>
-
+#include <cassert>
 
 using namespace RENDER_MASTER;
 
@@ -158,3 +157,27 @@ void split_by_eol(const char **&text, int &num_lines, const std::string& str);
 void delete_char_pp(const char **pText);
 void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center);
 
+// math
+
+const float DEGTORAD = 3.1415926f / 180.0f;
+
+// Returns local X vector in world space
+inline vec3 GetRightDirection(const mat4& ModelMat) { return vec3(ModelMat.Column(0)); }
+
+// Returns local Y vector in world space
+inline vec3 GetForwardDirection(const mat4& ModelMat) { return vec3(ModelMat.Column(1)); }
+
+// Returns local -Z vector in world space
+inline vec3 GetBackDirection(const mat4& ModelMat) { return -vec3(ModelMat.Column(2)); }
+
+//
+// Calculates Perspective matrix
+// In right-handed coordinate system
+// Camera: X - right, Y -top, Z - back
+// Depth is in range [-1, 1]
+// fov - vertical (Y) in radians
+// aspect - width / height
+// 
+// 	https://github.com/g-truc/glm/blob/master/glm/gtc/matrix_transform.inl perspectiveRH_NO(T fovy, T aspect, T zNear, T zFar)
+//
+mat4 perspective(float fov, float aspect, float zNear, float zFar);

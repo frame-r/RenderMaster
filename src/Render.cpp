@@ -1,5 +1,6 @@
 #include "Render.h"
 #include "Core.h"
+#include "SceneManager.h"
 #include <list>
 
 using std::string;
@@ -454,15 +455,13 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 
 void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 {
-	uint number{0};
-	_pSceneMan->GetGameObjectsNumber(&number);
+	SceneManager *sm = (SceneManager*)_pSceneMan;	
 
-	for (auto i = 0u; i < number; i++)
+	for (tree<IGameObject*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); it++)
 	{
-		IGameObject *go{ nullptr };
+		IGameObject *go = *it;
+		
 		RES_TYPE type;
-
-		_pSceneMan->GetGameObject(&go, i);
 		go->GetType(&type);
 
 		if (type == RES_TYPE::MODEL)
@@ -576,7 +575,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 			mat4 NM;
 			_pCoreRender->SetUniform("NM", &NM.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
 
-			vec3 nL = vec3(0.1f, 0.8f, -1.0f).Normalized();
+			vec3 nL = vec3(1.0f, 0.0f, 1.0f).Normalized();
 			_pCoreRender->SetUniform("nL", &nL.x, shader, SHADER_VARIABLE_TYPE::VECTOR3);
 
 		}

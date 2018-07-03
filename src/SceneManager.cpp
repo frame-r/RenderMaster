@@ -8,7 +8,6 @@ DEFINE_LOG_HELPERS(_pCore)
 
 API SceneManager::SaveScene(const char *name)
 {
-
 	return S_OK;
 }
 
@@ -18,53 +17,84 @@ API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 	return S_OK;
 }
 
-API SceneManager::AddGameObject(IGameObject* pGameObject)
+API SceneManager::AddRootGameObject(IGameObject* pGameObject)
 {
-	_game_objects.push_back(pGameObject);
+	tree<IGameObject*>::iterator top = _gameobjects.begin();
+	auto it = _gameobjects.insert(top, pGameObject);
+	_go_to_it[pGameObject] = it;
+	_gameObjectAddedEvent->Fire(pGameObject);
 	return S_OK;
 }
 
-API SceneManager::GetGameObjectsNumber(OUT uint *number)
+API SceneManager::GetChilds(OUT uint *number, IGameObject *parent)
 {
-	*number = (uint)_game_objects.size();
+	if (parent)
+	{
+		tree<IGameObject*>::iterator_base it = _go_to_it[parent];
+		*number = (uint)_gameobjects.number_of_children(it);
+	}
+	else
+		*number = (uint)_gameobjects.number_of_siblings(_gameobjects.begin()) + 1;
+	
 	return S_OK;
 }
 
-API SceneManager::GetGameObject(OUT IGameObject **pGameObject, uint idx)
+API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx)
 {
-	*pGameObject = _game_objects.at(idx);
+	uint number;
+	GetChilds(&number, parent);
+	assert(idx < number && "SceneManager::GetChild() idx is out of range");
+
+	if (parent)
+	{
+		auto it = _go_to_it[parent];
+		*pGameObject = *_gameobjects.child(it, idx);
+	}else
+	{
+		*pGameObject = *_gameobjects.sibling(_gameobjects.begin(), idx);
+	}
+
 	return S_OK;
 }
 
 SceneManager::SceneManager()
 {
-	_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+
+	add_entry("gameobjects", &SceneManager::_gameobjects);
 }
 
 void SceneManager::Init()
 {
 	_pCam = new Camera();
-	pResMan->AddToList(_pCam);
-	AddGameObject(_pCam);
+	_pResMan->AddToList(_pCam);
+	AddRootGameObject(_pCam);
 	LOG("Scene Manager initialized");
 }
 
 void SceneManager::Free()
 {
-	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _game_objects.size());
+	IFileSystem *fs;
+	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+	IFile *f;
+	fs->OpenFile(&f, "scene.yaml", FILE_OPEN_MODE::WRITE);
+	dynamic_cast<SceneManager*>(this)->print(f, 0);
+	f->CloseAndFree();
+
+	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _gameobjects.size());
 	#ifdef _DEBUG
 		uint res_before = 0;
-		pResMan->GetNumberOfResources(&res_before);
+		_pResMan->GetNumberOfResources(&res_before);
 	#endif
 
-	for(IGameObject *go : _game_objects)
-		go->Free();
-
-	_game_objects.clear();
+	for (tree<IGameObject*>::sibling_iterator sl_it = _gameobjects.begin(); sl_it != _gameobjects.end(); sl_it++)
+	{
+		(*sl_it)->Free();
+	}
 
 	#ifdef _DEBUG
 		uint res_after = 0;
-		pResMan->GetNumberOfResources(&res_after);
+		_pResMan->GetNumberOfResources(&res_after);
 		DEBUG_LOG("SceneManager::Free(): objects deleted=%i", LOG_TYPE::NORMAL, res_before - res_after);
 	#endif
 }
@@ -72,5 +102,11 @@ void SceneManager::Free()
 API SceneManager::GetName(OUT const char **pName)
 {
 	*pName = "SceneManager";
+	return S_OK;
+}
+
+API SceneManager::GetGameObjectAddedEvent(IGameObjectEvent** pEvent)
+{
+	*pEvent = _gameObjectAddedEvent.get();
 	return S_OK;
 }

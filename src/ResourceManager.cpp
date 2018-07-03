@@ -532,7 +532,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pFileName, IProg
 
 	ISceneManager *pSceneManager;
 	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
-	pSceneManager->AddGameObject(model);
+	pSceneManager->AddRootGameObject(model);
 	
 	*pModel = model;
 
