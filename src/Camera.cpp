@@ -78,6 +78,10 @@ void Camera::_update()
 
 Camera::Camera()
 {
+	add_entry("zNear", &Camera::_zNear);
+	add_entry("zFar", &Camera::_zFar);
+	add_entry("fovAngle", &Camera::_fovAngle);
+
 	_name = "Camera";
 
 	_pCore->AddUpdateCallback(std::bind(&Camera::_update, this));
@@ -91,6 +95,10 @@ Camera::Camera()
 	vec3 euler = _rot.ToEuler();
 	LOG_FORMATTED("_rot(euler) = (%f, %f, %f)", euler.x, euler.y, euler.z);
 
+}
+
+Camera::~Camera()
+{
 }
 
 API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
@@ -143,7 +151,7 @@ API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 
 API Camera::Free()
 {
-	standard_free_and_delete(this, std::function<void()>(), _pCore);
+	standard_free_and_delete(dynamic_cast<IResource*>(this), std::function<void()>(), _pCore);
 
 	return S_OK;
 }

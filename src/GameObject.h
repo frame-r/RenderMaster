@@ -4,7 +4,7 @@
 #include "Serialization.h"
 
 template <typename T>
-class GameObjectBase : public Serializable<T>, public T
+class GameObjectBase : public T, public Serializable<T>
 {
 protected:
 
@@ -20,6 +20,7 @@ public:
 
 	GameObjectBase()
 	{
+		add_entry("name", &GameObjectBase::_name);
 		add_entry("positon", &GameObjectBase::_pos);
 		add_entry("rotation", &GameObjectBase::_rot);
 		add_entry("scale", &GameObjectBase::_scale);

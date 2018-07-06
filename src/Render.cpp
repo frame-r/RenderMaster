@@ -457,7 +457,7 @@ void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 {
 	SceneManager *sm = (SceneManager*)_pSceneMan;	
 
-	for (tree<IGameObject*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); it++)
+	for (tree<IGameObject*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
 	{
 		IGameObject *go = *it;
 		
@@ -466,7 +466,7 @@ void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 
 		if (type == RES_TYPE::MODEL)
 		{
-			IModel *model = reinterpret_cast<IModel*>(go);
+			IModel *model = dynamic_cast<IModel*>(go);
 
 			uint meshes;
 			model->GetNumberOfMesh(&meshes);

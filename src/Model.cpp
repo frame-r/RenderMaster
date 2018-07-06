@@ -7,11 +7,12 @@ DEFINE_LOG_HELPERS(_pCore)
 
 void Model::_update()
 {
-
 }
 
 Model::Model(std::vector<ICoreMesh *>& meshes) : _meshes(meshes)
 {
+	add_entry("meshes", &Model::_meshes);
+
 	_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
 }
 
@@ -34,8 +35,14 @@ API Model::GetNumberOfMesh(OUT uint *number)
 API Model::Free()
 {
 	for (auto *mesh : _meshes)
-		mesh->Free();
+	{
+		IResourceManager *pResMan;
+		_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
+		uint refNum;
+		if (SUCCEEDED(pResMan->GetRefNumber(&refNum, mesh))) // if not yet deleted
+			mesh->Free();
+	}
 	standard_free_and_delete(this, std::function<void()>(), _pCore);
 
 	return S_OK;

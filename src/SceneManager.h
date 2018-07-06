@@ -3,6 +3,7 @@
 #include "Events.h"
 #include "tree.h"
 #include "Serialization.h"
+#include "GameObject.h"
 
 
 class SceneManager : public ISceneManager, public Serializable<ISceneManager>

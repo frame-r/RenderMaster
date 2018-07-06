@@ -46,22 +46,21 @@ inline void standard_free_and_delete(IResource *pRes, std::function<void()> actu
 
 	uint refNum;
 	pResMan->GetRefNumber(&refNum, pRes);
-
-	if (refNum == 1)
+	
+	if (refNum <= 1)
 	{
+		if (refNum == 0)
+			_pCore->Log("standard_free_and_delete: refNum == 0", LOG_TYPE::WARNING);
+
 		pResMan->RemoveFromList(pRes);
+
 		if (actually_delete_proc)
 			actually_delete_proc();
-	}
-	else if (refNum > 1)
-		pResMan->DecrementRef(pRes);
-	else
-	{
-		pResMan->RemoveFromList(pRes);
-		_pCore->Log("standard_free_and_delete: refNum == 0",LOG_TYPE::WARNING);
-	}
 
-	delete pRes;
+		delete pRes;
+	}
+	else // refNum > 1
+		pResMan->DecrementRef(pRes);	
 }
 
 

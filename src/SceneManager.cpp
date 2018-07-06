@@ -78,7 +78,7 @@ void SceneManager::Free()
 	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
 	IFile *f;
 	fs->OpenFile(&f, "scene.yaml", FILE_OPEN_MODE::WRITE);
-	dynamic_cast<SceneManager*>(this)->print(f, 0);
+	dynamic_cast<SceneManager*>(this)->serialize(f, 0);
 	f->CloseAndFree();
 
 	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _gameobjects.size());
@@ -87,10 +87,10 @@ void SceneManager::Free()
 		_pResMan->GetNumberOfResources(&res_before);
 	#endif
 
-	for (tree<IGameObject*>::sibling_iterator sl_it = _gameobjects.begin(); sl_it != _gameobjects.end(); sl_it++)
-	{
-		(*sl_it)->Free();
-	}
+	//for (tree<GameObject*>::sibling_iterator sl_it = _gameobjects.begin(); sl_it != _gameobjects.end(); sl_it++)
+	//{
+	//	(*sl_it)->Free();
+	//}
 
 	#ifdef _DEBUG
 		uint res_after = 0;

@@ -705,8 +705,12 @@ API ResourceManager::FreeAllResources()
 		// free resources
 		for (auto* pRes : one_ref_res)
 		{
-			pRes->Free();
-			_resources.erase(pRes);
+			auto it = _resources.find(pRes);
+			if (it != _resources.end())
+			{
+				pRes->Free();
+				_resources.erase(pRes);
+			}
 		}
 
 		#ifdef _DEBUG
