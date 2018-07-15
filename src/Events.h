@@ -57,4 +57,5 @@ public:
 
 typedef EventTemplate<ILogEvent, ILogEventSubscriber, const char *, LOG_TYPE> LogEvent;
 typedef EventTemplate<IPositionEvent, IPositionEventSubscriber, OUT vec3*> PositionEvent;
+typedef EventTemplate<IStringEvent, IStringEventSubscriber, const char *> StringEvent;
 typedef EventTemplate<IGameObjectEvent, IGameObjectEventSubscriber, OUT IGameObject*> GameObjectEvent;

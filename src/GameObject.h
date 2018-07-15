@@ -15,6 +15,7 @@ protected:
 	vec3 _scale{1.0f, 1.0f, 1.0f};
 	
 	std::unique_ptr<PositionEvent> _positionEvent{new PositionEvent};
+	std::unique_ptr<StringEvent> _nameEvent{new StringEvent};
 
 public:
 
@@ -30,8 +31,10 @@ public:
 	API SetName(const char *pName) override;
 	API SetPosition(const vec3 *pos) override;
 	API SetRotation(const quat *rot) override;
+	API SetScale(const vec3 *scale) override;
 	API GetPosition(OUT vec3 *pos) override;
 	API GetRotation(OUT quat *rot) override;
+	API GetScale(OUT vec3 *scale) override;
 
 	//
 	// Model Matrix
@@ -69,7 +72,12 @@ inline API GameObjectBase<T>::GetName(OUT const char ** pName)
 template <typename T>
 inline API GameObjectBase<T>::SetName(const char* pName)
 {
-	_name = std::string(pName);
+	std::string name = std::string(pName);
+	if (name != _name)
+	{
+		_name = name;
+		_nameEvent->Fire(name.c_str());
+	}
 	return S_OK;
 }
 
@@ -91,6 +99,13 @@ inline API GameObjectBase<T>::SetRotation(const quat *rot)
 	return S_OK;
 }
 
+template <typename T>
+inline API GameObjectBase<T>::SetScale(const vec3* scale)
+{
+	_scale = *scale;
+	return S_OK;
+}
+
 template<typename T>
 inline API GameObjectBase<T>::GetPosition(OUT vec3 * pos)
 {
@@ -102,6 +117,13 @@ template<typename T>
 inline API GameObjectBase<T>::GetRotation(OUT quat *rot)
 {
 	*rot = _rot;
+	return S_OK;
+}
+
+template <typename T>
+inline API GameObjectBase<T>::GetScale(vec3* scale)
+{
+	*scale = _scale;
 	return S_OK;
 }
 

@@ -158,6 +158,12 @@ void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center);
 
 // math
 
+inline bool Approximately(float l, float r)
+{
+	const float eps = 0.000001f;
+	return std::abs(l - r) < eps;
+}
+
 const float DEGTORAD = 3.1415926f / 180.0f;
 
 // Returns local X vector in world space

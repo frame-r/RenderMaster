@@ -194,6 +194,7 @@ namespace RENDER_MASTER
 	DEFINE_EVENT(IEvent)
 	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pPos)
 	DEFINE_EVENT1(IGameObjectEvent, OUT IGameObject *pGameObject)
+	DEFINE_EVENT1(IStringEvent, const char *pString)
 	DEFINE_EVENT2(ILogEvent, const char *pMessage, LOG_TYPE type)
 
 
@@ -344,8 +345,10 @@ namespace RENDER_MASTER
 		virtual API SetName(const char *pName) = 0;
 		virtual API SetPosition(const vec3 *pos) = 0;
 		virtual API SetRotation(const quat *rot) = 0;
+		virtual API SetScale(const vec3 *scale) = 0;
 		virtual API GetPosition(OUT vec3 *pos) = 0;
 		virtual API GetRotation(OUT quat *rot) = 0;
+		virtual API GetScale(OUT vec3 *scale) = 0;
 		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
 
