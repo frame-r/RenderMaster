@@ -158,7 +158,7 @@ struct Vector3
 
 	bool Aproximately(const Vector3& r) const
 	{
-		const float eps = 0.000001f;
+		constexpr float eps = 0.000001f;
 		return std::abs(r.x - x) < eps && std::abs(r.y - y) < eps && std::abs(r.z - z) < eps;
 	}
 };

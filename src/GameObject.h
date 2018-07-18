@@ -15,6 +15,7 @@ protected:
 	vec3 _scale{1.0f, 1.0f, 1.0f};
 	
 	std::unique_ptr<PositionEvent> _positionEvent{new PositionEvent};
+	std::unique_ptr<RotationEvent> _rotationEvent{new RotationEvent};
 	std::unique_ptr<StringEvent> _nameEvent{new StringEvent};
 
 public:
@@ -53,7 +54,9 @@ public:
 	API GetInvModelMatrix(OUT mat4 *mat) override;
 
 
+	API GetNameEv(OUT IStringEvent **pEvent) override;
 	API GetPositionEv(OUT IPositionEvent **pEvent) override;
+	API GetRotationEv(OUT IRotationEvent **pEvent) override;
 };
 
 class GameObject : public GameObjectBase<IGameObject> {};
@@ -95,7 +98,11 @@ inline API GameObjectBase<T>::SetPosition(const vec3 * pos)
 template<typename T>
 inline API GameObjectBase<T>::SetRotation(const quat *rot)
 {
-	_rot = *rot;
+        if (!_rot.Aproximately(*rot))
+	{
+		_rot = *rot;
+		_rotationEvent->Fire(&_rot);
+	}
 	return S_OK;
 }
 
@@ -162,8 +169,22 @@ inline API GameObjectBase<T>::GetInvModelMatrix(OUT mat4 *mat)
 }
 
 template<typename T>
+inline API GameObjectBase<T>::GetNameEv(OUT IStringEvent **pEvent)
+{
+	*pEvent = _nameEvent.get();
+	return S_OK;
+}
+
+template<typename T>
 inline API GameObjectBase<T>::GetPositionEv(OUT IPositionEvent **pEvent)
 {
 	*pEvent = _positionEvent.get();
+	return S_OK;
+}
+
+template<typename T>
+inline API GameObjectBase<T>::GetRotationEv(OUT IRotationEvent **pEvent)
+{
+	*pEvent = _rotationEvent.get();
 	return S_OK;
 }

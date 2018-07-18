@@ -192,7 +192,8 @@ namespace RENDER_MASTER
 	//////////////////////
 
 	DEFINE_EVENT(IEvent)
-	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pPos)
+	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pos)
+	DEFINE_EVENT1(IRotationEvent, OUT quat *rot)
 	DEFINE_EVENT1(IGameObjectEvent, OUT IGameObject *pGameObject)
 	DEFINE_EVENT1(IStringEvent, const char *pString)
 	DEFINE_EVENT2(ILogEvent, const char *pMessage, LOG_TYPE type)
@@ -353,7 +354,9 @@ namespace RENDER_MASTER
 		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
 
 		// Events
+		virtual API GetNameEv(OUT IStringEvent **pEvent) = 0;
 		virtual API GetPositionEv(OUT IPositionEvent **pEvent) = 0;
+		virtual API GetRotationEv(OUT IRotationEvent **pEvent) = 0;
 	};
 
 	class ICamera : public IGameObject
