@@ -16,6 +16,7 @@ public:
 
 	API OpenFile(OUT IFile **pFile, const char* path, FILE_OPEN_MODE mode) override;
 	API FileExist(const char *fullPath, OUT int *exist) override;
+	API DirectoryExist(const char *fullPath, OUT int *exist) override;
 	API GetName(OUT const char **pName) override;
 };
 

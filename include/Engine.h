@@ -455,6 +455,7 @@ namespace RENDER_MASTER
 
 		virtual API OpenFile(OUT IFile **pFile, const char *fullPath, FILE_OPEN_MODE mode) = 0;
 		virtual API FileExist(const char *fullPath, OUT int *exist) = 0;
+		virtual API DirectoryExist(const char *fullPath, OUT int *exist) = 0;
 	};
 
 

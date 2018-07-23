@@ -79,6 +79,14 @@ API FileSystem::FileExist(const char* fullPath, OUT int *exist)
 	return S_OK;
 }
 
+API FileSystem::DirectoryExist(const char* fullPath, int* exist)
+{
+	wstring wpPath = ConvertFromUtf8ToUtf16(fullPath);
+	fs::path wfsPath(wpPath);
+	*exist = fs::exists(wfsPath);
+	return S_OK;
+}
+
 API FileSystem::GetName(OUT const char **pName)
 {
 	*pName = "FileSystem";

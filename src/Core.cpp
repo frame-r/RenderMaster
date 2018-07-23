@@ -56,6 +56,15 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	{
 		absoluteDataPath = make_absolute(pDataPath, _pInstalledDir);
 	}
+
+	int exist = 0;
+	_pfSystem->DirectoryExist(absoluteDataPath.c_str(), &exist);
+	if (!exist)
+	{
+		std::cout << "Core::Init(): directory" << absoluteDataPath.c_str() << " doesn't exist\n" << std::endl;
+		return E_ABORT;
+	}
+
 	_pDataDir = new char[absoluteDataPath.size() + 1];
 	strcpy(_pDataDir, absoluteDataPath.c_str());
 

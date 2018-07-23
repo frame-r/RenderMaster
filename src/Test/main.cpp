@@ -12,13 +12,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		IResourceManager *resMan;
 		IModel *pModel;
 
-		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "resources", nullptr);				
-		pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "resources", nullptr)))
+		{
+			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-		resMan->LoadModel(&pModel, "box.fbx", nullptr);
-				
-		pCore->Start(); // begin main loop
-		pCore->CloseEngine();
+			resMan->LoadModel(&pModel, "box.fbx", nullptr);
+
+			pCore->Start(); // begin main loop
+			pCore->CloseEngine();
+		}
 
 		FreeCore(pCore);
 
