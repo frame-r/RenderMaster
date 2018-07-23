@@ -160,11 +160,8 @@ void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center);
 
 inline bool Approximately(float l, float r)
 {
-	const float eps = 0.000001f;
-	return std::abs(l - r) < eps;
+	return std::abs(l - r) < EPSILON;
 }
-
-const float DEGTORAD = 3.1415926f / 180.0f;
 
 // Returns local X vector in world space
 inline vec3 GetRightDirection(const mat4& ModelMat) { return vec3(ModelMat.Column(0)); }

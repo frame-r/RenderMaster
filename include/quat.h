@@ -41,12 +41,6 @@ struct quat
 	//
 	quat(float xAngle, float yAngle, float zAngle)
 	{
-		const float DEGTORAD = 3.1415926f / 180;
-
-		float a = DEGTORAD * xAngle / 2;
-		float b = DEGTORAD * yAngle / 2;
-		float g = DEGTORAD * zAngle / 2;
-
 		//float cy = cos(DEGTORAD * zAngle * 0.5f);
 		//float sy = sin(DEGTORAD * zAngle * 0.5f);
 		//float cr = cos(DEGTORAD * yAngle * 0.5f);
@@ -59,10 +53,16 @@ struct quat
 		//x = cy * cr * sp + sy * sr * cp;
 		//z = sy * cr * cp - cy * sr * sp;
 
+		float a = DEGTORAD * xAngle / 2;
+		float b = DEGTORAD * yAngle / 2;
+		float g = DEGTORAD * zAngle / 2;
+
 		z = cos(-b)*sin(g)*cos(a) - sin(-b)*cos(g)*sin(a);
 		y = -cos(-b)*sin(g)*sin(a) - sin(-b)*cos(g)*cos(a);
 		x = cos(-b)*cos(g)*sin(a) - sin(-b)*sin(g)*cos(a);
 		w = cos(-b)*cos(g)*cos(a) + sin(-b)*sin(g)*sin(a);
+
+		//if (w < 0.0f) { x = -x; y = -y; z = -z; w = -w; }
 	}
 
 	quat(const vec3& euler) : quat(euler.x, euler.y, euler.z) {}
@@ -74,8 +74,6 @@ struct quat
 	//
 	vec3 ToEuler() const
 	{
-		constexpr float RADTODEG = 180 / 3.1415926f;
-
 		//const float HALF_PI = 3.1415926f / 2;
 		//const float RADTODEG = 180 / 3.1415926f;
 		//
@@ -104,13 +102,14 @@ struct quat
 		float alpha_rad, beta_rad, gamma_rad;
 
 		float cy = sqrt(M.el_2D[2][2] * M.el_2D[2][2] + M.el_2D[1][2] * M.el_2D[1][2]);
-		
+
 		if (cy > 16 * 1.19e-07)
 		{
 			gamma_rad = -atan2(M.el_2D[0][1], M.el_2D[0][0]);
 			beta_rad = -atan2(-M.el_2D[0][2], cy);
 			alpha_rad = -atan2(M.el_2D[1][2], M.el_2D[2][2]);
-		}else
+		}
+		else
 		{
 			gamma_rad = -atan2(-M.el_2D[1][0], M.el_2D[1][1]);
 			beta_rad = -atan2(-M.el_2D[0][2], cy);
@@ -145,36 +144,36 @@ struct quat
 		//
 		//return ret;
 
-		float Nq = x*x + y*y + z*z + w*w;
+		float Nq = x * x + y * y + z * z + w * w;
 		float s;
 		if (Nq > 0.0f)
 			s = 2.0f / Nq;
 		else
 			s = 0.0f;
 
-		float xs = x*s;  float ys = y*s;  float zs = z*s;
-		float wx = w*xs; float wy = w*ys; float wz = w*zs;
-		float xx = x*xs; float xy = x*ys; float xz = x*zs;
-		float yy = y*ys; float yz = y*zs; float zz = z*zs;
+		float xs = x * s;  float ys = y * s;  float zs = z * s;
+		float wx = w * xs; float wy = w * ys; float wz = w * zs;
+		float xx = x * xs; float xy = x * ys; float xz = x * zs;
+		float yy = y * ys; float yz = y * zs; float zz = z * zs;
 
 		mat4 ret;
-		ret.el_2D[0][0] = 1.0f - (yy + zz);  ret.el_2D[0][1] = xy - wz;          ret.el_2D[0][2] = xz + wy;           ret.el_2D[0][3] = 0.0f;
-		ret.el_2D[1][0] = xy + wz;          ret.el_2D[1][1] = 1.0f - (xx + zz);  ret.el_2D[1][2] = yz - wx;           ret.el_2D[1][3] = 0.0f;
-		ret.el_2D[2][0] = xz - wy;          ret.el_2D[2][1] = yz + wx;          ret.el_2D[2][2] = 1.0f - (xx + yy);     ret.el_2D[2][3] = 0.0f;
-		ret.el_2D[3][0] = 0.0f;                ret.el_2D[3][1] = 0.0f;                ret.el_2D[3][2] = 0.0f;                 ret.el_2D[3][3] = 1.0f;
+		ret.el_2D[0][0] = 1.0f - (yy + zz); ret.el_2D[0][1] = xy - wz;          ret.el_2D[0][2] = xz + wy;           ret.el_2D[0][3] = 0.0f;
+		ret.el_2D[1][0] = xy + wz;          ret.el_2D[1][1] = 1.0f - (xx + zz); ret.el_2D[1][2] = yz - wx;           ret.el_2D[1][3] = 0.0f;
+		ret.el_2D[2][0] = xz - wy;          ret.el_2D[2][1] = yz + wx;          ret.el_2D[2][2] = 1.0f - (xx + yy);  ret.el_2D[2][3] = 0.0f;
+		ret.el_2D[3][0] = 0.0f;             ret.el_2D[3][1] = 0.0f;             ret.el_2D[3][2] = 0.0f;              ret.el_2D[3][3] = 1.0f;
 
 		return ret;
 	}
 
 	quat& operator=(const quat& q)
 	{
-		x = q.x; 
-		y = q.y; 
-		z = q.z; 
-		w = q.w; 
+		x = q.x;
+		y = q.y;
+		z = q.z;
+		w = q.w;
 		return *this;
 	}
-	
+
 	quat operator+(const quat& q) const
 	{
 		return quat(x + q.x, y + q.y, z + q.z, w + q.w);
@@ -187,6 +186,16 @@ struct quat
 		p.x = w * q.x + x * q.w + y * q.z - z * q.y;
 		p.y = w * q.y + y * q.w + z * q.x - x * q.z;
 		p.z = w * q.z + z * q.w + x * q.y - y * q.x;
+		return p;
+	}
+
+	quat operator-() const
+	{
+		quat p;
+		p.x = -x;
+		p.y = -y;
+		p.z = -z;
+		p.w = -w;
 		return p;
 	}
 
@@ -211,8 +220,15 @@ struct quat
 
 	bool Aproximately(const quat& r) const
 	{
-		constexpr float eps = 0.000001f;
-		return std::abs(r.x - x) < eps && std::abs(r.y - y) < eps && std::abs(r.z - z) < eps && std::abs(r.w - w) < eps;
+		return std::abs(r.x - x) < EPSILON && std::abs(r.y - y) < EPSILON && std::abs(r.z - z) < EPSILON && std::abs(r.w - w) < EPSILON;
+	}
+
+	bool IsSameRotation(const quat& r) const
+	{
+		bool f1 = std::abs(r.x - x) < EPSILON && std::abs(r.y - y) < EPSILON && std::abs(r.z - z) < EPSILON && std::abs(r.w - w) < EPSILON;
+		if (f1) return true;
+		quat q = -r;
+		return std::abs(q.x - x) < EPSILON && std::abs(q.y - y) < EPSILON && std::abs(q.z - z) < EPSILON && std::abs(q.w - w) < EPSILON;
 	}
 
 };

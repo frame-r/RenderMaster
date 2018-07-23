@@ -98,7 +98,7 @@ inline API GameObjectBase<T>::SetPosition(const vec3 * pos)
 template<typename T>
 inline API GameObjectBase<T>::SetRotation(const quat *rot)
 {
-        if (!_rot.Aproximately(*rot))
+    if (!_rot.IsSameRotation(*rot))
 	{
 		_rot = *rot;
 		_rotationEvent->Fire(&_rot);

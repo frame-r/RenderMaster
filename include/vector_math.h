@@ -6,6 +6,10 @@
 
 #pragma warning(disable : 4201) // ignore non standard unnamed struct in union
 
+#define EPSILON 1e-6f
+#define DEGTORAD (3.141592654f / 180.0f)
+#define RADTODEG (180.0f / 3.141592654f)
+
 struct Vector3;
 struct Vector4;
 struct Matrix3x3;
@@ -158,8 +162,7 @@ struct Vector3
 
 	bool Aproximately(const Vector3& r) const
 	{
-		constexpr float eps = 0.000001f;
-		return std::abs(r.x - x) < eps && std::abs(r.y - y) < eps && std::abs(r.z - z) < eps;
+		return std::abs(r.x - x) < EPSILON && std::abs(r.y - y) < EPSILON && std::abs(r.z - z) < EPSILON;
 	}
 };
 
