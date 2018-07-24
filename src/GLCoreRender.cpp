@@ -325,9 +325,110 @@ API GLCoreRender::Init(const WinHandle* handle)
 	//glClearColor(0.1f, 0.5f, 0.5f, 1.0f);
 	glDisable(GL_CULL_FACE);
 
+	//
+	// Fill state
+	//
+	_current_state.blending_enabled = 0;
+	GLint blend_factor;
+	glGetIntegerv(GL_BLEND_SRC_RGB, &blend_factor);
+	_current_state.src_blend_factor = blend_factor;
+	glGetIntegerv(GL_BLEND_DST_ALPHA, &blend_factor);
+	_current_state.src_blend_factor = blend_factor;
+
+	glGetFloatv(GL_COLOR_CLEAR_VALUE, &_current_state.clear_color[0]);
+
+	GLint i[2];
+	glGetIntegerv(GL_POLYGON_MODE, i);
+	_current_state.poligon_mode = i[0];
+
+	_current_state.culling_enabled = glIsEnabled(GL_CULL_FACE);
+	glGetIntegerv(GL_CULL_FACE_MODE, &_current_state.culling_mode);
+
+	glGetBooleanv(GL_DEPTH_TEST, &_current_state.depth_test_enabled);
+
+	GLint vp[4];
+	glGetIntegerv(GL_VIEWPORT, vp);
+	_current_state.viewport_x = vp[0];
+	_current_state.viewport_y = vp[1];
+	_current_state.viewport_w = vp[2];
+	_current_state.viewport_h = vp[3];
+
 	CHECK_GL_ERRORS();
 
 	LOG("GLCoreRender initalized");
+
+	return S_OK;
+}
+
+API GLCoreRender::PushStates()
+{
+	_states.push(_current_state);
+	return S_OK;
+}
+
+API GLCoreRender::PopStates()
+{
+	State& state = _states.top();
+
+	if (_current_state.blending_enabled != state.blending_enabled)
+		if (state.blending_enabled)
+			glEnable(GL_BLEND);
+		else
+			glDisable(GL_BLEND);
+
+	if (_current_state.src_blend_factor != state.src_blend_factor || _current_state.dst_blend_factor != state.dst_blend_factor)
+		glBlendFunc(state.src_blend_factor, state.dst_blend_factor);
+
+	if (state.shader_program_id != _current_state.shader_program_id)
+		glUseProgram(state.shader_program_id);
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (state.tex_slots_bindings[i].tex_id != _current_state.tex_slots_bindings[i].tex_id ||
+			state.tex_slots_bindings[i].shader_var_id != _current_state.tex_slots_bindings[i].shader_var_id)
+		{
+			// TODO: make other types (not only GL_TEXTURE_2D)!
+			glActiveTexture(GL_TEXTURE0 + i); // now work with slot == i
+			glBindTexture(GL_TEXTURE_2D, state.tex_slots_bindings[i].tex_id); // slot <- texture id
+			glUniform1i(state.tex_slots_bindings[i].shader_var_id, i); // slot <- shader variable id
+		}
+	}
+
+	if (state.clear_color[0] != _current_state.clear_color[0] ||
+		state.clear_color[1] != _current_state.clear_color[1] ||
+		state.clear_color[2] != _current_state.clear_color[2] ||
+		state.clear_color[3] != _current_state.clear_color[3])
+		glClearColor(state.clear_color[0], state.clear_color[1], state.clear_color[2], state.clear_color[3]);
+
+	if (state.poligon_mode != _current_state.poligon_mode)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	if (state.culling_enabled != _current_state.culling_enabled)
+	{
+		if (state.culling_enabled)
+			glEnable(GL_CULL_FACE);
+		else
+			glDisable(GL_CULL_FACE);
+	}
+	if (state.culling_mode != _current_state.culling_mode)
+		glCullFace(state.culling_mode);
+
+	if (state.depth_test_enabled != _current_state.depth_test_enabled)
+	{
+		if (state.depth_test_enabled)
+			glEnable(GL_DEPTH_TEST);
+		else
+			glDisable(GL_DEPTH_TEST);
+	}
+
+	if (state.viewport_x != _current_state.viewport_x ||
+		state.viewport_y != _current_state.viewport_y ||
+		state.viewport_w != _current_state.viewport_w ||
+		state.viewport_h != _current_state.viewport_h)
+		glViewport(state.viewport_x, state.viewport_y, state.viewport_w, state.viewport_h);
+
+	_states.pop();
+	_current_state = state;
 
 	return S_OK;
 }
@@ -451,22 +552,26 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 
 API GLCoreRender::SetShader(const ICoreShader* pShader)
 {
-	if (_current_shader == pShader) return S_OK;
-
+	const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
 	CHECK_GL_ERRORS();
-	
+
 	if (!pShader)
-		glUseProgram(0);
-	else
 	{
-		const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
-		glUseProgram(pGLShader->programID());
+		if (_current_state.shader_program_id != 0u)
+		{
+			glUseProgram(0);
+			_current_state.shader_program_id = 0u;
+			return S_OK;
+		}
 	}
 
-	CHECK_GL_ERRORS();
+	if (_current_state.shader_program_id == pGLShader->programID()) return S_OK;
 	
-	_current_shader = pShader;
-		
+	glUseProgram(pGLShader->programID());
+	_current_state.shader_program_id = pGLShader->programID();
+
+	CHECK_GL_ERRORS();
+			
 	return S_OK;
 }
 
@@ -658,10 +763,15 @@ API GLCoreRender::SetDepthState(int enabled)
 {
 	CHECK_GL_ERRORS();
 
+	if (bool(enabled) == bool(_current_state.depth_test_enabled))
+		return S_OK;
+
 	if (enabled)
 		glEnable(GL_DEPTH_TEST);
 	else
 		glDisable(GL_DEPTH_TEST);
+
+	_current_state.depth_test_enabled = enabled;
 
 	CHECK_GL_ERRORS();
 
@@ -670,11 +780,13 @@ API GLCoreRender::SetDepthState(int enabled)
 
 API GLCoreRender::SetViewport(uint wIn, uint hIn)
 {
-	if (w == wIn && h == hIn) return S_OK;
+	if (_current_state.viewport_w == wIn || _current_state.viewport_h == hIn) 
+		return S_OK;
 
 	glViewport(0, 0, wIn, hIn);
-	w = wIn;
-	h = hIn;
+
+	_current_state.viewport_w = wIn;
+	_current_state.viewport_h = hIn;
 
 	return S_OK;
 }
@@ -683,13 +795,8 @@ API GLCoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 {
 	CHECK_GL_ERRORS();
 
-	*wOut = w;
-	*hOut = h;
-
-	//GLint vp[4];
-	//glGetIntegerv(GL_VIEWPORT, vp);
-	//x = vp[0]; y = vp[1];
-	//w = vp[2]; h = vp[3];
+	*wOut = _current_state.viewport_w;
+	*hOut = _current_state.viewport_h;
 
 	CHECK_GL_ERRORS();
 

@@ -10,6 +10,8 @@ public:
 	~DX11CoreRender();
 	
 	API Init(const WinHandle* handle) override;
+	API PushStates() override;
+	API PopStates() override;
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc) override;
 	API SetShader(const ICoreShader *pShader) override;

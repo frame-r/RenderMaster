@@ -30,6 +30,16 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	return E_NOTIMPL;
 }
 
+API DX11CoreRender::PushStates()
+{
+	return E_NOTIMPL;
+}
+
+API DX11CoreRender::PopStates()
+{
+	return E_NOTIMPL;
+}
+
 API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
 {
 	return E_NOTIMPL;

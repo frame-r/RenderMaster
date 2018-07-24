@@ -318,6 +318,8 @@ namespace RENDER_MASTER
 	public:
 		
 		virtual API Init(const WinHandle* handle) = 0;
+		virtual API PushStates() = 0;
+		virtual API PopStates() = 0;
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(OUT ICoreShader **pShader, const ShaderText* shaderDesc) = 0;
 		virtual API SetShader(const ICoreShader *pShader) = 0;

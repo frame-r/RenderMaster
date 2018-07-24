@@ -9,6 +9,7 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <stack>
 #include <functional>
 #include <cassert>
 
@@ -155,6 +156,7 @@ std::string make_absolute(const char *pRelDataPath, const char *pWorkingPath);
 void split_by_eol(const char **&text, int &num_lines, const std::string& str);
 void delete_char_pp(const char **pText);
 void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center);
+
 
 // math
 
