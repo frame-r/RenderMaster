@@ -151,7 +151,7 @@ API Core::RenderFrame(const WinHandle* extern_handle, const ICamera *pCamera)
 #else
 	assert(false); // not impl
 #endif // WIN32
-
+	
 	_pCoreRender->SetViewport(w, h);
 	_pRender->RenderFrame(pCamera);
 
@@ -167,6 +167,7 @@ API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 		case SUBSYSTEM_TYPE::FILESYSTEM: *pSubSystem = _pfSystem; break;
 		case SUBSYSTEM_TYPE::INPUT: *pSubSystem = _pInput; break;
 		case SUBSYSTEM_TYPE::SCENE_MANAGER: *pSubSystem = _pSceneManager; break;
+		case SUBSYSTEM_TYPE::RENDER: *pSubSystem = _pRender; break;
 		default:
 			LOG_WARNING("Core::GetSubSystem() unknown subsystem");
 			return S_FALSE;
@@ -186,6 +187,7 @@ void Core::_main_loop()
 	_pSceneManager->GetDefaultCamera(&cam);
 
 	_pRender->RenderFrame(cam);
+	_pCoreRender->SwapBuffers();
 }
 
 void Core::_s_main_loop()
@@ -217,6 +219,7 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 		ICamera * cam;
 		_pSceneManager->GetDefaultCamera(&cam);
 		_pRender->RenderFrame(cam);
+		_pCoreRender->SwapBuffers();
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_CLOSE:

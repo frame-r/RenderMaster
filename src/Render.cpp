@@ -512,29 +512,7 @@ void Render::Init()
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
 
-	_pResMan->GetDefaultResource((IResource**)&_pAxesMesh, DEFAULT_RES_TYPE::AXES);
-
 	LOG("Render initialized");
-}
-
-void Render::_draw_axes(const mat4& VP)
-{
-	INPUT_ATTRUBUTE a;
-	_pAxesMesh->GetAttributes(&a);
-
-	ICoreShader *shader = _get_shader({ a, false });
-	_pCoreRender->SetShader(shader);
-
-	_pCoreRender->SetUniform("MVP", &VP.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
-
-	vec4 main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	_pCoreRender->SetUniform("main_color", &main_color.x, shader, SHADER_VARIABLE_TYPE::VECTOR4);
-
-	_pCoreRender->SetDepthState(false);
-
-	_pCoreRender->Draw(_pAxesMesh);
-
-	_pCoreRender->SetDepthState(true);
 }
 
 void Render::RenderFrame(const ICamera *pCamera)
@@ -582,8 +560,16 @@ void Render::RenderFrame(const ICamera *pCamera)
 
 		_pCoreRender->Draw(renderMesh.mesh);
 	}
+}
 
-	_draw_axes(VP);
+API Render::GetShader(ICoreShader** pShader, const ShaderRequirement* shaderReq)
+{
+	*pShader = _get_shader(*shaderReq);
+	return S_OK;
+}
 
-	_pCoreRender->SwapBuffers();
+API Render::GetName(const char** pName)
+{
+	*pName = "Render";
+	return S_OK;
 }

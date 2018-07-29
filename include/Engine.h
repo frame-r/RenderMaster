@@ -146,6 +146,7 @@ namespace RENDER_MASTER
 	{
 		FILESYSTEM,
 		CORE_RENDER,
+		RENDER,
 		RESOURCE_MANAGER,
 		INPUT,
 		SCENE_MANAGER
@@ -336,6 +337,33 @@ namespace RENDER_MASTER
 		virtual API Free() = 0;
 	};
 
+	//////////////////////
+	// Render
+	//////////////////////
+
+	struct ShaderRequirement
+	{
+		INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::CUSTOM};
+		bool alphaTest{false};
+
+		size_t operator()(const ShaderRequirement& k) const
+		{
+			return ((int)k.alphaTest + 1) * (int)k.attributes;
+		}
+		bool operator==(const ShaderRequirement &other) const
+		{
+			return attributes == other.attributes && alphaTest == other.alphaTest;
+		}
+	};
+
+
+	class IRender : public ISubSystem
+	{
+	public:
+		virtual API GetShader(OUT ICoreShader **pShader, const ShaderRequirement *shaderReq) = 0;
+	};
+
+
 
 	//////////////////////
 	// Game Objects
@@ -400,7 +428,9 @@ namespace RENDER_MASTER
 	{
 		CUSTOM,
 		PLANE,
-		AXES
+		AXES,
+		AXES_ARROWS,
+		GRID
 	};
 
 	class IProgressSubscriber

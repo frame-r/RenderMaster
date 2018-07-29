@@ -780,7 +780,7 @@ API GLCoreRender::SetDepthState(int enabled)
 
 API GLCoreRender::SetViewport(uint wIn, uint hIn)
 {
-	if (_current_state.viewport_w == wIn || _current_state.viewport_h == hIn) 
+	if (_current_state.viewport_w == wIn && _current_state.viewport_h == hIn) 
 		return S_OK;
 
 	glViewport(0, 0, wIn, hIn);

@@ -461,27 +461,111 @@ void ResourceManager::Init()
 
 	_resources[pPlane] = TResource{pPlane, 0, DEFAULT_RES_TYPE::PLANE};
 
-	// create axes mesh
+	MeshDataDesc descAxes; 
+	MeshIndexDesc indexEmpty;
 	ICoreMesh *pAxes;
 
+
+	//
+	// Create axes
+	//
+	
 	// position, color, position, color, ...
 	float vertexAxes[] = {	0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 							0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 							0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f };
-
-	MeshDataDesc descAxes;
+	
 	descAxes.pData = reinterpret_cast<uint8*>(vertexAxes);
 	descAxes.numberOfVertex = 6;
 	descAxes.positionStride = 24;
 	descAxes.colorPresented = true;
 	descAxes.colorOffset = 12;
-	descAxes.colorStride = 24;
-
-	MeshIndexDesc indexEmpty;
+	descAxes.colorStride = 24;	
 
 	_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES);
-
 	_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES};
+	
+	
+	//
+	// Create grid
+	//
+	constexpr float linesInterval = 5.0f;
+	constexpr int linesNumber = 31;
+	constexpr float startOffset = linesInterval * (linesNumber / 2);
+	//position, color, position, color, ...
+	vec3 vertexGrid[4 * linesNumber];
+
+	for (int i = 0; i < linesNumber; i++)
+	{
+		vertexGrid[i * 4] = vec3(-startOffset + i * linesInterval, -startOffset, 0.0f);
+		vertexGrid[i * 4 + 1] = vec3(-startOffset + i * linesInterval, startOffset, 0.0f);
+		vertexGrid[i * 4 + 2] = vec3(startOffset , -startOffset + i * linesInterval, 0.0f);
+		vertexGrid[i * 4 + 3] = vec3(-startOffset , -startOffset + i * linesInterval, 0.0f);
+	}
+	
+	descAxes.pData = reinterpret_cast<uint8*>(vertexGrid);
+	descAxes.numberOfVertex = 4 * linesNumber;
+	descAxes.positionStride = 12;
+	descAxes.colorPresented = false;
+	descAxes.colorOffset = 0;
+	descAxes.colorStride = 0;
+
+	_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES);
+	_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::GRID};
+
+
+	//
+	// Create axes arrows
+	//
+	// position, color, position, color, ...
+	constexpr int segments = 12;
+	constexpr float arrowRadius = 0.065f;
+	constexpr float arrowLength = 0.3f;
+	constexpr int numberOfVeretex = 3 * 3 * segments;
+	constexpr int floats = (3 + 3) * numberOfVeretex;
+	float vertexAxesArrows[floats];
+
+	for (int i = 0; i < 3; i++) // 3 axes
+	{
+		vec3 color;
+		color.xyz[i] = 1.0f;
+		for (int j = 0; j < segments; j++) 
+		{
+			constexpr float pi2 = 3.141592654f * 2.0f;
+			float alpha = pi2 * (float(j) / segments);
+			float dAlpha = pi2 * (1.0f / segments);
+
+			vec3 v1, v2, v3;
+
+			v1.xyz[i] = 1.0f + arrowLength;
+
+			v2.xyz[i] = 1.0f;
+			v2.xyz[(i + 1) % 3] = cos(alpha) * arrowRadius;
+			v2.xyz[(i + 2) % 3] = sin(alpha) * arrowRadius;
+
+			v3.xyz[i] = 1.0f;
+			v3.xyz[(i + 1) % 3] = cos(alpha + dAlpha) * arrowRadius;
+			v3.xyz[(i + 2) % 3] = sin(alpha + dAlpha) * arrowRadius;
+
+			memcpy(vertexAxesArrows + i * segments * 18 + j * 18, &v1.x, 12);
+			memcpy(vertexAxesArrows + i * segments * 18 + j * 18 + 3, &color.x, 12);
+			memcpy(vertexAxesArrows + i * segments * 18 + j * 18 + 6, &v2.x, 12);
+			memcpy(vertexAxesArrows + i * segments * 18 + j * 18 + 9, &color.x, 12);
+			memcpy(vertexAxesArrows + i * segments * 18 + j * 18 + 12, &v3.x, 12);
+			memcpy(vertexAxesArrows + i * segments * 18 + j * 18 + 15, &color.x, 12);
+		}
+	}
+
+	descAxes.pData = reinterpret_cast<uint8*>(vertexAxesArrows);
+	descAxes.numberOfVertex = numberOfVeretex;
+	descAxes.positionStride = 24;
+	descAxes.colorPresented = true;
+	descAxes.colorOffset = 12;
+	descAxes.colorStride = 24;
+
+	_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES);
+	_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES_ARROWS};
+
 
 	LOG("Resource Manager initalized");
 }
