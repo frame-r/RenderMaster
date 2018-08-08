@@ -78,8 +78,8 @@ public:
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API MakeCurrent(const WinHandle* handle) override;
-	API SetViewport(uint w, uint h) override;
-	API GetViewport(OUT uint* w, OUT uint* h) override;
+	API SetViewport(uint wIn, uint hIn) override;
+	API GetViewport(OUT uint* wOut, OUT uint* hOut) override;
 	API Clear() override;
 	API SwapBuffers() override;
 	API Free() override;

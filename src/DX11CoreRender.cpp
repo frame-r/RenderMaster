@@ -14,7 +14,7 @@ DX11CoreRender::~DX11CoreRender()
 {
 }
 
-API DX11CoreRender::MakeCurrent(const WinHandle * handle)
+API DX11CoreRender::MakeCurrent(const WinHandle* handle)
 {
 	return E_NOTIMPL;
 }

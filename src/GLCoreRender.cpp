@@ -141,10 +141,8 @@ API GLCoreRender::MakeCurrent(const WinHandle* handle)
 			return S_FALSE;
 		}
 	}
-
-	auto res = wglMakeCurrent(new_hdc, _hRC);
-
-	if (!res) 
+	
+	if (!wglMakeCurrent(new_hdc, _hRC))
 	{
 		LOG_FATAL("Couldn't perform wglMakeCurrent(_hdc, _hRC);");
 		return S_FALSE;
@@ -207,7 +205,6 @@ API GLCoreRender::Init(const WinHandle* handle)
 
 		wglMakeCurrent(nullptr, nullptr);
 		wglDeleteContext(hrc_fake);
-
 	}
 	else
 	{
@@ -319,10 +316,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 	CHECK_GL_ERRORS();
 
 	glEnable(GL_DEPTH_TEST);
-	glClearDepth(1.0f);
-	
-	// dbg
-	//glClearColor(0.1f, 0.5f, 0.5f, 1.0f);
+	glClearDepth(1.0f);	
 	glDisable(GL_CULL_FACE);
 
 	//
@@ -388,9 +382,9 @@ API GLCoreRender::PopStates()
 			state.tex_slots_bindings[i].shader_var_id != _current_state.tex_slots_bindings[i].shader_var_id)
 		{
 			// TODO: make other types (not only GL_TEXTURE_2D)!
-			glActiveTexture(GL_TEXTURE0 + i); // now work with slot == i
-			glBindTexture(GL_TEXTURE_2D, state.tex_slots_bindings[i].tex_id); // slot <- texture id
-			glUniform1i(state.tex_slots_bindings[i].shader_var_id, i); // slot <- shader variable id
+			glActiveTexture(GL_TEXTURE0 + i);									// now work with slot == i
+			glBindTexture(GL_TEXTURE_2D, state.tex_slots_bindings[i].tex_id);	// slot <- texture id
+			glUniform1i(state.tex_slots_bindings[i].shader_var_id, i);			// slot <- shader variable id
 		}
 	}
 
@@ -552,10 +546,11 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 
 API GLCoreRender::SetShader(const ICoreShader* pShader)
 {
-	const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
 	CHECK_GL_ERRORS();
 
-	if (!pShader)
+	const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
+	
+	if (pShader == nullptr)
 	{
 		if (_current_state.shader_program_id != 0u)
 		{
@@ -565,7 +560,8 @@ API GLCoreRender::SetShader(const ICoreShader* pShader)
 		}
 	}
 
-	if (_current_state.shader_program_id == pGLShader->programID()) return S_OK;
+	if (_current_state.shader_program_id == pGLShader->programID())
+		return S_OK;
 	
 	glUseProgram(pGLShader->programID());
 	_current_state.shader_program_id = pGLShader->programID();
@@ -718,7 +714,7 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 {
 	CHECK_GL_ERRORS();
 
-	if (!mesh)
+	if (mesh == nullptr)
 		glBindVertexArray(0);
 	else
 	{
@@ -748,10 +744,7 @@ API GLCoreRender::Draw(ICoreMesh *mesh)
 		VERTEX_TOPOLOGY topology;
 		mesh->GetVertexTopology(&topology);
 
-		if (topology == VERTEX_TOPOLOGY::TRIANGLES)
-			glDrawArrays(GL_TRIANGLES, 0, vertecies);
-		else
-			glDrawArrays(GL_LINES, 0, vertecies);
+		glDrawArrays((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, 0, vertecies);
 	}
 	
 	CHECK_GL_ERRORS();
@@ -780,7 +773,7 @@ API GLCoreRender::SetDepthState(int enabled)
 
 API GLCoreRender::SetViewport(uint wIn, uint hIn)
 {
-	if (_current_state.viewport_w == wIn && _current_state.viewport_h == hIn) 
+	if (wIn == _current_state.viewport_w && hIn == _current_state.viewport_h) 
 		return S_OK;
 
 	glViewport(0, 0, wIn, hIn);
@@ -799,14 +792,15 @@ API GLCoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 	*hOut = _current_state.viewport_h;
 
 	CHECK_GL_ERRORS();
-
 	return S_OK;
 }
 
 API GLCoreRender::Clear()
 {
 	CHECK_GL_ERRORS();
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
 	CHECK_GL_ERRORS();
 	return S_OK;
 }
@@ -814,7 +808,9 @@ API GLCoreRender::Clear()
 API GLCoreRender::SwapBuffers()
 {
 	CHECK_GL_ERRORS();
+
 	::SwapBuffers(_hdc);
+
 	CHECK_GL_ERRORS();
 	return S_OK;
 }
@@ -824,5 +820,6 @@ API GLCoreRender::Free()
 	wglMakeCurrent(nullptr, nullptr);
 	wglDeleteContext(_hRC);
 	ReleaseDC(_hWnd, GetDC(_hWnd));
+
 	return S_OK;
 }
