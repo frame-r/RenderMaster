@@ -160,7 +160,7 @@
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>../src/export.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x86\debug\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x86\debug\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -179,7 +179,7 @@
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>../src/export.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\debug\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\debug\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -201,7 +201,7 @@
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>../src/export.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x86\release\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x86\release\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -223,7 +223,7 @@
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>../src/export.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\release\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\release\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

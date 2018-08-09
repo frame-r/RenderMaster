@@ -427,12 +427,14 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::Init()
 {
+	MeshDataDesc descAxes;
+	MeshIndexDesc indexEmpty;
+	ICoreMesh *pAxes;
+	ICoreMesh *pPlane;
+
 	InitializeCriticalSection(&_cs);
 
 	_pCore->GetSubSystem((ISubSystem**)&_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
-
-	// create default plane mesh
-	ICoreMesh *pPlane;
 
 	float vertexPlane[12] = 
 	{
@@ -457,14 +459,8 @@ void ResourceManager::Init()
 	indexDesc.number = 6;
 	indexDesc.format = MESH_INDEX_FORMAT::INT16;
 
-	_pCoreRender->CreateMesh((ICoreMesh**)&pPlane, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
-
-	_resources[pPlane] = TResource{pPlane, 0, DEFAULT_RES_TYPE::PLANE};
-
-	MeshDataDesc descAxes; 
-	MeshIndexDesc indexEmpty;
-	ICoreMesh *pAxes;
-
+	if (SUCCEEDED(_pCoreRender->CreateMesh((ICoreMesh**)&pPlane, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES)))
+		_resources[pPlane] = TResource{pPlane, 0, DEFAULT_RES_TYPE::PLANE};
 
 	//
 	// Create axes
@@ -482,8 +478,8 @@ void ResourceManager::Init()
 	descAxes.colorOffset = 12;
 	descAxes.colorStride = 24;	
 
-	_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES);
-	_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES};
+	if (SUCCEEDED(_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
+		_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES};
 	
 	
 	//
@@ -510,8 +506,8 @@ void ResourceManager::Init()
 	descAxes.colorOffset = 0;
 	descAxes.colorStride = 0;
 
-	_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES);
-	_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::GRID};
+	if (SUCCEEDED(_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
+		_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::GRID};
 
 
 	//
@@ -563,8 +559,8 @@ void ResourceManager::Init()
 	descAxes.colorOffset = 12;
 	descAxes.colorStride = 24;
 
-	_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES);
-	_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES_ARROWS};
+	if (SUCCEEDED(_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
+		_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES_ARROWS};
 
 
 	LOG("Resource Manager initalized");
@@ -691,6 +687,7 @@ API ResourceManager::GetDefaultResource(OUT IResource **pResource, DEFAULT_RES_T
 
 API ResourceManager::AddToList(IResource *pResource)
 { 
+	assert(pResource != nullptr && "ResourceManager::AddToList(): pResource==nullptr");
 	auto it = _resources.find(pResource);
 
 	if (it == _resources.end())

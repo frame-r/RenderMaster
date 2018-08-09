@@ -440,14 +440,19 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 		get_shader_preprocessed(st.pVertText, st.vertNumLines, pStandardShaderText.pVertText, "out_v.shader");
 		get_shader_preprocessed(st.pFragText, st.fragNumLines, pStandardShaderText.pFragText, "out_f.shader");
 
-		_pCoreRender->CreateShader(&pShader, &st);
+		bool compiled = FAILED(_pCoreRender->CreateShader(&pShader, &st));
+		compiled = compiled && pShader != nullptr;
+
+		if (!compiled)
+			LOG_FATAL("Render::_get_shader(): can't compile standard shader");
+		else
+		{
+			_pResMan->AddToList(pShader);
+			_shaders_pool.emplace(req, pShader);
+		}
 
 		delete_char_pp(st.pVertText);
 		delete_char_pp(st.pFragText);
-
-		_pResMan->AddToList(pShader);
-
-		_shaders_pool.emplace(req, pShader);
 	}
 
 	return pShader;
@@ -538,6 +543,8 @@ void Render::RenderFrame(const ICamera *pCamera)
 		renderMesh.mesh->GetAttributes(&a);		
 		
 		ICoreShader *shader = _get_shader({a, false});
+		if (!shader)
+			continue;
 
 		_pCoreRender->SetShader(shader);
 		
