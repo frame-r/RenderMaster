@@ -33,5 +33,10 @@
 out vec4 COLOR_OUT;
 #endif
 
-#define MAIN() void main()
+#define FRAGMENT_OUT
+#define FRAGMENT_IN
+#define VERTEX_OUT
+#define VERTEX_IN
+#define MAIN(VERTEX_IN_, VERTEX_OUT_) void main() {
+#define MAIN_END }
 

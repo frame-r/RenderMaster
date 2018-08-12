@@ -409,7 +409,7 @@ string Preprocessor::get_include_name(const strit& it_, const strit& str_end)
 			std::cerr << subject << " did not match\n";
 		return "";
 	}
-	catch (std::regex_error& e) {
+	catch (std::regex_error& ) {
 		std::cerr << "regex error\n";
 		return "";
 	}

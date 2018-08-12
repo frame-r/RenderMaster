@@ -17,8 +17,7 @@ ATTRIBUTE_VERETX_IN(2, vec2, TexCoordIn)
 ATTRIBUTE_VERETX_IN(3, vec4, ColorIn)
 #endif
 
-MAIN()
-{
+MAIN(VERTEX_OUT, VERTEX_IN)
 	POSITION_OUT = MVP * vec4(PositionIn, 1.0f);
 
 	#ifdef ENG_INPUT_NORMAL
@@ -32,4 +31,4 @@ MAIN()
 	#ifdef ENG_INPUT_COLOR
 		Color = ColorIn;
 	#endif	
-}
+MAIN_END

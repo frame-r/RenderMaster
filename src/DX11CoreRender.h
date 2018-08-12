@@ -16,6 +16,16 @@ class DX11CoreRender final : public ICoreRender
 	IDXGISwapChain *swapChain{nullptr};
 	ID3D11RenderTargetView *renderTarget{nullptr};
 
+	enum
+	{
+		TYPE_VERTEX,
+		TYPE_GEOMETRY,
+		TYPE_FRAGMENT,
+	};
+
+	ID3D11DeviceChild* _create_shader(int type, const char *src);
+	const char* get_shader_profile(int type);
+
 public:
 
 	DX11CoreRender();

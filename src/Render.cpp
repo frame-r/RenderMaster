@@ -77,8 +77,8 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			proc.Run(lines);
 
 			// save to file
-			//_export_shader_to_file(l, std::forward<const string>(fileName));
-			//LOG_FORMATTED("Render::_get_shader(): shader exported to \"%s\"", fileName.c_str());
+			_export_shader_to_file(lines, std::forward<const string>(fileName));
+			LOG_FORMATTED("Render::_get_shader(): shader exported to \"%s\"", fileName.c_str());
 
 			ppTextOut = make_char_p(lines);
 		};

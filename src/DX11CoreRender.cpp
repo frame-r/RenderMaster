@@ -1,5 +1,6 @@
 #include "DX11CoreRender.h"
 #include "Core.h"
+#include "DX11Shader.h"
 #include <d3dcompiler.h>
 
 using WRL::ComPtr;
@@ -7,6 +8,59 @@ using WRL::ComPtr;
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
+
+
+const char *DX11CoreRender::get_shader_profile(int type)
+{
+	switch (type)
+	{
+	case TYPE_VERTEX: return "vs_5_0";
+	case TYPE_GEOMETRY: return "gs_5_0";
+	case TYPE_FRAGMENT: return "ps_5_0";
+	}
+
+	return NULL;
+}
+
+ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
+{
+	ID3D11DeviceChild *ret{nullptr};
+	ID3DBlob *error_buffer{nullptr};
+	ID3DBlob *shader_buffer{nullptr};
+
+	#ifndef NDEBUG
+		constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG);
+	#else
+		constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3);
+	#endif
+	
+	if (D3DCompile(src, strlen(src), "", NULL, NULL, "main", get_shader_profile(type), flags, 0, &shader_buffer, &error_buffer) == S_OK)
+		if (error_buffer == NULL)
+		{
+			unsigned char *data = (unsigned char *)shader_buffer->GetBufferPointer();
+			int size = (int)shader_buffer->GetBufferSize();
+			HRESULT res = S_FALSE;
+			switch (type)
+			{
+			case TYPE_VERTEX:
+				res = device->CreateVertexShader(data, size, NULL, (ID3D11VertexShader**)&ret);
+				break;
+			case TYPE_GEOMETRY:
+				//if (entries)
+				//	ret = device->CreateGeometryShaderWithStreamOutput(data, size, entries, num_entries, &stride, 1, D3D11_SO_NO_RASTERIZED_STREAM, NULL, &shaders[type].geometry_shader);
+				//else
+				res = device->CreateGeometryShader(data, size, NULL, (ID3D11GeometryShader**)&ret);
+				//break;
+			case TYPE_FRAGMENT:
+				res = device->CreatePixelShader(data, size, NULL, (ID3D11PixelShader**)&ret);
+				break;
+			}
+
+			if (ret == S_OK)
+				return ret;
+		}
+	return nullptr;
+}
 
 DX11CoreRender::DX11CoreRender()
 {
@@ -194,19 +248,15 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 
 API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc)
 {
-	//if (D3DCompile(src, strlen(src), "", NULL, NULL, "main", profile, flags, 0, &shader_buffer, &error_buffer) == S_OK)
-	//	if (error_buffer == NULL)
-	//	{
-	//		data = (unsigned char *)shader_buffer->GetBufferPointer();
-	//		size = (int)shader_buffer->GetBufferSize();
-	//		save_cache(key, data, size);
-	//		if (state != SHADER_SAVE_CACHE)
-	//			has_shader = create_shader(type, data, size, entries, num_entries, stride);
-	//		else
-	//			has_shader = true;
-	//	}
+	ID3D11VertexShader *vs = (ID3D11VertexShader*) _create_shader(TYPE_VERTEX, shaderDesc->pVertText);
+	ID3D11PixelShader *fs = (ID3D11PixelShader*) _create_shader(TYPE_FRAGMENT, shaderDesc->pFragText);
+	ID3D11GeometryShader *gs{nullptr};
+	if (shaderDesc->pGeomText)
+		gs = (ID3D11GeometryShader*)_create_shader(TYPE_GEOMETRY, shaderDesc->pGeomText);
 
-	return E_NOTIMPL;
+	*pShader = new DX11Shader(vs, gs, fs);
+
+	return S_OK;
 }
 
 API DX11CoreRender::SetShader(const ICoreShader* pShader)

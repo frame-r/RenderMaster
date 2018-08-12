@@ -7,8 +7,7 @@
 
 TEXTURE2D_IN(texture0)
 
-MAIN()
-{
+MAIN(FRAGMENT_IN, FRAGMENT_OUT)
 	vec3 ambient = vec3(0.1f, 0.1f, 0.1f);
 
 	vec3 diffuse = main_color.rgb;
@@ -34,4 +33,4 @@ MAIN()
 	#endif
 
 	COLOR_OUT = vec4(diffuse + ambient, 1);
-}
+MAIN_END

@@ -27,6 +27,7 @@
     <ClInclude Include="..\src\Console.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\DX11CoreRender.h" />
+    <ClInclude Include="..\src\DX11Shader.h" />
     <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\GameObject.h" />
@@ -54,6 +55,7 @@
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
     <ClCompile Include="..\src\DX11CoreRender.cpp" />
+    <ClCompile Include="..\src\DX11Shader.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\GLCoreRender.cpp" />
@@ -70,9 +72,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />
+    <None Include="..\src\shaders\mesh_common.shader" />
+    <None Include="..\src\shaders\mesh_fragment.shader" />
     <None Include="..\src\shaders\mesh_vertex.shader" />
-    <None Include="mesh_common.shader" />
-    <None Include="mesh_fragment.shader" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A2F95159-CE4F-44B5-B6EC-96C5D392D34D}</ProjectGuid>

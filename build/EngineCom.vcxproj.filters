@@ -56,6 +56,9 @@
     <ClInclude Include="..\src\shaders\language_dx11.h">
       <Filter>Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\DX11Shader.h">
+      <Filter>CoreRender</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -91,16 +94,19 @@
     </ClCompile>
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\Preprocessor.cpp" />
+    <ClCompile Include="..\src\DX11Shader.cpp">
+      <Filter>CoreRender</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />
-    <None Include="mesh_common.shader">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="..\src\shaders\mesh_vertex.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="mesh_fragment.shader">
+    <None Include="..\src\shaders\mesh_common.shader">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\src\shaders\mesh_fragment.shader">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
