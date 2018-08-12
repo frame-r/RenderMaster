@@ -85,7 +85,7 @@ void delete_char_pp(const char **pText)
 		*c = nullptr;
 		c++;
 	}
-	delete pText;
+	delete[] pText;
 }
 
 void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center)
@@ -157,6 +157,17 @@ const char** make_char_pp(const list<string>& lines)
 	}
 
 	return const_cast<const char**>(ret);
+}
+
+const char* make_char_p(const list<string>& lines)
+{
+	string out;
+	for (const string& s : lines)
+		out = out + s;
+	char *ret = new char[out.size() + 1];
+	strcpy(ret, out.c_str());
+	ret[out.size()] = '\0';
+	return ret;
 }
 
 

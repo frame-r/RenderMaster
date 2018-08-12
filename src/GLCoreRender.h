@@ -59,7 +59,7 @@ class GLCoreRender final : public ICoreRender
 	std::stack<State> _states;
 	
 	bool _check_shader_errors(int id, GLenum constant);
-	bool _create_shader(GLuint &id, GLenum type, const char** pText, int numLines, GLuint programID);
+	bool _create_shader(GLuint &id, GLenum type, const char* pText, GLuint programID);
 
 public:
 

@@ -42,20 +42,23 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 	}
 	else
 	{
-		ShaderText st;
-
-		auto process_shader = [&](const char **&ppTextOut, int &num_lines, const char **ppTextIn, const string&& fileName, int type) -> void
+		const auto process_shader = [&](const char *&ppTextOut, const char *ppTextIn, const string&& fileName, int type) -> void
 		{
+			const char **textOut;
+			int numLinesOut;
+			split_by_eol(textOut, numLinesOut, ppTextIn);
+			list<string> lines = make_lines_list(textOut);
+			delete_char_pp(textOut);
+
 			list<string> lines_lang; 
 			if (isOpenGL())
 				lines_lang = get_file_content("language_gl.h");
 			else
 				lines_lang = get_file_content("language_dx11.h");
-			list<string> lines		= make_lines_list(ppTextIn);
+			
 			lines.insert(lines.begin(), lines_lang.begin(), lines_lang.end());
 
 			Preprocessor proc;
-
 			if (isOpenGL())
 				proc.SetDefine("ENG_OPENGL");
 			else
@@ -77,15 +80,15 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			//_export_shader_to_file(l, std::forward<const string>(fileName));
 			//LOG_FORMATTED("Render::_get_shader(): shader exported to \"%s\"", fileName.c_str());
 
-			ppTextOut = make_char_pp(lines);
-			num_lines = (int)lines.size();
+			ppTextOut = make_char_p(lines);
 		};
 
-		process_shader(st.pVertText, st.vertNumLines, pStandardShaderText.pVertText, "out_v.shader", 0);
-		process_shader(st.pFragText, st.fragNumLines, pStandardShaderText.pFragText, "out_f.shader", 1);
+		ShaderText tmp;
 
-		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, &st));
-		compiled = compiled && pShader != nullptr;
+		process_shader(tmp.pVertText, pStandardShaderText.pVertText, "out_v.shader", 0);
+		process_shader(tmp.pFragText, pStandardShaderText.pFragText, "out_f.shader", 1);
+
+		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, &tmp)) && pShader != nullptr;
 
 		if (!compiled)
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
@@ -95,8 +98,8 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			_shaders_pool.emplace(req, pShader);
 		}
 
-		delete_char_pp(st.pVertText);
-		delete_char_pp(st.pFragText);
+		delete[] tmp.pVertText;
+		delete[] tmp.pFragText;
 	}
 
 	return pShader;
@@ -155,9 +158,9 @@ Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 
 Render::~Render()
 {
-	delete_char_pp(pStandardShaderText.pVertText);
-	delete_char_pp(pStandardShaderText.pGeomText);
-	delete_char_pp(pStandardShaderText.pFragText);
+	delete pStandardShaderText.pVertText;
+	delete pStandardShaderText.pGeomText;
+	delete pStandardShaderText.pFragText;
 }
 
 void Render::Init()

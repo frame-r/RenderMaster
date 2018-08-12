@@ -619,11 +619,10 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pFileName, IProg
 
 API ResourceManager::LoadShaderText(OUT ShaderText *pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
-	auto load_shader = [=](const char **&textOut, int& numLinesOut, const char *pName) -> APIRESULT
+	auto load_shader = [=](const char *&textOut, const char *pName) -> APIRESULT
 	{
 		IFile *pFile = nullptr;
 		uint fileSize = 0;
-		string textIn;
 		int filseExist = 0;
 		
 		char *pString;
@@ -644,22 +643,23 @@ API ResourceManager::LoadShaderText(OUT ShaderText *pShader, const char *pVertNa
 
 		pFile->FileSize(&fileSize);
 
-		textIn.resize(fileSize);
+		char *tmp = new char[fileSize + 1];
+		tmp[fileSize] = '\0';
 
-		pFile->Read((uint8 *)textIn.c_str(), fileSize);
+		pFile->Read((uint8 *)tmp, fileSize);
 		pFile->CloseAndFree();
-
-		split_by_eol(textOut, numLinesOut, textIn);
+				
+		textOut = tmp;
 		
 		return S_OK;
 	};
 
-	auto ret =	load_shader(pShader->pVertText, pShader->vertNumLines, pVertName);
+	auto ret =	load_shader(pShader->pVertText, pVertName);
 
 	if (pGeomName)
-		ret &=	load_shader(pShader->pGeomText, pShader->geomNumLines, pGeomName);
+		ret &=	load_shader(pShader->pGeomText, pGeomName);
 
-	ret &=		load_shader(pShader->pFragText, pShader->fragNumLines, pFragName);
+	ret &=		load_shader(pShader->pFragText, pFragName);
 
 	return ret;
 }

@@ -298,12 +298,9 @@ namespace RENDER_MASTER
 
 	struct ShaderText
 	{
-		const char** pVertText{nullptr};
-		const char** pGeomText{nullptr};
-		const char** pFragText{nullptr};
-		int vertNumLines{0};
-		int geomNumLines{0};
-		int fragNumLines{0};
+		const char* pVertText{nullptr};
+		const char* pGeomText{nullptr};
+		const char* pFragText{nullptr};
 	};
 
 	class ICoreShader : public IResource

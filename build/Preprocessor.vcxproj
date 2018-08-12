@@ -79,23 +79,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\</IntDir>
+    <OutDir>..\bin\prepocessor\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\bin\prepocessor\$(Platform)\$(Configuration)\obj\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\</IntDir>
+    <OutDir>..\bin\prepocessor\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\bin\prepocessor\$(Platform)\$(Configuration)\obj\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\</IntDir>
+    <OutDir>..\bin\prepocessor\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\bin\prepocessor\$(Platform)\$(Configuration)\obj\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\</IntDir>
+    <OutDir>..\bin\prepocessor\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\bin\prepocessor\$(Platform)\$(Configuration)\obj\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
