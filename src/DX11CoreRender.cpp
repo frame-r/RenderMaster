@@ -1,5 +1,6 @@
 #include "DX11CoreRender.h"
 #include "Core.h"
+#include <d3dcompiler.h>
 
 using WRL::ComPtr;
 
@@ -193,6 +194,18 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 
 API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc)
 {
+	//if (D3DCompile(src, strlen(src), "", NULL, NULL, "main", profile, flags, 0, &shader_buffer, &error_buffer) == S_OK)
+	//	if (error_buffer == NULL)
+	//	{
+	//		data = (unsigned char *)shader_buffer->GetBufferPointer();
+	//		size = (int)shader_buffer->GetBufferSize();
+	//		save_cache(key, data, size);
+	//		if (state != SHADER_SAVE_CACHE)
+	//			has_shader = create_shader(type, data, size, entries, num_entries, stride);
+	//		else
+	//			has_shader = true;
+	//	}
+
 	return E_NOTIMPL;
 }
 

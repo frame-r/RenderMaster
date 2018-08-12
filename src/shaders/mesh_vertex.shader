@@ -1,45 +1,35 @@
-#version 330
+///////////////////////
+// VERTEX SHADER
+///////////////////////
 
-// defines:
-// ENG_INPUT_NORMAL
-// ENG_INPUT_TEXCOORD
-// ENG_INPUT_COLOR
-// ENG_ALPHA_TEST
+#include <mesh_common.shader>
 
-layout(location = 0) in vec3 PositionIn;
 
-uniform mat4 MVP;
-
+// Input Attributes
+ATTRIBUTE_VERETX_IN(0, vec3, PositionIn)
 #ifdef ENG_INPUT_NORMAL
-	uniform mat4 NM;
-	layout(location = 1) in vec3 NormalIn;
-	smooth out vec3 NormalOut;
+ATTRIBUTE_VERETX_IN(1, vec3, NormalIn)
 #endif
-
 #ifdef ENG_INPUT_TEXCOORD
-	layout(location = 2) in vec2 TexCoordIn;
-	smooth out vec2 TexCoordOut;
+ATTRIBUTE_VERETX_IN(2, vec2, TexCoordIn)
 #endif
-
 #ifdef ENG_INPUT_COLOR
-	layout(location = 3) in vec3 ColorIn;
-	smooth out vec3 ColorOut;
+ATTRIBUTE_VERETX_IN(3, vec4, ColorIn)
 #endif
 
-
-void main()
+MAIN()
 {
-	gl_Position = MVP * vec4(PositionIn, 1.0f);
+	POSITION_OUT = MVP * vec4(PositionIn, 1.0f);
 
 	#ifdef ENG_INPUT_NORMAL
-		NormalOut = (NM * vec4(NormalIn, 0.0f)).xyz;
+		Normal = (NM * vec4(NormalIn, 0.0f)).xyz;
 	#endif
-	
+
 	#ifdef ENG_INPUT_TEXCOORD
-		TexCoordOut = TexCoordIn;
+		TexCoord = TexCoordIn;
 	#endif
 
 	#ifdef ENG_INPUT_COLOR
-		ColorOut = ColorIn;
+		Color = ColorIn;
 	#endif	
 }

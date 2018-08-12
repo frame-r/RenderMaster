@@ -15,6 +15,8 @@
 
 using namespace RENDER_MASTER;
 
+#define SHADER_DIR "src\\shaders"
+
 enum class WINDOW_MESSAGE
 {
 	SIZE,
@@ -150,11 +152,17 @@ inline std::wstring ConvertFromUtf8ToUtf16(const std::string& str)
 	}
 	return res;
 }
-
+std::list<std::string> get_file_content(const std::string& filename);
 bool is_relative(const char *pPath);
 std::string make_absolute(const char *pRelDataPath, const char *pWorkingPath);
+
+// lines manipulation
+std::list<std::string> make_lines_list(const char **text);
+const char** make_char_pp(const std::list<std::string>& lines);
 void split_by_eol(const char **&text, int &num_lines, const std::string& str);
 void delete_char_pp(const char **pText);
+
+
 void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center);
 
 

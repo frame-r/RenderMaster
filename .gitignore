@@ -15,4 +15,7 @@
 bin/
 resources/log.txt
 resources/scene.yaml
+src/shaders/out.shader
+resources/out_f.shader
+resources/out_v.shader
 

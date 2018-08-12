@@ -49,6 +49,13 @@
     </ClInclude>
     <ClInclude Include="..\src\tree.h" />
     <ClInclude Include="..\src\Serialization.h" />
+    <ClInclude Include="..\src\Preprocessor.h" />
+    <ClInclude Include="..\src\shaders\language_gl.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\shaders\language_dx11.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -83,13 +90,17 @@
       <Filter>GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Input.cpp" />
+    <ClCompile Include="..\src\Preprocessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\export.def" />
-    <None Include="..\src\shaders\mesh_fragment.shader">
+    <None Include="mesh_common.shader">
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\src\shaders\mesh_vertex.shader">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="mesh_fragment.shader">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

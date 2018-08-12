@@ -1,7 +1,15 @@
 #include "Common.h"
 #include <experimental/filesystem>
+#include "Core.h"
 
 namespace fs = std::experimental::filesystem;
+
+extern Core *_pCore;
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
+
+using std::list;
+using std::string;
 
 bool is_relative(const char *pPath)
 {
@@ -116,6 +124,84 @@ mat4 perspective(float fov, float aspect, float zNear, float zFar)
 	Result.el_2D[2][3] = -(2.0f * zFar * zNear) / (zFar - zNear);
 	
 	return Result;
+}
+
+list<string> make_lines_list(const char **text)
+{
+	list<string> ret;
+
+	char **c = const_cast<char**>(text);
+
+	while (*c)
+	{
+		ret.push_back(string(*c));
+		c++;
+	}
+
+	return ret;
+}
+
+const char** make_char_pp(const list<string>& lines)
+{
+	char **ret = new char*[lines.size() + 1];
+
+	memset(ret, 0, (lines.size() + 1) * sizeof(char*));
+
+	int i = 0;
+	for (auto it = lines.begin(); it != lines.end(); it++)
+	{
+		ret[i] = new char[it->size() + 1];
+		strncpy(ret[i], it->c_str(), it->size());
+		ret[i][it->size()] = '\0';
+		i++;
+	}
+
+	return const_cast<const char**>(ret);
+}
+
+
+std::list<std::string> get_file_content(const std::string& filename)
+{
+	IFile *pFile = nullptr;
+	uint fileSize = 0;
+	std::string textIn;
+	int filseExist = 0;
+	const char **textOut;
+	int numLinesOut;
+
+	char *pInstalledDir;
+	_pCore->GetInstalledDir(&pInstalledDir);
+	std::string installedDir = std::string(pInstalledDir);
+
+	std::string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + filename;
+
+	IFileSystem *fs;
+	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+	fs->FileExist(const_cast<char*>(shader_path.c_str()), &filseExist);
+
+	if (!filseExist)
+	{
+		LOG_WARNING_FORMATTED("ResourceManager::LoadShaderText(): File doesn't exist '%s'", shader_path.c_str());
+		return std::list<std::string>();
+	}
+
+	fs->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+
+	pFile->FileSize(&fileSize);
+
+	textIn.resize(fileSize);
+
+	pFile->Read((uint8 *)textIn.c_str(), fileSize);
+	pFile->CloseAndFree();
+
+	split_by_eol(textOut, numLinesOut, textIn);
+
+	std::list<string> l = make_lines_list(textOut);
+
+	delete_char_pp(textOut);
+
+	return l;
+
 }
 
 
