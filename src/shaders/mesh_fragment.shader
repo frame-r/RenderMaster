@@ -5,9 +5,10 @@
 #include <mesh_common.shader>
 
 
-TEXTURE2D_IN(texture0)
+TEXTURE2D_IN(texture0, 0)
 
-MAIN(FRAGMENT_IN, FRAGMENT_OUT)
+
+MAIN_FRAG(VS_OUTPUT)
 	vec3 ambient = vec3(0.1f, 0.1f, 0.1f);
 
 	vec3 diffuse = main_color.rgb;
@@ -33,4 +34,4 @@ MAIN(FRAGMENT_IN, FRAGMENT_OUT)
 	#endif
 
 	COLOR_OUT = vec4(diffuse + ambient, 1);
-MAIN_END
+MAIN_FRAG_END

@@ -12,21 +12,24 @@
 // ENG_ALPHA_TEST
 
 
-#define ATTRIBUTE_VERETX_IN(NUM, TYPE, NAME) layout(location = NUM) in TYPE NAME;
+#define STRUCT(NAME)
+#define END_STRUCT
+#define ATTRIBUTE_VERETX_IN(NUM, TYPE, NAME, SEMANTIC) layout(location = NUM) in TYPE NAME;
 
 #ifdef ENG_SHADER_VERTEX
-#define ATTRIBUTE(NUM, TYPE, NAME) smooth out TYPE NAME;
+#define ATTRIBUTE(NUM, TYPE, NAME, SEMANTIC) smooth out TYPE NAME;
 #elif ENG_SHADER_PIXEL
-#define ATTRIBUTE(NUM, TYPE, NAME) smooth in TYPE NAME;
+#define ATTRIBUTE(NUM, TYPE, NAME, SEMANTIC) smooth in TYPE NAME;
 #endif
 
 #define CONSTANT_BUFFER_BEGIN(NAME)
-#define CONSTANT_BUFFER_END(NAME)
+#define CONSTANT_BUFFER_END
 #define CONSTANT(TYPE, NAME) uniform TYPE NAME;
 
+#define INIT_POSITION
 #define POSITION_OUT gl_Position
 
-#define TEXTURE2D_IN(NAME) uniform sampler2D NAME;
+#define TEXTURE2D_IN(NAME, NUM) uniform sampler2D NAME;
 #define TEXTURE(NAME, UV) texture(NAME, UV);
 
 #ifdef ENG_SHADER_PIXEL
@@ -39,4 +42,6 @@ out vec4 COLOR_OUT;
 #define VERTEX_IN
 #define MAIN(VERTEX_IN_, VERTEX_OUT_) void main() {
 #define MAIN_END }
+#define MAIN_FRAG(FRAG_IN) void main() {
+#define MAIN_FRAG_END }
 

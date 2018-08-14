@@ -19,7 +19,7 @@ list<string> get_file_content(const string& filename);
 
 int main()
 {		
-	auto lines_lang = get_file_content("language_gl.h");
+	auto lines_lang = get_file_content("language_dx11.h");
 	auto lines = get_file_content("mesh_vertex.shader");
 	lines.insert(lines.begin(), lines_lang.begin(), lines_lang.end());
 

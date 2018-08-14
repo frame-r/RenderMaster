@@ -6,16 +6,19 @@ CONSTANT_BUFFER_BEGIN(mesh_veretx)
 	CONSTANT(mat4, NM)
 	CONSTANT(vec3, nL)
 #endif
-CONSTANT_BUFFER_END()
+CONSTANT_BUFFER_END
 
 
 // Iterpolated Attributes
-#ifdef ENG_INPUT_NORMAL
-ATTRIBUTE(0, vec3, Normal)
-#endif
-#ifdef ENG_INPUT_TEXCOORD
-ATTRIBUTE(1, vec2, TexCoord)
-#endif
-#ifdef ENG_INPUT_COLOR
-ATTRIBUTE(2, vec4, Color)
-#endif
+STRUCT(VS_OUTPUT)
+	INIT_POSITION
+	#ifdef ENG_INPUT_NORMAL
+		ATTRIBUTE(0, vec3, Normal, TEXCOORD)
+	#endif
+	#ifdef ENG_INPUT_TEXCOORD
+		ATTRIBUTE(1, vec2, TexCoord, TEXCOORD)
+	#endif
+	#ifdef ENG_INPUT_COLOR
+		ATTRIBUTE(2, vec4, Color, TEXCOORD)
+	#endif
+END_STRUCT
