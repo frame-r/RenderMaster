@@ -1,11 +1,11 @@
 // Constant buffer
 CONSTANT_BUFFER_BEGIN(mesh_veretx)
-	CONSTANT(mat4, MVP)
-	CONSTANT(vec4, main_color)
+	CONSTANT(vec4, main_color)	
 #ifdef ENG_INPUT_NORMAL
-	CONSTANT(mat4, NM)
 	CONSTANT(vec3, nL)
+	CONSTANT(mat4, NM)
 #endif
+	CONSTANT(mat4, MVP)
 CONSTANT_BUFFER_END
 
 

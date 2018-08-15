@@ -36,12 +36,23 @@
 out vec4 COLOR_OUT;
 #endif
 
+// vertex
+#define SET_OUT_ATTRIBUTE(NAME) NAME
+#define GET_IN_ATTRIBUTE(NAME) NAME
+
+// fragment 
+#define GET_ARRIBUTE(NAME) NAME
+
 #define FRAGMENT_OUT
 #define FRAGMENT_IN
 #define VERTEX_OUT
 #define VERTEX_IN
-#define MAIN(VERTEX_IN_, VERTEX_OUT_) void main() {
-#define MAIN_END }
+#define MAIN_VERTEX(VERTEX_IN_, VERTEX_OUT_) void main() {
+#define MAIN_VERTEX_END }
 #define MAIN_FRAG(FRAG_IN) void main() {
 #define MAIN_FRAG_END }
+
+// math
+#define mul(M, V) M * V
+
 

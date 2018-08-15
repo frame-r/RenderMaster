@@ -34,8 +34,19 @@ ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 		constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3);
 	#endif
 	
-	if (D3DCompile(src, strlen(src), "", NULL, NULL, "main", get_shader_profile(type), flags, 0, &shader_buffer, &error_buffer) == S_OK)
-		if (error_buffer == NULL)
+		auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, type == 0? "mainVS" : "mainPS", get_shader_profile(type), flags, 0, &shader_buffer, &error_buffer);
+
+		if (FAILED(hr))
+		{
+			if (error_buffer)
+			{
+				LOG_FATAL_FORMATTED("DX11CoreRender::_create_shader() failed to compile shader %s\n", (char*)error_buffer->GetBufferPointer());
+				error_buffer->Release();
+			}
+
+			if (shader_buffer)
+				shader_buffer->Release();
+		}else
 		{
 			unsigned char *data = (unsigned char *)shader_buffer->GetBufferPointer();
 			int size = (int)shader_buffer->GetBufferSize();
@@ -56,9 +67,13 @@ ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 				break;
 			}
 
+			if (shader_buffer)
+				shader_buffer->Release();
+
 			if (ret == S_OK)
 				return ret;
 		}
+			
 	return nullptr;
 }
 

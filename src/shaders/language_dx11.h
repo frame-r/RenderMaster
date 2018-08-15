@@ -27,32 +27,47 @@
 
 #define STRUCT(NAME) struct NAME {
 #define END_STRUCT };
-#define ATTRIBUTE_VERETX_IN(NUM, TYPE, NAME, SEMANTIC) TYPE data_ ## NUM : SEMANTIC ## NUM;
+#define ATTRIBUTE_VERETX_IN(NUM, TYPE, NAME, SEMANTIC) TYPE NAME : SEMANTIC;
 
-#define ATTRIBUTE(NUM, TYPE, NAME, SEMANTIC) TYPE data_ ## NUM : SEMANTIC ## NUM;
+#define ATTRIBUTE(NUM, TYPE, NAME, SEMANTIC) TYPE NAME : SEMANTIC ## NUM;
 
-#define CONSTANT_BUFFER_BEGIN(NAME) cbuffer NAME {
-#define CONSTANT_BUFFER_END
+#define CONSTANT_BUFFER_BEGIN(NAME) cbuffer NAME : register( b0 ) {
+#define CONSTANT_BUFFER_END };
 #define CONSTANT(TYPE, NAME) TYPE NAME;
 
-#define INIT_POSITION float4 pos_out : SV_POSITION;
-#define POSITION_OUT pos_out.position
+#define INIT_POSITION float4 position : SV_POSITION;
+#define POSITION_OUT vs_output.position
 
-#define TEXTURE2D_IN(NAME, NUM) Texture2D s_texture_ ## NAME : register(t ## NUM);
-#define TEXTURE(NAME, UV) s_texture_ ## NAME.Sample(s_sampler_ ## NAME, UV)
+#define TEXTURE2D_IN(NAME, NUM) Texture2D NAME : register(t ## NUM); \
+SamplerState g_samLinear : register( s0 );
+
+#define TEXTURE(NAME, UV) NAME.Sample(g_samLinear, UV)
 
 #define COLOR_OUT color
 
-#define MAIN(VERTEX_IN, VERTEX_OUT) VERTEX_OUT void main(VERTEX_IN vs_input) { \
-VERTEX_OUT input;
+// vertex
+#define SET_OUT_ATTRIBUTE(NAME) vs_output.NAME
+#define GET_IN_ATTRIBUTE(NAME) vs_input.NAME
 
-#define MAIN_END return input; }
+// fragment
+#define GET_ARRIBUTE(NAME) fs_input.NAME
 
-#define MAIN_FRAG(FRAG_IN) float4 main(FRAG_IN input) : SV_TARGET \
+
+#define MAIN_VERTEX(VERTEX_IN, VERTEX_OUT) VERTEX_OUT mainVS(VERTEX_IN vs_input) { \
+VERTEX_OUT vs_output;
+
+#define MAIN_VERTEX_END return vs_output; \
+} \
+  
+
+#define MAIN_FRAG(FRAG_IN) float4 mainPS(FRAG_IN fs_input) : SV_TARGET \
 { \
 float4 color;
 
 #define MAIN_FRAG_END return color; \
-}
+} \
+  
 
+// math
+#define mul(M, V) mul(M, V)
 
