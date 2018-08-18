@@ -60,7 +60,7 @@ VERTEX_OUT vs_output;
 } \
   
 
-#define MAIN_FRAG(FRAG_IN) float4 mainPS(FRAG_IN fs_input) : SV_TARGET \
+#define MAIN_FRAG(FRAG_IN) float4 mainFS(FRAG_IN fs_input) : SV_TARGET \
 { \
 float4 color;
 

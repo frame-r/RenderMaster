@@ -284,7 +284,7 @@ namespace RENDER_MASTER
 	struct MeshIndexDesc
 	{
 		uint8 *pData{nullptr};
-		uint number{0};
+		uint number{0}; // number of index
 		MESH_INDEX_FORMAT format{MESH_INDEX_FORMAT::NOTHING};
 	};
 

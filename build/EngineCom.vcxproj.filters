@@ -59,6 +59,9 @@
     <ClInclude Include="..\src\DX11Shader.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\DX11Mesh.h">
+      <Filter>CoreRender</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -95,6 +98,9 @@
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\Preprocessor.cpp" />
     <ClCompile Include="..\src\DX11Shader.cpp">
+      <Filter>CoreRender</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DX11Mesh.cpp">
       <Filter>CoreRender</Filter>
     </ClCompile>
   </ItemGroup>

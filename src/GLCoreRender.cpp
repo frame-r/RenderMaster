@@ -436,6 +436,15 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 	const int bytes = (12 + texCoords * 8 + normals * 12 + colors * 12) * dataDesc->numberOfVertex;	
 	GLuint vao = 0, vbo = 0, ibo = 0;
 
+	INPUT_ATTRUBUTE attribs = INPUT_ATTRUBUTE::POSITION;
+	if (dataDesc->normalsPresented)
+		attribs = attribs | INPUT_ATTRUBUTE::NORMAL;
+	if (dataDesc->texCoordPresented)
+		attribs = attribs | INPUT_ATTRUBUTE::TEX_COORD;
+	if (dataDesc->colorPresented)
+		attribs = attribs | INPUT_ATTRUBUTE::COLOR;
+
+
 	CHECK_GL_ERRORS();
 
 	glGenVertexArrays(1, &vao);
@@ -487,15 +496,7 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 
 	CHECK_GL_ERRORS();
 
-	INPUT_ATTRUBUTE a = INPUT_ATTRUBUTE::POSITION;
-	if (dataDesc->normalsPresented)
-		a = a | INPUT_ATTRUBUTE::NORMAL;
-	if (dataDesc->texCoordPresented)
-		a = a | INPUT_ATTRUBUTE::TEX_COORD;
-	if (dataDesc->colorPresented)
-		a = a | INPUT_ATTRUBUTE::COLOR;
-
-	GLMesh *pGLMesh = new GLMesh(vao, vbo, ibo, dataDesc->numberOfVertex, indexDesc->number, indexDesc->format, mode, a);
+	GLMesh *pGLMesh = new GLMesh(vao, vbo, ibo, dataDesc->numberOfVertex, indexDesc->number, indexDesc->format, mode, attribs);
 	*pMesh = pGLMesh;
 
 	return S_OK;

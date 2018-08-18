@@ -27,6 +27,7 @@
     <ClInclude Include="..\src\Console.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\DX11CoreRender.h" />
+    <ClInclude Include="..\src\DX11Mesh.h" />
     <ClInclude Include="..\src\DX11Shader.h" />
     <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
@@ -55,6 +56,7 @@
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\dllmain.cpp" />
     <ClCompile Include="..\src\DX11CoreRender.cpp" />
+    <ClCompile Include="..\src\DX11Mesh.cpp" />
     <ClCompile Include="..\src\DX11Shader.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />

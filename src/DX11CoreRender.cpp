@@ -1,6 +1,7 @@
 #include "DX11CoreRender.h"
 #include "Core.h"
 #include "DX11Shader.h"
+#include "DX11Mesh.h"
 #include <d3dcompiler.h>
 
 using WRL::ComPtr;
@@ -22,6 +23,18 @@ const char *DX11CoreRender::get_shader_profile(int type)
 	return NULL;
 }
 
+const char *DX11CoreRender::get_main_function(int type)
+{
+	switch (type)
+	{
+	case TYPE_VERTEX: return "mainVS";
+	case TYPE_GEOMETRY: return "mainGS";
+	case TYPE_FRAGMENT: return "mainFS";
+	}
+
+	return NULL;
+}
+
 ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 {
 	ID3D11DeviceChild *ret{nullptr};
@@ -34,7 +47,7 @@ ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 		constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3);
 	#endif
 	
-		auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, type == 0? "mainVS" : "mainPS", get_shader_profile(type), flags, 0, &shader_buffer, &error_buffer);
+		auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, get_main_function(type), get_shader_profile(type), flags, 0, &shader_buffer, &error_buffer);
 
 		if (FAILED(hr))
 		{
@@ -256,9 +269,157 @@ API DX11CoreRender::PopStates()
 	return E_NOTIMPL;
 }
 
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(a, b, c, d) ((a) | ((b) << 8) | ((c) << 16) | ((d) << 24))
+#endif
+
+const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
+{
+	switch (f)
+	{
+	case DXGI_FORMAT_R32_FLOAT:
+		return "float";
+	case DXGI_FORMAT_R32G32_FLOAT:
+		return "float2";
+	case DXGI_FORMAT_R32G32B32_FLOAT:
+		return "float3";
+	case DXGI_FORMAT_R32G32B32A32_FLOAT:
+		return "float4";
+	default:
+		LOG_FATAL("DX11CoreRender: dgxgi_to_hlsl_type(DXGI_FORMAT f) unknown type f\n");
+		assert(false);
+		break;
+	}
+}
+
 API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
 {
-	return E_NOTIMPL;
+	const int indexes = indexDesc->format != MESH_INDEX_FORMAT::NOTHING;
+	const int normals = dataDesc->normalsPresented;
+	const int texCoords = dataDesc->texCoordPresented;
+	const int colors = dataDesc->colorPresented;
+	const int bytes = (12 + texCoords * 8 + normals * 12 + colors * 12) * dataDesc->numberOfVertex;
+
+	INPUT_ATTRUBUTE attribs = INPUT_ATTRUBUTE::POSITION;
+	if (dataDesc->normalsPresented)
+		attribs = attribs | INPUT_ATTRUBUTE::NORMAL;
+	if (dataDesc->texCoordPresented)
+		attribs = attribs | INPUT_ATTRUBUTE::TEX_COORD;
+	if (dataDesc->colorPresented)
+		attribs = attribs | INPUT_ATTRUBUTE::COLOR;
+
+	ComPtr<ID3DBlob> blob;
+	
+	//
+	// input layout
+	ID3D11InputLayout *il = nullptr;
+
+	std::vector<D3D11_INPUT_ELEMENT_DESC> layout{{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}};
+
+	if (normals)
+		layout.push_back({"TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0});
+
+	if (texCoords)
+		layout.push_back({"TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0});
+
+	if (colors)
+		layout.push_back({"TEXCOORD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0});
+	
+	//
+	// create dummy shader for CreateInputLayout() 
+	std::string src;
+	src = "struct VS_INPUT { ";
+
+	for (int i = 0; i < layout.size(); i++)
+	{
+		const D3D11_INPUT_ELEMENT_DESC& el = layout[i];
+		src += dgxgi_to_hlsl_type(el.Format) + std::string(" v") + std::to_string(i) + (i == 0 ? " : POSITION" : " : TEXCOORD") + std::to_string(el.SemanticIndex) + ";";
+	}
+	src += "}; struct VS_OUTPUT { float4 position : SV_POSITION; }; VS_OUTPUT mainVS(VS_INPUT input) { VS_OUTPUT o; o.position = float4(0,0,0,0); return o; } float4 PS( VS_OUTPUT input) : SV_Target { return float4(0,0,0,0); }";
+
+	ComPtr<ID3DBlob> errorBuffer;
+	ComPtr<ID3DBlob> shaderBuffer;
+
+	auto hr = D3DCompile(src.c_str(), src.size(), "", NULL, NULL, "mainVS", get_shader_profile(0), (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS), 0, &shaderBuffer, &errorBuffer);
+
+	if (FAILED(hr))
+	{
+		if (errorBuffer)
+			LOG_FATAL_FORMATTED("DX11CoreRender::createDummyShader() failed to compile shader %s\n", (char*)errorBuffer->GetBufferPointer());
+		
+		return hr;
+	}
+
+	//
+	// create input layout
+	hr = device->CreateInputLayout(reinterpret_cast<const D3D11_INPUT_ELEMENT_DESC*>(&layout[0]), layout.size(), shaderBuffer->GetBufferPointer(), shaderBuffer->GetBufferSize(), &il);
+
+	if (FAILED(hr))
+		return hr;	
+
+	//
+	// vertex buffer
+	ID3D11Buffer *vb = nullptr;
+
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = bytes;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA initData;
+	ZeroMemory(&initData, sizeof(initData));
+	initData.pSysMem = dataDesc->pData;
+
+	hr = device->CreateBuffer(&bd, &initData, &vb);
+
+	if (FAILED(hr))
+	{
+		vb->Release();
+		return hr;
+	}
+
+	//
+	// index buffer
+	ID3D11Buffer *ib = {nullptr};
+
+	if (indexes)
+	{
+		int idxSize = 0;
+		switch (indexDesc->format)
+		{
+			case MESH_INDEX_FORMAT::INT32: idxSize = 32; break;
+			case MESH_INDEX_FORMAT::INT16: idxSize = 16; break;
+		}
+		const int idxBytes = idxSize * indexDesc->number;
+
+		D3D11_BUFFER_DESC bufferDesc;
+		bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		bufferDesc.ByteWidth = idxBytes;
+		bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		bufferDesc.CPUAccessFlags = 0;
+		bufferDesc.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA ibData;
+		ibData.pSysMem = indexDesc->pData;
+		ibData.SysMemPitch = 0;
+		ibData.SysMemSlicePitch = 0;
+
+		hr = device->CreateBuffer(&bufferDesc, &ibData, &ib);
+
+		if (FAILED(hr))
+		{
+			vb->Release();
+			il->Release();
+			return hr;
+		}
+	}
+
+	DX11Mesh *pDXMesh = new DX11Mesh(vb, ib, il, dataDesc->numberOfVertex, indexDesc->number, indexDesc->format, mode, attribs);
+	*pMesh = pDXMesh;
+
+	return S_OK;
 }
 
 API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc)
