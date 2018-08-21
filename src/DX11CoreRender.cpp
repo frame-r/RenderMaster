@@ -131,7 +131,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 		D3D_DRIVER_TYPE_WARP,
 		D3D_DRIVER_TYPE_REFERENCE,
 	};
-	UINT numDriverTypes = ARRAYSIZE(driverTypes);
+	UINT numDriverTypes = 3;
 
 	D3D_FEATURE_LEVEL featureLevels[] =
 	{
@@ -140,7 +140,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 		D3D_FEATURE_LEVEL_10_1,
 		D3D_FEATURE_LEVEL_10_0,
 	};
-	UINT numFeatureLevels = ARRAYSIZE(featureLevels);
+	UINT numFeatureLevels = 4;
 
 	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
 	{
@@ -179,7 +179,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 
 	// Create swap chain
 	ComPtr<IDXGIFactory2> dxgiFactory2;
-	hr = dxgiFactory->QueryInterface(__uuidof(IDXGIFactory2), &dxgiFactory2);
+	hr = dxgiFactory.As(&dxgiFactory2);
 	if (dxgiFactory2)
 	{
 		// DirectX 11.1 or later
@@ -203,7 +203,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 		hr = dxgiFactory2->CreateSwapChainForHwnd(device, hwnd, &sd, nullptr, nullptr, &g_pSwapChain1);
 		if (SUCCEEDED(hr))
 		{
-			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&swapChain));
+			hr = g_pSwapChain1.As(&swapChain);
 		}
 	}
 	else
@@ -490,7 +490,7 @@ API DX11CoreRender::Free()
 {
 	if (context) context->ClearState();
 	if (renderTarget) renderTarget->Release();
-	if (swapChain) swapChain->Release();
+	if (swapChain) swapChain.Reset();
 	if (context) context->Release();
 
 	// debug

@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include <wrl\module.h>
+#include <wrl/module.h>
 #include <d3d11_2.h>
 
 namespace WRL = Microsoft::WRL;
@@ -13,7 +13,7 @@ class DX11CoreRender final : public ICoreRender
 	ID3D11Device *device{nullptr};
 
 	// TODO: make map HWND -> {IDXGISwapChain, ID3D11RenderTargetView} for support multiple windows
-	IDXGISwapChain *swapChain{nullptr};
+	WRL::ComPtr<IDXGISwapChain> swapChain;
 	ID3D11RenderTargetView *renderTarget{nullptr};
 
 	enum
