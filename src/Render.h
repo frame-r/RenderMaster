@@ -1,6 +1,10 @@
 #pragma once
 #include "Common.h"
 
+
+//
+// Hight-lever render
+// Based on CoreRender (GLCoreRender or DX11CoreRender)
 class Render : public IRender
 {
 	ICoreRender *_pCoreRender{nullptr};

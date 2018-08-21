@@ -83,7 +83,7 @@ ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 			if (shader_buffer)
 				shader_buffer->Release();
 
-			if (ret == S_OK)
+			if (ret)
 				return ret;
 		}
 			
@@ -298,7 +298,8 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	const int normals = dataDesc->normalsPresented;
 	const int texCoords = dataDesc->texCoordPresented;
 	const int colors = dataDesc->colorPresented;
-	const int bytes = (12 + texCoords * 8 + normals * 12 + colors * 12) * dataDesc->numberOfVertex;
+	const int bytesWidth = 12 + texCoords * 8 + normals * 12 + colors * 12;
+	const int bytes = bytesWidth * dataDesc->numberOfVertex;
 
 	INPUT_ATTRUBUTE attribs = INPUT_ATTRUBUTE::POSITION;
 	if (dataDesc->normalsPresented)
@@ -416,7 +417,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 		}
 	}
 
-	DX11Mesh *pDXMesh = new DX11Mesh(vb, ib, il, dataDesc->numberOfVertex, indexDesc->number, indexDesc->format, mode, attribs);
+	DX11Mesh *pDXMesh = new DX11Mesh(vb, ib, il, dataDesc->numberOfVertex, indexDesc->number, indexDesc->format, mode, attribs, bytesWidth);
 	*pMesh = pDXMesh;
 
 	return S_OK;
@@ -452,12 +453,26 @@ API DX11CoreRender::SetUniformArray(const char* name, const void* pData, const I
 
 API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 {
-	return E_NOTIMPL;
+	const DX11Mesh *dxMesh = static_cast<const DX11Mesh*>(mesh);
+
+	context->IASetInputLayout(dxMesh->inputLayout());
+
+	ID3D11Buffer *vb = dxMesh->vertexBuffer();
+	UINT offset = 0;
+	UINT stride = dxMesh->stride();
+	context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+
+	if (dxMesh->indexBuffer())
+		context->IASetIndexBuffer(dxMesh->indexBuffer(), (dxMesh->indexFormat() == MESH_INDEX_FORMAT::INT16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT), 0);
+
+	context->IASetPrimitiveTopology(dxMesh->topology() == VERTEX_TOPOLOGY::TRIANGLES? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST : D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
+	return S_OK;
 }
 
 API DX11CoreRender::Draw(ICoreMesh* mesh)
 {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 API DX11CoreRender::SetDepthState(int enabled)

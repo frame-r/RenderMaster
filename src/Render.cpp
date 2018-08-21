@@ -176,7 +176,7 @@ void Render::Init()
 
 void Render::RenderFrame(const ICamera *pCamera)
 {
-	vector<TRenderMesh> _meshes;
+	vector<TRenderMesh> meshes;
 	
 	_pCoreRender->Clear();
 
@@ -188,10 +188,10 @@ void Render::RenderFrame(const ICamera *pCamera)
 	mat4 VP;
 	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&VP, aspect);
 
-	_create_render_mesh_vec(_meshes);
-	_sort_meshes(_meshes);
+	_create_render_mesh_vec(meshes);
+	_sort_meshes(meshes);
 
-	for(auto &renderMesh : _meshes)
+	for(TRenderMesh &renderMesh : meshes)
 	{
 		INPUT_ATTRUBUTE a;
 		renderMesh.mesh->GetAttributes(&a);		
@@ -200,10 +200,10 @@ void Render::RenderFrame(const ICamera *pCamera)
 		if (!shader)
 			continue;
 
+		_pCoreRender->SetMesh(renderMesh.mesh);
 		_pCoreRender->SetShader(shader);
 		
 		mat4 MVP = VP * renderMesh.modelMat;
-
 		_pCoreRender->SetUniform("MVP", &MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
 
 		vec4 main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);

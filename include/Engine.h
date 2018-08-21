@@ -221,16 +221,16 @@ namespace RENDER_MASTER
 	};
 
 	//
-	// MeshDataDesc - description of vertex buffer
+	// Vertex buffer description
 	//
-	// At minimum position attribute must be present
+	// Position attribute must be present
 	// Stride is step in bytes to move along the array from vertex to vertex 
 	// Offset also specified in bytes
 	// Stride and offset defines two general case:
 	//
 	// 1) Interleaved
 	//
-	// x1, y1, z1, UVx1, UVy1, Nx1, Ny1, Nz1,   x2, y2, z2, UVx2, UVy2, Nx2, Ny2, Nz2, ...
+	// x1, y1, z1, UVx1, UVy1, Nx1, Ny1, Nz1,  x2, y2, z2, UVx2, UVy2, Nx2, Ny2, Nz2, ...
 	// positionOffset = 0, positionStride = 32,
 	// texCoordOffset = 12, texCoordStride = 32,
 	// normalOffset = 20, normalStride = 32
@@ -323,6 +323,7 @@ namespace RENDER_MASTER
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) = 0;
 		virtual API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
+		//virtual API FlushUniforms();
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
