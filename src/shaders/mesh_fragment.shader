@@ -14,8 +14,8 @@ MAIN_FRAG(VS_OUTPUT)
 	vec3 diffuse = main_color.rgb;
 
 	#ifdef ENG_INPUT_NORMAL
-		vec3 nN = normalize(GET_ARRIBUTE(Normal));
-		diffuse = diffuse * vec3(1.0f, 1.0f, 1.0f) * max(dot(nN, nL), 0);
+		vec3 nN = normalize(GET_ARRIBUTE(Normal).rgb);
+		diffuse = diffuse * vec3(1.0f, 1.0f, 1.0f) * max(dot(nN, nL.rgb), 0);
 	#endif
 
 	#ifdef ENG_INPUT_TEXCOORD

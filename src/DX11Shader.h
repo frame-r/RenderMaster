@@ -14,7 +14,7 @@ public:
 	DX11Shader(ID3D11VertexShader* pVeretxIn, ID3D11GeometryShader* pGeometryIn, ID3D11PixelShader* pFragmentIn) : 
 		pVertex(pVeretxIn), pGeometry(pGeometryIn), pFragment(pFragmentIn)
 	{}
-	~DX11Shader(){}
+	virtual ~DX11Shader(){}
 	
 	API Free() override;
 	API GetType(OUT RES_TYPE *type) override;

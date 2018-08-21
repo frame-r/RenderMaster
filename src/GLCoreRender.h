@@ -7,6 +7,24 @@
 #include <windows.h>
 
 
+class GLUniformBuffer : public IUniformBuffer
+{
+	GLuint _UBO;
+	uint _size{0};
+
+public:
+
+	GLUniformBuffer(GLuint ID, uint size) : _UBO(ID), _size(size) {}
+	virtual ~GLUniformBuffer(){}
+
+	inline GLuint ID() const { return _UBO; }
+	inline uint size() const { return _size; }
+
+	API Free() override;
+	API GetType(OUT RES_TYPE *type) override;
+};
+
+
 class GLCoreRender final : public ICoreRender
 {
 	HDC _hdc{};
@@ -72,6 +90,10 @@ public:
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc) override;
 	API SetShader(const ICoreShader *pShader) override;
+	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
+	API SetUniform(IUniformBuffer *pBuffer, const void *pData) override;
+	//API SetUniformArray(IUniformBuffer *pBuffer, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
+	API SetUniformBufferToShader(const IUniformBuffer *pBuffer, uint slot) override;
 	API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) override;
 	API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
 	API SetMesh(const ICoreMesh* mesh) override;

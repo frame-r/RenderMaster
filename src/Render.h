@@ -14,6 +14,16 @@ class Render : public IRender
 
 	ShaderText pStandardShaderText;
 
+	struct alignas(16) EveryFrameParameters
+	{
+		vec4 main_color;
+		vec4 nL;
+		mat4 NM;
+		mat4 MVP;
+	} params;
+
+	IUniformBuffer *everyFrameParameters{nullptr};
+
 	float _aspect{1.0f};	
 
 	std::unordered_map<ShaderRequirement, ICoreShader*, ShaderRequirement> _shaders_pool;

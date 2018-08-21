@@ -402,12 +402,16 @@ const char* ResourceManager::_resourceToStr(IResource *pRes)
 			return "CORE_TEXTURE";
 		case RENDER_MASTER::RES_TYPE::CORE_SHADER:
 			return "CORE_SHADER";
+		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
+			return "UNIFORM_BUFFER";
 		case RENDER_MASTER::RES_TYPE::GAMEOBJECT:
 			return "GAMEOBJECT";
 		case RENDER_MASTER::RES_TYPE::MODEL:
 			return "MODEL";
 		case RENDER_MASTER::RES_TYPE::CAMERA:
 			return "CAMERA";
+		default:
+			return "UNKNOWN";
 	}
 
 	return nullptr;

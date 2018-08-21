@@ -31,9 +31,11 @@
 
 #define ATTRIBUTE(NUM, TYPE, NAME, SEMANTIC) TYPE NAME : SEMANTIC ## NUM;
 
-#define CONSTANT_BUFFER_BEGIN(NAME) cbuffer NAME : register( b0 ) {
-#define CONSTANT_BUFFER_END };
-#define CONSTANT(TYPE, NAME) TYPE NAME;
+//
+// Constant Buffer
+#define UNIFORM_BUFFER_BEGIN(SLOT) cbuffer const_buffer_##SLOT : register( b##SLOT ) {
+#define UNIFORM_BUFFER_END };
+#define UNIFORM(TYPE, NAME) TYPE NAME;
 
 #define INIT_POSITION float4 position : SV_POSITION;
 #define POSITION_OUT vs_output.position
@@ -45,11 +47,11 @@ SamplerState g_samLinear : register( s0 );
 
 #define COLOR_OUT color
 
-// vertex
+// vertex in/out
 #define SET_OUT_ATTRIBUTE(NAME) vs_output.NAME
 #define GET_IN_ATTRIBUTE(NAME) vs_input.NAME
 
-// fragment
+// fragment in
 #define GET_ARRIBUTE(NAME) fs_input.NAME
 
 

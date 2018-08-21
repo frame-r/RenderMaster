@@ -441,6 +441,26 @@ API DX11CoreRender::SetShader(const ICoreShader* pShader)
 	return E_NOTIMPL;
 }
 
+API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
+{
+	return S_OK;
+}
+
+API DX11CoreRender::SetUniform(IUniformBuffer *pBuffer, const void *pData)
+{
+	return E_NOTIMPL;
+}
+
+//API DX11CoreRender::SetUniformArray(IUniformBuffer * pBuffer, const void * pData, const ICoreShader * pShader, SHADER_VARIABLE_TYPE type, uint number)
+//{
+//	return E_NOTIMPL;
+//}
+
+API DX11CoreRender::SetUniformBufferToShader(const IUniformBuffer * pBuffer, uint slot)
+{
+	return E_NOTIMPL;
+}
+
 API DX11CoreRender::SetUniform(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type)
 {
 	return E_NOTIMPL;
@@ -507,6 +527,8 @@ API DX11CoreRender::Free()
 	if (renderTarget) renderTarget->Release();
 	if (swapChain) swapChain.Reset();
 	if (context) context->Release();
+
+	LOG("DX11CoreRender::Free()");
 
 	// debug
 	//ID3D11Debug *pDebug;

@@ -1,12 +1,10 @@
 // Constant buffer
-CONSTANT_BUFFER_BEGIN(mesh_veretx)
-	CONSTANT(vec4, main_color)	
-#ifdef ENG_INPUT_NORMAL
-	CONSTANT(vec3, nL)
-	CONSTANT(mat4, NM)
-#endif
-	CONSTANT(mat4, MVP)
-CONSTANT_BUFFER_END
+UNIFORM_BUFFER_BEGIN(0)
+	UNIFORM(vec4, main_color)
+	UNIFORM(vec4, nL)
+	UNIFORM(mat4, NM)
+	UNIFORM(mat4, MVP)
+UNIFORM_BUFFER_END
 
 
 // Iterpolated Attributes

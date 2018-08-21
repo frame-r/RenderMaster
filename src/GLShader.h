@@ -13,7 +13,7 @@ class GLShader : public ICoreShader
 public:
 
 	GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID);
-	~GLShader();
+	virtual ~GLShader();
 
 	GLuint programID() const { return _programID;	}
 

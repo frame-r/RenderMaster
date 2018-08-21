@@ -163,6 +163,7 @@ namespace RENDER_MASTER
 		CORE_MESH,
 		CORE_TEXTURE,
 		CORE_SHADER,
+		UNIFORM_BUFFER,
 		GAMEOBJECT,
 		MODEL,
 		CAMERA
@@ -311,6 +312,10 @@ namespace RENDER_MASTER
 	{
 	};
 
+	class IUniformBuffer : public IResource
+	{
+	};
+
 	class ICoreRender : public ISubSystem
 	{
 	public:
@@ -321,9 +326,12 @@ namespace RENDER_MASTER
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(OUT ICoreShader **pShader, const ShaderText* shaderDesc) = 0;
 		virtual API SetShader(const ICoreShader *pShader) = 0;
+		virtual API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) = 0;
+		virtual API SetUniform(IUniformBuffer *pBuffer, const void *pData) = 0;
+		//virtual API SetUniformArray(IUniformBuffer *pBuffer, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
 		virtual API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) = 0;
 		virtual API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
-		//virtual API FlushUniforms();
+		virtual API SetUniformBufferToShader(const IUniformBuffer *pBuffer, uint slot) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;

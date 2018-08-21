@@ -1,6 +1,7 @@
 #include "GLCoreRender.h"
 
 #include <sstream>
+#include <cassert>
 
 #include <GL\glew.h>
 #include <GL\wglew.h>
@@ -572,6 +573,62 @@ API GLCoreRender::SetShader(const ICoreShader* pShader)
 	return S_OK;
 }
 
+API GLCoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
+{
+	GLuint ubo = 0;
+	glGenBuffers(1, &ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	std::vector<char> data(size, '\0');
+	glBufferData(GL_UNIFORM_BUFFER, size, &data[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	*pBuffer = static_cast<IUniformBuffer*>(new GLUniformBuffer(ubo, size));
+	_pResMan->AddToList((IResource*)*pBuffer);
+
+	return S_OK;
+}
+
+API GLCoreRender::SetUniform(IUniformBuffer *pBuffer, const void *pData)
+{
+	CHECK_GL_ERRORS();
+
+	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, glBuf->ID());
+	GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+	memcpy(p, pData, glBuf->size());
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+//API GLCoreRender::SetUniformArray(IUniformBuffer * pBuffer, const void * pData, const ICoreShader * pShader, SHADER_VARIABLE_TYPE type, uint number)
+//{
+//	return S_OK;
+//}
+
+API GLCoreRender::SetUniformBufferToShader(const IUniformBuffer *pBuffer, uint slot)
+{
+	assert(_current_state.shader_program_id != 0 && "shader not set");
+
+	CHECK_GL_ERRORS();
+
+	// buffer -> slot
+	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
+
+	// shader -> slot
+	string s = "const_buffer_" + std::to_string(slot);
+	unsigned int block_index = glGetUniformBlockIndex(_current_state.shader_program_id, s.c_str());
+	glUniformBlockBinding(_current_state.shader_program_id, block_index, slot);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
 API GLCoreRender::SetUniform(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type)
 {
 	CHECK_GL_ERRORS();
@@ -822,5 +879,21 @@ API GLCoreRender::Free()
 	wglDeleteContext(_hRC);
 	ReleaseDC(_hWnd, GetDC(_hWnd));
 
+	LOG("GLCoreRender::Free()");
+
 	return S_OK;
 }
+
+API GLUniformBuffer::Free()
+{
+	const auto free_ = [&]() -> void { if (_UBO) glDeleteBuffers(1, &_UBO); };
+	standard_free_and_delete(this, free_, _pCore);
+	return S_OK;
+}
+
+API GLUniformBuffer::GetType(OUT RES_TYPE * type)
+{
+	*type = RES_TYPE::UNIFORM_BUFFER;
+	return S_OK;
+}
+

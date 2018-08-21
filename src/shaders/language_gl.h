@@ -1,4 +1,4 @@
-#version 330
+#version 420
 // Defines provided by engine:
 
 // ---Necessarily---
@@ -22,9 +22,14 @@
 #define ATTRIBUTE(NUM, TYPE, NAME, SEMANTIC) smooth in TYPE NAME;
 #endif
 
-#define CONSTANT_BUFFER_BEGIN(NAME)
-#define CONSTANT_BUFFER_END
-#define CONSTANT(TYPE, NAME) uniform TYPE NAME;
+//
+// Uniform Blocks
+// Note: use types multiplied 2 or 4 (not vec3!)
+// Note: Don't use ifdef in uniform buffer block to match C++ side struct
+#define UNIFORM_BUFFER_BEGIN(SLOT) layout (std140, binding = SLOT, row_major) uniform const_buffer_ ## SLOT \
+{ 
+#define UNIFORM_BUFFER_END };
+#define UNIFORM(TYPE, NAME) uniform TYPE NAME;
 
 #define INIT_POSITION
 #define POSITION_OUT gl_Position

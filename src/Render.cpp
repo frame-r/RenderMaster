@@ -171,6 +171,8 @@ void Render::Init()
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
 
+	_pCoreRender->CreateUniformBuffer(&everyFrameParameters, sizeof(EveryFrameParameters));
+
 	LOG("Render initialized");
 }
 
@@ -202,21 +204,29 @@ void Render::RenderFrame(const ICamera *pCamera)
 
 		_pCoreRender->SetMesh(renderMesh.mesh);
 		_pCoreRender->SetShader(shader);
-		
-		mat4 MVP = VP * renderMesh.modelMat;
-		_pCoreRender->SetUniform("MVP", &MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
 
-		vec4 main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		_pCoreRender->SetUniform("main_color", &main_color.x, shader, SHADER_VARIABLE_TYPE::VECTOR4);
+		//
+		// parameters
+
+		params.MVP = VP * renderMesh.modelMat;
+		//_pCoreRender->SetUniform("MVP", &params.MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
+
+		params.main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		//_pCoreRender->SetUniform("main_color", &params.main_color.x, shader, SHADER_VARIABLE_TYPE::VECTOR4);
 
 		if ((int)(a & INPUT_ATTRUBUTE::NORMAL))
 		{
 			mat4 NM;
-			_pCoreRender->SetUniform("NM", &NM.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
+			params.NM = NM;
+			//_pCoreRender->SetUniform("NM", &NM.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
 
 			vec3 nL = vec3(1.0f, 0.0f, 1.0f).Normalized();
-			_pCoreRender->SetUniform("nL", &nL.x, shader, SHADER_VARIABLE_TYPE::VECTOR3);
+			params.nL = nL;
+			//_pCoreRender->SetUniform("nL", &nL.x, shader, SHADER_VARIABLE_TYPE::VECTOR3);
 		}
+
+		_pCoreRender->SetUniform(everyFrameParameters, &params.main_color);
+		_pCoreRender->SetUniformBufferToShader(everyFrameParameters, 0);
 
 		_pCoreRender->Draw(renderMesh.mesh);
 	}
