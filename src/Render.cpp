@@ -197,7 +197,6 @@ void Render::RenderFrame(const ICamera *pCamera)
 	{
 		INPUT_ATTRUBUTE a;
 		renderMesh.mesh->GetAttributes(&a);		
-		
 		ICoreShader *shader = _get_shader({a, false});
 		if (!shader)
 			continue;
@@ -207,24 +206,13 @@ void Render::RenderFrame(const ICamera *pCamera)
 
 		//
 		// parameters
-
 		params.MVP = VP * renderMesh.modelMat;
-		//_pCoreRender->SetUniform("MVP", &params.MVP.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
-
 		params.main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		//_pCoreRender->SetUniform("main_color", &params.main_color.x, shader, SHADER_VARIABLE_TYPE::VECTOR4);
-
 		if ((int)(a & INPUT_ATTRUBUTE::NORMAL))
 		{
-			mat4 NM;
-			params.NM = NM;
-			//_pCoreRender->SetUniform("NM", &NM.el_1D[0], shader, SHADER_VARIABLE_TYPE::MATRIX4X4);
-
-			vec3 nL = vec3(1.0f, 0.0f, 1.0f).Normalized();
-			params.nL = nL;
-			//_pCoreRender->SetUniform("nL", &nL.x, shader, SHADER_VARIABLE_TYPE::VECTOR3);
+			params.NM = mat4();
+			params.nL = vec3(1.0f, 0.0f, 1.0f).Normalized();
 		}
-
 		_pCoreRender->SetUniform(everyFrameParameters, &params.main_color);
 		_pCoreRender->SetUniformBufferToShader(everyFrameParameters, 0);
 
