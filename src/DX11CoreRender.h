@@ -6,6 +6,20 @@
 namespace WRL = Microsoft::WRL;
 
 
+class DX11ConstantBuffer final: public IUniformBuffer
+{
+	ID3D11Buffer *buffer{nullptr};
+
+public:
+
+	DX11ConstantBuffer(ID3D11Buffer *bufferIn) : buffer(bufferIn) {}
+
+	ID3D11Buffer *nativeBuffer() const { return buffer; }
+
+	API Free() override;
+	API GetType(OUT RES_TYPE *type) override;
+};
+
 class DX11CoreRender final : public ICoreRender
 {
 
@@ -14,7 +28,12 @@ class DX11CoreRender final : public ICoreRender
 
 	// TODO: make map HWND -> {IDXGISwapChain, ID3D11RenderTargetView} for support multiple windows
 	WRL::ComPtr<IDXGISwapChain> swapChain;
-	ID3D11RenderTargetView *renderTarget{nullptr};
+
+	ID3D11RenderTargetView *renderTargetView{nullptr};
+	ID3D11Texture2D* g_pDepthStencil{nullptr};
+	ID3D11DepthStencilView* depthStencilView{nullptr};
+
+	IResourceManager *_pResMan{nullptr};
 
 	enum
 	{
@@ -41,7 +60,7 @@ public:
 	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
 	API SetUniform(IUniformBuffer *pBuffer, const void *pData) override;
 	//API SetUniformArray(IUniformBuffer *pBuffer, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
-	API SetUniformBufferToShader(const IUniformBuffer *pBuffer, uint slot) override;
+	API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) override;
 	API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) override;
 	API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
 	API SetMesh(const ICoreMesh* mesh) override;

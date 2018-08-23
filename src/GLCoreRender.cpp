@@ -609,7 +609,7 @@ API GLCoreRender::SetUniform(IUniformBuffer *pBuffer, const void *pData)
 //	return S_OK;
 //}
 
-API GLCoreRender::SetUniformBufferToShader(const IUniformBuffer *pBuffer, uint slot)
+API GLCoreRender::SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot)
 {
 	assert(_current_state.shader_program_id != 0 && "shader not set");
 

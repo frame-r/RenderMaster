@@ -331,7 +331,7 @@ namespace RENDER_MASTER
 		//virtual API SetUniformArray(IUniformBuffer *pBuffer, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
 		virtual API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) = 0;
 		virtual API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
-		virtual API SetUniformBufferToShader(const IUniformBuffer *pBuffer, uint slot) = 0;
+		virtual API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;

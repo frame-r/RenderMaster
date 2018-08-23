@@ -112,6 +112,8 @@ API DX11CoreRender::GetName(OUT const char **pTxt)
 
 API DX11CoreRender::Init(const WinHandle* handle)
 {
+	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+
 	HRESULT hr = S_OK;
 
 	RECT rc;
@@ -239,11 +241,39 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	if (FAILED(hr))
 		return hr;
 
-	hr = device->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &renderTarget);
+	hr = device->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &renderTargetView);
 	if (FAILED(hr))
 		return hr;
 
-	context->OMSetRenderTargets(1, &renderTarget, nullptr);
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC descDepth;
+	ZeroMemory(&descDepth, sizeof(descDepth));
+	descDepth.Width = width;
+	descDepth.Height = height;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	hr = device->CreateTexture2D(&descDepth, nullptr, &g_pDepthStencil);
+	if (FAILED(hr))
+		return hr;
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	hr = device->CreateDepthStencilView(g_pDepthStencil, &descDSV, &depthStencilView);
+	if (FAILED(hr))
+		return hr;
+
+	context->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
 
 	// Setup the viewport
 	D3D11_VIEWPORT vp;
@@ -254,7 +284,6 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
 	context->RSSetViewports(1, &vp);
-
 
 	return S_OK;
 }
@@ -268,10 +297,6 @@ API DX11CoreRender::PopStates()
 {
 	return E_NOTIMPL;
 }
-
-#ifndef MAKEFOURCC
-#define MAKEFOURCC(a, b, c, d) ((a) | ((b) << 8) | ((c) << 16) | ((d) << 24))
-#endif
 
 const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 {
@@ -288,6 +313,7 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 	default:
 		LOG_FATAL("DX11CoreRender: dgxgi_to_hlsl_type(DXGI_FORMAT f) unknown type f\n");
 		assert(false);
+		return nullptr;
 		break;
 	}
 }
@@ -314,17 +340,28 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	//
 	// input layout
 	ID3D11InputLayout *il = nullptr;
+	unsigned int offset = 0;
 
 	std::vector<D3D11_INPUT_ELEMENT_DESC> layout{{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}};
+	offset += 12;
 
 	if (normals)
-		layout.push_back({"TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0});
+	{
+		layout.push_back({"TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
+		offset += 12;
+	}
 
 	if (texCoords)
-		layout.push_back({"TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0});
+	{
+		layout.push_back({"TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
+		offset += 8;
+	}
 
 	if (colors)
+	{
 		layout.push_back({"TEXCOORD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0});
+		offset += 16;
+	}
 	
 	//
 	// create dummy shader for CreateInputLayout() 
@@ -438,27 +475,51 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *sh
 
 API DX11CoreRender::SetShader(const ICoreShader* pShader)
 {
-	return E_NOTIMPL;
+	const DX11Shader *dxShader = static_cast<const DX11Shader*>(pShader);
+
+	context->VSSetShader(dxShader->vs(), nullptr, 0);
+	context->GSSetShader(dxShader->gs(), nullptr, 0);
+	context->PSSetShader(dxShader->fs(), nullptr, 0);
+
+	return S_OK;
 }
 
 API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 {
-	return S_OK;
+	ID3D11Buffer* ret{nullptr};
+
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = size;
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	auto hr = device->CreateBuffer(&bd, nullptr, &ret);
+
+	*pBuffer = new DX11ConstantBuffer(ret);
+	_pResMan->AddToList((IResource*)*pBuffer);
+
+	return hr;
 }
 
 API DX11CoreRender::SetUniform(IUniformBuffer *pBuffer, const void *pData)
 {
-	return E_NOTIMPL;
+	const DX11ConstantBuffer *dxBuffer = static_cast<const DX11ConstantBuffer *>(pBuffer);
+	context->UpdateSubresource(dxBuffer->nativeBuffer(), 0, nullptr, pData, 0, 0);
+
+	return S_OK;
 }
 
-//API DX11CoreRender::SetUniformArray(IUniformBuffer * pBuffer, const void * pData, const ICoreShader * pShader, SHADER_VARIABLE_TYPE type, uint number)
-//{
-//	return E_NOTIMPL;
-//}
-
-API DX11CoreRender::SetUniformBufferToShader(const IUniformBuffer * pBuffer, uint slot)
+API DX11CoreRender::SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot)
 {
-	return E_NOTIMPL;
+	DX11ConstantBuffer *dxBuffer = static_cast<DX11ConstantBuffer *>(pBuffer);
+	ID3D11Buffer * buf = dxBuffer->nativeBuffer();
+
+	context->VSSetConstantBuffers(slot, 1, &buf);
+	context->PSSetConstantBuffers(slot, 1, &buf);
+	context->GSSetConstantBuffers(slot, 1, &buf);
+
+	return S_OK;
 }
 
 API DX11CoreRender::SetUniform(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type)
@@ -484,7 +545,7 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 
 	if (dxMesh->indexBuffer())
 		context->IASetIndexBuffer(dxMesh->indexBuffer(), (dxMesh->indexFormat() == MESH_INDEX_FORMAT::INT16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT), 0);
-
+	
 	context->IASetPrimitiveTopology(dxMesh->topology() == VERTEX_TOPOLOGY::TRIANGLES? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST : D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
 	return S_OK;
@@ -492,6 +553,13 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 
 API DX11CoreRender::Draw(ICoreMesh* mesh)
 {
+	const DX11Mesh *dxMesh = static_cast<const DX11Mesh*>(mesh);
+
+	if (dxMesh->indexBuffer())
+		context->DrawIndexed(dxMesh->indexNumber(), 0, 0);
+	else
+		context->Draw(dxMesh->vertexNumber(), 0);
+
 	return S_OK;
 }
 
@@ -512,19 +580,27 @@ API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 
 API DX11CoreRender::Clear()
 {
-	return E_NOTIMPL;
+	static const FLOAT color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	context->ClearRenderTargetView(renderTargetView, color);
+
+	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	return S_OK;
 }
 
 API DX11CoreRender::SwapBuffers()
 {
-	swapChain->Present(0, 0);
+	swapChain->Present(1, 0);
 	return S_OK;
 }
 
 API DX11CoreRender::Free()
 {
 	if (context) context->ClearState();
-	if (renderTarget) renderTarget->Release();
+
+	if (g_pDepthStencil) g_pDepthStencil->Release();
+	if (renderTargetView) renderTargetView->Release();
+	if (depthStencilView) depthStencilView->Release();
 	if (swapChain) swapChain.Reset();
 	if (context) context->Release();
 
@@ -541,5 +617,18 @@ API DX11CoreRender::Free()
 
 	if (device) device->Release();
 
+	return S_OK;
+}
+
+API DX11ConstantBuffer::Free()
+{
+	const auto free_ = [&]() -> void { if (buffer) buffer->Release(); };
+	standard_free_and_delete(this, free_, _pCore);
+	return S_OK;
+}
+
+API DX11ConstantBuffer::GetType(OUT RES_TYPE * type)
+{
+	*type = RES_TYPE::UNIFORM_BUFFER;
 	return S_OK;
 }

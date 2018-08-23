@@ -7,7 +7,7 @@
 #include <windows.h>
 
 
-class GLUniformBuffer : public IUniformBuffer
+class GLUniformBuffer final : public IUniformBuffer
 {
 	GLuint _UBO;
 	uint _size{0};
@@ -15,7 +15,6 @@ class GLUniformBuffer : public IUniformBuffer
 public:
 
 	GLUniformBuffer(GLuint ID, uint size) : _UBO(ID), _size(size) {}
-	virtual ~GLUniformBuffer(){}
 
 	inline GLuint ID() const { return _UBO; }
 	inline uint size() const { return _size; }
@@ -93,7 +92,7 @@ public:
 	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
 	API SetUniform(IUniformBuffer *pBuffer, const void *pData) override;
 	//API SetUniformArray(IUniformBuffer *pBuffer, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
-	API SetUniformBufferToShader(const IUniformBuffer *pBuffer, uint slot) override;
+	API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) override;
 	API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) override;
 	API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
 	API SetMesh(const ICoreMesh* mesh) override;
