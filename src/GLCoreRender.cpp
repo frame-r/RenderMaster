@@ -317,7 +317,8 @@ API GLCoreRender::Init(const WinHandle* handle)
 	CHECK_GL_ERRORS();
 
 	glEnable(GL_DEPTH_TEST);
-	glClearDepth(1.0f);	
+	glClearDepth(1.0f);
+	glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
 	glDisable(GL_CULL_FACE);
 
 	//

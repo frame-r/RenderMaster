@@ -601,7 +601,14 @@ API DX11CoreRender::SetViewport(uint w, uint h)
 
 API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 {
-	return E_NOTIMPL;
+	D3D11_VIEWPORT v;
+	UINT viewportNumber = 1;
+	context->RSGetViewports(&viewportNumber, &v);
+
+	*wOut = (uint)v.Width;
+	*hOut = (uint)v.Height;
+
+	return S_OK;
 }
 
 API DX11CoreRender::Clear()
