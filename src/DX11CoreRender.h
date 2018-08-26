@@ -29,8 +29,10 @@ class DX11CoreRender final : public ICoreRender
 	// TODO: make map HWND -> {IDXGISwapChain, ID3D11RenderTargetView} for support multiple windows
 	WRL::ComPtr<IDXGISwapChain> swapChain;
 
+	ID3D11Texture2D* renderTargetTex{nullptr};
 	ID3D11RenderTargetView *renderTargetView{nullptr};
-	ID3D11Texture2D* g_pDepthStencil{nullptr};
+
+	ID3D11Texture2D* depthStencilTex{nullptr};
 	ID3D11DepthStencilView* depthStencilView{nullptr};
 
 	IResourceManager *_pResMan{nullptr};
@@ -42,6 +44,8 @@ class DX11CoreRender final : public ICoreRender
 		TYPE_FRAGMENT,
 	};
 
+	void _destroy_buffers();
+	bool _create_buffers(uint w, uint h);
 	ID3D11DeviceChild* _create_shader(int type, const char *src);
 	const char* get_shader_profile(int type);
 	const char* get_main_function(int type);

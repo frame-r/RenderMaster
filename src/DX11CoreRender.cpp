@@ -35,6 +35,56 @@ const char *DX11CoreRender::get_main_function(int type)
 	return NULL;
 }
 
+void DX11CoreRender::_destroy_buffers()
+{
+	if (renderTargetTex) { renderTargetTex->Release(); renderTargetTex = nullptr; }
+	if (renderTargetView) { renderTargetView->Release(); renderTargetView = nullptr; }
+	if (depthStencilTex) { depthStencilTex->Release(); depthStencilTex = nullptr; }
+	if (depthStencilView) { depthStencilView->Release(); depthStencilView = nullptr; }
+}
+
+bool DX11CoreRender::_create_buffers(uint w, uint h)
+{
+	// Create a render target view
+	auto hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)&renderTargetTex);
+	if (FAILED(hr))
+		return hr;
+
+	hr = device->CreateRenderTargetView(renderTargetTex, nullptr, &renderTargetView);
+	if (FAILED(hr))
+		return hr;
+
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC descDepth;
+	ZeroMemory(&descDepth, sizeof(descDepth));
+	descDepth.Width = w;
+	descDepth.Height = h;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	hr = device->CreateTexture2D(&descDepth, nullptr, &depthStencilTex);
+	if (FAILED(hr))
+		return hr;
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	hr = device->CreateDepthStencilView(depthStencilTex, &descDSV, &depthStencilView);
+	if (FAILED(hr))
+		return hr;
+
+	context->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+}
+
 ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 {
 	ID3D11DeviceChild *ret{nullptr};
@@ -235,45 +285,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	if (FAILED(hr))
 		return hr;
 
-	// Create a render target view
-	ComPtr<ID3D11Texture2D> pBackBuffer;
-	hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &pBackBuffer);
-	if (FAILED(hr))
-		return hr;
-
-	hr = device->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &renderTargetView);
-	if (FAILED(hr))
-		return hr;
-
-	// Create depth stencil texture
-	D3D11_TEXTURE2D_DESC descDepth;
-	ZeroMemory(&descDepth, sizeof(descDepth));
-	descDepth.Width = width;
-	descDepth.Height = height;
-	descDepth.MipLevels = 1;
-	descDepth.ArraySize = 1;
-	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	descDepth.SampleDesc.Count = 1;
-	descDepth.SampleDesc.Quality = 0;
-	descDepth.Usage = D3D11_USAGE_DEFAULT;
-	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	descDepth.CPUAccessFlags = 0;
-	descDepth.MiscFlags = 0;
-	hr = device->CreateTexture2D(&descDepth, nullptr, &g_pDepthStencil);
-	if (FAILED(hr))
-		return hr;
-
-	// Create the depth stencil view
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-	ZeroMemory(&descDSV, sizeof(descDSV));
-	descDSV.Format = descDepth.Format;
-	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	descDSV.Texture2D.MipSlice = 0;
-	hr = device->CreateDepthStencilView(g_pDepthStencil, &descDSV, &depthStencilView);
-	if (FAILED(hr))
-		return hr;
-
-	context->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+	_create_buffers(width, height);
 
 	// Setup the viewport
 	D3D11_VIEWPORT vp;
@@ -596,7 +608,30 @@ API DX11CoreRender::SetDepthState(int enabled)
 
 API DX11CoreRender::SetViewport(uint w, uint h)
 {
-	return E_NOTIMPL;
+	D3D11_VIEWPORT v;
+
+	UINT viewportNumber = 1;
+	context->RSGetViewports(&viewportNumber, &v);
+
+	uint new_w = (uint)v.Width;
+	uint new_h = (uint)v.Height;
+
+	if (new_w != w || new_h != h)
+	{
+		v.Height = (float)h;
+		v.Width = (float)w;
+
+		_destroy_buffers();
+		
+		if (FAILED(swapChain->ResizeBuffers(1, new_w, new_h, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH)))
+			return E_ABORT;
+
+		_create_buffers(new_w, new_h);
+
+		context->RSSetViewports(1, &v);
+	}
+
+	return S_OK;
 }
 
 API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
@@ -631,9 +666,7 @@ API DX11CoreRender::Free()
 {
 	if (context) context->ClearState();
 
-	if (g_pDepthStencil) g_pDepthStencil->Release();
-	if (renderTargetView) renderTargetView->Release();
-	if (depthStencilView) depthStencilView->Release();
+	_destroy_buffers();
 	if (swapChain) swapChain.Reset();
 	if (context) context->Release();
 
