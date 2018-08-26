@@ -194,3 +194,5 @@ inline vec3 GetBackDirection(const mat4& ModelMat) { return -vec3(ModelMat.Colum
 // 	https://github.com/g-truc/glm/blob/master/glm/gtc/matrix_transform.inl perspectiveRH_NO(T fovy, T aspect, T zNear, T zFar)
 //
 mat4 perspective(float fov, float aspect, float zNear, float zFar);
+
+mat4 perspective01(float fov, float aspect, float zNear, float zFar);

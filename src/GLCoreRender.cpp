@@ -802,6 +802,7 @@ API GLCoreRender::Draw(ICoreMesh *mesh)
 		VERTEX_TOPOLOGY topology;
 		mesh->GetVertexTopology(&topology);
 
+		// glDrawElements - for index! Why it works?
 		glDrawArrays((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, 0, vertecies);
 	}
 	

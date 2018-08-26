@@ -126,6 +126,21 @@ mat4 perspective(float fov, float aspect, float zNear, float zFar)
 	return Result;
 }
 
+mat4 perspective01(float fov, float aspect, float zNear, float zFar)
+{
+	assert(abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
+
+	float const tanHalfFovy = tan(fov / 2.0f);
+
+	mat4 Result;
+	Result.el_2D[0][0] = 1.0f / (aspect * tanHalfFovy);
+	Result.el_2D[1][1] = 1.0f / (tanHalfFovy);
+	Result.el_2D[2][2] = zFar / (zNear - zFar);
+	Result.el_2D[2][3] = -1.0f;
+	Result.el_2D[3][2] = -(zFar * zNear) / (zFar - zNear);
+	return Result;
+}
+
 list<string> make_lines_list(const char **text)
 {
 	list<string> ret;

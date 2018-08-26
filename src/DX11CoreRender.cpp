@@ -285,6 +285,32 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	vp.TopLeftY = 0;
 	context->RSSetViewports(1, &vp);
 
+	D3D11_RASTERIZER_DESC rasterDesc;
+	rasterDesc.AntialiasedLineEnable = false;
+	rasterDesc.CullMode = D3D11_CULL_NONE;
+	rasterDesc.DepthBias = 0;
+	rasterDesc.DepthBiasClamp = 0.0f;
+	rasterDesc.DepthClipEnable = true;
+	rasterDesc.FillMode = D3D11_FILL_SOLID;
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.MultisampleEnable = false;
+	rasterDesc.ScissorEnable = false;
+	rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+	ID3D11RasterizerState *rasterState;
+	auto result = device->CreateRasterizerState(&rasterDesc, &rasterState);
+	if (FAILED(result))
+	{
+		return S_FALSE;
+	}
+
+	context->RSSetState(rasterState);
+	
+	context->RSGetState(&rasterState);
+
+	D3D11_RASTERIZER_DESC desc;
+	rasterState->GetDesc(&desc);
+
 	return S_OK;
 }
 
@@ -347,19 +373,19 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 
 	if (normals)
 	{
-		layout.push_back({"TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
+		layout.push_back({"TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
 		offset += 12;
 	}
 
 	if (texCoords)
 	{
-		layout.push_back({"TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
+		layout.push_back({"TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
 		offset += 8;
 	}
 
 	if (colors)
 	{
-		layout.push_back({"TEXCOORD", 2, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0});
+		layout.push_back({"TEXCOORD", 3, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
 		offset += 16;
 	}
 	
