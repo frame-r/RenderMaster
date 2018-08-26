@@ -9,23 +9,23 @@ TEXTURE2D_IN(texture0, 0)
 
 
 MAIN_FRAG(VS_OUTPUT)
-	vec3 ambient = vec3(0.1f, 0.1f, 0.1f);
+	vec4 ambient = vec4(0.1f, 0.1f, 0.1f, 0.0f);
 
-	vec3 diffuse = main_color.rgb;
+	vec4 diffuse = main_color;
 
 	#ifdef ENG_INPUT_NORMAL
 		vec3 nN = normalize(GET_ARRIBUTE(Normal).rgb);
-		diffuse = diffuse * vec3(1.0f, 1.0f, 1.0f) * max(dot(nN, nL.rgb), 0);
+		diffuse = diffuse * max(dot(nN, nL.rgb), 0);
 	#endif
 
 	#ifdef ENG_INPUT_TEXCOORD
 		vec4 tex = TEXTURE(texture0, GET_ARRIBUTE(TexCoord));
-		tex.rgb = pow(tex.rgb, vec3(2.2f, 2.2f, 2.2f));
-		diffuse = diffuse * tex.rgb;
+		tex = pow(tex.rgb, vec4(2.2f, 2.2f, 2.2f, 2.2f));
+		diffuse = diffuse * tex;
 	#endif
 
 	#ifdef ENG_INPUT_COLOR
-		diffuse = diffuse * GET_ARRIBUTE(Color).rgb;
+		diffuse = diffuse * GET_ARRIBUTE(Color);
 	#endif
 
 	#ifdef ENG_ALPHA_TEST && ENG_INPUT_TEXCOORD
@@ -33,7 +33,7 @@ MAIN_FRAG(VS_OUTPUT)
 			discard;
 	#endif
 
-	COLOR_OUT = vec4(diffuse + ambient, 1);
+	COLOR_OUT = diffuse + ambient;
 	
 MAIN_FRAG_END
 

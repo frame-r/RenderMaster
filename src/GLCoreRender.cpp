@@ -435,7 +435,7 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 	const int normals = dataDesc->normalsPresented;
 	const int texCoords = dataDesc->texCoordPresented;
 	const int colors = dataDesc->colorPresented;
-	const int bytes = (12 + texCoords * 8 + normals * 12 + colors * 16) * dataDesc->numberOfVertex;	
+	const int bytes = (16 + 16 * normals + 8 * texCoords + 16 * colors) * dataDesc->numberOfVertex;
 	GLuint vao = 0, vbo = 0, ibo = 0;
 
 	INPUT_ATTRUBUTE attribs = INPUT_ATTRUBUTE::POSITION;
@@ -616,11 +616,11 @@ API GLCoreRender::SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot)
 
 	CHECK_GL_ERRORS();
 
-	// buffer -> slot
+	// uniform buffer -> UBO slot
 	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
 	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
 
-	// shader -> slot
+	// shader -> UBO slot
 	string s = "const_buffer_" + std::to_string(slot);
 	unsigned int block_index = glGetUniformBlockIndex(_current_state.shader_program_id, s.c_str());
 	glUniformBlockBinding(_current_state.shader_program_id, block_index, slot);

@@ -320,8 +320,18 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	
 	context->RSGetState(&rasterState);
 
+
+	// debug
 	D3D11_RASTERIZER_DESC desc;
 	rasterState->GetDesc(&desc);
+
+
+	//ID3D11DepthStencilState *ppDepthStencilState;
+	//UINT s;
+	//context->OMGetDepthStencilState(&ppDepthStencilState, &s);
+
+	//D3D11_DEPTH_STENCIL_DESC d;
+	//ppDepthStencilState->GetDesc(&d);
 
 	return S_OK;
 }
@@ -358,11 +368,18 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 
 API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
 {
+	assert(dataDesc->colorOffset % 8 == 0 && "");
+	assert(dataDesc->colorStride % 8 == 0 && "");
+	assert(dataDesc->positionStride % 8 == 0 && "");
+	assert(dataDesc->positionOffset % 8 == 0 && "");
+	assert(dataDesc->normalOffset % 8 == 0 && "");
+	assert(dataDesc->normalStride % 8 == 0 && "");
+
 	const int indexes = indexDesc->format != MESH_INDEX_FORMAT::NOTHING;
 	const int normals = dataDesc->normalsPresented;
 	const int texCoords = dataDesc->texCoordPresented;
 	const int colors = dataDesc->colorPresented;
-	const int bytesWidth = 12 + texCoords * 8 + normals * 12 + colors * 12;
+	const int bytesWidth = 16 + 16 * normals + 8 * texCoords + 16 * colors;
 	const int bytes = bytesWidth * dataDesc->numberOfVertex;
 
 	INPUT_ATTRUBUTE attribs = INPUT_ATTRUBUTE::POSITION;
@@ -385,8 +402,8 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 
 	if (normals)
 	{
-		layout.push_back({"TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
-		offset += 12;
+		layout.push_back({"TEXCOORD", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offset, D3D11_INPUT_PER_VERTEX_DATA, 0});
+		offset += 16;
 	}
 
 	if (texCoords)

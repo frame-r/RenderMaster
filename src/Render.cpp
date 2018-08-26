@@ -227,29 +227,29 @@ void Render::RenderFrame(const ICamera *pCamera)
 		_pCoreRender->Draw(renderMesh.mesh);
 
 		// debug
-		{
-			INPUT_ATTRUBUTE a;
-			_pAxesMesh->GetAttributes(&a);
+		//{
+		//	INPUT_ATTRUBUTE a;
+		//	_pGridMesh->GetAttributes(&a);
 
-			ICoreShader *shader{nullptr};
-			ShaderRequirement req = {a, false};
-			shader = _get_shader(req);
-			if (!shader) return;
-			_pCoreRender->SetShader(shader);
+		//	ICoreShader *shader{nullptr};
+		//	ShaderRequirement req = {a, false};
+		//	shader = _get_shader(req);
+		//	if (!shader) return;
+		//	_pCoreRender->SetShader(shader);
 
-			params.MVP = VP;
-			params.main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		//	params.MVP = VP;
+		//	params.main_color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-			_pCoreRender->SetUniform(everyFrameParameters, &params.main_color);
-			_pCoreRender->SetUniformBufferToShader(everyFrameParameters, 0);
+		//	_pCoreRender->SetUniform(everyFrameParameters, &params.main_color);
+		//	_pCoreRender->SetUniformBufferToShader(everyFrameParameters, 0);
 
 
-			_pCoreRender->SetDepthState(true);
+		//	_pCoreRender->SetDepthState(true);
 
-			_pCoreRender->SetMesh(_pAxesMesh);
-			_pCoreRender->Draw(_pAxesMesh);
+		//	_pCoreRender->SetMesh(_pGridMesh);
+		//	_pCoreRender->Draw(_pGridMesh);
 
-		}
+		//}
 	}
 }
 
