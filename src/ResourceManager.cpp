@@ -490,7 +490,6 @@ void ResourceManager::Init()
 	constexpr float linesInterval = 5.0f;
 	constexpr int linesNumber = 31;
 	constexpr float startOffset = linesInterval * (linesNumber / 2);
-	//position, color, position, color, ...
 	vec3 vertexGrid[4 * linesNumber];
 
 	for (int i = 0; i < linesNumber; i++)

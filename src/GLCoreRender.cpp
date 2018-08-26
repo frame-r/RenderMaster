@@ -318,7 +318,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 
 	glEnable(GL_DEPTH_TEST);
 	glClearDepth(1.0f);
-	glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 	glDisable(GL_CULL_FACE);
 
 	//
@@ -435,7 +435,7 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 	const int normals = dataDesc->normalsPresented;
 	const int texCoords = dataDesc->texCoordPresented;
 	const int colors = dataDesc->colorPresented;
-	const int bytes = (12 + texCoords * 8 + normals * 12 + colors * 12) * dataDesc->numberOfVertex;	
+	const int bytes = (12 + texCoords * 8 + normals * 12 + colors * 16) * dataDesc->numberOfVertex;	
 	GLuint vao = 0, vbo = 0, ibo = 0;
 
 	INPUT_ATTRUBUTE attribs = INPUT_ATTRUBUTE::POSITION;
@@ -484,8 +484,8 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 		int idxSize = 0;
 		switch (indexDesc->format)
 		{
-			case MESH_INDEX_FORMAT::INT32: idxSize = 32; break;
-			case MESH_INDEX_FORMAT::INT16: idxSize = 16; break;
+			case MESH_INDEX_FORMAT::INT32: idxSize = 4; break;
+			case MESH_INDEX_FORMAT::INT16: idxSize = 2; break;
 		}
 		const int idxBytes = idxSize * indexDesc->number;
 

@@ -163,6 +163,10 @@ Render::~Render()
 	delete pStandardShaderText.pFragText;
 }
 
+static ICoreMesh * _pAxesMesh;
+static ICoreMesh * _pAxesArrowMesh;
+static ICoreMesh * _pGridMesh;
+
 void Render::Init()
 {
 	_pResMan->LoadShaderText(&pStandardShaderText, "mesh_vertex", nullptr, "mesh_fragment");
@@ -172,6 +176,10 @@ void Render::Init()
 	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
 
 	_pCoreRender->CreateUniformBuffer(&everyFrameParameters, sizeof(EveryFrameParameters));
+
+	_pResMan->GetDefaultResource((IResource**)&_pAxesMesh, DEFAULT_RES_TYPE::AXES);
+	_pResMan->GetDefaultResource((IResource**)&_pAxesArrowMesh, DEFAULT_RES_TYPE::AXES_ARROWS);
+	_pResMan->GetDefaultResource((IResource**)&_pGridMesh, DEFAULT_RES_TYPE::GRID);
 
 	LOG("Render initialized");
 }
@@ -217,6 +225,31 @@ void Render::RenderFrame(const ICamera *pCamera)
 		_pCoreRender->SetUniformBufferToShader(everyFrameParameters, 0);
 
 		_pCoreRender->Draw(renderMesh.mesh);
+
+		// debug
+		{
+			INPUT_ATTRUBUTE a;
+			_pAxesMesh->GetAttributes(&a);
+
+			ICoreShader *shader{nullptr};
+			ShaderRequirement req = {a, false};
+			shader = _get_shader(req);
+			if (!shader) return;
+			_pCoreRender->SetShader(shader);
+
+			params.MVP = VP;
+			params.main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+			_pCoreRender->SetUniform(everyFrameParameters, &params.main_color);
+			_pCoreRender->SetUniformBufferToShader(everyFrameParameters, 0);
+
+
+			_pCoreRender->SetDepthState(true);
+
+			_pCoreRender->SetMesh(_pAxesMesh);
+			_pCoreRender->Draw(_pAxesMesh);
+
+		}
 	}
 }
 

@@ -465,8 +465,8 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 		int idxSize = 0;
 		switch (indexDesc->format)
 		{
-			case MESH_INDEX_FORMAT::INT32: idxSize = 32; break;
-			case MESH_INDEX_FORMAT::INT16: idxSize = 16; break;
+			case MESH_INDEX_FORMAT::INT32: idxSize = 4; break;
+			case MESH_INDEX_FORMAT::INT16: idxSize = 2; break;
 		}
 		const int idxBytes = idxSize * indexDesc->number;
 
