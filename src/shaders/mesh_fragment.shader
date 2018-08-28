@@ -20,7 +20,7 @@ MAIN_FRAG(VS_OUTPUT)
 
 	#ifdef ENG_INPUT_TEXCOORD
 		vec4 tex = TEXTURE(texture0, GET_ARRIBUTE(TexCoord));
-		tex = pow(tex.rgb, vec4(2.2f, 2.2f, 2.2f, 2.2f));
+		tex = pow(tex, vec4(2.2f, 2.2f, 2.2f, 2.2f));
 		diffuse = diffuse * tex;
 	#endif
 
