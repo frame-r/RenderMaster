@@ -35,6 +35,8 @@ class DX11CoreRender final : public ICoreRender
 	ID3D11Texture2D* depthStencilTex{nullptr};
 	ID3D11DepthStencilView* depthStencilView{nullptr};
 
+	WRL::ComPtr<ID3D11RasterizerState> rasterState;
+
 	IResourceManager *_pResMan{nullptr};
 
 	enum

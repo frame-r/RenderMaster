@@ -309,14 +309,13 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	rasterDesc.ScissorEnable = false;
 	rasterDesc.SlopeScaledDepthBias = 0.0f;
 
-	ID3D11RasterizerState *rasterState;
 	auto result = device->CreateRasterizerState(&rasterDesc, &rasterState);
 	if (FAILED(result))
 	{
 		return S_FALSE;
 	}
 
-	context->RSSetState(rasterState);
+	context->RSSetState(rasterState.Get());
 	
 	context->RSGetState(&rasterState);
 
@@ -681,6 +680,8 @@ API DX11CoreRender::SwapBuffers()
 
 API DX11CoreRender::Free()
 {
+	if (rasterState) rasterState->Release();
+
 	if (context) context->ClearState();
 
 	_destroy_buffers();
@@ -691,7 +692,7 @@ API DX11CoreRender::Free()
 
 	// debug
 	//ID3D11Debug *pDebug;
-	//auto hr = g_pd3dDevice->QueryInterface(IID_PPV_ARGS(&pDebug));
+	//auto hr = device->QueryInterface(IID_PPV_ARGS(&pDebug));
 	//if (pDebug != nullptr)
 	//{
 	//	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
