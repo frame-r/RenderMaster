@@ -787,7 +787,8 @@ API ResourceManager::FreeAllResources()
 		#ifdef _DEBUG
 			static int i = 0;
 			i++;
-			if (i > 20) return S_FALSE; // occured some error. maybe circular references => in debug limit number of iterations
+                        if (i > 20)
+                            return S_FALSE; // occured some error. maybe circular references => in debug limit number of iterations
 			auto res_before = _resources.size();
 		#endif
 
