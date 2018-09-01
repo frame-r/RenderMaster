@@ -621,20 +621,20 @@ API DX11CoreRender::SetViewport(uint w, uint h)
 	UINT viewportNumber = 1;
 	context->RSGetViewports(&viewportNumber, &v);
 
-	uint new_w = (uint)v.Width;
-	uint new_h = (uint)v.Height;
+	uint old_w = (uint)v.Width;
+	uint old_h = (uint)v.Height;
 
-	if (new_w != w || new_h != h)
+	if (old_w != w || old_h != h)
 	{
 		v.Height = (float)h;
 		v.Width = (float)w;
 
 		_destroy_buffers();
 		
-		if (FAILED(swapChain->ResizeBuffers(1, new_w, new_h, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH)))
+		if (FAILED(swapChain->ResizeBuffers(1, w, h, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH)))
 			return E_ABORT;
 
-		_create_buffers(new_w, new_h);
+		_create_buffers(w, h);
 
 		context->RSSetViewports(1, &v);
 	}
