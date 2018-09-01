@@ -25,18 +25,18 @@ class DX11CoreRender final : public ICoreRender
 	IResourceManager *_pResMan{nullptr};
 
 	// TODO: make map HWND -> {IDXGISwapChain, ID3D11RenderTargetView} for support multiple windows
-	WRL::ComPtr<IDXGISwapChain> swapChain;
+	WRL::ComPtr<IDXGISwapChain> _swapChain;
 
-	WRL::ComPtr<ID3D11DeviceContext> context;
-	WRL::ComPtr<ID3D11Device> device;
+	WRL::ComPtr<ID3D11DeviceContext> _context;
+	WRL::ComPtr<ID3D11Device> _device;
 
-	WRL::ComPtr<ID3D11Texture2D> renderTargetTex;
-	WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
+	WRL::ComPtr<ID3D11Texture2D> _renderTargetTex;
+	WRL::ComPtr<ID3D11RenderTargetView> _renderTargetView;
 
-	WRL::ComPtr<ID3D11Texture2D> depthStencilTex;
-	WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+	WRL::ComPtr<ID3D11Texture2D> _depthStencilTex;
+	WRL::ComPtr<ID3D11DepthStencilView> _depthStencilView;
 
-	WRL::ComPtr<ID3D11RasterizerState> rasterState;
+	WRL::ComPtr<ID3D11RasterizerState> _rasterState;
 	
 	enum
 	{
@@ -45,10 +45,10 @@ class DX11CoreRender final : public ICoreRender
 		TYPE_FRAGMENT,
 	};
 
-	bool _create_buffers(uint w, uint h);
-	void _destroy_buffers();
+	bool create_viewport_buffers(uint w, uint h);
+	void destroy_viewport_buffers();
 	
-	ID3D11DeviceChild* _create_shader(int type, const char *src);
+	ID3D11DeviceChild* create_shader_by_src(int type, const char *src);
 	const char* get_shader_profile(int type);
 	const char* get_main_function(int type);
 
