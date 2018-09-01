@@ -22,23 +22,22 @@ public:
 
 class DX11CoreRender final : public ICoreRender
 {
-
-	ID3D11DeviceContext *context{nullptr};
-	ID3D11Device *device{nullptr};
+	IResourceManager *_pResMan{nullptr};
 
 	// TODO: make map HWND -> {IDXGISwapChain, ID3D11RenderTargetView} for support multiple windows
 	WRL::ComPtr<IDXGISwapChain> swapChain;
 
-	ID3D11Texture2D* renderTargetTex{nullptr};
-	ID3D11RenderTargetView *renderTargetView{nullptr};
+	WRL::ComPtr<ID3D11DeviceContext> context;
+	WRL::ComPtr<ID3D11Device> device;
 
-	ID3D11Texture2D* depthStencilTex{nullptr};
-	ID3D11DepthStencilView* depthStencilView{nullptr};
+	WRL::ComPtr<ID3D11Texture2D> renderTargetTex;
+	WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
+
+	WRL::ComPtr<ID3D11Texture2D> depthStencilTex;
+	WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
 
 	WRL::ComPtr<ID3D11RasterizerState> rasterState;
-
-	IResourceManager *_pResMan{nullptr};
-
+	
 	enum
 	{
 		TYPE_VERTEX,
@@ -46,8 +45,9 @@ class DX11CoreRender final : public ICoreRender
 		TYPE_FRAGMENT,
 	};
 
-	void _destroy_buffers();
 	bool _create_buffers(uint w, uint h);
+	void _destroy_buffers();
+	
 	ID3D11DeviceChild* _create_shader(int type, const char *src);
 	const char* get_shader_profile(int type);
 	const char* get_main_function(int type);
@@ -65,7 +65,6 @@ public:
 	API SetShader(const ICoreShader *pShader) override;
 	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
 	API SetUniform(IUniformBuffer *pBuffer, const void *pData) override;
-	//API SetUniformArray(IUniformBuffer *pBuffer, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
 	API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) override;
 	API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) override;
 	API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;

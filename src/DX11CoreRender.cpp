@@ -37,20 +37,20 @@ const char *DX11CoreRender::get_main_function(int type)
 
 void DX11CoreRender::_destroy_buffers()
 {
-	if (renderTargetTex) { renderTargetTex->Release(); renderTargetTex = nullptr; }
-	if (renderTargetView) { renderTargetView->Release(); renderTargetView = nullptr; }
-	if (depthStencilTex) { depthStencilTex->Release(); depthStencilTex = nullptr; }
-	if (depthStencilView) { depthStencilView->Release(); depthStencilView = nullptr; }
+	renderTargetTex = nullptr;
+	renderTargetView = nullptr;
+	depthStencilTex = nullptr;
+	depthStencilView = nullptr;
 }
 
 bool DX11CoreRender::_create_buffers(uint w, uint h)
 {
 	// Create a render target view
-	auto hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)&renderTargetTex);
+	auto hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)renderTargetTex.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
-	hr = device->CreateRenderTargetView(renderTargetTex, nullptr, &renderTargetView);
+	hr = device->CreateRenderTargetView(renderTargetTex.Get(), nullptr, renderTargetView.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
@@ -68,7 +68,7 @@ bool DX11CoreRender::_create_buffers(uint w, uint h)
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
-	hr = device->CreateTexture2D(&descDepth, nullptr, &depthStencilTex);
+	hr = device->CreateTexture2D(&descDepth, nullptr, depthStencilTex.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
@@ -78,11 +78,11 @@ bool DX11CoreRender::_create_buffers(uint w, uint h)
 	descDSV.Format = descDepth.Format;
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
-	hr = device->CreateDepthStencilView(depthStencilTex, &descDSV, &depthStencilView);
+	hr = device->CreateDepthStencilView(depthStencilTex.Get(), &descDSV, depthStencilView.GetAddressOf());
 	if (FAILED(hr))
 		return hr;
 
-	context->OMSetRenderTargets(1, &renderTargetView, depthStencilView);
+	context->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
 }
 
 ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
@@ -199,12 +199,12 @@ API DX11CoreRender::Init(const WinHandle* handle)
 		D3D_DRIVER_TYPE g_driverType = driverTypes[driverTypeIndex];
 		D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 
-		hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels, D3D11_SDK_VERSION, &device, &g_featureLevel, &context);
+		hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels, D3D11_SDK_VERSION, device.GetAddressOf(), &g_featureLevel, context.GetAddressOf());
 
 		if (hr == E_INVALIDARG)
 		{
 			// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
-			hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1, D3D11_SDK_VERSION, &device, &g_featureLevel, &context);
+			hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1, D3D11_SDK_VERSION, device.GetAddressOf(), &g_featureLevel, context.GetAddressOf());
 		}
 
 		if (SUCCEEDED(hr))
@@ -252,7 +252,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 		sd.BufferCount = 1;
 
 		ComPtr<IDXGISwapChain1> g_pSwapChain1;
-		hr = dxgiFactory2->CreateSwapChainForHwnd(device, hwnd, &sd, nullptr, nullptr, &g_pSwapChain1);
+		hr = dxgiFactory2->CreateSwapChainForHwnd(device.Get(), hwnd, &sd, nullptr, nullptr, &g_pSwapChain1);
 		if (SUCCEEDED(hr))
 		{
 			hr = g_pSwapChain1.As(&swapChain);
@@ -275,7 +275,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 		sd.SampleDesc.Quality = 0;
 		sd.Windowed = TRUE;
 
-		hr = dxgiFactory->CreateSwapChain(device, &sd, &swapChain);
+		hr = dxgiFactory->CreateSwapChain(device.Get(), &sd, &swapChain);
 	}
 
 	// Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
@@ -665,9 +665,9 @@ API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 API DX11CoreRender::Clear()
 {
 	static const FLOAT color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	context->ClearRenderTargetView(renderTargetView, color);
+	context->ClearRenderTargetView(renderTargetView.Get(), color);
 
-	context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	context->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	return S_OK;
 }
@@ -682,11 +682,12 @@ API DX11CoreRender::Free()
 {
 	if (rasterState) rasterState->Release();
 
-	if (context) context->ClearState();
+	context->ClearState();
 
 	_destroy_buffers();
-	if (swapChain) swapChain.Reset();
-	if (context) context->Release();
+	swapChain = nullptr;
+
+	context = nullptr;
 
 	LOG("DX11CoreRender::Free()");
 
@@ -699,7 +700,7 @@ API DX11CoreRender::Free()
 	//	pDebug->Release();
 	//}
 
-	if (device) device->Release();
+	device = nullptr;
 
 	return S_OK;
 }
