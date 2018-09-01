@@ -83,6 +83,8 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 		return hr;
 
 	_context->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), _depthStencilView.Get());
+
+	return true;
 }
 
 ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* src)

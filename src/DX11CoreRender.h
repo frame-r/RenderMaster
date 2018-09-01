@@ -22,13 +22,11 @@ public:
 
 class DX11CoreRender final : public ICoreRender
 {
-	IResourceManager *_pResMan{nullptr};
+	WRL::ComPtr<ID3D11DeviceContext> _context;
+	WRL::ComPtr<ID3D11Device> _device;
 
 	// TODO: make map HWND -> {IDXGISwapChain, ID3D11RenderTargetView} for support multiple windows
 	WRL::ComPtr<IDXGISwapChain> _swapChain;
-
-	WRL::ComPtr<ID3D11DeviceContext> _context;
-	WRL::ComPtr<ID3D11Device> _device;
 
 	WRL::ComPtr<ID3D11Texture2D> _renderTargetTex;
 	WRL::ComPtr<ID3D11RenderTargetView> _renderTargetView;
@@ -51,6 +49,8 @@ class DX11CoreRender final : public ICoreRender
 	ID3D11DeviceChild* create_shader_by_src(int type, const char *src);
 	const char* get_shader_profile(int type);
 	const char* get_main_function(int type);
+
+	IResourceManager *_pResMan{nullptr};
 
 public:
 
