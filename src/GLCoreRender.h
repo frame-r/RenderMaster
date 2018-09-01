@@ -81,7 +81,7 @@ class GLCoreRender final : public ICoreRender
 public:
 
 	GLCoreRender();
-	~GLCoreRender();
+	virtual ~GLCoreRender();
 
 	API Init(const WinHandle* handle) override;
 	API PushStates() override;
@@ -91,7 +91,6 @@ public:
 	API SetShader(const ICoreShader *pShader) override;
 	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
 	API SetUniform(IUniformBuffer *pBuffer, const void *pData) override;
-	//API SetUniformArray(IUniformBuffer *pBuffer, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
 	API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) override;
 	API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) override;
 	API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;

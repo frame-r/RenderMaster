@@ -88,8 +88,8 @@ bool DX11CoreRender::_create_buffers(uint w, uint h)
 ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 {
 	ID3D11DeviceChild *ret{nullptr};
-	ID3DBlob *error_buffer{nullptr};
-	ID3DBlob *shader_buffer{nullptr};
+	ComPtr<ID3DBlob> error_buffer;
+	ComPtr<ID3DBlob> shader_buffer;
 
 	#ifndef NDEBUG
 		constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG);
@@ -97,23 +97,18 @@ ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 		constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3);
 	#endif
 	
-		auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, get_main_function(type), get_shader_profile(type), flags, 0, &shader_buffer, &error_buffer);
+		auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, get_main_function(type), get_shader_profile(type), flags, 0, shader_buffer.GetAddressOf(), error_buffer.GetAddressOf());
 
 		if (FAILED(hr))
 		{
 			if (error_buffer)
-			{
 				LOG_FATAL_FORMATTED("DX11CoreRender::_create_shader() failed to compile shader %s\n", (char*)error_buffer->GetBufferPointer());
-				error_buffer->Release();
-			}
-
-			if (shader_buffer)
-				shader_buffer->Release();
 		}else
 		{
 			unsigned char *data = (unsigned char *)shader_buffer->GetBufferPointer();
 			int size = (int)shader_buffer->GetBufferSize();
 			HRESULT res = S_FALSE;
+
 			switch (type)
 			{
 			case TYPE_VERTEX:
@@ -129,9 +124,6 @@ ID3D11DeviceChild* DX11CoreRender::_create_shader(int type, const char* src)
 				res = device->CreatePixelShader(data, size, NULL, (ID3D11PixelShader**)&ret);
 				break;
 			}
-
-			if (shader_buffer)
-				shader_buffer->Release();
 
 			if (ret)
 				return ret;
@@ -444,7 +436,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 
 	//
 	// create input layout
-	hr = device->CreateInputLayout(reinterpret_cast<const D3D11_INPUT_ELEMENT_DESC*>(&layout[0]), layout.size(), shaderBuffer->GetBufferPointer(), shaderBuffer->GetBufferSize(), &il);
+	hr = device->CreateInputLayout(reinterpret_cast<const D3D11_INPUT_ELEMENT_DESC*>(&layout[0]), (UINT)layout.size(), shaderBuffer->GetBufferPointer(), shaderBuffer->GetBufferSize(), &il);
 
 	if (FAILED(hr))
 		return hr;	
@@ -707,7 +699,7 @@ API DX11CoreRender::Free()
 
 API DX11ConstantBuffer::Free()
 {
-	const auto free_ = [&]() -> void { if (buffer) buffer->Release(); };
+	const auto free_ = [&]() -> void { buffer = nullptr; };
 	standard_free_and_delete(this, free_, _pCore);
 	return S_OK;
 }

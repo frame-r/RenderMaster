@@ -8,13 +8,13 @@ namespace WRL = Microsoft::WRL;
 
 class DX11ConstantBuffer final: public IUniformBuffer
 {
-	ID3D11Buffer *buffer{nullptr};
+	WRL::ComPtr<ID3D11Buffer> buffer;
 
 public:
 
 	DX11ConstantBuffer(ID3D11Buffer *bufferIn) : buffer(bufferIn) {}
 
-	ID3D11Buffer *nativeBuffer() const { return buffer; }
+	ID3D11Buffer *nativeBuffer() const { return buffer.Get(); }
 
 	API Free() override;
 	API GetType(OUT RES_TYPE *type) override;
@@ -55,7 +55,7 @@ class DX11CoreRender final : public ICoreRender
 public:
 
 	DX11CoreRender();
-	~DX11CoreRender();
+	virtual ~DX11CoreRender();
 	
 	API Init(const WinHandle* handle) override;
 	API PushStates() override;
