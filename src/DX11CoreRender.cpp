@@ -48,11 +48,11 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	// Create a render target view
 	auto hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)_renderTargetTex.GetAddressOf());
 	if (FAILED(hr))
-		return hr;
+		return !hr;
 
 	hr = _device->CreateRenderTargetView(_renderTargetTex.Get(), nullptr, _renderTargetView.GetAddressOf());
 	if (FAILED(hr))
-		return hr;
+		return !hr;
 
 	// Create depth stencil texture
 	D3D11_TEXTURE2D_DESC descDepth;
@@ -70,7 +70,7 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	descDepth.MiscFlags = 0;
 	hr = _device->CreateTexture2D(&descDepth, nullptr, _depthStencilTex.GetAddressOf());
 	if (FAILED(hr))
-		return hr;
+		return !hr;
 
 	// Create the depth stencil view
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
@@ -80,7 +80,7 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	descDSV.Texture2D.MipSlice = 0;
 	hr = _device->CreateDepthStencilView(_depthStencilTex.Get(), &descDSV, _depthStencilView.GetAddressOf());
 	if (FAILED(hr))
-		return hr;
+		return !hr;
 
 	_context->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), _depthStencilView.Get());
 
@@ -534,7 +534,7 @@ API DX11CoreRender::SetShader(const ICoreShader* pShader)
 
 API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 {
-	ID3D11Buffer* ret{nullptr};
+	ComPtr<ID3D11Buffer> ret;
 
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -542,9 +542,9 @@ API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	bd.ByteWidth = size;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
-	auto hr = _device->CreateBuffer(&bd, nullptr, &ret);
+	auto hr = _device->CreateBuffer(&bd, nullptr, ret.GetAddressOf());
 
-	*pBuffer = new DX11ConstantBuffer(ret);
+	*pBuffer = new DX11ConstantBuffer(ret.Get());
 	_pResMan->AddToList((IResource*)*pBuffer);
 
 	return hr;
@@ -686,13 +686,13 @@ API DX11CoreRender::Free()
 	LOG("DX11CoreRender::Free()");
 
 	// debug
-	//ID3D11Debug *pDebug;
-	//auto hr = device->QueryInterface(IID_PPV_ARGS(&pDebug));
-	//if (pDebug != nullptr)
-	//{
-	//	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-	//	pDebug->Release();
-	//}
+	ID3D11Debug *pDebug;
+	auto hr = _device->QueryInterface(IID_PPV_ARGS(&pDebug));
+	if (pDebug != nullptr)
+	{
+		pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+		pDebug->Release();
+	}
 
 	_device = nullptr;
 
