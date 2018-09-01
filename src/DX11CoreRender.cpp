@@ -281,7 +281,8 @@ API DX11CoreRender::Init(const WinHandle* handle)
 
 	create_viewport_buffers(width, height);
 
-	// Setup the viewport
+	// Viewport state
+	//
 	D3D11_VIEWPORT vp;
 	vp.Width = (FLOAT)width;
 	vp.Height = (FLOAT)height;
@@ -291,32 +292,38 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	vp.TopLeftY = 0;
 	_context->RSSetViewports(1, &vp);
 
-	D3D11_RASTERIZER_DESC rasterDesc;
-	rasterDesc.AntialiasedLineEnable = false;
-	rasterDesc.CullMode = D3D11_CULL_NONE;
-	rasterDesc.DepthBias = 0;
-	rasterDesc.DepthBiasClamp = 0.0f;
-	rasterDesc.DepthClipEnable = true;
-	rasterDesc.FillMode = D3D11_FILL_SOLID;
-	rasterDesc.FrontCounterClockwise = false;
-	rasterDesc.MultisampleEnable = false;
-	rasterDesc.ScissorEnable = false;
-	rasterDesc.SlopeScaledDepthBias = 0.0f;
 
-	auto result = _device->CreateRasterizerState(&rasterDesc, &_rasterState);
-	if (FAILED(result))
-	{
-		return S_FALSE;
-	}
-
-	_context->RSSetState(_rasterState.Get());
-	
-	_context->RSGetState(&_rasterState);
-
+	// Rasterizer state
+	//
+	auto defRasterState = _rasterizerStatePool.GetDefaultState();
+	_context->RSSetState(defRasterState.Get());
+	defRasterState->GetDesc(&_currentState.rasterState);
 
 	// debug
+	ComPtr<ID3D11RasterizerState> _rasterState;
+	_context->RSGetState(_rasterState.GetAddressOf());
 	D3D11_RASTERIZER_DESC desc;
 	_rasterState->GetDesc(&desc);
+
+
+
+	// Depth Stencil state
+	//
+	auto defDepthStencilState = _depthStencilStatePool.GetDefaultState();
+	_context->OMSetDepthStencilState(defDepthStencilState.Get(), 0);
+	defDepthStencilState->GetDesc(&_currentState.depthState);
+
+	// debug
+	ComPtr<ID3D11DepthStencilState> _depthStencilState;
+	UINT sref = 0;
+	_context->OMGetDepthStencilState(_depthStencilState.GetAddressOf(), &sref);
+	D3D11_DEPTH_STENCIL_DESC dss;
+	_depthStencilState->GetDesc(&dss);
+
+
+	// Blend State
+	//
+
 
 
 	//ID3D11DepthStencilState *ppDepthStencilState;
@@ -613,7 +620,11 @@ API DX11CoreRender::Draw(ICoreMesh* mesh)
 
 API DX11CoreRender::SetDepthState(int enabled)
 {
-	return E_NOTIMPL;
+	ComPtr<ID3D11DepthStencilState> d = _depthStencilStatePool.GetDepthState(enabled);
+	_context->OMSetDepthStencilState(d.Get(), 0);
+	d->GetDesc(&_currentState.depthState);
+
+	return S_OK;
 }
 
 API DX11CoreRender::SetViewport(uint w, uint h)
@@ -674,7 +685,8 @@ API DX11CoreRender::SwapBuffers()
 
 API DX11CoreRender::Free()
 {
-	_rasterState = nullptr;
+	for (auto &callback : _onCleanBroadcast)
+		callback();
 
 	_context->ClearState();
 
