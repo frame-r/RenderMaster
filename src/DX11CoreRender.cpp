@@ -398,7 +398,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	unsigned int offset = 0;
 
 	std::vector<D3D11_INPUT_ELEMENT_DESC> layout{{"POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}};
-	offset += 12;
+	offset += 16;
 
 	if (normals)
 	{
@@ -620,9 +620,11 @@ API DX11CoreRender::Draw(ICoreMesh* mesh)
 
 API DX11CoreRender::SetDepthState(int enabled)
 {
-	ComPtr<ID3D11DepthStencilState> d = _depthStencilStatePool.GetDepthState(enabled);
-	_context->OMSetDepthStencilState(d.Get(), 0);
-	d->GetDesc(&_currentState.depthState);
+	if (_currentState.depthState.DepthEnable != enabled)
+	{
+		ComPtr<ID3D11DepthStencilState> d = _depthStencilStatePool.ModifyDepthState(enabled);
+		_context->OMSetDepthStencilState(d.Get(), 0);
+	}
 
 	return S_OK;
 }
@@ -698,13 +700,13 @@ API DX11CoreRender::Free()
 	LOG("DX11CoreRender::Free()");
 
 	// debug
-	ID3D11Debug *pDebug;
-	auto hr = _device->QueryInterface(IID_PPV_ARGS(&pDebug));
-	if (pDebug != nullptr)
-	{
-		pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-		pDebug->Release();
-	}
+	//ID3D11Debug *pDebug;
+	//auto hr = _device->QueryInterface(IID_PPV_ARGS(&pDebug));
+	//if (pDebug != nullptr)
+	//{
+	//	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	//	pDebug->Release();
+	//}
 
 	_device = nullptr;
 

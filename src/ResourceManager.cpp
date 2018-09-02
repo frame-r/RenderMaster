@@ -524,6 +524,7 @@ void ResourceManager::Init()
 	const int floats = (4 + 4) * numberOfVeretex;
 
 	float vertexAxesArrows[floats];
+	void *M = vertexAxesArrows;
 	for (int i = 0; i < 3; i++) // 3 axes
 	{
 		vec4 color;

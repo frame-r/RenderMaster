@@ -62,10 +62,10 @@ class DX11CoreRender final : public ICoreRender
 		std::map<TDesc, WRL::ComPtr<TState>> _pool;
 		DX11CoreRender &_parent;
 
-		virtual API CreateState(const TDesc *pRasterizerDesc, _COM_Outptr_opt_  TState **ppRasterizerState) = 0;
+		virtual API CreateDXState(const TDesc *pRasterizerDesc, _COM_Outptr_opt_  TState **ppRasterizerState) = 0;
 
 		template <typename T, T TDesc::*Memeber>
-		WRL::ComPtr<TState> _getState(TDesc state, T& value)
+		WRL::ComPtr<TState> _getModifedState(TDesc& state, T& value)
 		{
 			state.*Memeber = value;
 
@@ -73,20 +73,16 @@ class DX11CoreRender final : public ICoreRender
 
 			if (it != _pool.end())
 				return it->second;
-
+			
 			WRL::ComPtr<TState> ret;
 
-			//if (FAILED(_parent._device->CreateRasterizerState(&state, ret.GetAddressOf())))
-			//	return WRL::ComPtr<TState>();
-
-			if (FAILED(CreateState(&state, ret.GetAddressOf())))
+			if (FAILED(CreateDXState(&state, ret.GetAddressOf())))
 				return WRL::ComPtr<TState>();
 
 			_pool[state] = ret;
 
 			return ret;
 		}
-
 
 		void _free() { _pool.clear(); }
 
@@ -103,7 +99,7 @@ class DX11CoreRender final : public ICoreRender
 	public:
 		RasterizerStatePool(DX11CoreRender& parent) : BaseStatePool(parent) {}
 
-		virtual API CreateState(const D3D11_RASTERIZER_DESC *pRasterizerDesc, _COM_Outptr_opt_  ID3D11RasterizerState **ppRasterizerState) override
+		virtual API CreateDXState(const D3D11_RASTERIZER_DESC *pRasterizerDesc, _COM_Outptr_opt_  ID3D11RasterizerState **ppRasterizerState) override
 		{
 			return _parent._device->CreateRasterizerState(pRasterizerDesc, ppRasterizerState);
 		}
@@ -133,14 +129,14 @@ class DX11CoreRender final : public ICoreRender
 			return ret;
 		}
 
-		WRL::ComPtr<ID3D11RasterizerState> GetCullMode(D3D11_CULL_MODE &cullMode)
+		WRL::ComPtr<ID3D11RasterizerState> ModifyCullMode(D3D11_CULL_MODE &cullMode)
 		{
-			return _getState<D3D11_CULL_MODE, &D3D11_RASTERIZER_DESC::CullMode>(_parent._currentState.rasterState, cullMode);
+			return _getModifedState<D3D11_CULL_MODE, &D3D11_RASTERIZER_DESC::CullMode>(_parent._currentState.rasterState, cullMode);
 		}
 
-		WRL::ComPtr<ID3D11RasterizerState> GetFillMode(D3D11_FILL_MODE &fillMode)
+		WRL::ComPtr<ID3D11RasterizerState> ModifyFillMode(D3D11_FILL_MODE &fillMode)
 		{
-			return _getState<D3D11_FILL_MODE, &D3D11_RASTERIZER_DESC::FillMode>(_parent._currentState.rasterState, fillMode);
+			return _getModifedState<D3D11_FILL_MODE, &D3D11_RASTERIZER_DESC::FillMode>(_parent._currentState.rasterState, fillMode);
 		}
 
 	}_rasterizerStatePool{*this};
@@ -150,7 +146,7 @@ class DX11CoreRender final : public ICoreRender
 	public:
 		DepthStencilStatePool(DX11CoreRender& parent) : BaseStatePool(parent) {}
 
-		virtual API CreateState(const D3D11_DEPTH_STENCIL_DESC *desc, _COM_Outptr_opt_  ID3D11DepthStencilState **ppState) override
+		virtual API CreateDXState(const D3D11_DEPTH_STENCIL_DESC *desc, _COM_Outptr_opt_  ID3D11DepthStencilState **ppState) override
 		{
 			return _parent._device->CreateDepthStencilState(desc, ppState);
 		}
@@ -192,9 +188,9 @@ class DX11CoreRender final : public ICoreRender
 			return ret;
 		}
 
-		WRL::ComPtr<ID3D11DepthStencilState> GetDepthState(BOOL &enabled)
+		WRL::ComPtr<ID3D11DepthStencilState> ModifyDepthState(BOOL &enabled)
 		{
-			return _getState<BOOL, &D3D11_DEPTH_STENCIL_DESC::DepthEnable>(_parent._currentState.depthState, enabled);
+			return _getModifedState<BOOL, &D3D11_DEPTH_STENCIL_DESC::DepthEnable>(_parent._currentState.depthState, enabled);
 		}
 
 

@@ -458,12 +458,12 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 	const GLenum glBufferType = GL_STATIC_DRAW; // TODO: GL_DYNAMIC_DRAW;
 	glBufferData(GL_ARRAY_BUFFER, bytes, reinterpret_cast<const void*>(dataDesc->pData), glBufferType); // send data to VRAM
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, dataDesc->positionStride, reinterpret_cast<const void*>((long long)dataDesc->positionOffset));
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, dataDesc->positionStride, reinterpret_cast<const void*>((long long)dataDesc->positionOffset));
 	glEnableVertexAttribArray(0);
 	
 	if (normals)
 	{
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, dataDesc->normalStride, reinterpret_cast<const void*>((long long)dataDesc->normalOffset));
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, dataDesc->normalStride, reinterpret_cast<const void*>((long long)dataDesc->normalOffset));
 		glEnableVertexAttribArray(1);
 	}
 	
@@ -475,7 +475,7 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 
 	if (colors)
 	{
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, dataDesc->colorStride, reinterpret_cast<const void*>((long long)dataDesc->colorOffset));
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, dataDesc->colorStride, reinterpret_cast<const void*>((long long)dataDesc->colorOffset));
 		glEnableVertexAttribArray(3);
 	}
 	
