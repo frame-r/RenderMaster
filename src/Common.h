@@ -187,12 +187,11 @@ inline vec3 GetBackDirection(const mat4& ModelMat) { return -vec3(ModelMat.Colum
 // Calculates Perspective matrix
 // In right-handed coordinate system
 // Camera: X - right, Y -top, Z - back
-// Depth is in range [-1, 1]
+// Depth is in range [0, 1]
 // fov - vertical (Y) in radians
 // aspect - width / height
 // 
-// 	https://github.com/g-truc/glm/blob/master/glm/gtc/matrix_transform.inl perspectiveRH_NO(T fovy, T aspect, T zNear, T zFar)
+// 	https://github.com/g-truc/glm/blob/0ceb2b755fb155d593854aefe3e45d416ce153a4/glm/ext/matrix_clip_space.inl perspectiveRH_ZO(T fovy, T aspect, T zNear, T zFar)
 //
-mat4 perspective(float fov, float aspect, float zNear, float zFar);
+mat4 perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar);
 
-mat4 perspective01(float fov, float aspect, float zNear, float zFar);

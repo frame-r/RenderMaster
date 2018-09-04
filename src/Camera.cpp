@@ -115,22 +115,22 @@ API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 	//P.el_2D[2][3] = (2.0f * _zFar * _zNear) / (_zNear - _zFar);
 	//P.el_2D[3][3] = 0.0f;
 
-	P = perspective(_fovAngle * DEGTORAD, aspect, _zNear, _zFar);
+	P = perspectiveRH_ZO(_fovAngle * DEGTORAD, aspect, _zNear, _zFar);
 
 	mat4 V;
 	GetInvModelMatrix(&V);
 
-	/*
-	vec4 zf(1.0f, 0.0f, _zFar, 1.0f);
-	vec4 zn(1.0f, 0.0f, _zNear, 1.0f);
-	vec4 zm(1.0f, 0.0f, (_zNear + _zFar) * 0.5f, 1.0f);
+	
+	vec4 zf(1.0f, 0.0f, -_zFar, 1.0f);
+	vec4 zn(1.0f, 0.0f, -_zNear, 1.0f);
+	//vec4 zm(1.0f, 0.0f, (_zNear + _zFar) * 0.5f, 1.0f);
 
 	vec4 rf = P * zf;
-	rf /= rf.w;
+	rf /= rf.w; // -> 1
 
 	vec4 rn = P * zn;
-	rn /= rn.w;
-
+	rn /= rn.w; // -> 0
+/*
 	vec4 rm = P * zm;
 	rm /= rm.w;
 

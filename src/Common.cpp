@@ -109,7 +109,7 @@ void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center)
 	Result.el_2D[2][3] = -Z.Dot(eye);
 }
 
-mat4 perspective(float fov, float aspect, float zNear, float zFar)
+mat4 perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar)
 {
 	assert(abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
 
@@ -117,27 +117,13 @@ mat4 perspective(float fov, float aspect, float zNear, float zFar)
 
 	mat4 Result;
 
+	Result.el_2D[3][3] = 0.0f;
 	Result.el_2D[0][0] = 1.0f / (aspect * tanHalfFovy);
 	Result.el_2D[1][1] = 1.0f / (tanHalfFovy);
-	Result.el_2D[2][2] = -(zFar + zNear) / (zFar - zNear);
+	Result.el_2D[2][2] = -zFar / (zFar - zNear);
 	Result.el_2D[3][2] = -1.0f;
-	Result.el_2D[2][3] = -(2.0f * zFar * zNear) / (zFar - zNear);
+	Result.el_2D[2][3] = -(zFar * zNear) / (zFar - zNear);
 	
-	return Result;
-}
-
-mat4 perspective01(float fov, float aspect, float zNear, float zFar)
-{
-	assert(abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
-
-	float const tanHalfFovy = tan(fov / 2.0f);
-
-	mat4 Result;
-	Result.el_2D[0][0] = 1.0f / (aspect * tanHalfFovy);
-	Result.el_2D[1][1] = 1.0f / (tanHalfFovy);
-	Result.el_2D[2][2] = zFar / (zNear - zFar);
-	Result.el_2D[2][3] = -1.0f;
-	Result.el_2D[3][2] = -(zFar * zNear) / (zFar - zNear);
 	return Result;
 }
 
