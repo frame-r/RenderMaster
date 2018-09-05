@@ -20,23 +20,176 @@ public:
 	API GetType(OUT RES_TYPE *type) override;
 };
 
-inline bool operator <(const D3D11_RASTERIZER_DESC& l, const D3D11_RASTERIZER_DESC& r)
-{
-	return std::tie(l.AntialiasedLineEnable, l.CullMode, l.DepthBias, l.DepthBiasClamp, l.DepthClipEnable, l.FillMode, l.FrontCounterClockwise, l.MultisampleEnable, l.ScissorEnable, l.SlopeScaledDepthBias) <
-		std::tie(r.AntialiasedLineEnable, r.CullMode, r.DepthBias, r.DepthBiasClamp, r.DepthClipEnable, r.FillMode, r.FrontCounterClockwise, r.MultisampleEnable, r.ScissorEnable, r.SlopeScaledDepthBias);
-}
+//inline bool operator <(const D3D11_RASTERIZER_DESC& l, const D3D11_RASTERIZER_DESC& r)
+//{
+//	return std::tie(l.AntialiasedLineEnable, l.CullMode, l.DepthBias, l.DepthBiasClamp, l.DepthClipEnable, l.FillMode, l.FrontCounterClockwise, l.MultisampleEnable, l.ScissorEnable, l.SlopeScaledDepthBias) <
+//		std::tie(r.AntialiasedLineEnable, r.CullMode, r.DepthBias, r.DepthBiasClamp, r.DepthClipEnable, r.FillMode, r.FrontCounterClockwise, r.MultisampleEnable, r.ScissorEnable, r.SlopeScaledDepthBias);
+//}
+//
+//inline bool operator <(const D3D11_DEPTH_STENCILOP_DESC& l, const D3D11_DEPTH_STENCILOP_DESC& r)
+//{
+//	return std::tie(l.StencilDepthFailOp, l.StencilFailOp, l.StencilFunc, l.StencilPassOp) <
+//		std::tie(r.StencilDepthFailOp, r.StencilFailOp, r.StencilFunc, r.StencilPassOp);
+//}
+//
+//inline bool operator <(const D3D11_DEPTH_STENCIL_DESC& l, const D3D11_DEPTH_STENCIL_DESC& r)
+//{
+//	return std::tie(l.DepthEnable, l.BackFace, l.DepthFunc, l.DepthWriteMask, l.FrontFace, l.StencilEnable, l.StencilReadMask, l.StencilWriteMask) <
+//		std::tie(r.DepthEnable, r.BackFace, r.DepthFunc, r.DepthWriteMask, r.FrontFace, r.StencilEnable, r.StencilReadMask, r.StencilWriteMask);
+//}
+//
+//inline bool operator <(const D3D11_BLEND_DESC& l, const D3D11_BLEND_DESC& r)
+//{
+//	return std::tie(l.IndependentBlendEnable, l.AlphaToCoverageEnable) <
+//		std::tie(r.DepthEnable, r.BackFace, r.DepthFunc, r.DepthWriteMask, r.FrontFace, r.StencilEnable, r.StencilReadMask, r.StencilWriteMask);
+//}
 
-inline bool operator <(const D3D11_DEPTH_STENCILOP_DESC& l, const D3D11_DEPTH_STENCILOP_DESC& r)
-{
-	return std::tie(l.StencilDepthFailOp, l.StencilFailOp, l.StencilFunc, l.StencilPassOp) <
-		std::tie(r.StencilDepthFailOp, r.StencilFailOp, r.StencilFunc, r.StencilPassOp);
-}
 
-inline bool operator <(const D3D11_DEPTH_STENCIL_DESC& l, const D3D11_DEPTH_STENCIL_DESC& r)
+struct RasterHash
 {
-	return std::tie(l.DepthEnable, l.BackFace, l.DepthFunc, l.DepthWriteMask, l.FrontFace, l.StencilEnable, l.StencilReadMask, l.StencilWriteMask) <
-		std::tie(r.DepthEnable, r.BackFace, r.DepthFunc, r.DepthWriteMask, r.FrontFace, r.StencilEnable, r.StencilReadMask, r.StencilWriteMask);
-}
+	union CompactDesc
+	{
+		uint64_t u64;
+		struct
+		{
+			unsigned int fillmode : 2;
+			unsigned int cullmode : 2;
+			unsigned int frontccw : 1;
+			unsigned int depthclip : 1;
+			unsigned int scissor : 1;
+			unsigned int msaa : 1;
+			unsigned int antialias : 1;
+			unsigned int depthbias : 23;
+			float        misc;
+		};
+	};
+
+	uint64_t operator()(const D3D11_RASTERIZER_DESC & desc) const
+	{
+		CompactDesc cd;
+
+		cd.fillmode = desc.FillMode;
+		cd.cullmode = desc.CullMode;
+		cd.frontccw = desc.FrontCounterClockwise;
+		cd.depthclip = desc.DepthClipEnable;
+		cd.scissor = desc.ScissorEnable;
+		cd.msaa = desc.MultisampleEnable;
+		cd.antialias = desc.AntialiasedLineEnable;
+		cd.depthbias = desc.DepthBias;
+		cd.misc = desc.DepthBiasClamp + desc.SlopeScaledDepthBias;
+
+		return cd.u64;
+	}
+
+	bool operator()(const D3D11_RASTERIZER_DESC& a, const D3D11_RASTERIZER_DESC& b) const
+	{
+		return 0 == ::memcmp(&a, &b, sizeof(a));
+	}
+};
+
+struct DepthStencilHash
+{
+	union CompactDesc
+	{
+		uint64_t u64;
+		struct
+		{
+			unsigned int depth : 1;
+			unsigned int write : 1;
+			unsigned int zfunc : 3;
+			unsigned int stencil : 1;
+			unsigned int ff_fail : 3;
+			unsigned int ff_zfail : 3;
+			unsigned int ff_pass : 3;
+			unsigned int ff_func : 3;
+			unsigned int bf_fail : 3;
+			unsigned int bf_zfail : 3;
+			unsigned int bf_pass : 3;
+			unsigned int bf_func : 3;
+			unsigned int nouse : 2;
+			unsigned int srmask : 16;
+			unsigned int swmask : 16;
+		};
+	};
+
+	uint64_t operator()(const D3D11_DEPTH_STENCIL_DESC & desc) const
+	{
+		CompactDesc cd;
+
+		cd.depth = desc.DepthEnable;
+		cd.write = desc.DepthWriteMask;
+		cd.zfunc = desc.DepthFunc - 1;
+		cd.stencil = desc.StencilEnable;
+		cd.ff_fail = desc.FrontFace.StencilFailOp - 1;
+		cd.ff_zfail = desc.FrontFace.StencilDepthFailOp - 1;
+		cd.ff_pass = desc.FrontFace.StencilPassOp - 1;
+		cd.ff_func = desc.FrontFace.StencilFunc - 1;
+		cd.bf_fail = desc.BackFace.StencilFailOp - 1;
+		cd.bf_zfail = desc.BackFace.StencilDepthFailOp - 1;
+		cd.bf_pass = desc.BackFace.StencilPassOp - 1;
+		cd.bf_func = desc.BackFace.StencilFunc - 1;
+		cd.nouse = 0;
+		cd.srmask = desc.StencilReadMask;
+		cd.swmask = desc.StencilWriteMask;
+
+		return cd.u64;
+	}
+
+	bool operator()(const D3D11_DEPTH_STENCIL_DESC& a, const D3D11_DEPTH_STENCIL_DESC& b) const
+	{
+		return 0 == memcmp(&a, &b, sizeof(a));
+	}
+};
+
+struct BlendHash
+{
+	union CompactDesc
+	{
+		uint64_t u64;
+		struct
+		{
+			uint64_t a2c : 1;
+			uint64_t ibe : 1;
+			uint64_t be : 8;
+			uint64_t sb : 5;
+			uint64_t db : 5;
+			uint64_t bo : 3;
+			uint64_t sba : 5;
+			uint64_t dba : 5;
+			uint64_t boa : 3;
+			uint64_t mask : 28;
+		};
+	};
+
+	uint64_t operator()(const D3D11_BLEND_DESC & desc) const
+	{
+		CompactDesc cd;
+
+		cd.a2c = desc.AlphaToCoverageEnable;
+		cd.ibe = desc.IndependentBlendEnable;
+		cd.be = desc.RenderTarget[0].BlendEnable;
+		cd.sb = desc.RenderTarget[0].SrcBlend;
+		cd.db = desc.RenderTarget[0].DestBlend;
+		cd.bo = desc.RenderTarget[0].BlendOp;
+		cd.sba = desc.RenderTarget[0].SrcBlendAlpha;
+		cd.dba = desc.RenderTarget[0].DestBlendAlpha;
+		cd.boa = desc.RenderTarget[0].BlendOpAlpha;
+		cd.mask = desc.RenderTarget[0].RenderTargetWriteMask;
+
+		for (int i = 1; i < 8; ++i)
+		{
+			cd.be |= desc.RenderTarget[i].BlendEnable << i;
+			cd.mask += desc.RenderTarget[i].RenderTargetWriteMask;
+		}
+
+		return cd.u64;
+	}
+
+	bool operator()(const D3D11_BLEND_DESC& a, const D3D11_BLEND_DESC& b) const
+	{
+		return 0 == memcmp(&a, &b, sizeof(a));
+	}
+};
 
 
 class DX11CoreRender final : public ICoreRender
@@ -55,11 +208,11 @@ class DX11CoreRender final : public ICoreRender
 
 	std::vector<std::function<void()>> _onCleanBroadcast;
 
-	template <typename TDesc, typename TState>
+	template <typename TDesc, typename TState, typename THashStruct>
 	class BaseStatePool
 	{
 	protected:
-		std::map<TDesc, WRL::ComPtr<TState>> _pool;
+		std::unordered_map<TDesc, WRL::ComPtr<TState>, THashStruct, THashStruct> _pool;
 		DX11CoreRender &_parent;
 
 		virtual API CreateDXState(const TDesc *pRasterizerDesc, _COM_Outptr_opt_  TState **ppRasterizerState) = 0;
@@ -93,8 +246,7 @@ class DX11CoreRender final : public ICoreRender
 		}
 	};
 
-
-	class RasterizerStatePool : public BaseStatePool<D3D11_RASTERIZER_DESC, ID3D11RasterizerState>
+	class RasterizerStatePool : public BaseStatePool<D3D11_RASTERIZER_DESC, ID3D11RasterizerState, RasterHash>
 	{
 	public:
 		RasterizerStatePool(DX11CoreRender& parent) : BaseStatePool(parent) {}
@@ -141,7 +293,7 @@ class DX11CoreRender final : public ICoreRender
 
 	}_rasterizerStatePool{*this};
 
-	class DepthStencilStatePool : public BaseStatePool<D3D11_DEPTH_STENCIL_DESC, ID3D11DepthStencilState>
+	class DepthStencilStatePool : public BaseStatePool<D3D11_DEPTH_STENCIL_DESC, ID3D11DepthStencilState, DepthStencilHash>
 	{
 	public:
 		DepthStencilStatePool(DX11CoreRender& parent) : BaseStatePool(parent) {}
@@ -193,36 +345,68 @@ class DX11CoreRender final : public ICoreRender
 			return _getModifedState<BOOL, &D3D11_DEPTH_STENCIL_DESC::DepthEnable>(_parent._currentState.depthState, enabled);
 		}
 
-
 	}_depthStencilStatePool{*this};
 
+	class BlendStatePool : public BaseStatePool<D3D11_BLEND_DESC, ID3D11BlendState, BlendHash>
+	{
+	public:
+		BlendStatePool(DX11CoreRender& parent) : BaseStatePool(parent) {}
+
+		virtual API CreateDXState(const D3D11_BLEND_DESC *desc, _COM_Outptr_opt_  ID3D11BlendState **ppState) override
+		{
+			return _parent._device->CreateBlendState(desc, ppState);
+		}
+
+		WRL::ComPtr<ID3D11BlendState> GetDefaultState()
+		{
+			WRL::ComPtr<ID3D11BlendState> ret;
+
+			D3D11_BLEND_DESC dsDesc;
+
+			// Depth test parameters
+			dsDesc.AlphaToCoverageEnable = FALSE;
+			dsDesc.IndependentBlendEnable = FALSE;
+
+			D3D11_RENDER_TARGET_BLEND_DESC rtDesc;
+
+			rtDesc.BlendEnable = FALSE;
+			rtDesc.SrcBlend = D3D11_BLEND_ONE;
+			rtDesc.DestBlend = D3D11_BLEND_ZERO;
+			rtDesc.BlendOp = D3D11_BLEND_OP_ADD;
+			rtDesc.SrcBlendAlpha = D3D11_BLEND_ONE;
+			rtDesc.DestBlendAlpha = D3D11_BLEND_ZERO;
+			rtDesc.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+			rtDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+			for (int i = 0; i < 8; ++i)
+				dsDesc.RenderTarget[i] = rtDesc;
+
+			auto result = _parent._device->CreateBlendState(&dsDesc, ret.GetAddressOf());
+			if (FAILED(result))
+				return WRL::ComPtr<ID3D11BlendState>();
+
+			_pool[dsDesc] = ret;
+
+			return ret;
+		}
+	}_blendStatePool{*this};
 
 	struct State
 	{
 		D3D11_RASTERIZER_DESC rasterState;
 		D3D11_DEPTH_STENCIL_DESC depthState;
-		//D3D11_BLEND_DESC blendState;
+		D3D11_BLEND_DESC blendState;
 	};
 
 	State _currentState;
 	std::stack<State> _stateStack;
 
-	enum
-	{
-		TYPE_VERTEX,
-		TYPE_GEOMETRY,
-		TYPE_FRAGMENT,
-	};
-
-	bool create_viewport_buffers(uint w, uint h);
-	void destroy_viewport_buffers();
-	
-	ID3D11DeviceChild* create_shader_by_src(int type, const char *src);
-	const char* get_shader_profile(int type);
-	const char* get_main_function(int type);
-
 	IResourceManager *_pResMan{nullptr};
 
+	ID3D11DeviceChild* create_shader_by_src(int type, const char *src);
+	bool create_viewport_buffers(uint w, uint h);
+	void destroy_viewport_buffers();	
+	
 public:
 
 	DX11CoreRender();

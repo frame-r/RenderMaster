@@ -53,9 +53,9 @@ class GLCoreRender final : public ICoreRender
 		struct SlotBindingDesc
 		{
 			GLuint tex_id{0u};
-			GLuint shader_var_id{0u};			
+			GLuint shader_variable_id{0u};			
 		};
-		SlotBindingDesc tex_slots_bindings[16]; // slot -> binded to slot shader variable and texture
+		SlotBindingDesc tex_slots_bindings[16]; // slot -> {shader, texture}
 
 		//
 		// Rasterizer state

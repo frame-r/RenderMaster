@@ -318,10 +318,10 @@ API GLCoreRender::Init(const WinHandle* handle)
 
 	glEnable(GL_DEPTH_TEST);
 	glClearDepth(1.0f);
-	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // to DirectX conformity
+
 	glDisable(GL_CULL_FACE);
 
-	//
 	// Fill state
 	//
 	_current_state.blending_enabled = 0;
@@ -381,12 +381,12 @@ API GLCoreRender::PopStates()
 	for (int i = 0; i < 16; i++)
 	{
 		if (state.tex_slots_bindings[i].tex_id != _current_state.tex_slots_bindings[i].tex_id ||
-			state.tex_slots_bindings[i].shader_var_id != _current_state.tex_slots_bindings[i].shader_var_id)
+			state.tex_slots_bindings[i].shader_variable_id != _current_state.tex_slots_bindings[i].shader_variable_id)
 		{
 			// TODO: make other types (not only GL_TEXTURE_2D)!
 			glActiveTexture(GL_TEXTURE0 + i);									// now work with slot == i
 			glBindTexture(GL_TEXTURE_2D, state.tex_slots_bindings[i].tex_id);	// slot <- texture id
-			glUniform1i(state.tex_slots_bindings[i].shader_var_id, i);			// slot <- shader variable id
+			glUniform1i(state.tex_slots_bindings[i].shader_variable_id, i);			// slot <- shader variable id
 		}
 	}
 
@@ -604,11 +604,6 @@ API GLCoreRender::SetUniform(IUniformBuffer *pBuffer, const void *pData)
 
 	return S_OK;
 }
-
-//API GLCoreRender::SetUniformArray(IUniformBuffer * pBuffer, const void * pData, const ICoreShader * pShader, SHADER_VARIABLE_TYPE type, uint number)
-//{
-//	return S_OK;
-//}
 
 API GLCoreRender::SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot)
 {

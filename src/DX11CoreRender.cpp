@@ -10,149 +10,19 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-
-const char *DX11CoreRender::get_shader_profile(int type)
+enum
 {
-	switch (type)
-	{
-	case TYPE_VERTEX: return "vs_5_0";
-	case TYPE_GEOMETRY: return "gs_5_0";
-	case TYPE_FRAGMENT: return "ps_5_0";
-	}
+	SHADER_VERTEX,
+	SHADER_GEOMETRY,
+	SHADER_FRAGMENT,
+};
 
-	return NULL;
-}
+const char *get_shader_profile(int type);
+const char *get_main_function(int type);
 
-const char *DX11CoreRender::get_main_function(int type)
-{
-	switch (type)
-	{
-	case TYPE_VERTEX: return "mainVS";
-	case TYPE_GEOMETRY: return "mainGS";
-	case TYPE_FRAGMENT: return "mainFS";
-	}
 
-	return NULL;
-}
-
-void DX11CoreRender::destroy_viewport_buffers()
-{
-	_renderTargetTex = nullptr;
-	_renderTargetView = nullptr;
-	_depthStencilTex = nullptr;
-	_depthStencilView = nullptr;
-}
-
-bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
-{
-	// Create a render target view
-	auto hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)_renderTargetTex.GetAddressOf());
-	if (FAILED(hr))
-		return !hr;
-
-	hr = _device->CreateRenderTargetView(_renderTargetTex.Get(), nullptr, _renderTargetView.GetAddressOf());
-	if (FAILED(hr))
-		return !hr;
-
-	// Create depth stencil texture
-	D3D11_TEXTURE2D_DESC descDepth;
-	ZeroMemory(&descDepth, sizeof(descDepth));
-	descDepth.Width = w;
-	descDepth.Height = h;
-	descDepth.MipLevels = 1;
-	descDepth.ArraySize = 1;
-	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	descDepth.SampleDesc.Count = 1;
-	descDepth.SampleDesc.Quality = 0;
-	descDepth.Usage = D3D11_USAGE_DEFAULT;
-	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	descDepth.CPUAccessFlags = 0;
-	descDepth.MiscFlags = 0;
-	hr = _device->CreateTexture2D(&descDepth, nullptr, _depthStencilTex.GetAddressOf());
-	if (FAILED(hr))
-		return !hr;
-
-	// Create the depth stencil view
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-	ZeroMemory(&descDSV, sizeof(descDSV));
-	descDSV.Format = descDepth.Format;
-	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	descDSV.Texture2D.MipSlice = 0;
-	hr = _device->CreateDepthStencilView(_depthStencilTex.Get(), &descDSV, _depthStencilView.GetAddressOf());
-	if (FAILED(hr))
-		return !hr;
-
-	_context->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), _depthStencilView.Get());
-
-	return true;
-}
-
-ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* src)
-{
-	ID3D11DeviceChild *ret{nullptr};
-	ComPtr<ID3DBlob> error_buffer;
-	ComPtr<ID3DBlob> shader_buffer;
-
-	#ifndef NDEBUG
-		constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG);
-	#else
-		constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3);
-	#endif
-	
-		auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, get_main_function(type), get_shader_profile(type), flags, 0, shader_buffer.GetAddressOf(), error_buffer.GetAddressOf());
-
-		if (FAILED(hr))
-		{
-			if (error_buffer)
-				LOG_FATAL_FORMATTED("DX11CoreRender::_create_shader() failed to compile shader %s\n", (char*)error_buffer->GetBufferPointer());
-		}else
-		{
-			unsigned char *data = (unsigned char *)shader_buffer->GetBufferPointer();
-			int size = (int)shader_buffer->GetBufferSize();
-			HRESULT res = S_FALSE;
-
-			switch (type)
-			{
-			case TYPE_VERTEX:
-				res = _device->CreateVertexShader(data, size, NULL, (ID3D11VertexShader**)&ret);
-				break;
-			case TYPE_GEOMETRY:
-				//if (entries)
-				//	ret = device->CreateGeometryShaderWithStreamOutput(data, size, entries, num_entries, &stride, 1, D3D11_SO_NO_RASTERIZED_STREAM, NULL, &shaders[type].geometry_shader);
-				//else
-				res = _device->CreateGeometryShader(data, size, NULL, (ID3D11GeometryShader**)&ret);
-				//break;
-			case TYPE_FRAGMENT:
-				res = _device->CreatePixelShader(data, size, NULL, (ID3D11PixelShader**)&ret);
-				break;
-			}
-
-			if (ret)
-				return ret;
-		}
-			
-	return nullptr;
-}
-
-DX11CoreRender::DX11CoreRender()
-{
-	LOG("DX11CoreRender initalized");
-}
-
-DX11CoreRender::~DX11CoreRender()
-{
-}
-
-API DX11CoreRender::MakeCurrent(const WinHandle* handle)
-{
-	return E_NOTIMPL;
-}
-
-API DX11CoreRender::GetName(OUT const char **pTxt)
-{
-	*pTxt = "DX11CoreRender";
-	return S_OK;
-}
+DX11CoreRender::DX11CoreRender(){}
+DX11CoreRender::~DX11CoreRender(){}
 
 API DX11CoreRender::Init(const WinHandle* handle)
 {
@@ -323,7 +193,9 @@ API DX11CoreRender::Init(const WinHandle* handle)
 
 	// Blend State
 	//
-
+	auto defBlendState = _blendStatePool.GetDefaultState();
+	_context->OMSetBlendState(defBlendState.Get(), nullptr, 0xffffffff);
+	defBlendState->GetDesc(&_currentState.blendState);
 
 
 	//ID3D11DepthStencilState *ppDepthStencilState;
@@ -332,6 +204,8 @@ API DX11CoreRender::Init(const WinHandle* handle)
 
 	//D3D11_DEPTH_STENCIL_DESC d;
 	//ppDepthStencilState->GetDesc(&d);
+
+	LOG("DX11CoreRender initalized");
 
 	return S_OK;
 }
@@ -517,11 +391,11 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 
 API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc)
 {
-	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(TYPE_VERTEX, shaderDesc->pVertText);
-	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(TYPE_FRAGMENT, shaderDesc->pFragText);
+	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, shaderDesc->pVertText);
+	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, shaderDesc->pFragText);
 	ID3D11GeometryShader *gs{nullptr};
 	if (shaderDesc->pGeomText)
-		gs = (ID3D11GeometryShader*)create_shader_by_src(TYPE_GEOMETRY, shaderDesc->pGeomText);
+		gs = (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, shaderDesc->pGeomText);
 
 	*pShader = new DX11Shader(vs, gs, fs);
 
@@ -629,6 +503,11 @@ API DX11CoreRender::SetDepthState(int enabled)
 	return S_OK;
 }
 
+API DX11CoreRender::MakeCurrent(const WinHandle* handle)
+{
+	return E_NOTIMPL;
+}
+
 API DX11CoreRender::SetViewport(uint w, uint h)
 {
 	D3D11_VIEWPORT v;
@@ -725,3 +604,133 @@ API DX11ConstantBuffer::GetType(OUT RES_TYPE * type)
 	*type = RES_TYPE::UNIFORM_BUFFER;
 	return S_OK;
 }
+void DX11CoreRender::destroy_viewport_buffers()
+{
+	_renderTargetTex = nullptr;
+	_renderTargetView = nullptr;
+	_depthStencilTex = nullptr;
+	_depthStencilView = nullptr;
+}
+
+bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
+{
+	// Create a render target view
+	auto hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)_renderTargetTex.GetAddressOf());
+	if (FAILED(hr))
+		return !hr;
+
+	hr = _device->CreateRenderTargetView(_renderTargetTex.Get(), nullptr, _renderTargetView.GetAddressOf());
+	if (FAILED(hr))
+		return !hr;
+
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC descDepth;
+	ZeroMemory(&descDepth, sizeof(descDepth));
+	descDepth.Width = w;
+	descDepth.Height = h;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	hr = _device->CreateTexture2D(&descDepth, nullptr, _depthStencilTex.GetAddressOf());
+	if (FAILED(hr))
+		return !hr;
+
+	// Create the depth stencil view
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = descDepth.Format;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
+	hr = _device->CreateDepthStencilView(_depthStencilTex.Get(), &descDSV, _depthStencilView.GetAddressOf());
+	if (FAILED(hr))
+		return !hr;
+
+	_context->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), _depthStencilView.Get());
+
+	return true;
+}
+
+API DX11CoreRender::GetName(OUT const char **pTxt)
+{
+	*pTxt = "DX11CoreRender";
+	return S_OK;
+}
+
+ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* src)
+{
+	ID3D11DeviceChild *ret{nullptr};
+	ComPtr<ID3DBlob> error_buffer;
+	ComPtr<ID3DBlob> shader_buffer;
+
+#ifndef NDEBUG
+	constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG);
+#else
+	constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3);
+#endif
+
+	auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, get_main_function(type), get_shader_profile(type), flags, 0, shader_buffer.GetAddressOf(), error_buffer.GetAddressOf());
+
+	if (FAILED(hr))
+	{
+		if (error_buffer)
+			LOG_FATAL_FORMATTED("DX11CoreRender::_create_shader() failed to compile shader %s\n", (char*)error_buffer->GetBufferPointer());
+	}
+	else
+	{
+		unsigned char *data = (unsigned char *)shader_buffer->GetBufferPointer();
+		int size = (int)shader_buffer->GetBufferSize();
+		HRESULT res = S_FALSE;
+
+		switch (type)
+		{
+		case SHADER_VERTEX:
+			res = _device->CreateVertexShader(data, size, NULL, (ID3D11VertexShader**)&ret);
+			break;
+		case SHADER_GEOMETRY:
+			//if (entries)
+			//	ret = device->CreateGeometryShaderWithStreamOutput(data, size, entries, num_entries, &stride, 1, D3D11_SO_NO_RASTERIZED_STREAM, NULL, &shaders[type].geometry_shader);
+			//else
+			res = _device->CreateGeometryShader(data, size, NULL, (ID3D11GeometryShader**)&ret);
+			//break;
+		case SHADER_FRAGMENT:
+			res = _device->CreatePixelShader(data, size, NULL, (ID3D11PixelShader**)&ret);
+			break;
+		}
+
+		if (ret)
+			return ret;
+	}
+
+	return nullptr;
+}
+
+const char *get_shader_profile(int type)
+{
+	switch (type)
+	{
+	case SHADER_VERTEX: return "vs_5_0";
+	case SHADER_GEOMETRY: return "gs_5_0";
+	case SHADER_FRAGMENT: return "ps_5_0";
+	}
+
+	return NULL;
+}
+
+const char *get_main_function(int type)
+{
+	switch (type)
+	{
+	case SHADER_VERTEX: return "mainVS";
+	case SHADER_GEOMETRY: return "mainGS";
+	case SHADER_FRAGMENT: return "mainFS";
+	}
+
+	return NULL;
+}
+
