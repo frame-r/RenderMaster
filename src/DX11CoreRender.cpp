@@ -204,12 +204,20 @@ API DX11CoreRender::Init(const WinHandle* handle)
 
 API DX11CoreRender::PushStates()
 {
-	return E_NOTIMPL;
+	_statesStack.push(_currentState);
+	return S_OK;
 }
 
 API DX11CoreRender::PopStates()
 {
-	return E_NOTIMPL;
+	State& state = _statesStack.top();
+	_statesStack.pop();
+
+	// apply state...
+
+	_currentState = state;
+
+	return S_OK;
 }
 
 const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
@@ -346,6 +354,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	if (indexes)
 	{
 		int idxSize = 0;
+
 		switch (indexDesc->format)
 		{
 			case MESH_INDEX_FORMAT::INT32: idxSize = 4; break;
@@ -375,8 +384,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 		}
 	}
 
-	DX11Mesh *pDXMesh = new DX11Mesh(vb, ib, il, dataDesc->numberOfVertex, indexDesc->number, indexDesc->format, mode, attribs, bytesWidth);
-	*pMesh = pDXMesh;
+	*pMesh = new DX11Mesh(vb, ib, il, dataDesc->numberOfVertex, indexDesc->number, indexDesc->format, mode, attribs, bytesWidth);
 
 	return S_OK;
 }
@@ -385,9 +393,7 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *sh
 {
 	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, shaderDesc->pVertText);
 	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, shaderDesc->pFragText);
-	ID3D11GeometryShader *gs{nullptr};
-	if (shaderDesc->pGeomText)
-		gs = (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, shaderDesc->pGeomText);
+	ID3D11GeometryShader *gs = shaderDesc->pGeomText ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, shaderDesc->pGeomText) : nullptr;
 
 	*pShader = new DX11Shader(vs, gs, fs);
 
@@ -415,6 +421,7 @@ API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	bd.ByteWidth = size;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
+
 	auto hr = _device->CreateBuffer(&bd, nullptr, ret.GetAddressOf());
 
 	*pBuffer = new DX11ConstantBuffer(ret.Get());
@@ -425,16 +432,14 @@ API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 
 API DX11CoreRender::SetUniform(IUniformBuffer *pBuffer, const void *pData)
 {
-	const DX11ConstantBuffer *dxBuffer = static_cast<const DX11ConstantBuffer *>(pBuffer);
-	_context->UpdateSubresource(dxBuffer->nativeBuffer(), 0, nullptr, pData, 0, 0);
+	_context->UpdateSubresource(static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer(), 0, nullptr, pData, 0, 0);
 
 	return S_OK;
 }
 
 API DX11CoreRender::SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot)
 {
-	DX11ConstantBuffer *dxBuffer = static_cast<DX11ConstantBuffer *>(pBuffer);
-	ID3D11Buffer * buf = dxBuffer->nativeBuffer();
+	ID3D11Buffer *buf = static_cast<DX11ConstantBuffer *>(pBuffer)->nativeBuffer();
 
 	_context->VSSetConstantBuffers(slot, 1, &buf);
 	_context->PSSetConstantBuffers(slot, 1, &buf);
@@ -462,6 +467,7 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 	ID3D11Buffer *vb = dxMesh->vertexBuffer();
 	UINT offset = 0;
 	UINT stride = dxMesh->stride();
+
 	_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
 
 	if (dxMesh->indexBuffer())
@@ -474,12 +480,10 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 
 API DX11CoreRender::Draw(ICoreMesh* mesh)
 {
-	const DX11Mesh *dxMesh = static_cast<const DX11Mesh*>(mesh);
-
-	if (dxMesh->indexBuffer())
-		_context->DrawIndexed(dxMesh->indexNumber(), 0, 0);
+	if (static_cast<const DX11Mesh*>(mesh)->indexBuffer())
+		_context->DrawIndexed(static_cast<const DX11Mesh*>(mesh)->indexNumber(), 0, 0);
 	else
-		_context->Draw(dxMesh->vertexNumber(), 0);
+		_context->Draw(static_cast<const DX11Mesh*>(mesh)->vertexNumber(), 0);
 
 	return S_OK;
 }
@@ -504,8 +508,8 @@ API DX11CoreRender::MakeCurrent(const WinHandle* handle)
 API DX11CoreRender::SetViewport(uint w, uint h)
 {
 	D3D11_VIEWPORT v;
-
 	UINT viewportNumber = 1;
+
 	_context->RSGetViewports(&viewportNumber, &v);
 
 	uint old_w = (uint)v.Width;
@@ -533,6 +537,7 @@ API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 {
 	D3D11_VIEWPORT v;
 	UINT viewportNumber = 1;
+
 	_context->RSGetViewports(&viewportNumber, &v);
 
 	*wOut = (uint)v.Width;
@@ -544,8 +549,8 @@ API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 API DX11CoreRender::Clear()
 {
 	static const FLOAT color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	_context->ClearRenderTargetView(_renderTargetView.Get(), color);
 
+	_context->ClearRenderTargetView(_renderTargetView.Get(), color);
 	_context->ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	return S_OK;
@@ -607,16 +612,12 @@ void DX11CoreRender::destroy_viewport_buffers()
 
 bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 {
-	// Create a render target view
-	auto hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)_renderTargetTex.GetAddressOf());
-	if (FAILED(hr))
-		return !hr;
+	if (FAILED(_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)_renderTargetTex.GetAddressOf())))
+		return false;
 
-	hr = _device->CreateRenderTargetView(_renderTargetTex.Get(), nullptr, _renderTargetView.GetAddressOf());
-	if (FAILED(hr))
-		return !hr;
+	if (FAILED(_device->CreateRenderTargetView(_renderTargetTex.Get(), nullptr, _renderTargetView.GetAddressOf())))
+		return false;
 
-	// Create depth stencil texture
 	D3D11_TEXTURE2D_DESC descDepth;
 	ZeroMemory(&descDepth, sizeof(descDepth));
 	descDepth.Width = w;
@@ -630,19 +631,18 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
-	hr = _device->CreateTexture2D(&descDepth, nullptr, _depthStencilTex.GetAddressOf());
-	if (FAILED(hr))
-		return !hr;
 
-	// Create the depth stencil view
+	if (FAILED(_device->CreateTexture2D(&descDepth, nullptr, _depthStencilTex.GetAddressOf())))
+		return false;
+
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
 	ZeroMemory(&descDSV, sizeof(descDSV));
 	descDSV.Format = descDepth.Format;
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
-	hr = _device->CreateDepthStencilView(_depthStencilTex.Get(), &descDSV, _depthStencilView.GetAddressOf());
-	if (FAILED(hr))
-		return !hr;
+
+	if (FAILED(_device->CreateDepthStencilView(_depthStencilTex.Get(), &descDSV, _depthStencilView.GetAddressOf())))
+		return false;
 
 	_context->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), _depthStencilView.Get());
 
@@ -686,11 +686,8 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* sr
 			res = _device->CreateVertexShader(data, size, NULL, (ID3D11VertexShader**)&ret);
 			break;
 		case SHADER_GEOMETRY:
-			//if (entries)
-			//	ret = device->CreateGeometryShaderWithStreamOutput(data, size, entries, num_entries, &stride, 1, D3D11_SO_NO_RASTERIZED_STREAM, NULL, &shaders[type].geometry_shader);
-			//else
 			res = _device->CreateGeometryShader(data, size, NULL, (ID3D11GeometryShader**)&ret);
-			//break;
+			break;
 		case SHADER_FRAGMENT:
 			res = _device->CreatePixelShader(data, size, NULL, (ID3D11PixelShader**)&ret);
 			break;
@@ -707,9 +704,9 @@ const char *get_shader_profile(int type)
 {
 	switch (type)
 	{
-	case SHADER_VERTEX: return "vs_5_0";
-	case SHADER_GEOMETRY: return "gs_5_0";
-	case SHADER_FRAGMENT: return "ps_5_0";
+		case SHADER_VERTEX: return "vs_5_0";
+		case SHADER_GEOMETRY: return "gs_5_0";
+		case SHADER_FRAGMENT: return "ps_5_0";
 	}
 
 	return NULL;
@@ -719,9 +716,9 @@ const char *get_main_function(int type)
 {
 	switch (type)
 	{
-	case SHADER_VERTEX: return "mainVS";
-	case SHADER_GEOMETRY: return "mainGS";
-	case SHADER_FRAGMENT: return "mainFS";
+		case SHADER_VERTEX: return "mainVS";
+		case SHADER_GEOMETRY: return "mainGS";
+		case SHADER_FRAGMENT: return "mainFS";
 	}
 
 	return NULL;

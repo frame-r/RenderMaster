@@ -176,7 +176,6 @@ struct BlendHash
 class DX11CoreRender final : public ICoreRender
 {
 	WRL::ComPtr<ID3D11Device> _device;
-
 	WRL::ComPtr<ID3D11DeviceContext> _context;
 
 	WRL::ComPtr<IDXGISwapChain> _swapChain; // TODO: make map HWND -> {IDXGISwapChain, ID3D11RenderTargetView} for support multiple windows
@@ -195,11 +194,11 @@ class DX11CoreRender final : public ICoreRender
 		std::unordered_map<TDesc, WRL::ComPtr<TState>, THashStruct, THashStruct> _pool;
 		DX11CoreRender &_parent;
 
+	protected:
 		void free() { _pool.clear(); }
 		virtual API create_actually_state(const TDesc *pRasterizerDesc, _COM_Outptr_opt_  TState **ppRasterizerState) = 0;
 
 	public:
-
 		BaseStatePool(DX11CoreRender& parent) : _parent(parent)
 		{
 			parent._onCleanBroadcast.push_back(std::bind(&BaseStatePool::free, this));
@@ -231,7 +230,6 @@ class DX11CoreRender final : public ICoreRender
 		}
 
 	public:
-
 		RasterizerStatePool(DX11CoreRender& parent) : BaseStatePool(parent) {}
 
 		WRL::ComPtr<ID3D11RasterizerState> FetchDefaultState()
@@ -250,13 +248,13 @@ class DX11CoreRender final : public ICoreRender
 			rasterDesc.ScissorEnable = false;
 			rasterDesc.SlopeScaledDepthBias = 0.0f;
 
-			auto result = _parent._device->CreateRasterizerState(&rasterDesc, ret.GetAddressOf());
-			if (FAILED(result))
+			if (FAILED(_parent._device->CreateRasterizerState(&rasterDesc, ret.GetAddressOf())))
 				return WRL::ComPtr<ID3D11RasterizerState>();
 
 			_pool[rasterDesc] = ret;
 
-			return ret;		}
+			return ret;
+		}
 
 	}_rasterizerStatePool{*this};
 
@@ -298,8 +296,7 @@ class DX11CoreRender final : public ICoreRender
 			dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 			dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
-			auto result = _parent._device->CreateDepthStencilState(&dsDesc, ret.GetAddressOf());
-			if (FAILED(result))
+			if (FAILED(_parent._device->CreateDepthStencilState(&dsDesc, ret.GetAddressOf())))
 				return WRL::ComPtr<ID3D11DepthStencilState>();
 
 			_pool[dsDesc] = ret;
@@ -323,13 +320,10 @@ class DX11CoreRender final : public ICoreRender
 			WRL::ComPtr<ID3D11BlendState> ret;
 
 			D3D11_BLEND_DESC dsDesc;
-
-			// Depth test parameters
 			dsDesc.AlphaToCoverageEnable = FALSE;
 			dsDesc.IndependentBlendEnable = FALSE;
 
 			D3D11_RENDER_TARGET_BLEND_DESC rtDesc;
-
 			rtDesc.BlendEnable = FALSE;
 			rtDesc.SrcBlend = D3D11_BLEND_ONE;
 			rtDesc.DestBlend = D3D11_BLEND_ZERO;
@@ -342,8 +336,7 @@ class DX11CoreRender final : public ICoreRender
 			for (int i = 0; i < 8; ++i)
 				dsDesc.RenderTarget[i] = rtDesc;
 
-			auto result = _parent._device->CreateBlendState(&dsDesc, ret.GetAddressOf());
-			if (FAILED(result))
+			if (FAILED(_parent._device->CreateBlendState(&dsDesc, ret.GetAddressOf())))
 				return WRL::ComPtr<ID3D11BlendState>();
 
 			_pool[dsDesc] = ret;
@@ -360,7 +353,7 @@ class DX11CoreRender final : public ICoreRender
 	};
 
 	State _currentState;
-	std::stack<State> _stateStack;
+	std::stack<State> _statesStack;
 
 	IResourceManager *_pResMan{nullptr};
 

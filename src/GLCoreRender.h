@@ -72,8 +72,8 @@ class GLCoreRender final : public ICoreRender
 		GLint viewport_x{0}, viewport_y{0};
 		GLint viewport_w{0}, viewport_h{0};
 	};
-	State _current_state;
-	std::stack<State> _states;
+	State _currentState;
+	std::stack<State> _statesStack;
 	
 	bool _check_shader_errors(int id, GLenum constant);
 	bool _create_shader(GLuint &id, GLenum type, const char* pText, GLuint programID);
