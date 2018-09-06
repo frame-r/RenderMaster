@@ -50,7 +50,7 @@ void CHECK_GL_ERRORS()
 #endif
 }
 
-bool GLCoreRender::_check_shader_errors(int id, GLenum constant)
+bool GLCoreRender::check_shader_errors(int id, GLenum constant)
 {
 	int status = GL_TRUE;
 
@@ -84,20 +84,20 @@ bool GLCoreRender::_check_shader_errors(int id, GLenum constant)
 	return true;
 }
 
-bool GLCoreRender::_create_shader(GLuint& id, GLenum type, const char* pText, GLuint programID)
+bool GLCoreRender::create_shader(GLuint& id, GLenum type, const char* pText, GLuint programID)
 {
 	GLuint _id = glCreateShader(type);
 	glShaderSource(_id, 1, (const GLchar **)&pText, nullptr);
 	glCompileShader(_id);
 
-	if (!_check_shader_errors(_id, GL_COMPILE_STATUS))
+	if (!check_shader_errors(_id, GL_COMPILE_STATUS))
 	{
 		glDeleteShader(_id);
 		return false;
 	}
 	glAttachShader(programID, _id);
 	glLinkProgram(programID);
-	if (!_check_shader_errors(programID, GL_LINK_STATUS))
+	if (!check_shader_errors(programID, GL_LINK_STATUS))
 		return false;
 
 	id = _id;
@@ -118,43 +118,6 @@ GLCoreRender::GLCoreRender()
 
 GLCoreRender::~GLCoreRender()
 {
-}
-
-API GLCoreRender::MakeCurrent(const WinHandle* handle)
-{
-	HDC new_hdc = GetDC(*handle);
-	
-	int new_dc_pixel_format = GetPixelFormat(new_hdc);
-
-	if (new_dc_pixel_format != pixel_format)
-	{
-		int closest_pixel_format = ChoosePixelFormat(new_hdc, &pfd);
-
-		if (closest_pixel_format == 0)
-		{
-			LOG_FATAL("Wrong ChoosePixelFormat() result");
-			return S_FALSE;
-		}
-
-		if (!SetPixelFormat(new_hdc, closest_pixel_format, &pfd))
-		{
-			LOG_FATAL("Wrong SetPixelFormat() result");
-			return S_FALSE;
-		}
-	}
-	
-	if (!wglMakeCurrent(new_hdc, _hRC))
-	{
-		LOG_FATAL("Couldn't perform wglMakeCurrent(_hdc, _hRC);");
-		return S_FALSE;
-	}
-
-	CHECK_GL_ERRORS();
-
-	_hWnd = *handle;
-	_hdc = new_hdc;
-
-	return S_OK;
 }
 
 API GLCoreRender::GetName(OUT const char **pTxt)
@@ -179,15 +142,15 @@ API GLCoreRender::Init(const WinHandle* handle)
 
 	if (!msaa)
 	{
-		pixel_format = ChoosePixelFormat(_hdc, &pfd);
+		_pixel_format = ChoosePixelFormat(_hdc, &pfd);
 
-		if (pixel_format == 0)
+		if (_pixel_format == 0)
 		{
 			LOG_FATAL("Wrong ChoosePixelFormat() result");
 			return S_FALSE;
 		}
 
-		if (!SetPixelFormat(_hdc, pixel_format, &pfd))
+		if (!SetPixelFormat(_hdc, _pixel_format, &pfd))
 		{
 			LOG_FATAL("Wrong SetPixelFormat() result");
 			return S_FALSE;
@@ -245,7 +208,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 			};
 
 			int numFormats = 0;
-			int chosen = wglChoosePixelFormatARB(_hdc, iPixelFormatAttribList, NULL, 1, &pixel_format, (UINT*)&numFormats);
+			int chosen = wglChoosePixelFormatARB(_hdc, iPixelFormatAttribList, NULL, 1, &_pixel_format, (UINT*)&numFormats);
 			if (!chosen || numFormats <= 0)
 			{
 				LOG_FATAL("Wrong wglChoosePixelFormatARB() result");
@@ -264,7 +227,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 		DestroyWindow(hwnd_fake);
 	}
 
-	if (!SetPixelFormat(_hdc, pixel_format, &pfd))
+	if (!SetPixelFormat(_hdc, _pixel_format, &pfd))
 	{
 		LOG_FATAL("Wrong SetPixelFormat() result");
 		return S_FALSE;
@@ -353,6 +316,64 @@ API GLCoreRender::Init(const WinHandle* handle)
 
 	LOG("GLCoreRender initalized");
 
+	return S_OK;
+}
+
+API GLCoreRender::Free()
+{
+	wglMakeCurrent(nullptr, nullptr);
+	wglDeleteContext(_hRC);
+	ReleaseDC(_hWnd, GetDC(_hWnd));
+
+	LOG("GLCoreRender::Free()");
+
+	return S_OK;
+}
+
+API GLCoreRender::MakeCurrent(const WinHandle* handle)
+{
+	HDC new_hdc = GetDC(*handle);
+
+	int new_dc_pixel_format = GetPixelFormat(new_hdc);
+
+	if (new_dc_pixel_format != _pixel_format)
+	{
+		int closest_pixel_format = ChoosePixelFormat(new_hdc, &pfd);
+
+		if (closest_pixel_format == 0)
+		{
+			LOG_FATAL("Wrong ChoosePixelFormat() result");
+			return S_FALSE;
+		}
+
+		if (!SetPixelFormat(new_hdc, closest_pixel_format, &pfd))
+		{
+			LOG_FATAL("Wrong SetPixelFormat() result");
+			return S_FALSE;
+		}
+	}
+
+	if (!wglMakeCurrent(new_hdc, _hRC))
+	{
+		LOG_FATAL("Couldn't perform wglMakeCurrent(_hdc, _hRC);");
+		return S_FALSE;
+	}
+
+	CHECK_GL_ERRORS();
+
+	_hWnd = *handle;
+	_hdc = new_hdc;
+
+	return S_OK;
+}
+
+API GLCoreRender::SwapBuffers()
+{
+	CHECK_GL_ERRORS();
+
+	::SwapBuffers(_hdc);
+
+	CHECK_GL_ERRORS();
 	return S_OK;
 }
 
@@ -514,7 +535,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 
 	GLuint programID = glCreateProgram();
 	
-	if (!_create_shader(vertID, GL_VERTEX_SHADER, shaderDesc->pVertText, programID))
+	if (!create_shader(vertID, GL_VERTEX_SHADER, shaderDesc->pVertText, programID))
 	{
 		glDeleteProgram(programID);
 		return S_FALSE;
@@ -522,7 +543,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 	
 	if (shaderDesc->pGeomText != nullptr)
 	{
-		if (!_create_shader(geomID, GL_GEOMETRY_SHADER, shaderDesc->pGeomText, programID))
+		if (!create_shader(geomID, GL_GEOMETRY_SHADER, shaderDesc->pGeomText, programID))
 		{
 			glDeleteProgram(programID);
 			glDeleteShader(vertID);
@@ -530,7 +551,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 		}
 	}
 	
-	if (!_create_shader(fragID, GL_FRAGMENT_SHADER, shaderDesc->pFragText, programID))
+	if (!create_shader(fragID, GL_FRAGMENT_SHADER, shaderDesc->pFragText, programID))
 	{
 		glDeleteProgram(programID);
 		glDeleteShader(vertID);
@@ -619,145 +640,6 @@ API GLCoreRender::SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot)
 	string s = "const_buffer_" + std::to_string(slot);
 	unsigned int block_index = glGetUniformBlockIndex(_currentState.shader_program_id, s.c_str());
 	glUniformBlockBinding(_currentState.shader_program_id, block_index, slot);
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
-API GLCoreRender::SetUniform(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type)
-{
-	CHECK_GL_ERRORS();
-
-	const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
-	const GLuint ID = glGetUniformLocation(pGLShader->programID(), name);
-
-	switch (type)
-	{
-
-	case SHADER_VARIABLE_TYPE::INT:
-		{
-			const int *i = reinterpret_cast<const int*>(pData);
-			glUniform1i(ID, *i);
-		}
-		break;
-
-	case SHADER_VARIABLE_TYPE::FLOAT:
-		{
-			const float *f = reinterpret_cast<const float*>(pData);
-			glUniform1f(ID, *f);
-		}
-		break;
-	case SHADER_VARIABLE_TYPE::VECTOR3:
-		{
-			const Vector3 *v3 = reinterpret_cast<const Vector3*>(pData);
-			glUniform3f(ID, v3->x, v3->y, v3->z);
-		}
-		break;
-	case SHADER_VARIABLE_TYPE::VECTOR4:
-		{
-			const Vector4 *v4 = reinterpret_cast<const Vector4*>(pData);
-			glUniform4f(ID, v4->x, v4->y, v4->z, v4->w);
-		}
-		break;
-
-	case SHADER_VARIABLE_TYPE::MATRIX3X3:
-		{
-			const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
-			glUniformMatrix3fv(ID, 1, GL_TRUE, &m3->el_1D[0]);
-		}
-		break;
-
-	case SHADER_VARIABLE_TYPE::MATRIX4X4:
-		{
-			const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
-			glUniformMatrix4fv(ID, 1, GL_TRUE, &m4->el_1D[0]);
-		}
-		break;
-
-	default:
-		LOG_WARNING("GLCoreRender::SetUniform(): unknown shader variable type");
-		return S_FALSE;
-
-
-	//case SHADER_VARIABLE_TYPE::TEXTURE:
-	//	tex = reinterpret_cast<const Texture*>(pData);
-	//	glActiveTexture(GL_TEXTURE0 + tex_sampler); // activate next avaliable texture unit
-	//	glBindTexture(GL_TEXTURE_2D, tex->ID); // attach texture to texture unit as GL_TEXTURE_2D
-	//	glUniform1i(ID, tex_sampler);
-	//	//_freeTextureUnit++;
-	//	break;
-
-	//case TEXTURE3D:
-	//	ERR_GUARDS();
-	//	tex = reinterpret_cast<const Texture*>(pData);
-	//	glActiveTexture(GL_TEXTURE0 + tex_sampler);
-	//	glBindTexture(GL_TEXTURE_3D, tex->ID);
-	//	glUniform1i(ID, tex_sampler);
-	//	ERR_GUARDS();
-	//	break;
-
-	}
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
-API GLCoreRender::SetUniformArray(const char* name, const void* pData, const ICoreShader* pShader, SHADER_VARIABLE_TYPE type, uint number)
-{
-	CHECK_GL_ERRORS();
-
-	const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
-	const GLuint ID = glGetUniformLocation(pGLShader->programID(), name);
-
-	switch (type)
-	{
-
-	case SHADER_VARIABLE_TYPE::INT:
-	{
-		const int *i = reinterpret_cast<const int*>(pData);
-		glUniform1iv(ID, number, i);
-	}
-	break;
-
-	case SHADER_VARIABLE_TYPE::FLOAT:
-	{
-		const float *f = reinterpret_cast<const float*>(pData);
-		glUniform1fv(ID, number, f);
-	}
-	break;
-	case SHADER_VARIABLE_TYPE::VECTOR3:
-	{
-		const Vector3 *v3 = reinterpret_cast<const Vector3*>(pData);
-		glUniform3fv(ID, number, &v3->x);
-	}
-	break;
-	case SHADER_VARIABLE_TYPE::VECTOR4:
-	{
-		const Vector4 *v4 = reinterpret_cast<const Vector4*>(pData);
-		glUniform4fv(ID, number, &v4->x);
-	}
-	break;
-
-	case SHADER_VARIABLE_TYPE::MATRIX3X3:
-	{
-		const Matrix3x3 *m3 = reinterpret_cast<const Matrix3x3*>(pData);
-		glUniformMatrix3fv(ID, number, GL_TRUE, &m3->el_1D[0]);
-	}
-	break;
-
-	case SHADER_VARIABLE_TYPE::MATRIX4X4:
-	{
-		const Matrix4x4 *m4 = reinterpret_cast<const Matrix4x4*>(pData);
-		glUniformMatrix4fv(ID, number, GL_TRUE, &m4->el_1D[0]);
-	}
-	break;
-
-	default:
-		LOG_FATAL("GLCoreRender::SetUniformArray(): unknown shader variable typre");
-		return S_FALSE;
-	}
 
 	CHECK_GL_ERRORS();
 
@@ -857,27 +739,6 @@ API GLCoreRender::Clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	CHECK_GL_ERRORS();
-	return S_OK;
-}
-
-API GLCoreRender::SwapBuffers()
-{
-	CHECK_GL_ERRORS();
-
-	::SwapBuffers(_hdc);
-
-	CHECK_GL_ERRORS();
-	return S_OK;
-}
-
-API GLCoreRender::Free()
-{
-	wglMakeCurrent(nullptr, nullptr);
-	wglDeleteContext(_hRC);
-	ReleaseDC(_hWnd, GetDC(_hWnd));
-
-	LOG("GLCoreRender::Free()");
-
 	return S_OK;
 }
 

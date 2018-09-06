@@ -32,18 +32,18 @@
 #define UNIFORM(TYPE, NAME) uniform TYPE NAME;
 
 #define INIT_POSITION
-#define POSITION_OUT gl_Position
+#define OUT_POSITION gl_Position
 
 #define TEXTURE2D_IN(NAME, NUM) uniform sampler2D NAME;
 #define TEXTURE(NAME, UV) texture(NAME, UV);
 
 #ifdef ENG_SHADER_PIXEL
-out vec4 COLOR_OUT;
+out vec4 OUT_COLOR;
 #endif
 
 // vertex
-#define SET_OUT_ATTRIBUTE(NAME) NAME
-#define GET_IN_ATTRIBUTE(NAME) NAME
+#define OUT_ATTRIBUTE(NAME) NAME
+#define IN_ATTRIBUTE(NAME) NAME
 
 // fragment 
 #define GET_ARRIBUTE(NAME) NAME

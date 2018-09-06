@@ -321,26 +321,25 @@ namespace RENDER_MASTER
 	public:
 		
 		virtual API Init(const WinHandle* handle) = 0;
+		virtual API Free() = 0;
+		virtual API MakeCurrent(const WinHandle* handle) = 0;
+		virtual API SwapBuffers() = 0;
+
 		virtual API PushStates() = 0;
 		virtual API PopStates() = 0;
+
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(OUT ICoreShader **pShader, const ShaderText* shaderDesc) = 0;
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) = 0;
 		virtual API SetUniform(IUniformBuffer *pBuffer, const void *pData) = 0;
-		//virtual API SetUniformArray(IUniformBuffer *pBuffer, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
-		virtual API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) = 0;
-		virtual API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) = 0;
 		virtual API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
-		virtual API MakeCurrent(const WinHandle* handle) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
 		virtual API GetViewport(OUT uint* w, OUT uint* h) = 0;
 		virtual API Clear() = 0;
-		virtual API SwapBuffers() = 0;
-		virtual API Free() = 0;
 	};
 
 	//////////////////////

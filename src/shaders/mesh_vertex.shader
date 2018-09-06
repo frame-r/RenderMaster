@@ -21,18 +21,19 @@ END_STRUCT
 
 
 MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
-	POSITION_OUT = mul(MVP, GET_IN_ATTRIBUTE(PositionIn));
+	
+	OUT_POSITION = mul(MVP, IN_ATTRIBUTE(PositionIn));
 
 	#ifdef ENG_INPUT_NORMAL
-		SET_OUT_ATTRIBUTE(Normal) = (mul(NM, vec4(GET_IN_ATTRIBUTE(NormalIn).xyz, 0.0f))).xyz;
+		OUT_ATTRIBUTE(Normal) = (mul(NM, vec4(IN_ATTRIBUTE(NormalIn).xyz, 0.0f))).xyz;
 	#endif
 
 	#ifdef ENG_INPUT_TEXCOORD
-		SET_OUT_ATTRIBUTE(TexCoord) = GET_IN_ATTRIBUTE(TexCoordIn);
+		OUT_ATTRIBUTE(TexCoord) = IN_ATTRIBUTE(TexCoordIn);
 	#endif
 
 	#ifdef ENG_INPUT_COLOR
-		SET_OUT_ATTRIBUTE(Color) = GET_IN_ATTRIBUTE(ColorIn);
+		OUT_ATTRIBUTE(Color) = IN_ATTRIBUTE(ColorIn);
 	#endif	
 
 MAIN_VERTEX_END

@@ -1,3 +1,4 @@
+
 // Constant buffer
 UNIFORM_BUFFER_BEGIN(0)
 	UNIFORM(vec4, main_color)
@@ -5,7 +6,6 @@ UNIFORM_BUFFER_BEGIN(0)
 	UNIFORM(mat4, NM)
 	UNIFORM(mat4, MVP)
 UNIFORM_BUFFER_END
-
 
 // Iterpolated Attributes
 STRUCT(VS_OUTPUT)

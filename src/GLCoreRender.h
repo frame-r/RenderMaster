@@ -29,7 +29,7 @@ class GLCoreRender final : public ICoreRender
 	HDC _hdc{};
 	HGLRC _hRC{};
 	HWND _hWnd{};
-	int pixel_format{0};
+	int _pixel_format{0};
 	IResourceManager *_pResMan{nullptr};
 
 	struct State
@@ -75,34 +75,36 @@ class GLCoreRender final : public ICoreRender
 	State _currentState;
 	std::stack<State> _statesStack;
 	
-	bool _check_shader_errors(int id, GLenum constant);
-	bool _create_shader(GLuint &id, GLenum type, const char* pText, GLuint programID);
+	bool check_shader_errors(int id, GLenum constant);
+	bool create_shader(GLuint &id, GLenum type, const char* pText, GLuint programID);
 
 public:
 
 	GLCoreRender();
 	virtual ~GLCoreRender();
 
+
 	API Init(const WinHandle* handle) override;
+	API Free() override;
+	API MakeCurrent(const WinHandle* handle) override;
+	API SwapBuffers() override;
+
 	API PushStates() override;
 	API PopStates() override;
+
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc) override;
 	API SetShader(const ICoreShader *pShader) override;
 	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
 	API SetUniform(IUniformBuffer *pBuffer, const void *pData) override;
 	API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) override;
-	API SetUniform(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type) override;
-	API SetUniformArray(const char *name, const void *pData, const ICoreShader *pShader, SHADER_VARIABLE_TYPE type, uint number) override;
 	API SetMesh(const ICoreMesh* mesh) override;
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
-	API MakeCurrent(const WinHandle* handle) override;
 	API SetViewport(uint wIn, uint hIn) override;
 	API GetViewport(OUT uint* wOut, OUT uint* hOut) override;
 	API Clear() override;
-	API SwapBuffers() override;
-	API Free() override;
+
 	API GetName(OUT const char **pTxt) override;
 };
 

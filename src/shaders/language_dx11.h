@@ -40,18 +40,18 @@
 #define UNIFORM(TYPE, NAME) TYPE NAME;
 
 #define INIT_POSITION float4 position : SV_POSITION;
-#define POSITION_OUT vs_output.position
+#define OUT_POSITION vs_output.position
 
 #define TEXTURE2D_IN(NAME, NUM) Texture2D NAME : register(t ## NUM); \
 SamplerState g_samLinear : register( s0 );
 
 #define TEXTURE(NAME, UV) NAME.Sample(g_samLinear, UV)
 
-#define COLOR_OUT color
+#define OUT_COLOR color
 
 // vertex in/out
-#define SET_OUT_ATTRIBUTE(NAME) vs_output.NAME
-#define GET_IN_ATTRIBUTE(NAME) vs_input.NAME
+#define OUT_ATTRIBUTE(NAME) vs_output.NAME
+#define IN_ATTRIBUTE(NAME) vs_input.NAME
 
 // fragment in
 #define GET_ARRIBUTE(NAME) fs_input.NAME

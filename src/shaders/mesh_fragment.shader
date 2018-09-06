@@ -33,7 +33,7 @@ MAIN_FRAG(VS_OUTPUT)
 			discard;
 	#endif
 
-	COLOR_OUT = diffuse + ambient;
+	OUT_COLOR = diffuse + ambient;
 	
 MAIN_FRAG_END
 
