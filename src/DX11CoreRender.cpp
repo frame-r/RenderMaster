@@ -165,9 +165,9 @@ API DX11CoreRender::Init(const WinHandle* handle)
 
 	// Rasterizer state
 	//
-	auto defRasterState = _rasterizerStatePool.GetDefaultState();
-	_context->RSSetState(defRasterState.Get());
-	defRasterState->GetDesc(&_currentState.rasterState);
+	auto defaultRasterState = _rasterizerStatePool.FetchDefaultState();
+	_context->RSSetState(defaultRasterState.Get());
+	defaultRasterState->GetDesc(&_currentState.rasterState);
 
 	// debug
 	ComPtr<ID3D11RasterizerState> _rasterState;
@@ -176,12 +176,11 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	_rasterState->GetDesc(&desc);
 
 
-
 	// Depth Stencil state
 	//
-	auto defDepthStencilState = _depthStencilStatePool.GetDefaultState();
-	_context->OMSetDepthStencilState(defDepthStencilState.Get(), 0);
-	defDepthStencilState->GetDesc(&_currentState.depthState);
+	auto defaultDepthStencilState = _depthStencilStatePool.FetchDefaultState();
+	_context->OMSetDepthStencilState(defaultDepthStencilState.Get(), 0);
+	defaultDepthStencilState->GetDesc(&_currentState.depthState);
 
 	// debug
 	ComPtr<ID3D11DepthStencilState> _depthStencilState;
@@ -193,17 +192,10 @@ API DX11CoreRender::Init(const WinHandle* handle)
 
 	// Blend State
 	//
-	auto defBlendState = _blendStatePool.GetDefaultState();
-	_context->OMSetBlendState(defBlendState.Get(), nullptr, 0xffffffff);
-	defBlendState->GetDesc(&_currentState.blendState);
+	auto defaultBlendState = _blendStatePool.FetchDefaultState();
+	_context->OMSetBlendState(defaultBlendState.Get(), nullptr, 0xffffffff);
+	defaultBlendState->GetDesc(&_currentState.blendState);
 
-
-	//ID3D11DepthStencilState *ppDepthStencilState;
-	//UINT s;
-	//context->OMGetDepthStencilState(&ppDepthStencilState, &s);
-
-	//D3D11_DEPTH_STENCIL_DESC d;
-	//ppDepthStencilState->GetDesc(&d);
 
 	LOG("DX11CoreRender initalized");
 
@@ -496,7 +488,8 @@ API DX11CoreRender::SetDepthState(int enabled)
 {
 	if (_currentState.depthState.DepthEnable != enabled)
 	{
-		ComPtr<ID3D11DepthStencilState> d = _depthStencilStatePool.ModifyDepthState(enabled);
+		_currentState.depthState.DepthEnable = enabled;
+		ComPtr<ID3D11DepthStencilState> d = _depthStencilStatePool.FetchState(_currentState.depthState);
 		_context->OMSetDepthStencilState(d.Get(), 0);
 	}
 
