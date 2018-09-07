@@ -252,7 +252,27 @@ API DX11CoreRender::PopStates()
 	State& state = _statesStack.top();
 	_statesStack.pop();
 
-	// apply state...
+	static RasterHash rasterEq;
+	static BlendHash blendEq;
+	static DepthStencilHash depthStenciEq;
+
+	if (!rasterEq.operator()(state.rasterState, _currentState.rasterState))
+	{
+		auto s = _rasterizerStatePool.FetchState(state.rasterState);
+		_context->RSSetState(s.Get());
+	}
+
+	if (!blendEq.operator()(state.blendState, _currentState.blendState))
+	{
+		auto s = _blendStatePool.FetchState(state.blendState);
+		_context->OMSetBlendState(s.Get(), nullptr, 0xffffffff);
+	}
+
+	if (!depthStenciEq.operator()(state.depthState, _currentState.depthState))
+	{
+		auto s = _depthStencilStatePool.FetchState(state.depthState);
+		_context->OMSetDepthStencilState(s.Get(), 0);
+	}
 
 	_currentState = state;
 
