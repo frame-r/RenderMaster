@@ -19,6 +19,7 @@ enum
 
 const char *get_shader_profile(int type);
 const char *get_main_function(int type);
+const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
 
 
 DX11CoreRender::DX11CoreRender(){}
@@ -277,26 +278,6 @@ API DX11CoreRender::PopStates()
 	_currentState = state;
 
 	return S_OK;
-}
-
-const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
-{
-	switch (f)
-	{
-	case DXGI_FORMAT_R32_FLOAT:
-		return "float";
-	case DXGI_FORMAT_R32G32_FLOAT:
-		return "float2";
-	case DXGI_FORMAT_R32G32B32_FLOAT:
-		return "float3";
-	case DXGI_FORMAT_R32G32B32A32_FLOAT:
-		return "float4";
-	default:
-		LOG_FATAL("DX11CoreRender: dgxgi_to_hlsl_type(DXGI_FORMAT f) unknown type f\n");
-		assert(false);
-		return nullptr;
-		break;
-	}
 }
 
 API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
@@ -732,5 +713,25 @@ const char *get_main_function(int type)
 	}
 
 	return NULL;
+}
+
+const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
+{
+	switch (f)
+	{
+	case DXGI_FORMAT_R32_FLOAT:
+		return "float";
+	case DXGI_FORMAT_R32G32_FLOAT:
+		return "float2";
+	case DXGI_FORMAT_R32G32B32_FLOAT:
+		return "float3";
+	case DXGI_FORMAT_R32G32B32A32_FLOAT:
+		return "float4";
+	default:
+		LOG_FATAL("DX11CoreRender: dgxgi_to_hlsl_type(DXGI_FORMAT f) unknown type f\n");
+		assert(false);
+		return nullptr;
+		break;
+	}
 }
 
