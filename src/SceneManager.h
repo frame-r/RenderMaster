@@ -11,10 +11,8 @@ class SceneManager : public ISceneManager, public Serializable<ISceneManager>
 	ICamera *_pCam{nullptr};
 	IResourceManager *_pResMan{nullptr};
 	std::unique_ptr<GameObjectEvent> _gameObjectAddedEvent{new GameObjectEvent};
-	
-public:
 
-	SceneManager();
+public:
 
 	tree<IGameObject*> _gameobjects;
 
@@ -22,6 +20,10 @@ public:
 	// IGameObject* -> iterator
 	// For fast searching childs, parents through tree...
 	std::unordered_map<IGameObject*, tree<IGameObject*>::iterator_base> _go_to_it;
+
+public:
+
+	SceneManager();
 
 	void Init();
 	void Free();

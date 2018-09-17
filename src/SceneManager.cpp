@@ -84,7 +84,7 @@ void SceneManager::Free()
 	dynamic_cast<SceneManager*>(this)->serialize(out, 0);
 
 	IFile *f = nullptr;
-	fs->OpenFile(&f, "scene.yaml", FILE_OPEN_MODE::WRITE);
+	fs->OpenFile(&f, "scene.yaml", FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
 
 	f->WriteStr(out.str().c_str());
 
