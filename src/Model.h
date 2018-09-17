@@ -11,7 +11,7 @@ class Model : public GameObjectBase<IModel>
 
 public:
 
-	Model(std::vector<ICoreMesh *>& meshes);
+	Model(const std::vector<ICoreMesh *>& meshes);
 	~Model();
 	
 	API GetMesh(OUT ICoreMesh **pMesh, uint idx) override;

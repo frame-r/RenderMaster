@@ -377,6 +377,7 @@ namespace RENDER_MASTER
 	class IGameObject : public IResource
 	{
 	public:
+		virtual API GetID(OUT int *id) = 0;
 		virtual API GetName(OUT const char **pName) = 0;
 		virtual API SetName(const char *pName) = 0;
 		virtual API SetPosition(const vec3 *pos) = 0;

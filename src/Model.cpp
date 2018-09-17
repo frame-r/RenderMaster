@@ -9,9 +9,9 @@ void Model::_update()
 {
 }
 
-Model::Model(std::vector<ICoreMesh *>& meshes) : _meshes(meshes)
+Model::Model(const std::vector<ICoreMesh *>& meshes) : _meshes(meshes)
 {
-	add_entry("meshes", &Model::_meshes);
+	//add_entry("meshes", &Model::_meshes);
 
 	_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
 }

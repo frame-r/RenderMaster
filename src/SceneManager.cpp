@@ -20,6 +20,7 @@ API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 API SceneManager::AddRootGameObject(IGameObject* pGameObject)
 {
 	tree<IGameObject*>::iterator top = _gameobjects.begin();
+	//auto go = dynamic_cast<GameObject*>(pGameObject);
 	auto it = _gameobjects.insert(top, pGameObject);
 	_go_to_it[pGameObject] = it;
 	_gameObjectAddedEvent->Fire(pGameObject);
@@ -30,6 +31,7 @@ API SceneManager::GetChilds(OUT uint *number, IGameObject *parent)
 {
 	if (parent)
 	{
+		//auto go = dynamic_cast<GameObject*>(parent);
 		tree<IGameObject*>::iterator_base it = _go_to_it[parent];
 		*number = (uint)_gameobjects.number_of_children(it);
 	}
@@ -47,6 +49,7 @@ API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, u
 
 	if (parent)
 	{
+		//auto go = dynamic_cast<GameObject*>(parent);
 		auto it = _go_to_it[parent];
 		*pGameObject = *_gameobjects.child(it, idx);
 	}else
@@ -76,9 +79,15 @@ void SceneManager::Free()
 {
 	IFileSystem *fs;
 	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-	IFile *f;
+
+	std::ostringstream out;
+	dynamic_cast<SceneManager*>(this)->serialize(out, 0);
+
+	IFile *f = nullptr;
 	fs->OpenFile(&f, "scene.yaml", FILE_OPEN_MODE::WRITE);
-	dynamic_cast<SceneManager*>(this)->serialize(f, 0);
+
+	f->WriteStr(out.str().c_str());
+
 	f->CloseAndFree();
 
 	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _gameobjects.size());

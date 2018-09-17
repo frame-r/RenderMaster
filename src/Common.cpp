@@ -2,6 +2,10 @@
 #include <experimental/filesystem>
 #include "Core.h"
 #include <set>
+#include "GameObject.h"
+#include "Model.h"
+#include "Camera.h"
+#include "SceneManager.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -136,7 +140,7 @@ unsigned int random8()
 {
 	if (initialized == 0)
 	{
-		seed = time(NULL);
+		seed = (int)time(NULL);
 		initialized = 1;
 	}
 	seed = seed * 1664525 + 1013904223;
@@ -243,6 +247,15 @@ std::list<std::string> get_file_content(const std::string& filename)
 
 	return l;
 
+}
+
+SerializableBase* Fabric::create(std::string className)
+{
+	if (className == "GameObject") return nullptr;
+	if (className == "SceneManager") return new SceneManager;
+	if (className == "Model") return new Model(std::vector<ICoreMesh*>());
+	if (className == "Camera") return new Camera();
+	return nullptr;
 }
 
 

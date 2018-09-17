@@ -8,7 +8,7 @@ class GameObjectBase : public T, public Serializable<T>
 {
 protected:
 
-	int id;
+	int _id;
 	std::string _name{"GameObject"};
 	vec3 _pos;
 	quat _rot;
@@ -22,14 +22,16 @@ public:
 
 	GameObjectBase()
 	{
+		add_entry("id", &GameObjectBase::_id);
 		add_entry("name", &GameObjectBase::_name);
 		add_entry("positon", &GameObjectBase::_pos);
 		add_entry("rotation", &GameObjectBase::_rot);
 		add_entry("scale", &GameObjectBase::_scale);
 
-		id = getRandomInt();
+		_id = getRandomInt();
 	}
 
+	API GetID(OUT int *id) override;
 	API GetName(OUT const char **pName) override;
 	API SetName(const char *pName) override;
 	API SetPosition(const vec3 *pos) override;
@@ -66,6 +68,13 @@ class GameObject : public GameObjectBase<IGameObject> {};
 
 
 // implementation
+
+template<typename T>
+inline API GameObjectBase<T>::GetID(OUT int *id)
+{
+	*id = _id;
+	return S_OK;
+}
 
 template<typename T>
 inline API GameObjectBase<T>::GetName(OUT const char ** pName)

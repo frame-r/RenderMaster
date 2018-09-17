@@ -1,132 +1,435 @@
 #pragma once
-#include <tree.h>
+#define _CRT_SECURE_NO_WARNINGS
+#include "tree.h"
+#include "vector_math.h"
+#include "quat.h"
 #include <sstream>
-#include "Filesystem.h"
+#include <map>
+#include <vector>
+#include <string>
+#include <assert.h>
 
-inline void print_tabs(IFile *file, int depth)
+using std::string;
+using std::vector;
+using std::enable_if;
+using std::is_pointer;
+using std::is_base_of;
+using std::remove_pointer;
+using std::ostringstream;
+using std::istringstream;
+using std::is_integral;
+
+inline void print_tabs(std::ostringstream& stream, int depth)
 {
-	std::string tabs(depth, ' ');
-	file->WriteStr(tabs.c_str());
+	string tabs(depth * 2, ' ');
+	stream.write(tabs.c_str(), strlen(tabs.c_str()));
 }
-
-
-struct IField
-{
-	virtual void print(void *object, IFile *file, int depth) const = 0;
-};
-
-// base class
-template <typename C, typename T>
-struct FieldBase : public IField
-{
-	T C::* member{nullptr};
-	std::string filed_name;
-
-	FieldBase(const std::string& nameIn, T C::*memberIn) :	filed_name(nameIn), member(memberIn) {}
-};
-
-// default
-template <typename C, typename T>
-struct Field : FieldBase<C, T>
-{
-	using FieldBase<C, T>::FieldBase;
-
-	void print(void *object, IFile *file, int depth) const override
-	{
-		C *c = (C*)object;
-		std::ostringstream oss;
-		oss << this->filed_name << " : " << c->*(this->member) << std::endl;
-		print_tabs(file, depth);
-		file->WriteStr(oss.str().c_str());
-	}
-};
-
-// float
-template <typename C>
-struct Field<C, float> : FieldBase<C, float>
-{
-	using FieldBase<C, float>::FieldBase;
-
-	void print(void *object, IFile *file, int depth) const override
-	{
-		C *c = (C*)object;
-		float& f = c->*(this->member);
-		char buf[60];
-		sprintf(buf, "%s : %.3f\n", this->filed_name.c_str(), f);
-		print_tabs(file, depth);
-		file->WriteStr(buf);
-	}
-};
-
-// string 
-template <typename C>
-struct Field<C, std::string> : FieldBase<C, std::string>
-{
-	using FieldBase<C, std::string>::FieldBase;
-
-	void print(void *object, IFile *file, int depth) const override
-	{
-		C *c = (C*)object;
-		std::string& str = c->*(this->member);
-		std::ostringstream oss;
-		oss << this->filed_name << " : \"" << str << "\"" << std::endl;
-		print_tabs(file, depth);
-		file->WriteStr(oss.str().c_str());
-	}
-};
-
-// vec3
-template <typename C>
-struct Field<C, vec3> : FieldBase<C, vec3>
-{
-	using FieldBase<C, vec3>::FieldBase;
-
-	void print(void *object, IFile *file, int depth) const override
-	{
-		C *c = (C*)object;
-		vec3& v3 = c->*(this->member);
-		char buf[60];
-		sprintf(buf, "%s : {x: %.3f, y: %.3f, z: %.3f}\n", this->filed_name.c_str(), v3.x, v3.y, v3.z);
-		print_tabs(file, depth);
-		file->WriteStr(buf);
-	}
-};
-
-// quat
-template <typename C>
-struct Field<C, quat> : FieldBase<C, quat>
-{
-	using FieldBase<C, quat>::FieldBase;
-
-	void print(void *object, IFile *file, int depth) const override
-	{
-		C *c = (C*)object;
-		quat& q = c->*(this->member);
-		char buf[60];
-		sprintf(buf, "%s : {x: %.3f, y: %.3f, z: %.3f, w: %.3f}\n", this->filed_name.c_str(), q.x, q.y, q.z, q.w);
-		print_tabs(file, depth);
-		file->WriteStr(buf);
-	}
-};
-
-template <typename C, typename T>
-struct SubField : public IField
-{
-	T C::* member;
-	std::string filed_name;
-
-	SubField(const std::string& nameIn, T C::*member) : filed_name(nameIn), member(member) {}
-
-	void print(void *object, IFile *file, int depth) const override
-	{
-		object->print(file);
-	}
-};
 
 class SerializableBase
 {
 public:
-	virtual void serialize(IFile *file, int depth) = 0;
+	virtual void serialize(std::ostringstream& stream, int depth) = 0;
+	virtual void deserialize(std::istringstream& stream) = 0;
+};
+
+
+// default
+template <typename T, typename Enable = void>
+class TypeSerializator
+{
+public:
+	static void serilaize(ostringstream& stream, const string& name, const T& value, int depth)
+	{
+		stream << name << " : " << value << "\n";
+	}
+	static void deserialize(istringstream& stream, T& value)
+	{
+		string line;
+		std::getline(stream, line);
+
+		istringstream in(line);
+
+		string name;
+		char c;
+
+		in >> name >> c >> value;
+	}
+};
+
+// float
+template<>
+class TypeSerializator<float>
+{
+public:
+	static void serilaize(ostringstream& stream, const string& name, const float& f, int depth)
+	{
+		char buf[60];
+		sprintf(buf, "%s : %.3f\n", name.c_str(), f);
+		stream << buf;
+	}
+	static void deserialize(istringstream& stream, float& value)
+	{
+		string line;
+		std::getline(stream, line);
+
+		istringstream in(line);
+
+		string name;
+		char c;
+
+		in >> name >> c >> value;
+	}
+};
+
+// vec3
+template<>
+class TypeSerializator<vec3>
+{
+public:
+	static void serilaize(ostringstream& stream, const string& name, const vec3& v3, int depth)
+	{
+		char buf[60];
+		sprintf(buf, "%s : {x: %.3f, y: %.3f, z: %.3f}\n", name.c_str(), v3.x, v3.y, v3.z);
+		stream << buf;
+	}
+	static void deserialize(istringstream& stream, vec3& v3)
+	{
+		string line;
+		std::getline(stream, line);
+		char name[10];
+		sscanf(line.c_str(), "%s : {x: %f, y: %f, z: %f}\n", name, &v3.x, &v3.y, &v3.z);
+	}
+};
+
+// quat
+template<>
+class TypeSerializator<quat>
+{
+public:
+	static void serilaize(ostringstream& stream, const string& name, const quat& q, int depth)
+	{
+		char buf[60];
+		sprintf(buf, "%s : {x: %.3f, y: %.3f, z: %.3f, w: %.3f}\n", name.c_str(), q.x, q.y, q.z, q.w);
+		stream << buf;
+	}
+	static void deserialize(istringstream& stream, quat& q)
+	{
+		string line;
+		std::getline(stream, line);
+		char name[10];
+		sscanf(line.c_str(), "%s : {x: %f, y: %f, z: %f, w: %f}\n", name, &q.x, &q.y, &q.z, &q.w);
+	}
+};
+
+// std::string
+template<>
+class TypeSerializator<string>
+{
+public:
+	static void serilaize(ostringstream& stream, const string& name, const string& value, int depth)
+	{
+		stream << name << " : \"" << value << "\"\n";
+	}
+	static void deserialize(istringstream& stream, string& s)
+	{
+		string line;
+		std::getline(stream, line);
+		char name[10];
+		char val[260];
+		sscanf(line.c_str(), "%s : \"%[^\"]\"\n", name, val);
+		s = string(val);
+	}
+};
+
+// SerializableBase
+template <typename T>
+class TypeSerializator<T, typename enable_if<is_base_of<SerializableBase, T>::value>::type>
+{
+public:
+	static void serilaize(ostringstream& stream, const string& name, const T& value, int depth)
+	{
+		//stream << "inner serializable: \n";
+		SerializableBase* s = (SerializableBase*)&value;
+		s->serialize(stream, depth);
+	}
+};
+
+// SerializableBase*
+template <typename T>
+class TypeSerializator<T, typename enable_if<is_pointer<T>::value && is_base_of<SerializableBase, typename remove_pointer<T>::type>::value>::type>
+{
+public:
+	static void serilaize(ostringstream& stream, const string& name, const T& value, int depth)
+	{
+		SerializableBase* s = (SerializableBase*)value;
+		s->serialize(stream, depth);
+	}
+	static void deserialize(istringstream& stream, T& value)
+	{
+		SerializableBase* s = (SerializableBase*)value;
+		s->deserialize(stream);
+	}
+};
+
+
+
+////////////////////////////
+//
+////////////////////////////
+
+template<typename T>
+void f(ostringstream& stream, const string& name, const T& value, int depth)
+{
+	print_tabs(stream, depth);
+	TypeSerializator<T>::serilaize(stream, name, value, depth);
+}
+
+template<typename T>
+void r(istringstream& stream, T& value)
+{
+	TypeSerializator<T>::deserialize(stream, value);
+}
+
+
+
+
+class Fabric
+{
+public:
+	static SerializableBase* create(std::string className);
+};
+
+struct IField
+{
+	virtual void print(void *object, std::ostringstream& stream, int depth) const = 0;
+	virtual void scan(void *object, std::istringstream& stream) const = 0;
+};
+
+
+//
+// Base class that serializes one field (member) in class
+// C - class that contains field
+// T - type of field
+//
+template <typename C, typename T>
+struct FieldBase : public IField
+{
+	T C::* member{nullptr};
+	string field_name;
+
+	FieldBase(const string& nameIn, T C::*memberIn) : field_name(nameIn), member(memberIn) {}
+
+	void print(void *object, std::ostringstream& stream, int depth) const override
+	{
+		C *c = (C*)object;
+		f<T>(stream, this->field_name, c->*(this->member), depth);
+	}
+
+	void scan(void *object, std::istringstream& stream) const override
+	{
+		C *c = (C*)object;
+		T& field = c->*(this->member);
+		r<T>(stream, field);
+	}
+};
+
+//
+// Specialization for std::vector
+// C - class that contains field
+// V - type in vector
+//
+template <typename C, typename V>
+struct FieldBase<C, vector<V>> : public IField
+{
+	vector<V> C::*member;
+	string field_name;
+
+	FieldBase(const string& nameIn, vector<V> C::*memberIn) : field_name(nameIn), member(memberIn) {}
+
+	void print(void *object, std::ostringstream& stream, int depth) const
+	{
+		C *c = (C*)object;
+		std::vector<V>& vec = c->*(this->member);
+
+		print_tabs(stream, depth);
+
+		stream << this->field_name << " :\n";
+
+		for (auto& v : vec)
+		{
+			print_tabs(stream, depth);
+
+			stream << "-\n";
+
+			f(stream, field_name, v, depth);
+		}
+	}
+
+	void scan(void *object, std::istringstream& stream) const
+	{
+		assert(false); // not impl
+	}
+};
+
+
+//
+// Specialization for tree
+// C - class that contains field
+// V - type in tree
+//
+template <typename C, typename V>
+struct FieldBase<C, tree<V>> : public IField
+{
+	tree<V> C::*member;
+	string field_name;
+
+	FieldBase(const string& nameIn, tree<V> C::*memberIn) : field_name(nameIn), member(memberIn) {}
+
+	void print(void *object, std::ostringstream& stream, int depth) const
+	{
+		C *c = (C*)object;
+		tree<V>& _tree = c->*(this->member);
+
+		//print_tabs(stream, depth);
+
+		//stream << this->field_name << " :\n";
+
+		// topology		
+		print_tabs(stream, depth);
+		stream << "tree_topology : {num: " << _tree.size();
+
+		typename tree<V>::pre_order_iterator it = _tree.begin();
+
+		for (auto it = _tree.begin(); it != _tree.end(); ++it)
+		{
+			int id_ = 0;
+			(*it)->GetID(&id_);
+
+			if (_tree.depth(it) <= 0)
+				stream << ", " << id_ << " : " << 0;
+			else
+			{
+				int parent_id_;
+				(*_tree.parent(it))->GetID(&parent_id_);
+				stream << ", " << id_ << " : " << parent_id_;
+			}
+		}
+		stream << "}\n";
+
+		for (auto& v : _tree)
+		{
+			print_tabs(stream, depth);
+
+			stream << "-\n";
+
+			SerializableBase *s = dynamic_cast<SerializableBase*>(v);
+			f(stream, field_name, s, depth);
+		}
+	}
+
+	void scan(void *object, istringstream& stream) const
+	{
+		C *c = (C*)object;
+		tree<V>& _tree = c->*(this->member);
+
+		string line;
+		std::getline(stream, line);
+
+		char name[20];
+		int size;
+		int pos;
+
+		sscanf(line.c_str(), "%s : {num : %i%n", name, &size, &pos);
+
+		if (size == 0)
+			return;
+
+		pos++; // skip ","
+
+		line = line.substr(pos);
+		istringstream in(line);
+
+		std::map<int, int> parent_map; // id -> parent id
+
+		for (int i = 0; i < size; i++)
+		{
+			int id, parent_id;
+			char c;
+			in >> id >> c >> parent_id;
+
+			parent_map[id] = parent_id;
+
+			if (i != size - 1) in >> c; // ","
+		}
+
+		for (int i = 0; i < size; i++)
+		{
+			string line;
+			std::getline(stream, line); // "-"
+			std::getline(stream, line); // class name
+
+			char class_name[260];
+			sscanf(line.c_str(), "%s :", class_name);
+
+			SerializableBase *obj = Fabric::create(string(class_name));
+			V v_obj = dynamic_cast<V>(obj);
+
+			r(stream, obj);
+
+			int parent_id;
+			v_obj->GetID(&parent_id);
+			parent_map[parent_id];
+
+			auto get_item_by_id = [&](int id) -> typename tree<V>::iterator
+			{
+				for (auto it = _tree.begin(); it != _tree.end(); ++it)
+				{
+					int id_;
+					(*it)->GetID(&id_);
+					if (id_ == id) return it;
+				}
+				return _tree.end();
+			};
+
+			if (parent_id == 0) // => at 0 tree level
+				_tree.insert(_tree.begin(), v_obj);
+			else
+			{ // some child
+				auto it = get_item_by_id(parent_id);
+				if (it != _tree.end())
+					_tree.append_child(it, v_obj);
+			}
+		}
+	}
+};
+
+
+//
+// Class that serializes one field in case when member is SerializableBase
+// C - class that contains field
+// T - type of field (always SerializableBase)
+//
+template <typename C, typename T>
+struct SubField : public IField
+{
+	T C::* member;
+	string field_name;
+
+	SubField(const string& nameIn, T C::*member) : field_name(nameIn), member(member) {}
+
+	void print(void *object, std::ostringstream& stream, int depth) const override
+	{
+		C *c = (C*)object;
+		T *t = (T*)&(c->*(this->member));
+		print_tabs(stream, depth);
+		stream << this->field_name << " :\n";
+		t->serialize(stream, depth + 1);
+	}
+
+	void scan(void *object, std::istringstream& stream) const override
+	{
+		assert(false); // not impl
+	}
 };
 
 template <class Y>
@@ -135,138 +438,42 @@ class Serializable : public SerializableBase
 	std::vector<std::shared_ptr<const IField>> _fields;
 
 public:
-	
-	virtual void serialize(IFile *file, int depth) override
+
+	virtual void serialize(std::ostringstream& stream, int depth = 0) override
 	{
-		std::ostringstream oss;
-		std::string str(typeid(*this).name());
+		string str(typeid(*this).name());
 		str = str.substr(str.find_first_of(" ") + 1); // remove "class" word
 
-		oss << str << ":" << std::endl;
+		print_tabs(stream, depth);
 
-		file->WriteStr(oss.str().c_str());
+		stream << str << " :" << std::endl;
 
 		for (auto& f : _fields)
-			f->print(dynamic_cast<Y*>(this), file, depth + 1);
+			f->print(dynamic_cast<Y*>(this), stream, depth + 1);
 
-		print_tabs(file, depth);
+		//print_tabs(stream, depth);
+		//stream << "---\n";
+	}
 
-		file->WriteStr("---\n");
+	virtual void deserialize(std::istringstream& stream) override
+	{
+		for (auto& f : _fields)
+			f->scan(dynamic_cast<Y*>(this), stream);
 	}
 
 	// Add not serializable field
 	template <typename C, typename T>
-	typename std::enable_if<!std::is_base_of<Serializable, T>::value>::type	add_entry(const std::string& nameIn, T C::*member)
+	typename std::enable_if<!std::is_base_of<SerializableBase, T>::value>::type	add_entry(const string& nameIn, T C::*member)
 	{
-		_fields.push_back(std::shared_ptr<IField>(new Field<C, T>(nameIn, member)));
+		_fields.push_back(std::shared_ptr<IField>(new FieldBase<C, T>(nameIn, member)));
 	}
 
 	// Add serializable field
 	template <typename C, typename T>
-	typename std::enable_if<std::is_base_of<Serializable, T>::value>::type add_entry(const std::string& nameIn, T C::*member)
+	typename std::enable_if<std::is_base_of<SerializableBase, T>::value>::type add_entry(const string& nameIn, T C::*member)
 	{
 		_fields.push_back(std::shared_ptr<IField>(new SubField<C, T>(nameIn, member)));
 	}
 };
 
 
-// tree
-
-
-// T - standard type
-template <typename C, typename T>
-typename std::enable_if<!std::is_base_of<Serializable<C>, T>::value, void>::type
-serialize_collection_node(T& t, IFile *file, std::ostringstream& oss, int depth, bool creturn = false)
-{
-	SerializableBase *s = dynamic_cast<SerializableBase*>(t);
-	if (s)
-		s->serialize(file, depth);
-	else
-	{
-		oss << t;
-		if (creturn) oss << std::endl;
-	}
-}
-
-// T - Serializable
-//template <typename C, typename T>
-//typename std::enable_if<std::is_base_of<Serializable<C>, T>::value, void>::type
-//print_node(IFile *file, std::ostringstream& oss, typename tree<T>::pre_order_iterator& it, int depth)
-//{
-//	T& t = *it;
-//	t.serialize(file, depth);
-//}
-
-// T is pointer, where T - Serializable
-//template <typename C, typename T>
-//typename std::enable_if<
-//	std::is_pointer<T>::value &&
-//	std::is_base_of<Serializable<C>, typename std::remove_pointer<T>::type>::value,
-//	void>::type
-//	print_(IFile *file, std::ostringstream& oss, typename tree<T>::pre_order_iterator& it, int depth)
-//{
-//	T* t = &(*it);
-//	(*t)->print(file, depth);
-//}
-
-// tree
-template <typename C, typename T>
-struct Field<C, tree<T>> : FieldBase<C, tree<T>>
-{
-	using FieldBase<C, tree<T>>::FieldBase;
-
-
-	void print(void *object, IFile *file, int depth) const override
-	{
-		C *c = (C*)object;
-		tree<T>& tr = c->*(this->member);
-
-		std::ostringstream oss_header;
-		oss_header << this->filed_name << " : " << tr.size() << "\n";
-		print_tabs(file, depth);
-		file->WriteStr(oss_header.str().c_str());
-
-
-		std::ostringstream oss;
-		typename tree<T>::pre_order_iterator it = tr.begin();
-
-		while (it != tr.end())
-		{
-			print_tabs(file, tr.depth(it) + depth + 1);
-			serialize_collection_node<C, T>(*it, file, oss, tr.depth(it) + depth + 1, true);
-			it++;
-		}		
-
-		file->WriteStr(oss.str().c_str());
-	}
-};
-
-
-// std::vector
-template <typename C, typename T>
-struct Field<C, std::vector<T>> : FieldBase<C, std::vector<T>>
-{
-	using FieldBase<C, std::vector<T>>::FieldBase;
-
-	void print(void *object, IFile *file, int depth) const override
-	{
-		C *c = (C*)object;
-		std::vector<T>& vec = c->*(this->member);
-
-		std::ostringstream oss;
-		oss << this->filed_name << " : " << " [ ";	
-
-		//std::ostringstream oss;
-		//typename tree<T>::pre_order_iterator it = tr.begin();
-
-		for (auto& v : vec)
-		{
-			serialize_collection_node<C, T>(v, file, oss, 0);
-		}
-
-		oss << " ]\n";
-
-		print_tabs(file, depth);
-		file->WriteStr(oss.str().c_str());
-	}
-};
