@@ -1,6 +1,7 @@
 #include "Common.h"
 #include <experimental/filesystem>
 #include "Core.h"
+#include <set>
 
 namespace fs = std::experimental::filesystem;
 
@@ -125,6 +126,34 @@ mat4 perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar)
 	Result.el_2D[2][3] = -(zFar * zNear) / (zFar - zNear);
 	
 	return Result;
+}
+
+int initialized = 0;
+int seed = 0;
+std::set<int> instances_id;
+
+unsigned int random8()
+{
+	if (initialized == 0)
+	{
+		seed = time(NULL);
+		initialized = 1;
+	}
+	seed = seed * 1664525 + 1013904223;
+	return (int)((seed >> 20) & 0xff);
+}
+
+int getRandomInt()
+{
+	int newid;
+	do
+	{
+		newid = random8();
+		newid |= random8() << 8;
+		newid |= random8() << 16;
+		newid |= (random8() & 0x7f) << 24;
+	} while (instances_id.find(newid) != instances_id.end() && newid == 0);
+	return newid;
 }
 
 list<string> make_lines_list(const char **text)

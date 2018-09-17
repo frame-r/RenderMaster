@@ -195,3 +195,8 @@ inline vec3 GetBackDirection(const mat4& ModelMat) { return -vec3(ModelMat.Colum
 //
 mat4 perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar);
 
+
+// random
+
+int getRandomInt();
+

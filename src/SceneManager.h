@@ -17,7 +17,11 @@ public:
 	SceneManager();
 
 	tree<IGameObject*> _gameobjects;
-	std::unordered_map<IGameObject*, tree<IGameObject*>::iterator_base> _go_to_it; // IGameObject* -> iterator in tree
+
+	//
+	// IGameObject* -> iterator
+	// For fast searching childs, parents through tree...
+	std::unordered_map<IGameObject*, tree<IGameObject*>::iterator_base> _go_to_it;
 
 	void Init();
 	void Free();

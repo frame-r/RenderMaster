@@ -8,8 +8,8 @@ class GameObjectBase : public T, public Serializable<T>
 {
 protected:
 
+	int id;
 	std::string _name{"GameObject"};
-
 	vec3 _pos;
 	quat _rot;
 	vec3 _scale{1.0f, 1.0f, 1.0f};
@@ -26,6 +26,8 @@ public:
 		add_entry("positon", &GameObjectBase::_pos);
 		add_entry("rotation", &GameObjectBase::_rot);
 		add_entry("scale", &GameObjectBase::_scale);
+
+		id = getRandomInt();
 	}
 
 	API GetName(OUT const char **pName) override;
