@@ -20,7 +20,6 @@ API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 API SceneManager::AddRootGameObject(IGameObject* pGameObject)
 {
 	tree<IGameObject*>::iterator top = _gameobjects.begin();
-	//auto go = dynamic_cast<GameObject*>(pGameObject);
 	auto it = _gameobjects.insert(top, pGameObject);
 	_go_to_it[pGameObject] = it;
 	_gameObjectAddedEvent->Fire(pGameObject);
@@ -31,7 +30,6 @@ API SceneManager::GetChilds(OUT uint *number, IGameObject *parent)
 {
 	if (parent)
 	{
-		//auto go = dynamic_cast<GameObject*>(parent);
 		tree<IGameObject*>::iterator_base it = _go_to_it[parent];
 		*number = (uint)_gameobjects.number_of_children(it);
 	}
@@ -49,7 +47,6 @@ API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, u
 
 	if (parent)
 	{
-		//auto go = dynamic_cast<GameObject*>(parent);
 		auto it = _go_to_it[parent];
 		*pGameObject = *_gameobjects.child(it, idx);
 	}else
