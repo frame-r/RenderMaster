@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-
+#include "ResourceManager.h"
 
 //
 // Hight-lever render
@@ -13,7 +13,11 @@ class Render : public IRender
 	ISceneManager *_pSceneMan{nullptr};
 	IFileSystem *_fsystem{nullptr};
 
-	ShaderText pStandardShaderText;
+	TResource<ShaderText> *_standardShader = nullptr;
+
+	TResource<ICoreMesh> *_pAxesMesh = nullptr;
+	TResource<ICoreMesh> *_pAxesArrowMesh = nullptr;
+	TResource<ICoreMesh> *_pGridMesh = nullptr;
 
 	struct alignas(16) EveryFrameParameters
 	{
@@ -47,6 +51,7 @@ public:
 	~Render();
 
 	void Init();
+	void Free();
 	void RenderFrame(const ICamera *pCamera);
 
 	API GetShader(OUT ICoreShader **pShader, const ShaderRequirement *shaderReq) override;

@@ -12,25 +12,13 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 
 GLShader::~GLShader()
 {
+	Free();
 }
 
-API GLShader::Free()
+void GLShader::Free()
 {
-	auto free_gl_mesh = [&]() -> void
-	{
-		if (_vertID != 0) glDeleteShader(_vertID);
-		if (_fragID != 0) glDeleteShader(_fragID);
-		if (_geomID != 0) glDeleteShader(_geomID);
-		if (_programID != 0) glDeleteProgram(_programID);
-	};
-
-	standard_free_and_delete(this, free_gl_mesh, _pCore);
-
-	return S_OK;
-}
-
-API GLShader::GetType(OUT RES_TYPE *type)
-{
-	*type = RES_TYPE::CORE_SHADER;
-	return S_OK;
+	if (_vertID != 0) {	glDeleteShader(_vertID); _vertID = 0; }
+	if (_fragID != 0) {	glDeleteShader(_fragID); _fragID = 0; }
+	if (_geomID != 0) { glDeleteShader(_geomID); _geomID = 0; }
+	if (_programID != 0) { glDeleteProgram(_programID); _programID = 0; }
 }

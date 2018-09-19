@@ -253,7 +253,7 @@ SerializableBase* Fabric::create(std::string className)
 {
 	if (className == "GameObject") return nullptr;
 	if (className == "SceneManager") return new SceneManager;
-	if (className == "Model") return new Model(std::vector<ICoreMesh*>());
+	if (className == "Model") return new Model(std::vector<TResource<ICoreMesh>*>());
 	if (className == "Camera") return new Camera();
 	return nullptr;
 }

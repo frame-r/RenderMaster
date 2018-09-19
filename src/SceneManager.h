@@ -4,11 +4,12 @@
 #include "tree.h"
 #include "Serialization.h"
 #include "GameObject.h"
+#include "ResourceManager.h"
 
 
 class SceneManager : public ISceneManager, public Serializable<ISceneManager>
 {	
-	ICamera *_pCam{nullptr};
+	TResource<ICamera> *_pCam = nullptr;
 	IResourceManager *_pResMan{nullptr};
 	std::unique_ptr<GameObjectEvent> _gameObjectAddedEvent{new GameObjectEvent};
 
@@ -30,7 +31,7 @@ public:
 
 	API SaveScene(const char *name) override;
 	API GetDefaultCamera(OUT ICamera **pCamera) override;
-	API AddRootGameObject(IGameObject *pGameObject) override;
+	API AddRootGameObject(IResource *pGameObject) override;
 	API GetChilds(OUT uint *number, IGameObject *parent) override;
 	API GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx) override;
 	

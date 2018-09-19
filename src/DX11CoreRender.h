@@ -13,11 +13,11 @@ class DX11ConstantBuffer final: public IUniformBuffer
 public:
 
 	DX11ConstantBuffer(ID3D11Buffer *bufferIn) : buffer(bufferIn) {}
+	virtual ~DX11ConstantBuffer() { Free(); }
+
+	void Free() { buffer = nullptr; }
 
 	ID3D11Buffer *nativeBuffer() const { return buffer.Get(); }
-
-	API Free() override;
-	API GetType(OUT RES_TYPE *type) override;
 };
 
 

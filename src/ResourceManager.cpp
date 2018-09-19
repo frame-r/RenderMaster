@@ -3,6 +3,7 @@
 #include "Filesystem.h"
 #include "Core.h"
 #include "Model.h"
+#include "Camera.h"
 
 #include <filesystem>
 #include <cassert>
@@ -138,7 +139,7 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 
 void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 {
-	vector<ICoreMesh *> meshes;
+	vector<TResource<ICoreMesh> *> meshes;
 	FbxString lString;
 
 	LOG("[FBX]Scene hierarchy:");
@@ -156,7 +157,7 @@ void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 	pModel = new Model(meshes);
 }
 
-void ResourceManager::_LogNode(vector<ICoreMesh *>& meshes, FbxNode* pNode, int depth)
+void ResourceManager::_LogNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int depth)
 {
 	FbxString lString;
 	FbxNodeAttribute* node = pNode->GetNodeAttribute();
@@ -191,7 +192,7 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxNode *pNode)
+void ResourceManager::_LogMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode)
 {
 	int control_points_count = pMesh->GetControlPointsCount();
 	int polygon_count = pMesh->GetPolygonCount();
@@ -329,7 +330,7 @@ void ResourceManager::_LogMesh(vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxN
 	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
-		meshes.push_back(pCoreMesh);
+		meshes.push_back(new TResource<ICoreMesh>(pCoreMesh));
 	else
 		LOG_WARNING("[FBX]ResourceManager::_LogMesh(): Can not create mesh");
 }
@@ -390,34 +391,34 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgress
 }
 #endif
 
-const char* ResourceManager::_resourceToStr(IResource *pRes)
-{
-	RES_TYPE type;
-
-	pRes->GetType(&type);
-
-	switch (type)
-	{
-		case RENDER_MASTER::RES_TYPE::CORE_MESH:
-			return "CORE_MESH";
-		case RENDER_MASTER::RES_TYPE::CORE_TEXTURE:
-			return "CORE_TEXTURE";
-		case RENDER_MASTER::RES_TYPE::CORE_SHADER:
-			return "CORE_SHADER";
-		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
-			return "UNIFORM_BUFFER";
-		case RENDER_MASTER::RES_TYPE::GAMEOBJECT:
-			return "GAMEOBJECT";
-		case RENDER_MASTER::RES_TYPE::MODEL:
-			return "MODEL";
-		case RENDER_MASTER::RES_TYPE::CAMERA:
-			return "CAMERA";
-		default:
-			return "UNKNOWN";
-	}
-
-	return nullptr;
-}
+//const char* ResourceManager::_resourceToStr(IResource *pRes)
+//{
+//	RES_TYPE type;
+//
+//	pRes->GetType(&type);
+//
+//	switch (type)
+//	{
+//		case RENDER_MASTER::RES_TYPE::CORE_MESH:
+//			return "CORE_MESH";
+//		case RENDER_MASTER::RES_TYPE::CORE_TEXTURE:
+//			return "CORE_TEXTURE";
+//		case RENDER_MASTER::RES_TYPE::CORE_SHADER:
+//			return "CORE_SHADER";
+//		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
+//			return "UNIFORM_BUFFER";
+//		case RENDER_MASTER::RES_TYPE::GAMEOBJECT:
+//			return "GAMEOBJECT";
+//		case RENDER_MASTER::RES_TYPE::MODEL:
+//			return "MODEL";
+//		case RENDER_MASTER::RES_TYPE::CAMERA:
+//			return "CAMERA";
+//		default:
+//			return "UNKNOWN";
+//	}
+//
+//	return nullptr;
+//}
 
 ResourceManager::ResourceManager()
 {
@@ -431,146 +432,9 @@ ResourceManager::~ResourceManager()
 
 void ResourceManager::Init()
 {
-	MeshIndexDesc indexEmpty;
-	ICoreMesh *pAxes;
-	ICoreMesh *pPlane;
-
 	InitializeCriticalSection(&_cs);
 
 	_pCore->GetSubSystem((ISubSystem**)&_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
-
-	float vertexPlane[16] = 
-	{
-		-1.0f, 1.0f, 0.0f, 1.0f, 
-		 1.0f,-1.0f, 0.0f, 1.0f, 
-		 1.0f, 1.0f, 0.0f, 1.0f, 
-		-1.0f, 1.0f, 0.0f, 1.0f 
-	};
-
-	unsigned short indexPlane[6]
-	{
-		0, 1, 2,
-		0, 2, 3
-	};
-	
-	MeshDataDesc desc;
-	desc.pData = reinterpret_cast<uint8*>(vertexPlane);
-	desc.numberOfVertex = 4;
-	desc.positionStride = 16;
-
-	MeshIndexDesc indexDesc;
-	indexDesc.pData = reinterpret_cast<uint8*>(indexPlane);
-	indexDesc.number = 6;
-	indexDesc.format = MESH_INDEX_FORMAT::INT16;
-
-	if (SUCCEEDED(_pCoreRender->CreateMesh((ICoreMesh**)&pPlane, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES)))
-		_resources[pPlane] = TResource{pPlane, 0, DEFAULT_RES_TYPE::PLANE};
-
-	//
-	// Create axes
-	//	
-	// Layout: position, color, position, color, ...
-
-	float vertexAxes[] = {	0.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,
-							0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,
-							0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f};
-	
-	MeshDataDesc descAxes;
-	descAxes.pData = reinterpret_cast<uint8*>(vertexAxes);
-	descAxes.numberOfVertex = 6;
-	descAxes.positionStride = 32;
-	descAxes.colorPresented = true;
-	descAxes.colorOffset = 16;
-	descAxes.colorStride = 32;	
-
-	if (SUCCEEDED(_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-		_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES};
-	
-	
-	//
-	// Create grid
-	//
-	const float linesInterval = 5.0f;
-	const int linesNumber = 31;
-	const float startOffset = linesInterval * (linesNumber / 2);
-
-	vec4 vertexGrid[4 * linesNumber];
-	for (int i = 0; i < linesNumber; i++)
-	{
-		vertexGrid[i * 4] =		vec4(-startOffset + i * linesInterval,	-startOffset,						0.0f, 1.0f);
-		vertexGrid[i * 4 + 1] =	vec4(-startOffset + i * linesInterval,	 startOffset,						0.0f, 1.0f);
-		vertexGrid[i * 4 + 2] =	vec4( startOffset,						-startOffset + i * linesInterval,	0.0f, 1.0f);
-		vertexGrid[i * 4 + 3] =	vec4(-startOffset,						-startOffset + i * linesInterval,	0.0f, 1.0f);
-	}
-
-	MeshDataDesc descGrid;
-	descGrid.pData = reinterpret_cast<uint8*>(vertexGrid);
-	descGrid.numberOfVertex = 4 * linesNumber;
-	descGrid.positionStride = 16;
-
-	if (SUCCEEDED(_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-		_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::GRID};
-
-
-	//
-	// Create axes arrows
-	//
-	// Layout: position, color, position, color, ...
-
-	const float arrowRadius = 0.065f;
-	const float arrowLength = 0.3f;
-	const int segments = 12;
-	const int numberOfVeretex = 3 * 3 * segments;
-	const int floats = (4 + 4) * numberOfVeretex;
-
-	float vertexAxesArrows[floats];
-	void *M = vertexAxesArrows;
-	for (int i = 0; i < 3; i++) // 3 axes
-	{
-		vec4 color;
-		color.xyzw[i] = 1.0f;
-		color.w = 1.0f;
-		for (int j = 0; j < segments; j++) 
-		{
-			constexpr float pi2 = 3.141592654f * 2.0f;
-			float alpha = pi2 * (float(j) / segments);
-			float dAlpha = pi2 * (1.0f / segments);
-
-			vec4 v1, v2, v3;
-
-			v1.xyzw[i] = 1.0f + arrowLength;
-			v1.w = 1.0f;
-
-			v2.xyzw[i] = 1.0f;
-			v2.xyzw[(i + 1) % 3] = cos(alpha) * arrowRadius;
-			v2.xyzw[(i + 2) % 3] = sin(alpha) * arrowRadius;
-			v2.w = 1.0f;
-
-			v3.xyzw[i] = 1.0f;
-			v3.xyzw[(i + 1) % 3] = cos(alpha + dAlpha) * arrowRadius;
-			v3.xyzw[(i + 2) % 3] = sin(alpha + dAlpha) * arrowRadius;
-			v3.w = 1.0f;
-
-			memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 0,  &v1.x,		16);
-			memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 4,  &color.x,	16);
-			memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 8,  &v2.x,		16);
-			memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 12, &color.x,	16);
-			memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 16, &v3.x,		16);
-			memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 20, &color.x,	16);
-		}
-	}
-
-	MeshDataDesc descArrows;
-	descArrows.pData = reinterpret_cast<uint8*>(vertexAxesArrows);
-	descArrows.numberOfVertex = numberOfVeretex;
-	descArrows.positionStride = 32;
-	descArrows.colorPresented = true;
-	descArrows.colorOffset = 16;
-	descArrows.colorStride = 32;
-
-	if (SUCCEEDED(_pCoreRender->CreateMesh((ICoreMesh**)&pAxes, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
-		_resources[pAxes] = TResource{pAxes, 0, DEFAULT_RES_TYPE::AXES_ARROWS};
-
 
 	LOG("Resource Manager initalized");
 }
@@ -581,16 +445,15 @@ API ResourceManager::GetName(OUT const char **pName)
 	return S_OK;
 }
 
-API ResourceManager::LoadModel(OUT IModel **pModel, const char *pFileName, IProgressSubscriber *pProgress)
+API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName, IProgressSubscriber *pProgress)
 {
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
 	
-	char *pString;
-	_pCore->GetDataDir(&pString);
-	string dataPath = string(pString);
+	char *pDataPath;
+	_pCore->GetDataDir(&pDataPath);
+	string dataPath = string(pDataPath);
 
 	string fullPath = dataPath + '\\' + string(pFileName);
-	uint meshNumber;
 
 	IModel *model{nullptr};
 
@@ -607,28 +470,21 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pFileName, IProg
 		LOG_FATAL_FORMATTED("ResourceManager::LoadModel unsupported format \"%s\"", file_ext.c_str());
 		return S_FALSE;
 	}
-
-	AddToList(model);
-
-	model->GetNumberOfMesh(&meshNumber);
-
-	for (uint i = 0; i < meshNumber; i++)
-	{
-		ICoreMesh *pMesh;
-		model->GetMesh(&pMesh, i);
-		AddToList(pMesh);
-	}
-
+		
 	ISceneManager *pSceneManager;
 	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
-	pSceneManager->AddRootGameObject(model);
+
+	TResource<IModel> *res = new TResource<IModel>(model);
+	_resources.emplace(res);
+
+	pSceneManager->AddRootGameObject(res);
 	
-	*pModel = model;
+	*pModel = res;
 
 	return S_OK;
 }
 
-API ResourceManager::LoadShaderText(OUT ShaderText *pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
+API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
 	auto load_shader = [=](const char *&textOut, const char *pName) -> APIRESULT
 	{
@@ -665,49 +521,204 @@ API ResourceManager::LoadShaderText(OUT ShaderText *pShader, const char *pVertNa
 		return S_OK;
 	};
 
-	auto ret =	load_shader(pShader->pVertText, pVertName);
+	TResource<ShaderText> *res = new TResource<ShaderText>(new ShaderText);
+
+	auto ret =	load_shader((*res)->pVertText, pVertName);
 
 	if (pGeomName)
-		ret &=	load_shader(pShader->pGeomText, pGeomName);
+		ret &=	load_shader((*res)->pGeomText, pGeomName);
 
-	ret &=		load_shader(pShader->pFragText, pFragName);
+	ret &=		load_shader((*res)->pFragText, pFragName);
+
+	*pShader = res;
 
 	return ret;
 }
 
-API ResourceManager::GetDefaultResource(OUT IResource **pResource, DEFAULT_RES_TYPE type)
+API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 {
-	if (type == DEFAULT_RES_TYPE::CUSTOM)
+	if (type > RES_TYPE::NUMBER)
 	{
-		pResource = nullptr;
+		*pResource = nullptr;
 		LOG_WARNING("ResourceManager::GetDefaultResource(): unknown type of resource");
-		return S_FALSE;
+		return E_ABORT;
 	}
 
-	auto it = std::find_if(_resources.begin(), _resources.end(), [type](const std::pair<const IResource *, TResource>& res) -> bool { return res.second.type == type; });
-
-	assert(it != _resources.end());
-
-	*pResource = it->second.pRes;
-	it->second.refCount++;
-
-	return S_OK;
-}
-
-API ResourceManager::AddToList(IResource *pResource)
-{ 
-	assert(pResource != nullptr && "ResourceManager::AddToList(): pResource==nullptr");
-	auto it = _resources.find(pResource);
-
-	if (it == _resources.end())
+	switch (type)
 	{
-		_resources[pResource] = TResource{pResource, 1, DEFAULT_RES_TYPE::CUSTOM};
-		DEBUG_LOG("ResourceManager::AddToList(): added new resource! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
-	}
-	else
-	{
-		it->second.refCount++;
-		DEBUG_LOG("ResourceManager::AddToList(): refCount++ refCount==%i type=%s", LOG_TYPE::NORMAL, it->second.refCount, _resourceToStr(pResource));
+	case RES_TYPE::MESH_PLANE:
+	case RES_TYPE::MESH_AXES:
+	case RES_TYPE::MESH_AXES_ARROWS:
+	case RES_TYPE::MESH_GRID:
+		{
+			IResource *res = nullptr;
+
+			auto it = std::find_if(_resources.begin(), _resources.end(), [type](IResource *res) -> bool
+			{
+				RES_TYPE next_type;
+
+				res->GetType(&next_type);
+
+				return next_type == type; 
+			});
+
+			if (it != _resources.end())
+			{
+				(*it)->AddRef();
+				*pResource = *it;
+			}
+
+			// else create new resource
+
+			ICoreMesh *ret = nullptr;
+
+			if (type == RES_TYPE::MESH_PLANE)
+			{
+				float vertexPlane[16] =
+				{
+					-1.0f, 1.0f, 0.0f, 1.0f,
+					 1.0f,-1.0f, 0.0f, 1.0f,
+					 1.0f, 1.0f, 0.0f, 1.0f,
+					-1.0f, 1.0f, 0.0f, 1.0f
+				};
+
+				unsigned short indexPlane[6]
+				{
+					0, 1, 2,
+					0, 2, 3
+				};
+
+				MeshDataDesc desc;
+				desc.pData = reinterpret_cast<uint8*>(vertexPlane);
+				desc.numberOfVertex = 4;
+				desc.positionStride = 16;
+
+				MeshIndexDesc indexDesc;
+				indexDesc.pData = reinterpret_cast<uint8*>(indexPlane);
+				indexDesc.number = 6;
+				indexDesc.format = MESH_INDEX_FORMAT::INT16;
+
+				if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&ret, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES)))
+					return E_ABORT;
+
+			} else if (type == RES_TYPE::MESH_AXES)
+			{
+				float vertexAxes[] = {0.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,
+										0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,
+										0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f};
+
+				MeshIndexDesc indexEmpty;
+
+				MeshDataDesc descAxes;
+				descAxes.pData = reinterpret_cast<uint8*>(vertexAxes);
+				descAxes.numberOfVertex = 6;
+				descAxes.positionStride = 32;
+				descAxes.colorPresented = true;
+				descAxes.colorOffset = 16;
+				descAxes.colorStride = 32;
+
+				if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&ret, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
+					return E_ABORT;
+
+			} else if (type == RES_TYPE::MESH_AXES_ARROWS)
+			{
+				// Layout: position, color, position, color, ...
+
+				const float arrowRadius = 0.065f;
+				const float arrowLength = 0.3f;
+				const int segments = 12;
+				const int numberOfVeretex = 3 * 3 * segments;
+				const int floats = (4 + 4) * numberOfVeretex;
+
+				float vertexAxesArrows[floats];
+				void *M = vertexAxesArrows;
+				for (int i = 0; i < 3; i++) // 3 axes
+				{
+					vec4 color;
+					color.xyzw[i] = 1.0f;
+					color.w = 1.0f;
+					for (int j = 0; j < segments; j++)
+					{
+						constexpr float pi2 = 3.141592654f * 2.0f;
+						float alpha = pi2 * (float(j) / segments);
+						float dAlpha = pi2 * (1.0f / segments);
+
+						vec4 v1, v2, v3;
+
+						v1.xyzw[i] = 1.0f + arrowLength;
+						v1.w = 1.0f;
+
+						v2.xyzw[i] = 1.0f;
+						v2.xyzw[(i + 1) % 3] = cos(alpha) * arrowRadius;
+						v2.xyzw[(i + 2) % 3] = sin(alpha) * arrowRadius;
+						v2.w = 1.0f;
+
+						v3.xyzw[i] = 1.0f;
+						v3.xyzw[(i + 1) % 3] = cos(alpha + dAlpha) * arrowRadius;
+						v3.xyzw[(i + 2) % 3] = sin(alpha + dAlpha) * arrowRadius;
+						v3.w = 1.0f;
+
+						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 0, &v1.x, 16);
+						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 4, &color.x, 16);
+						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 8, &v2.x, 16);
+						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 12, &color.x, 16);
+						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 16, &v3.x, 16);
+						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 20, &color.x, 16);
+					}
+				}
+				MeshIndexDesc indexEmpty;
+
+				MeshDataDesc descArrows;
+				descArrows.pData = reinterpret_cast<uint8*>(vertexAxesArrows);
+				descArrows.numberOfVertex = numberOfVeretex;
+				descArrows.positionStride = 32;
+				descArrows.colorPresented = true;
+				descArrows.colorOffset = 16;
+				descArrows.colorStride = 32;
+
+				if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&ret, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
+					return E_ABORT;
+
+			} else if (type == RES_TYPE::MESH_GRID)
+			{
+				const float linesInterval = 5.0f;
+				const int linesNumber = 31;
+				const float startOffset = linesInterval * (linesNumber / 2);
+
+				vec4 vertexGrid[4 * linesNumber];
+				for (int i = 0; i < linesNumber; i++)
+				{
+					vertexGrid[i * 4] = vec4(-startOffset + i * linesInterval, -startOffset, 0.0f, 1.0f);
+					vertexGrid[i * 4 + 1] = vec4(-startOffset + i * linesInterval, startOffset, 0.0f, 1.0f);
+					vertexGrid[i * 4 + 2] = vec4(startOffset, -startOffset + i * linesInterval, 0.0f, 1.0f);
+					vertexGrid[i * 4 + 3] = vec4(-startOffset, -startOffset + i * linesInterval, 0.0f, 1.0f);
+				}
+
+				MeshIndexDesc indexEmpty;
+
+				MeshDataDesc descGrid;
+				descGrid.pData = reinterpret_cast<uint8*>(vertexGrid);
+				descGrid.numberOfVertex = 4 * linesNumber;
+				descGrid.positionStride = 16;
+
+				if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&ret, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
+					return E_ABORT;
+			}
+
+			*pResource = new TResource<ICoreMesh>(ret);
+			_resources.emplace(*pResource);
+		}
+		break;
+
+		case RES_TYPE::CAMERA:
+			*pResource = new TResource<ICamera>(new Camera);
+			_resources.emplace(*pResource);
+			break;
+
+		case RES_TYPE::GAME_OBJECT:
+			*pResource = new TResource<IGameObject>(new GameObject);
+			_resources.emplace(*pResource);
+			break;
 	}
 
 	return S_OK;
@@ -719,97 +730,26 @@ API ResourceManager::GetNumberOfResources(OUT uint *number)
 	return S_OK;
 }
 
-API ResourceManager::GetRefNumber(OUT uint *number, const IResource *pResource)
-{
-	auto it = _resources.find(pResource);
-
-	if (it == _resources.end())
-	{
-		*number = 0;
-		return E_POINTER;
-	}
-	
-	*number = it->second.refCount;
-
-	return S_OK;
-}
-
-API ResourceManager::DecrementRef(IResource *pResource)
+API ResourceManager::ReleaseResource(IResource *pResource)
 {
 	auto it = _resources.find(pResource);
 	
 	if (it == _resources.end())
+	{
+		LOG_WARNING("ResourceManager::ReleaseResource() Resource not found\n");
 		return E_POINTER;
-
-	assert(it->second.refCount > 0);
-
-	it->second.refCount--;
-
-	DEBUG_LOG("ResourceManager::DecrementRef(): refCount-- refCount==%i type=%s", LOG_TYPE::NORMAL, it->second.refCount, _resourceToStr(pResource));
-
-	return S_OK;
-}
-
-API ResourceManager::RemoveFromList(IResource *pResource)
-{
-	uint refCount;
-	GetRefNumber(&refCount, pResource);
-
-	if (refCount == 1)
-	{
-		_resources.erase(pResource);
-		DEBUG_LOG("ResourceManager::RemoveFromList(): deleted! type=%s", LOG_TYPE::NORMAL, _resourceToStr(pResource));
-	}
-	else
-	{
-		_resources.erase(pResource);
-		LOG_WARNING_FORMATTED("ResourceManager::RemoveFromList(): deleted! type=%s. may be warning(refNumber = %i)!", _resourceToStr(pResource), refCount);
 	}
 
-	return S_OK;
-}
+	uint refs = 0;
+	(*it)->RefCount(&refs);
 
-API ResourceManager::FreeAllResources()
-{
-	DEBUG_LOG("ResourceManager::FreeAllResources(): resources total=%i", LOG_TYPE::NORMAL, _resources.size());
-
-	// first free all resources that have refCount = 1
-	// and so on...
-	while (!_resources.empty())
+	if (refs == 0)
 	{
-		vector<IResource*> one_ref_res;
-		
-		for (auto& res : _resources)
-		{
-			if (res.second.refCount <= 1)
-				one_ref_res.push_back(res.second.pRes);
-		}
-		
-		#ifdef _DEBUG
-			static int i = 0;
-			i++;
-                        if (i > 20)
-                            return S_FALSE; // occured some error. maybe circular references => in debug limit number of iterations
-			auto res_before = _resources.size();
-		#endif
-
-		// free resources
-		for (auto* pRes : one_ref_res)
-		{
-			auto it = _resources.find(pRes);
-			if (it != _resources.end())
-			{
-				pRes->Free();
-				_resources.erase(pRes);
-			}
-		}
-
-		#ifdef _DEBUG
-			auto res_deleted = res_before - _resources.size();
-			int res_deleted_percent = (int)(100 * ((float)res_deleted / res_before));
-			DEBUG_LOG("ResourceManager::FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _resources.size());
-		#endif
+		LOG_WARNING("ResourceManager::ReleaseResource() Resource not found\n");
+		return S_FALSE;
 	}
-		
+
+	_resources.erase(pResource);
+
 	return S_OK;
 }

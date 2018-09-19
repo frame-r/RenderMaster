@@ -301,7 +301,7 @@ API Core::CloseEngine()
 	
 	_pSceneManager->Free();
 
-	_pResMan->FreeAllResources();
+	_pRender->Free();
 
 	_pCoreRender->Free();
 

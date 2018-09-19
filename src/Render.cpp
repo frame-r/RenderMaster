@@ -85,8 +85,8 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 
 		ShaderText tmp;
 
-		process_shader(tmp.pVertText, pStandardShaderText.pVertText, "out_v.shader", 0);
-		process_shader(tmp.pFragText, pStandardShaderText.pFragText, "out_f.shader", 1);
+		process_shader(tmp.pVertText, (*_standardShader)->pVertText, "out_v.shader", 0);
+		process_shader(tmp.pFragText, (*_standardShader)->pFragText, "out_f.shader", 1);
 
 		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, &tmp)) && pShader != nullptr;
 
@@ -94,7 +94,6 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
 		else
 		{
-			_pResMan->AddToList(pShader);
 			_shaders_pool.emplace(req, pShader);
 		}
 
@@ -120,13 +119,9 @@ void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 	{
 		IGameObject *go = *it;
 		
-		RES_TYPE type;
-		go->GetType(&type);
-
-		if (type == RES_TYPE::MODEL)
+		IModel *model = dynamic_cast<IModel*>(go);
+		if (model)
 		{
-			IModel *model = dynamic_cast<IModel*>(go);
-
 			uint meshes;
 			model->GetNumberOfMesh(&meshes);
 
@@ -158,30 +153,49 @@ Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 
 Render::~Render()
 {
-	delete pStandardShaderText.pVertText;
-	delete pStandardShaderText.pGeomText;
-	delete pStandardShaderText.pFragText;
 }
-
-static ICoreMesh * _pAxesMesh;
-static ICoreMesh * _pAxesArrowMesh;
-static ICoreMesh * _pGridMesh;
 
 void Render::Init()
 {
-	_pResMan->LoadShaderText(&pStandardShaderText, "mesh_vertex", nullptr, "mesh_fragment");
+	_pResMan->LoadShaderText((IResource**)&_standardShader, "mesh_vertex", nullptr, "mesh_fragment");
+
+	_pResMan->CreateResource((IResource**)&_pAxesMesh, RES_TYPE::MESH_AXES);
+	_pResMan->CreateResource((IResource**)&_pAxesArrowMesh, RES_TYPE::MESH_AXES_ARROWS);
+	_pResMan->CreateResource((IResource**)&_pGridMesh, RES_TYPE::MESH_GRID);
 
 	//dbg
-	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
-	_get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
+	//ICoreShader *s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
+	//_shaders_pool.emplace(s);
+	//s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
+	//_shaders_pool.emplace(s);
 
+	// TODO: do trough resources
 	_pCoreRender->CreateUniformBuffer(&everyFrameParameters, sizeof(EveryFrameParameters));
 
-	_pResMan->GetDefaultResource((IResource**)&_pAxesMesh, DEFAULT_RES_TYPE::AXES);
-	_pResMan->GetDefaultResource((IResource**)&_pAxesArrowMesh, DEFAULT_RES_TYPE::AXES_ARROWS);
-	_pResMan->GetDefaultResource((IResource**)&_pGridMesh, DEFAULT_RES_TYPE::GRID);
-
 	LOG("Render initialized");
+}
+
+void Render::Free()
+{
+	_standardShader->DecRef();
+	delete _standardShader;
+
+	_pAxesMesh->DecRef();
+	delete _pAxesMesh;
+
+	_pAxesArrowMesh->DecRef();
+	delete _pAxesArrowMesh;
+
+	_pGridMesh->DecRef();
+	delete _pGridMesh;
+
+	for (auto& s: _shaders_pool)
+	{
+		ICoreShader *ss = s.second;
+		delete ss;
+	}
+
+	delete everyFrameParameters;
 }
 
 void Render::RenderFrame(const ICamera *pCamera)

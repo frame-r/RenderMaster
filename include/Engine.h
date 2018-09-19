@@ -160,20 +160,30 @@ namespace RENDER_MASTER
 
 	enum class RES_TYPE
 	{
-		CORE_MESH,
-		CORE_TEXTURE,
-		CORE_SHADER,
-		UNIFORM_BUFFER,
-		GAMEOBJECT,
-		MODEL,
-		CAMERA
+		GAME_OBJECT,
+
+		CAMERA,
+
+		MESH_PLANE,
+		MESH_AXES,
+		MESH_AXES_ARROWS,
+		MESH_GRID,
+
+		SHADER_SOURCE,
+
+		NUMBER
 	};
+
 
 	class IResource
 	{
 	public:
+		virtual API AddRef() = 0;
+		virtual API DecRef() = 0;
+		virtual API RefCount(OUT uint *refs) = 0;
 		virtual API Free() = 0;
 		virtual API GetType(OUT RES_TYPE *type) = 0;
+		virtual API GetPointer(OUT void **pointer) = 0;
 	};
 
 	class IInitCallback
@@ -289,12 +299,13 @@ namespace RENDER_MASTER
 		MESH_INDEX_FORMAT format{MESH_INDEX_FORMAT::NOTHING};
 	};
 
-	class ICoreMesh : public IResource
+	class ICoreMesh
 	{
 	public:
 		virtual API GetNumberOfVertex(OUT uint *number) = 0;
 		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
 		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
+		virtual API Free() = 0;
 	};
 
 	struct ShaderText
@@ -302,18 +313,33 @@ namespace RENDER_MASTER
 		const char* pVertText{nullptr};
 		const char* pGeomText{nullptr};
 		const char* pFragText{nullptr};
+	public:
+		ShaderText() = default;
+
+		void Free()
+		{
+			delete pVertText;
+			delete pFragText;
+			delete pGeomText;
+		}
 	};
 
-	class ICoreShader : public IResource
+	class ICoreShader
 	{
+	public:
+		virtual ~ICoreShader(){}
 	};
 
-	class ICoreTexture : public IResource
+	class ICoreTexture
 	{
+	public:
+		virtual ~ICoreTexture() {}
 	};
 
-	class IUniformBuffer : public IResource
+	class IUniformBuffer
 	{
+	public:
+		virtual ~IUniformBuffer() {}
 	};
 
 	class ICoreRender : public ISubSystem
@@ -374,7 +400,7 @@ namespace RENDER_MASTER
 	// Game Objects
 	//////////////////////
 	
-	class IGameObject : public IResource
+	class IGameObject
 	{
 	public:
 		virtual API GetID(OUT int *id) = 0;
@@ -388,6 +414,7 @@ namespace RENDER_MASTER
 		virtual API GetScale(OUT vec3 *scale) = 0;
 		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
+		virtual API Free() = 0;
 
 		// Events
 		virtual API GetNameEv(OUT IStringEvent **pEvent) = 0;
@@ -417,7 +444,7 @@ namespace RENDER_MASTER
 	public:
 		virtual API SaveScene(const char *name) = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
-		virtual API AddRootGameObject(IGameObject* pGameObject) = 0;
+		virtual API AddRootGameObject(IResource* pGameObject) = 0;
 		virtual API GetChilds(OUT uint *number, IGameObject *parent) = 0;
 		virtual API GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx) = 0;
 
@@ -430,15 +457,6 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
-	enum class DEFAULT_RES_TYPE
-	{
-		CUSTOM,
-		PLANE,
-		AXES,
-		AXES_ARROWS,
-		GRID
-	};
-
 	class IProgressSubscriber
 	{
 	public:
@@ -449,15 +467,14 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		virtual API LoadModel(OUT IModel **pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
-		virtual API LoadShaderText(OUT ShaderText *pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
-		virtual API GetDefaultResource(OUT IResource **pRes, DEFAULT_RES_TYPE type) = 0;
+		// resources creation
+		virtual API LoadModel(OUT IResource **pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
+		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
+		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
+
+		virtual API ReleaseResource(IResource *pResource) = 0;
+		
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
-		virtual API AddToList(IResource *pResource) = 0;
-		virtual API GetRefNumber(OUT uint *number, const IResource *pResource) = 0;
-		virtual API DecrementRef(IResource *pResource) = 0;
-		virtual API RemoveFromList(IResource *pResource) = 0;
-		virtual API FreeAllResources() = 0;
 	};
 
 	

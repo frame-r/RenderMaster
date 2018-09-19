@@ -9,7 +9,7 @@ void Model::_update()
 {
 }
 
-Model::Model(const std::vector<ICoreMesh *>& meshes) : _meshes(meshes)
+Model::Model(const std::vector<TResource<ICoreMesh>*>& meshes) : _meshes(meshes)
 {
 	//add_entry("meshes", &Model::_meshes);
 
@@ -22,7 +22,7 @@ Model::~Model()
 
 API Model::GetMesh(OUT ICoreMesh  **pMesh, uint idx)
 {
-	*pMesh = _meshes.at(idx);
+	*pMesh = (*_meshes[idx]).get();
 	return S_OK;
 }
 
@@ -34,24 +34,16 @@ API Model::GetNumberOfMesh(OUT uint *number)
 
 API Model::Free()
 {
-	for (auto *mesh : _meshes)
+	// free each mesh
+
+	for (TResource<ICoreMesh>* m : _meshes)
 	{
-		IResourceManager *pResMan;
-		_pCore->GetSubSystem((ISubSystem**)&pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-
-		uint refNum;
-		if (SUCCEEDED(pResMan->GetRefNumber(&refNum, mesh))) // if not yet deleted
-			mesh->Free();
+		(*m).DecRef();
+		uint refs;
+		(*m).RefCount(&refs);
+		if (refs == 0)
+			delete m;
 	}
-	standard_free_and_delete(this, std::function<void()>(), _pCore);
 
 	return S_OK;
 }
-
-API Model::GetType(OUT RES_TYPE *type)
-{
-	*type = RES_TYPE::MODEL;
-	return S_OK;
-}
-
-

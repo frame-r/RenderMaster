@@ -5,23 +5,62 @@
 #include <fbxsdk.h>
 #endif
 
+template<typename T>
+class TResource : public IResource
+{
+	T *pointer = nullptr;
+	uint refCount = 0;
+	RES_TYPE type;
+
+public:
+
+	TResource(T* pointerIn) : pointer(pointerIn) { refCount = 1; }
+	~TResource() { Free(); }
+
+	T *get() { return pointer; }
+
+	inline T *operator->() { return pointer; }
+
+	API AddRef() override { refCount++; return S_OK; }
+	API DecRef() override
+	{
+		refCount--;
+		if (refCount <= 0)
+			Free();
+
+		return S_OK;
+	}
+	API RefCount(OUT uint *refs) { *refs = refCount; return S_OK; }
+	API Free() override
+	{
+		if (pointer == nullptr)
+			return S_OK;
+
+		if (refCount != 0)
+		{
+			LOG_WARNING_FORMATTED("TResource::Free(): unable delete resource because refs = %i!\n", refCount);
+			return S_OK;
+		}
+
+		pointer->Free();
+		delete pointer;
+		pointer = nullptr;
+
+		return S_OK;
+	}
+	API GetType(OUT RES_TYPE *typeOut) { *typeOut = type; return S_OK; }
+	API GetPointer(OUT void **pointerOut) { *pointerOut = pointer; return S_OK; }
+};
+
 
 class ResourceManager final : public IResourceManager
 {
-	struct TResource
-	{
-		IResource *pRes;
-		uint refCount;
-		DEFAULT_RES_TYPE type{DEFAULT_RES_TYPE::CUSTOM};
-	};
-	std::unordered_map<const IResource*, TResource> _resources;
+	std::unordered_set<IResource*> _resources;
 		
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
 
 	CRITICAL_SECTION _cs{};
-
-	static const char* _resourceToStr(IResource* pRes);
 
 	#ifdef USE_FBX
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
@@ -30,8 +69,8 @@ class ResourceManager final : public IResourceManager
 	bool _FBXLoad(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pPregress);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
 	void _LogSceneHierarchy(IModel *&pModel, FbxScene* pScene);
-	void _LogNode(std::vector<ICoreMesh *>& meshes, FbxNode* pNode, int pDepth);
-	void _LogMesh(std::vector<ICoreMesh *>& meshes, FbxMesh *pMesh, FbxNode *pNode);
+	void _LogNode(std::vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int pDepth);
+	void _LogMesh(std::vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode);
 	void _LogNodeTransform(FbxNode* pNode, const char *str);
 	#endif
 
@@ -42,14 +81,11 @@ public:
 
 	void Init();
 	
-	API LoadModel(OUT IModel **pModel, const char *pFileName, IProgressSubscriber *pPregress) override;
-	API LoadShaderText(OUT ShaderText *pShader, const char* pVertName, const char* pGeomName, const char* pFragName) override;
-	API GetDefaultResource(OUT IResource **pRes, DEFAULT_RES_TYPE type) override;
-	API AddToList(IResource *pResource) override;
+	API LoadModel(OUT IResource **pModel, const char *pFileName, IProgressSubscriber *pProgress) override;
+	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
+	API CreateResource(OUT IResource **pResource, RES_TYPE type) override;
+	API ReleaseResource(IResource *pResource) override;
 	API GetNumberOfResources(OUT uint *number) override;
-	API GetRefNumber(OUT uint *number, const IResource *pResource) override;
-	API DecrementRef(IResource *pResource) override;
-	API RemoveFromList(IResource *pResource) override;
-	API FreeAllResources() override;
-	API GetName(OUT const char **pName) override;
+	API GetName(OUT const char **pTxt) override;
 };
+

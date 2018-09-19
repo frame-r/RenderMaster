@@ -28,16 +28,18 @@ API SceneManager::SaveScene(const char *name)
 
 API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 {
-	*pCamera = _pCam;
+	*pCamera = _pCam->get();
 	return S_OK;
 }
 
-API SceneManager::AddRootGameObject(IGameObject* pGameObject)
+API SceneManager::AddRootGameObject(IResource* pGameObject)
 {
+	IGameObject *go = nullptr;
+	pGameObject->GetPointer((void**)&go);
 	tree<IGameObject*>::iterator top = _gameobjects.begin();
-	auto it = _gameobjects.insert(top, pGameObject);
-	_go_to_it[pGameObject] = it;
-	_gameObjectAddedEvent->Fire(pGameObject);
+	auto it = _gameobjects.insert(top, go);
+	_go_to_it[go] = it;
+	_gameObjectAddedEvent->Fire(go);
 	return S_OK;
 }
 
@@ -81,9 +83,7 @@ SceneManager::SceneManager()
 
 void SceneManager::Init()
 {
-	_pCam = new Camera();
-	_pResMan->AddToList(_pCam);
-	AddRootGameObject(_pCam);
+	_pResMan->CreateResource((IResource**)&_pCam, RES_TYPE::CAMERA);
 	LOG("Scene Manager initialized");
 }
 
@@ -95,10 +95,8 @@ void SceneManager::Free()
 		_pResMan->GetNumberOfResources(&res_before);
 	#endif
 
-	//for (tree<GameObject*>::sibling_iterator sl_it = _gameobjects.begin(); sl_it != _gameobjects.end(); sl_it++)
-	//{
-	//	(*sl_it)->Free();
-	//}
+	_pCam->DecRef();
+	delete _pCam;
 
 	#ifdef _DEBUG
 		uint res_after = 0;

@@ -439,6 +439,8 @@ class Serializable : public SerializableBase
 
 public:
 
+	~Serializable() {}
+
 	virtual void serialize(std::ostringstream& stream, int depth = 0) override
 	{
 		string str(typeid(*this).name());

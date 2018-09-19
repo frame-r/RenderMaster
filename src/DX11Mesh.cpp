@@ -31,20 +31,8 @@ API DX11Mesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 
 API DX11Mesh::Free()
 {
-	auto free_dx_mesh = [&]() -> void
-	{
-		if (_pVertexBuffer) _pVertexBuffer->Release();
-		if (_pIndexBuffer) _pIndexBuffer->Release();
-		if (_pInputLayoyt) _pInputLayoyt->Release();
-	};
-
-	standard_free_and_delete(this, free_dx_mesh, _pCore);
-
-	return S_OK;
-}
-
-API DX11Mesh::GetType(OUT RES_TYPE *type)
-{
-	*type = RES_TYPE::CORE_MESH;
+	if (_pVertexBuffer) _pVertexBuffer->Release();
+	if (_pIndexBuffer) _pIndexBuffer->Release();
+	if (_pInputLayoyt) _pInputLayoyt->Release();
 	return S_OK;
 }

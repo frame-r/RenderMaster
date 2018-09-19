@@ -31,6 +31,8 @@ public:
 		_id = getRandomInt();
 	}
 
+	virtual ~GameObjectBase() {}
+
 	API GetID(OUT int *id) override;
 	API GetName(OUT const char **pName) override;
 	API SetName(const char *pName) override;
@@ -40,6 +42,7 @@ public:
 	API GetPosition(OUT vec3 *pos) override;
 	API GetRotation(OUT quat *rot) override;
 	API GetScale(OUT vec3 *scale) override;
+	API Free() override;
 
 	//
 	// Model Matrix
@@ -135,6 +138,12 @@ template<typename T>
 inline API GameObjectBase<T>::GetRotation(OUT quat *rot)
 {
 	*rot = _rot;
+	return S_OK;
+}
+
+template<typename T>
+inline API GameObjectBase<T>::Free()
+{
 	return S_OK;
 }
 

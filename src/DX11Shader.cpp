@@ -5,23 +5,15 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-
-API DX11Shader::Free()
+DX11Shader::~DX11Shader()
 {
-	const auto free_dx_shader = [&]() -> void
-	{
-		if (pVertex) pVertex->Release();
-		if (pFragment) pFragment->Release();
-		if (pGeometry) pGeometry->Release();
-	};
-
-	standard_free_and_delete(this, free_dx_shader, _pCore);
-
-	return S_OK;
+	Free();
 }
 
-API DX11Shader::GetType(OUT RES_TYPE *type)
+void DX11Shader::Free()
 {
-	*type = RES_TYPE::CORE_SHADER;
-	return S_OK;
+	if (pVertex) { pVertex->Release(); pVertex = nullptr;	}
+	if (pFragment) { pFragment->Release(); pFragment = nullptr; }
+	if (pGeometry) { pGeometry->Release(); pGeometry = nullptr; }
 }
+

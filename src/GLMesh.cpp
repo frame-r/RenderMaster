@@ -31,20 +31,9 @@ API GLMesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 
 API GLMesh::Free()
 {
-	auto free_gl_mesh = [&]() -> void
-	{
-		if (_index_presented) glDeleteBuffers(1, &_IBO);
-		glDeleteBuffers(1, &_VBO);
-		glDeleteVertexArrays(1, &_VAO);
-	};
-
-	standard_free_and_delete(this, free_gl_mesh, _pCore);
-
+	if (_index_presented) {	glDeleteBuffers(1, &_IBO); _IBO = 0; }
+	if (_VBO) {	glDeleteBuffers(1, &_VBO); _VBO = 0; }
+	if (_VAO) {	glDeleteVertexArrays(1, &_VAO); _VAO = 0; }
 	return S_OK;
 }
 
-API GLMesh::GetType(OUT RES_TYPE *type)
-{
-	*type = RES_TYPE::CORE_MESH;
-	return S_OK;
-}

@@ -15,9 +15,8 @@ class Camera : public GameObjectBase<ICamera>
 public:
 
 	Camera();
-	~Camera();
+	virtual ~Camera();
 
 	API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) override;
 	API Free() override;
-	API GetType(OUT RES_TYPE *type) override;
 };

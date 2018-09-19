@@ -151,13 +151,5 @@ API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 
 API Camera::Free()
 {
-	standard_free_and_delete(dynamic_cast<IResource*>(this), std::function<void()>(), _pCore);
-
-	return S_OK;
-}
-
-API Camera::GetType(OUT RES_TYPE *type)
-{
-	*type = RES_TYPE::CAMERA;
 	return S_OK;
 }

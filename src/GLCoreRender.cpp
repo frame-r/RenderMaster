@@ -572,7 +572,7 @@ API GLCoreRender::SetShader(const ICoreShader* pShader)
 {
 	CHECK_GL_ERRORS();
 
-	const GLShader *pGLShader = reinterpret_cast<const GLShader*>(pShader);
+	const GLShader *pGLShader = dynamic_cast<const GLShader*>(pShader);
 	
 	if (pShader == nullptr)
 	{
@@ -605,7 +605,6 @@ API GLCoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	*pBuffer = static_cast<IUniformBuffer*>(new GLUniformBuffer(ubo, size));
-	_pResMan->AddToList((IResource*)*pBuffer);
 
 	return S_OK;
 }
@@ -742,16 +741,4 @@ API GLCoreRender::Clear()
 	return S_OK;
 }
 
-API GLUniformBuffer::Free()
-{
-	const auto free_ = [&]() -> void { if (_UBO) glDeleteBuffers(1, &_UBO); };
-	standard_free_and_delete(this, free_, _pCore);
-	return S_OK;
-}
-
-API GLUniformBuffer::GetType(OUT RES_TYPE * type)
-{
-	*type = RES_TYPE::UNIFORM_BUFFER;
-	return S_OK;
-}
 

@@ -26,5 +26,4 @@ public:
 	API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) override;
 	API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) override;
 	API Free() override;
-	API GetType(OUT RES_TYPE *type) override;
 };

@@ -465,7 +465,6 @@ API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	auto hr = _device->CreateBuffer(&bd, nullptr, ret.GetAddressOf());
 
 	*pBuffer = new DX11ConstantBuffer(ret.Get());
-	_pResMan->AddToList((IResource*)*pBuffer);
 
 	return hr;
 }
@@ -581,18 +580,6 @@ API DX11CoreRender::Clear()
 	return S_OK;
 }
 
-API DX11ConstantBuffer::Free()
-{
-	const auto free_ = [&]() -> void { buffer = nullptr; };
-	standard_free_and_delete(this, free_, _pCore);
-	return S_OK;
-}
-
-API DX11ConstantBuffer::GetType(OUT RES_TYPE * type)
-{
-	*type = RES_TYPE::UNIFORM_BUFFER;
-	return S_OK;
-}
 void DX11CoreRender::destroy_viewport_buffers()
 {
 	_renderTargetTex = nullptr;
