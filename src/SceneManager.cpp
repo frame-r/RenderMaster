@@ -8,6 +8,21 @@ DEFINE_LOG_HELPERS(_pCore)
 
 API SceneManager::SaveScene(const char *name)
 {
+	IFileSystem *fs;
+	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+
+	std::ostringstream out;
+	dynamic_cast<SceneManager*>(this)->serialize(out, 0);
+
+	IFile *f = nullptr;
+	fs->OpenFile(&f, name, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
+
+	f->WriteStr(out.str().c_str());
+
+	f->CloseAndFree();
+
+	LOG_FORMATTED("Scene saved to %s\n", name);
+
 	return S_OK;
 }
 
@@ -74,19 +89,6 @@ void SceneManager::Init()
 
 void SceneManager::Free()
 {
-	IFileSystem *fs;
-	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-
-	std::ostringstream out;
-	dynamic_cast<SceneManager*>(this)->serialize(out, 0);
-
-	IFile *f = nullptr;
-	fs->OpenFile(&f, "scene.yaml", FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
-
-	f->WriteStr(out.str().c_str());
-
-	f->CloseAndFree();
-
 	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _gameobjects.size());
 	#ifdef _DEBUG
 		uint res_before = 0;
