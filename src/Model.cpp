@@ -38,11 +38,7 @@ API Model::Free()
 
 	for (TResource<ICoreMesh>* m : _meshes)
 	{
-		(*m).DecRef();
-		uint refs;
-		(*m).RefCount(&refs);
-		if (refs == 0)
-			delete m;
+		(*m).Release();
 	}
 
 	return S_OK;

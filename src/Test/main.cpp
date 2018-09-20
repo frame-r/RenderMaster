@@ -18,6 +18,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 			ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
 
 			pCore->Start(); // begin main loop
+
+			pModel.reset();
+
 			pCore->CloseEngine();
 		}
 

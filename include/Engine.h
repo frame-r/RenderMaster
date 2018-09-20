@@ -177,9 +177,8 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API AddRef() = 0;
-		virtual API DecRef() = 0;
+		virtual API Release() = 0;
 		virtual API RefCount(OUT uint *refs) = 0;
-		virtual API Free() = 0;
 		virtual API GetType(OUT RES_TYPE *type) = 0;
 		virtual API GetPointer(OUT void **pointer) = 0;
 	};
@@ -468,14 +467,7 @@ namespace RENDER_MASTER
 		{
 			if (resource)
 			{
-				resource->DecRef();
-
-				uint refs;
-				resource->RefCount(&refs);
-
-				if (refs == 0)
-					delete resource;
-
+				resource->Release();
 				resource = nullptr;
 			}
 		}
@@ -506,14 +498,7 @@ namespace RENDER_MASTER
 		{
 			if (resource)
 			{
-				resource->DecRef();
-
-				uint refs;
-				resource->RefCount(&refs);
-
-				if (refs == 0)
-					delete resource;
-
+				resource->Release();
 				resource = nullptr;
 			}
 		}
@@ -528,6 +513,10 @@ namespace RENDER_MASTER
 			}
 
 			return nullptr;
+		}
+		inline IResource *getResource() const
+		{
+			return resource;
 		}
 
 		inline T &operator*() const
@@ -564,7 +553,7 @@ namespace RENDER_MASTER
 		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
 		// low level resource releasing
-		virtual API ReleaseResource(IResource *pResource) = 0;
+		virtual API DeleteResource(IResource *pResource) = 0;
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
 		virtual API Free() = 0;
 

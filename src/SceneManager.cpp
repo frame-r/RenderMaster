@@ -6,6 +6,13 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+SceneManager::SceneManager()
+{
+	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+
+	add_entry("gameobjects", &SceneManager::_gameobjects);
+}
+
 API SceneManager::SaveScene(const char *name)
 {
 	IFileSystem *fs;
@@ -74,16 +81,10 @@ API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, u
 	return S_OK;
 }
 
-SceneManager::SceneManager()
-{
-	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-
-	add_entry("gameobjects", &SceneManager::_gameobjects);
-}
-
 void SceneManager::Init()
 {
 	_pCam = _pResMan->createCamera();
+	AddRootGameObject(_pCam.getResource());
 	LOG("Scene Manager initialized");
 }
 
@@ -96,6 +97,7 @@ void SceneManager::Free()
 	#endif
 
 	_pCam.reset();
+			
 
 	#ifdef _DEBUG
 		uint res_after = 0;

@@ -12,48 +12,56 @@ class TResource : public IResource
 	uint refCount = 0;
 	RES_TYPE type;
 
+	void _free()
+	{
+		if (pointer == nullptr)
+			return;
+
+		if (refCount != 0)
+		{
+			LOG_WARNING_FORMATTED("TResource::Free(): unable delete resource because refs = %i!\n", refCount);
+			return;
+		}
+
+		IResourceManager *_pResMan;
+		_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+		_pResMan->DeleteResource(this);
+
+		pointer->Free();
+		delete pointer;
+		pointer = nullptr;
+	}
+
 public:
 
 	TResource(T* pointerIn) : pointer(pointerIn) {}
-	~TResource() { Free(); }
+	virtual ~TResource() { _free(); }
 
 	T *get() { return pointer; }
 
 	inline T *operator->() { return pointer; }
 
 	API AddRef() override { refCount++; return S_OK; }
-	API DecRef() override
+	API Release() override
 	{
 		if (refCount == 0)
+		{
+			_free();
+			delete this;
 			return S_OK;
+		}
+
 		refCount--;
+
 		if (refCount <= 0)
-			Free();
+		{
+			_free();
+			delete this;
+		}
 
 		return S_OK;
 	}
 	API RefCount(OUT uint *refs) { *refs = refCount; return S_OK; }
-	API Free() override
-	{
-		if (pointer == nullptr)
-			return S_OK;
-
-		if (refCount != 0)
-		{
-			LOG_WARNING_FORMATTED("TResource::Free(): unable delete resource because refs = %i!\n", refCount);
-			return S_OK;
-		}
-
-		IResourceManager *_pResMan;
-		_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-		_pResMan->ReleaseResource(this);
-
-		pointer->Free();
-		delete pointer;
-		pointer = nullptr;
-
-		return S_OK;
-	}
 	API GetType(OUT RES_TYPE *typeOut) { *typeOut = type; return S_OK; }
 	API GetPointer(OUT void **pointerOut) { *pointerOut = pointer; return S_OK; }
 };
@@ -91,7 +99,7 @@ public:
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	API CreateResource(OUT IResource **pResource, RES_TYPE type) override;
 	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;
-	API ReleaseResource(IResource *pResource) override;
+	API DeleteResource(IResource *pResource) override;
 	API GetNumberOfResources(OUT uint *number) override;
 	API GetName(OUT const char **pTxt) override;
 	API Free() override;

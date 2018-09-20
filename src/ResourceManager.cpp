@@ -480,8 +480,7 @@ API ResourceManager::Free()
 			auto it = _resources.find(pRes);
 			if (it != _resources.end())
 			{
-				pRes->DecRef();
-				pRes->Free();
+				pRes->Release();
 				_resources.erase(pRes);
 			}
 		}
@@ -793,13 +792,13 @@ API ResourceManager::GetNumberOfResources(OUT uint *number)
 	return S_OK;
 }
 
-API ResourceManager::ReleaseResource(IResource *pResource)
+API ResourceManager::DeleteResource(IResource *pResource)
 {
 	auto it = _resources.find(pResource);
 	
 	if (it == _resources.end())
 	{
-		LOG_WARNING("ResourceManager::ReleaseResource() Resource not found\n");
+		LOG_WARNING("ResourceManager::DeleteResource() Resource not found\n");
 		return E_ABORT;
 	}
 
@@ -808,7 +807,7 @@ API ResourceManager::ReleaseResource(IResource *pResource)
 
 	if (refs != 0)
 	{
-		LOG_WARNING_FORMATTED("ResourceManager::ReleaseResource() Unable delete resource: refs = %i\n", refs);
+		LOG_WARNING_FORMATTED("ResourceManager::DeleteResource() Unable delete resource: refs = %i\n", refs);
 		return E_ABORT;
 	}
 
