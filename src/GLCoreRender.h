@@ -17,7 +17,7 @@ public:
 	GLUniformBuffer(GLuint ID, uint size) : _UBO(ID), _size(size) {}
 	~GLUniformBuffer() { Free(); }
 
-	void Free() { if (_UBO) glDeleteBuffers(1, &_UBO); _UBO = 0;  }
+	API Free() { if (_UBO) glDeleteBuffers(1, &_UBO); _UBO = 0; return S_OK; }
 
 	inline GLuint ID() const { return _UBO; }
 	inline uint size() const { return _size; }

@@ -303,6 +303,8 @@ API Core::CloseEngine()
 
 	_pRender->Free();
 
+	_pResMan->Free();
+
 	_pCoreRender->Free();
 
 	Log("Engine Closed");

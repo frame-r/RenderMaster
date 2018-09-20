@@ -169,8 +169,6 @@ namespace RENDER_MASTER
 		MESH_AXES_ARROWS,
 		MESH_GRID,
 
-		SHADER_SOURCE,
-
 		NUMBER
 	};
 
@@ -340,7 +338,7 @@ namespace RENDER_MASTER
 	class IUniformBuffer
 	{
 	public:
-		virtual ~IUniformBuffer() {}
+		virtual API Free() = 0;
 	};
 
 	class ICoreRender : public ISubSystem
@@ -564,11 +562,13 @@ namespace RENDER_MASTER
 		virtual API LoadModel(OUT IResource **pMesh, const char *pFileName) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
-
+		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
 		// low level resource releasing
 		virtual API ReleaseResource(IResource *pResource) = 0;
-
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
+		virtual API Free() = 0;
+
+
 
 		// hight level resource operation
 
@@ -584,6 +584,13 @@ namespace RENDER_MASTER
 			IResource *res;
 			LoadShaderText(&res, pVertName, pGeomName, pFragName);
 			return ResourcePtr<ShaderText>(res);
+		}
+
+		ResourcePtr<IUniformBuffer> createUniformBuffer(uint size)
+		{
+			IResource *res;
+			CreateUniformBuffer(&res, size);
+			return ResourcePtr<IUniformBuffer>(res);
 		}
 
 		ResourcePtr<IGameObject> createGameObject()

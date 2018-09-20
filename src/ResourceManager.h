@@ -24,6 +24,8 @@ public:
 	API AddRef() override { refCount++; return S_OK; }
 	API DecRef() override
 	{
+		if (refCount == 0)
+			return S_OK;
 		refCount--;
 		if (refCount <= 0)
 			Free();
@@ -41,6 +43,10 @@ public:
 			LOG_WARNING_FORMATTED("TResource::Free(): unable delete resource because refs = %i!\n", refCount);
 			return S_OK;
 		}
+
+		IResourceManager *_pResMan;
+		_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+		_pResMan->ReleaseResource(this);
 
 		pointer->Free();
 		delete pointer;
@@ -84,8 +90,10 @@ public:
 	API LoadModel(OUT IResource **pModel, const char *pFileName) override;
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	API CreateResource(OUT IResource **pResource, RES_TYPE type) override;
+	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;
 	API ReleaseResource(IResource *pResource) override;
 	API GetNumberOfResources(OUT uint *number) override;
 	API GetName(OUT const char **pTxt) override;
+	API Free() override;
 };
 

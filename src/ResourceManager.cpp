@@ -155,6 +155,9 @@ void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 		LOG_WARNING("[FBX]No meshes loaded");
 
 	pModel = new Model(meshes);
+
+	for (TResource<ICoreMesh> *m : meshes)
+		_resources.emplace(m);
 }
 
 void ResourceManager::_LogNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int depth)
@@ -445,6 +448,56 @@ API ResourceManager::GetName(OUT const char **pName)
 	return S_OK;
 }
 
+API ResourceManager::Free()
+{
+	DEBUG_LOG("ResourceManager::FreeAllResources(): resources total=%i", LOG_TYPE::NORMAL, _resources.size());
+
+	// first free all resources that have refCount = 1
+	// and so on...
+	while (!_resources.empty())
+	{
+		vector<IResource*> one_ref_res;
+
+		for (auto& res : _resources)
+		{
+			uint refs = 0;
+			res->RefCount(&refs);
+			if (refs <= 1)
+				one_ref_res.push_back(res);
+		}
+
+#ifdef _DEBUG
+		static int i = 0;
+		i++;
+		if (i > 20)
+			return S_FALSE; // occured some error. maybe circular references => in debug limit number of iterations
+		auto res_before = _resources.size();
+#endif
+
+		// free resources
+		for (auto* pRes : one_ref_res)
+		{
+			auto it = _resources.find(pRes);
+			if (it != _resources.end())
+			{
+				pRes->DecRef();
+				pRes->Free();
+				_resources.erase(pRes);
+			}
+		}
+
+#ifdef _DEBUG
+		auto res_deleted = res_before - _resources.size();
+		int res_deleted_percent = (int)(100 * ((float)res_deleted / res_before));
+		DEBUG_LOG("ResourceManager::FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _resources.size());
+#endif
+	}
+
+	_resources.clear();
+
+	return S_OK;
+}
+
 API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName)
 {
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
@@ -522,6 +575,7 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 	};
 
 	TResource<ShaderText> *res = new TResource<ShaderText>(new ShaderText);
+	_resources.emplace(res);
 
 	auto ret =	load_shader((*res)->pVertText, pVertName);
 
@@ -724,6 +778,15 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 	return S_OK;
 }
 
+API ResourceManager::CreateUniformBuffer(OUT IResource ** pResource, uint size)
+{
+	IUniformBuffer *buf = nullptr;
+	_pCoreRender->CreateUniformBuffer(&buf, size);
+	*pResource = new TResource<IUniformBuffer>(buf);
+	_resources.emplace(*pResource);
+	return S_OK;
+}
+
 API ResourceManager::GetNumberOfResources(OUT uint *number)
 {
 	*number = (uint) _resources.size();
@@ -737,16 +800,16 @@ API ResourceManager::ReleaseResource(IResource *pResource)
 	if (it == _resources.end())
 	{
 		LOG_WARNING("ResourceManager::ReleaseResource() Resource not found\n");
-		return E_POINTER;
+		return E_ABORT;
 	}
 
 	uint refs = 0;
 	(*it)->RefCount(&refs);
 
-	if (refs == 0)
+	if (refs != 0)
 	{
-		LOG_WARNING("ResourceManager::ReleaseResource() Resource not found\n");
-		return S_FALSE;
+		LOG_WARNING_FORMATTED("ResourceManager::ReleaseResource() Unable delete resource: refs = %i\n", refs);
+		return E_ABORT;
 	}
 
 	_resources.erase(pResource);
