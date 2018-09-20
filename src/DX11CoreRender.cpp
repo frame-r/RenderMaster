@@ -82,7 +82,7 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	ComPtr<IDXGIFactory1> dxgiFactory;
 	{
 		ComPtr<IDXGIDevice> dxgiDevice;
-		hr = _device->QueryInterface(__uuidof(IDXGIDevice), &dxgiDevice);
+		hr = _device.As(&dxgiDevice);
 		if (SUCCEEDED(hr))
 		{
 			ComPtr<IDXGIAdapter> adapter;
