@@ -343,7 +343,7 @@ void ResourceManager::_LogNodeTransform(FbxNode* pNode, const char *str)
 
 	DEBUG_LOG_FORMATTED("%s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", str, tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2]);
 }
-bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName, IProgressSubscriber *pPregress)
+bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
@@ -445,7 +445,7 @@ API ResourceManager::GetName(OUT const char **pName)
 	return S_OK;
 }
 
-API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName, IProgressSubscriber *pProgress)
+API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName)
 {
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
 	
@@ -460,15 +460,15 @@ API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName, IP
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoad(model, fullPath.c_str(), pProgress);
+		bool ret = _FBXLoad(model, fullPath.c_str());
 		if (!ret)
-			return S_FALSE;
+			return E_FAIL;
 	}
 	else
 #endif
 	{
 		LOG_FATAL_FORMATTED("ResourceManager::LoadModel unsupported format \"%s\"", file_ext.c_str());
-		return S_FALSE;
+		return E_FAIL;
 	}
 		
 	ISceneManager *pSceneManager;

@@ -9,7 +9,7 @@
 
 class SceneManager : public ISceneManager, public Serializable<ISceneManager>
 {	
-	TResource<ICamera> *_pCam = nullptr;
+	ResourcePtr<ICamera> _pCam;
 	IResourceManager *_pResMan{nullptr};
 	std::unique_ptr<GameObjectEvent> _gameObjectAddedEvent{new GameObjectEvent};
 

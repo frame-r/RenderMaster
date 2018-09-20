@@ -85,8 +85,8 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 
 		ShaderText tmp;
 
-		process_shader(tmp.pVertText, (*_standardShader)->pVertText, "out_v.shader", 0);
-		process_shader(tmp.pFragText, (*_standardShader)->pFragText, "out_f.shader", 1);
+		process_shader(tmp.pVertText, _standardShader->pVertText, "out_v.shader", 0);
+		process_shader(tmp.pFragText, _standardShader->pFragText, "out_f.shader", 1);
 
 		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, &tmp)) && pShader != nullptr;
 
@@ -157,11 +157,11 @@ Render::~Render()
 
 void Render::Init()
 {
-	_pResMan->LoadShaderText((IResource**)&_standardShader, "mesh_vertex", nullptr, "mesh_fragment");
+	_standardShader = _pResMan->loadShaderText("mesh_vertex", nullptr, "mesh_fragment");
 
-	_pResMan->CreateResource((IResource**)&_pAxesMesh, RES_TYPE::MESH_AXES);
-	_pResMan->CreateResource((IResource**)&_pAxesArrowMesh, RES_TYPE::MESH_AXES_ARROWS);
-	_pResMan->CreateResource((IResource**)&_pGridMesh, RES_TYPE::MESH_GRID);
+	_pAxesMesh = _pResMan->createDefaultMesh(RES_TYPE::MESH_AXES);
+	_pAxesArrowMesh = _pResMan->createDefaultMesh(RES_TYPE::MESH_AXES_ARROWS);
+	_pGridMesh = _pResMan->createDefaultMesh(RES_TYPE::MESH_GRID);
 
 	//dbg
 	//ICoreShader *s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
@@ -177,17 +177,10 @@ void Render::Init()
 
 void Render::Free()
 {
-	_standardShader->DecRef();
-	delete _standardShader;
-
-	_pAxesMesh->DecRef();
-	delete _pAxesMesh;
-
-	_pAxesArrowMesh->DecRef();
-	delete _pAxesArrowMesh;
-
-	_pGridMesh->DecRef();
-	delete _pGridMesh;
+	_standardShader.reset();
+	_pAxesMesh.reset();
+	_pAxesArrowMesh.reset();
+	_pGridMesh.reset();
 
 	for (auto& s: _shaders_pool)
 	{

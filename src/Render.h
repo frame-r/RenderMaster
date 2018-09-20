@@ -13,11 +13,11 @@ class Render : public IRender
 	ISceneManager *_pSceneMan{nullptr};
 	IFileSystem *_fsystem{nullptr};
 
-	TResource<ShaderText> *_standardShader = nullptr;
+	ResourcePtr<ShaderText> _standardShader;
 
-	TResource<ICoreMesh> *_pAxesMesh = nullptr;
-	TResource<ICoreMesh> *_pAxesArrowMesh = nullptr;
-	TResource<ICoreMesh> *_pGridMesh = nullptr;
+	ResourcePtr<ICoreMesh> _pAxesMesh;
+	ResourcePtr<ICoreMesh> _pAxesArrowMesh;
+	ResourcePtr<ICoreMesh> _pGridMesh;
 
 	struct alignas(16) EveryFrameParameters
 	{

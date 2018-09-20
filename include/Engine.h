@@ -315,6 +315,7 @@ namespace RENDER_MASTER
 		const char* pFragText{nullptr};
 	public:
 		ShaderText() = default;
+		virtual ~ShaderText(){}
 
 		void Free()
 		{
@@ -453,6 +454,98 @@ namespace RENDER_MASTER
 	};
 
 
+	template<typename T>
+	class ResourcePtr
+	{
+		IResource *resource = nullptr;
+
+	public:
+		ResourcePtr() = default;
+		ResourcePtr(IResource *res) : resource(res)
+		{
+			if (resource)
+				resource->AddRef();
+		}
+		~ResourcePtr()
+		{
+			if (resource)
+			{
+				resource->DecRef();
+
+				uint refs;
+				resource->RefCount(&refs);
+
+				if (refs == 0)
+					delete resource;
+
+				resource = nullptr;
+			}
+		}
+		ResourcePtr(const ResourcePtr<T> &ptr)
+		{
+			if (this == &ptr)
+				return;
+			if (resource == ptr.resource)
+				return;
+			resource = ptr.resource;
+			if (resource)
+				resource->AddRef();
+		}
+		ResourcePtr<T> &operator=(const ResourcePtr<T> &ptr)
+		{
+			if (this == &ptr)
+				return *this;
+			if (resource == ptr.resource)
+				return *this;
+			resource = ptr.resource;
+			if (resource)
+				resource->AddRef();
+
+			return *this;
+		}
+
+		void reset()
+		{
+			if (resource)
+			{
+				resource->DecRef();
+
+				uint refs;
+				resource->RefCount(&refs);
+
+				if (refs == 0)
+					delete resource;
+
+				resource = nullptr;
+			}
+		}
+
+		inline T *get() const
+		{
+			if (resource)
+			{
+				void *p;
+				resource->GetPointer(&p);
+				return reinterpret_cast<T*>(p);
+			}
+
+			return nullptr;
+		}
+
+		inline T &operator*() const
+		{
+			T *ptr = get();
+			return *ptr;
+		}
+
+		inline T *operator->()
+		{
+			void *p;
+			resource->GetPointer(&p);
+			return reinterpret_cast<T*>(p);
+		}
+	};
+
 	//////////////////////
 	// Resource Manager
 	//////////////////////
@@ -467,14 +560,53 @@ namespace RENDER_MASTER
 	{
 	public:
 
-		// resources creation
-		virtual API LoadModel(OUT IResource **pMesh, const char *pFileName, IProgressSubscriber *pProgress) = 0;
+		// low level resources creation
+		virtual API LoadModel(OUT IResource **pMesh, const char *pFileName) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
 
+		// low level resource releasing
 		virtual API ReleaseResource(IResource *pResource) = 0;
-		
+
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
+
+		// hight level resource operation
+
+		ResourcePtr<IModel> loadModel(const char *pFileName)
+		{
+			IResource *res;
+			LoadModel(&res, pFileName);
+			return ResourcePtr<IModel>(res);
+		}
+
+		ResourcePtr<ShaderText> loadShaderText(const char *pVertName, const char *pGeomName, const char *pFragName)
+		{
+			IResource *res;
+			LoadShaderText(&res, pVertName, pGeomName, pFragName);
+			return ResourcePtr<ShaderText>(res);
+		}
+
+		ResourcePtr<IGameObject> createGameObject()
+		{
+			IResource *res;
+			CreateResource(&res, RES_TYPE::GAME_OBJECT);
+			return ResourcePtr<IGameObject>(res);
+		}
+
+		ResourcePtr<ICamera> createCamera()
+		{
+			IResource *res;
+			CreateResource(&res, RES_TYPE::CAMERA);
+			return ResourcePtr<ICamera>(res);
+		}
+
+		ResourcePtr<ICoreMesh> createDefaultMesh(RES_TYPE type)
+		{
+			IResource *res;
+			if (type < RES_TYPE::MESH_AXES || type > RES_TYPE::MESH_GRID) return ResourcePtr<ICoreMesh>();
+			CreateResource(&res, type);
+			return ResourcePtr<ICoreMesh>(res);
+		}
 	};
 
 	

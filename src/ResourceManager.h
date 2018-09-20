@@ -14,7 +14,7 @@ class TResource : public IResource
 
 public:
 
-	TResource(T* pointerIn) : pointer(pointerIn) { refCount = 1; }
+	TResource(T* pointerIn) : pointer(pointerIn) {}
 	~TResource() { Free(); }
 
 	T *get() { return pointer; }
@@ -66,7 +66,7 @@ class ResourceManager final : public IResourceManager
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
-	bool _FBXLoad(IModel *&pMesh, const char *pFileName, IProgressSubscriber *pPregress);
+	bool _FBXLoad(IModel *&pMesh, const char *pFileName);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
 	void _LogSceneHierarchy(IModel *&pModel, FbxScene* pScene);
 	void _LogNode(std::vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int pDepth);
@@ -81,7 +81,7 @@ public:
 
 	void Init();
 	
-	API LoadModel(OUT IResource **pModel, const char *pFileName, IProgressSubscriber *pProgress) override;
+	API LoadModel(OUT IResource **pModel, const char *pFileName) override;
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	API CreateResource(OUT IResource **pResource, RES_TYPE type) override;
 	API ReleaseResource(IResource *pResource) override;

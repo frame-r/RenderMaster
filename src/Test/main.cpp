@@ -10,22 +10,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	if (GetCore(&pCore))
 	{
 		IResourceManager *resMan;
-		IResource *pModel;
 
 		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::OPENGL45, "resources", nullptr)))
 		{
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-			resMan->LoadModel(&pModel, "box.fbx", nullptr);
+			ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
 
 			pCore->Start(); // begin main loop
 			pCore->CloseEngine();
-
-			pModel->DecRef();
-			uint refs = 0;
-			pModel->RefCount(&refs);
-			if (refs == 0)
-				delete pModel;
 		}
 
 		FreeCore(pCore);

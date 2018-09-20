@@ -28,7 +28,7 @@ API SceneManager::SaveScene(const char *name)
 
 API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 {
-	*pCamera = _pCam->get();
+	*pCamera = _pCam.get();
 	return S_OK;
 }
 
@@ -83,7 +83,7 @@ SceneManager::SceneManager()
 
 void SceneManager::Init()
 {
-	_pResMan->CreateResource((IResource**)&_pCam, RES_TYPE::CAMERA);
+	_pCam = _pResMan->createCamera();
 	LOG("Scene Manager initialized");
 }
 
@@ -95,8 +95,7 @@ void SceneManager::Free()
 		_pResMan->GetNumberOfResources(&res_before);
 	#endif
 
-	_pCam->DecRef();
-	delete _pCam;
+	_pCam.reset();
 
 	#ifdef _DEBUG
 		uint res_after = 0;
