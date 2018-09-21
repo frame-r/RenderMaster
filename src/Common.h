@@ -13,8 +13,11 @@
 #include <stack>
 #include <functional>
 #include <cassert>
+#include <memory>
 
 using namespace RENDER_MASTER;
+
+using std::unique_ptr;
 
 #define SHADER_DIR "src\\shaders"
 

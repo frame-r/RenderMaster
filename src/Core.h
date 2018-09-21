@@ -20,14 +20,14 @@ class Core : public ICore
 	char *_pInstalledDir{nullptr};	
 
 	// subsystems
-	Console *_pConsole{nullptr};
-	Wnd *_pMainWindow{nullptr};
-	FileSystem *_pfSystem{nullptr};
-	ResourceManager *_pResMan{nullptr};
-	ICoreRender *_pCoreRender{nullptr};
-	Render *_pRender{nullptr};
-	SceneManager *_pSceneManager{nullptr};
-	IInput *_pInput{nullptr};
+	unique_ptr<Console> _pConsole;
+	unique_ptr<Wnd> _pMainWindow;
+	unique_ptr<FileSystem>_pfSystem;
+	unique_ptr<ResourceManager> _pResMan;
+	unique_ptr<ICoreRender>_pCoreRender;
+	unique_ptr<Render> _pRender;
+	unique_ptr<SceneManager>_pSceneManager;
+	unique_ptr<IInput> _pInput;
 
 	std::unique_ptr<LogEvent> _evLog{new LogEvent};
 
@@ -60,7 +60,7 @@ public:
 		sprintf(buf, pStr, args...);
 		Log(buf, type);
 	}
-	Wnd* MainWindow() { return _pMainWindow; }
+	Wnd* MainWindow() { return _pMainWindow.get(); }
 	void AddUpdateCallback(std::function<void()>&& calback) { _update_callbacks.push_back(std::forward<std::function<void()>>(calback)); }
 
 	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) override;

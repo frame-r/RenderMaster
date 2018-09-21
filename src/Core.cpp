@@ -33,10 +33,6 @@ Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 
 Core::~Core()
 {
-	if (_pMainWindow) delete _pMainWindow;
-	if (_pConsole) delete _pConsole;
-	delete _pInput;
-	delete _pfSystem;
 	delete _pDataDir;
 	delete _pWorkingDir;
 	delete _pInstalledDir;
@@ -69,7 +65,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 
 	if (createConsole)
 	{
-		_pConsole = new Console;
+		_pConsole = std::make_unique<Console>();
 		_pConsole->Init(nullptr);
 	}
 
@@ -80,21 +76,21 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 
 	if (createWindow)
 	{
-		_pMainWindow = new Wnd(_s_main_loop);
+		_pMainWindow = std::make_unique<Wnd>(_s_main_loop);
 		_pMainWindow->AddMessageCallback(_s_message_callback);
 		_pMainWindow->CreateAndShow();
 	}
 
-	_pfSystem = new FileSystem(_pDataDir);
+	_pfSystem = std::make_unique<FileSystem>(_pDataDir);
 
-	_pResMan = new ResourceManager;	
+	_pResMan = std::make_unique<ResourceManager>();
 
-	_pInput = new Input;
+	_pInput = std::make_unique<Input>();
 
 	if ((flags & INIT_FLAGS::GRAPHIC_LIBRARY_FLAG) == INIT_FLAGS::DIRECTX11)
-		_pCoreRender = new DX11CoreRender;
+		_pCoreRender = std::make_unique<DX11CoreRender>();
 	else
-		_pCoreRender = new GLCoreRender;
+		_pCoreRender = std::make_unique<GLCoreRender>();
 
 	if (createWindow)
 		_pCoreRender->Init(_pMainWindow->handle());
@@ -103,10 +99,10 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 
 	_pResMan->Init();
 
-	_pSceneManager = new SceneManager();
+	_pSceneManager = std::make_unique<SceneManager>();
 	_pSceneManager->Init();
 
-	_pRender = new Render(_pCoreRender);
+	_pRender = std::make_unique<Render>(_pCoreRender.get());
 	_pRender->Init();
 
 	if (createWindow)
@@ -158,12 +154,12 @@ API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 {
 	switch(type)
 	{
-		case SUBSYSTEM_TYPE::CORE_RENDER: *pSubSystem = _pCoreRender; break;
-		case SUBSYSTEM_TYPE::RESOURCE_MANAGER: *pSubSystem = _pResMan; break;
-		case SUBSYSTEM_TYPE::FILESYSTEM: *pSubSystem = _pfSystem; break;
-		case SUBSYSTEM_TYPE::INPUT: *pSubSystem = _pInput; break;
-		case SUBSYSTEM_TYPE::SCENE_MANAGER: *pSubSystem = _pSceneManager; break;
-		case SUBSYSTEM_TYPE::RENDER: *pSubSystem = _pRender; break;
+		case SUBSYSTEM_TYPE::CORE_RENDER: *pSubSystem = _pCoreRender.get(); break;
+		case SUBSYSTEM_TYPE::RESOURCE_MANAGER: *pSubSystem = _pResMan.get(); break;
+		case SUBSYSTEM_TYPE::FILESYSTEM: *pSubSystem = _pfSystem.get(); break;
+		case SUBSYSTEM_TYPE::INPUT: *pSubSystem = _pInput.get(); break;
+		case SUBSYSTEM_TYPE::SCENE_MANAGER: *pSubSystem = _pSceneManager.get(); break;
+		case SUBSYSTEM_TYPE::RENDER: *pSubSystem = _pRender.get(); break;
 		default:
 			LOG_WARNING("Core::GetSubSystem() unknown subsystem");
 			return S_FALSE;
@@ -293,20 +289,20 @@ API Core::CloseEngine()
 	Log("Start closing Engine...");
 
 	if (_pMainWindow)
+	{
 		_pMainWindow->Destroy();
+		_pMainWindow.reset();
+	}
 
 	_pSceneManager->Free();
-
 	_pRender->Free();
-
 	_pResMan->Free();
-
 	_pCoreRender->Free();
 
-	delete _pSceneManager;
-	delete _pRender;
-	delete _pCoreRender;
-	delete _pResMan;
+	_pSceneManager.reset();
+	_pRender.reset();
+	_pResMan.reset();
+	_pCoreRender.reset();
 
 	Log("Engine Closed");
 
