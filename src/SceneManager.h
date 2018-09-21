@@ -11,16 +11,13 @@ class SceneManager : public ISceneManager, public Serializable<ISceneManager>
 {	
 	ResourcePtr<ICamera> _pCam;
 	IResourceManager *_pResMan{nullptr};
-	std::unique_ptr<GameObjectEvent> _gameObjectAddedEvent{new GameObjectEvent};
+	std::unique_ptr<ResourceEvent> _gameObjectAddedEvent{new ResourceEvent};
+
+	tree<ResourcePtr<IGameObject>>::iterator find_(IResource *pGameObject);
 
 public:
 
-	tree<IGameObject*> _gameobjects;
-
-	//
-	// IGameObject* -> iterator
-	// For fast searching childs, parents through tree...
-	std::unordered_map<IGameObject*, tree<IGameObject*>::iterator_base> _go_to_it;
+	tree<ResourcePtr<IGameObject>> _gameobjects;
 
 public:
 
@@ -32,11 +29,11 @@ public:
 	API SaveScene(const char *name) override;
 	API GetDefaultCamera(OUT ICamera **pCamera) override;
 	API AddRootGameObject(IResource *pGameObject) override;
-	API GetChilds(OUT uint *number, IGameObject *parent) override;
-	API GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx) override;
+	API GetChilds(OUT uint *number, IResource *parent) override;
+	API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) override;
 	
 	// Events
-	API GetGameObjectAddedEvent(IGameObjectEvent** pEvent) override;
+	API GetGameObjectAddedEvent(IResourceEvent** pEvent) override;
 
 	// ISubSystem
 	API GetName(OUT const char **pName) override;

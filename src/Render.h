@@ -27,7 +27,7 @@ class Render : public IRender
 		mat4 MVP;
 	} params;
 
-	IUniformBuffer *everyFrameParameters{nullptr};
+	ResourcePtr<IUniformBuffer> everyFrameParameters;
 
 	float _aspect{1.0f};	
 

@@ -63,7 +63,7 @@ public:
 	}
 	API RefCount(OUT uint *refs) { *refs = refCount; return S_OK; }
 	API GetType(OUT RES_TYPE *typeOut) { *typeOut = type; return S_OK; }
-	API GetPointer(OUT void **pointerOut) { *pointerOut = pointer; return S_OK; }
+	API GetPointer(OUT void **pointerOut) { *pointerOut = dynamic_cast<T*>(pointer); return S_OK; }
 };
 
 

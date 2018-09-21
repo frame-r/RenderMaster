@@ -33,10 +33,6 @@ Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 
 Core::~Core()
 {
-	delete _pSceneManager;
-	delete _pRender;
-	delete _pCoreRender;
-	delete _pResMan;
 	if (_pMainWindow) delete _pMainWindow;
 	if (_pConsole) delete _pConsole;
 	delete _pInput;
@@ -298,7 +294,7 @@ API Core::CloseEngine()
 
 	if (_pMainWindow)
 		_pMainWindow->Destroy();
-	
+
 	_pSceneManager->Free();
 
 	_pRender->Free();
@@ -306,6 +302,11 @@ API Core::CloseEngine()
 	_pResMan->Free();
 
 	_pCoreRender->Free();
+
+	delete _pSceneManager;
+	delete _pRender;
+	delete _pCoreRender;
+	delete _pResMan;
 
 	Log("Engine Closed");
 

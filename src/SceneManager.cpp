@@ -6,56 +6,76 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+tree<ResourcePtr<IGameObject>>::iterator SceneManager::find_(IResource * pGameObject)
+{
+	for (auto it = _gameobjects.begin(); it != _gameobjects.end(); ++it)
+	{
+		ResourcePtr<IGameObject>& res = *it;
+		if (res.getResource() == pGameObject)
+		{
+			return it;
+		}
+	}
+	return _gameobjects.end();
+}
+
 SceneManager::SceneManager()
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-	add_entry("gameobjects", &SceneManager::_gameobjects);
+	//add_entry("gameobjects", &SceneManager::_gameobjects);
 }
 
 API SceneManager::SaveScene(const char *name)
 {
-	IFileSystem *fs;
-	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-
-	std::ostringstream out;
-	dynamic_cast<SceneManager*>(this)->serialize(out, 0);
-
-	IFile *f = nullptr;
-	fs->OpenFile(&f, name, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
-
-	f->WriteStr(out.str().c_str());
-
-	f->CloseAndFree();
-
-	LOG_FORMATTED("Scene saved to %s\n", name);
+	//IFileSystem *fs;
+	//_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+	//
+	//std::ostringstream out;
+	//dynamic_cast<SceneManager*>(this)->serialize(out, 0);
+	//
+	//IFile *f = nullptr;
+	//fs->OpenFile(&f, name, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
+	//
+	//f->WriteStr(out.str().c_str());
+	//
+	//f->CloseAndFree();
+	//
+	//LOG_FORMATTED("Scene saved to %s\n", name);
 
 	return S_OK;
 }
 
 API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 {
-	*pCamera = _pCam.get();
+	void * f = (&_pCam);
+	ICamera *res = _pCam.get();
+	*pCamera = res;
 	return S_OK;
 }
 
 API SceneManager::AddRootGameObject(IResource* pGameObject)
 {
-	IGameObject *go = nullptr;
-	pGameObject->GetPointer((void**)&go);
-	tree<IGameObject*>::iterator top = _gameobjects.begin();
-	auto it = _gameobjects.insert(top, go);
-	_go_to_it[go] = it;
-	_gameObjectAddedEvent->Fire(go);
+	tree<ResourcePtr<IGameObject>>::iterator top = _gameobjects.begin();
+	auto it = _gameobjects.insert(top, ResourcePtr<IGameObject>(pGameObject));
+	_gameObjectAddedEvent->Fire(pGameObject);
 	return S_OK;
 }
 
-API SceneManager::GetChilds(OUT uint *number, IGameObject *parent)
+API SceneManager::GetChilds(OUT uint *number, IResource *parent)
 {
 	if (parent)
 	{
-		tree<IGameObject*>::iterator_base it = _go_to_it[parent];
+		auto it = find_(parent);
+
+		if (it == _gameobjects.end())
+		{
+			*number = 0;
+			return E_FAIL;
+		}
+
 		*number = (uint)_gameobjects.number_of_children(it);
+		return S_OK;
 	}
 	else
 		*number = (uint)_gameobjects.number_of_siblings(_gameobjects.begin()) + 1;
@@ -63,7 +83,7 @@ API SceneManager::GetChilds(OUT uint *number, IGameObject *parent)
 	return S_OK;
 }
 
-API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx)
+API SceneManager::GetChild(OUT IResource **pGameObject, IResource *parent, uint idx)
 {
 	uint number;
 	GetChilds(&number, parent);
@@ -71,11 +91,18 @@ API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, u
 
 	if (parent)
 	{
-		auto it = _go_to_it[parent];
-		*pGameObject = *_gameobjects.child(it, idx);
+		auto it = find_(parent);
+
+		if (it == _gameobjects.end())
+		{
+			*pGameObject = nullptr;
+			return E_FAIL;
+		}
+
+		*pGameObject = _gameobjects.child(it, idx)->getResource();
 	}else
 	{
-		*pGameObject = *_gameobjects.sibling(_gameobjects.begin(), idx);
+		*pGameObject = _gameobjects.sibling(_gameobjects.begin(), idx)->getResource();
 	}
 
 	return S_OK;
@@ -97,7 +124,8 @@ void SceneManager::Free()
 	#endif
 
 	_pCam.reset();
-			
+
+	_gameobjects.clear();			
 
 	#ifdef _DEBUG
 		uint res_after = 0;
@@ -112,7 +140,7 @@ API SceneManager::GetName(OUT const char **pName)
 	return S_OK;
 }
 
-API SceneManager::GetGameObjectAddedEvent(IGameObjectEvent** pEvent)
+API SceneManager::GetGameObjectAddedEvent(IResourceEvent** pEvent)
 {
 	*pEvent = _gameObjectAddedEvent.get();
 	return S_OK;

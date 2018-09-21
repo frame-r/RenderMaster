@@ -204,6 +204,7 @@ namespace RENDER_MASTER
 	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pos)
 	DEFINE_EVENT1(IRotationEvent, OUT quat *rot)
 	DEFINE_EVENT1(IGameObjectEvent, OUT IGameObject *pGameObject)
+	DEFINE_EVENT1(IResourceEvent, OUT IResource *pGameObject)
 	DEFINE_EVENT1(IStringEvent, const char *pString)
 	DEFINE_EVENT2(ILogEvent, const char *pMessage, LOG_TYPE type)
 
@@ -443,11 +444,11 @@ namespace RENDER_MASTER
 		virtual API SaveScene(const char *name) = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 		virtual API AddRootGameObject(IResource* pGameObject) = 0;
-		virtual API GetChilds(OUT uint *number, IGameObject *parent) = 0;
-		virtual API GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx) = 0;
+		virtual API GetChilds(OUT uint *number, IResource *parent) = 0;
+		virtual API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) = 0;
 
 		//events
-		virtual API GetGameObjectAddedEvent(OUT IGameObjectEvent **pEvent) = 0;
+		virtual API GetGameObjectAddedEvent(OUT IResourceEvent **pEvent) = 0;
 	};
 
 
@@ -481,6 +482,11 @@ namespace RENDER_MASTER
 			if (resource)
 				resource->AddRef();
 		}
+		ResourcePtr(ResourcePtr<T> &&ptr)
+		{
+			resource = ptr.resource;
+			ptr.resource = nullptr;
+		}
 		ResourcePtr<T> &operator=(const ResourcePtr<T> &ptr)
 		{
 			if (this == &ptr)
@@ -491,6 +497,12 @@ namespace RENDER_MASTER
 			if (resource)
 				resource->AddRef();
 
+			return *this;
+		}
+		ResourcePtr<T> &operator=(ResourcePtr<T> &&ptr)
+		{
+			resource = ptr.resource;
+			ptr.resource = nullptr;
 			return *this;
 		}
 

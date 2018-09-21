@@ -115,9 +115,9 @@ void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 {
 	SceneManager *sm = (SceneManager*)_pSceneMan;	
 
-	for (tree<IGameObject*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
+	for (tree<ResourcePtr<IGameObject>>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
 	{
-		IGameObject *go = *it;
+		IGameObject *go = it->get();
 		
 		IModel *model = dynamic_cast<IModel*>(go);
 		if (model)
@@ -170,7 +170,7 @@ void Render::Init()
 	//_shaders_pool.emplace(s);
 
 	// TODO: do trough resources
-	_pCoreRender->CreateUniformBuffer(&everyFrameParameters, sizeof(EveryFrameParameters));
+	everyFrameParameters = _pResMan->createUniformBuffer(sizeof(EveryFrameParameters));
 
 	LOG("Render initialized");
 }
@@ -188,7 +188,7 @@ void Render::Free()
 		delete ss;
 	}
 
-	delete everyFrameParameters;
+	everyFrameParameters.reset();
 }
 
 void Render::RenderFrame(const ICamera *pCamera)
@@ -228,8 +228,8 @@ void Render::RenderFrame(const ICamera *pCamera)
 			params.NM = mat4();
 			params.nL = vec3(1.0f, 0.0f, 1.0f).Normalized();
 		}
-		_pCoreRender->SetUniform(everyFrameParameters, &params.main_color);
-		_pCoreRender->SetUniformBufferToShader(everyFrameParameters, 0);
+		_pCoreRender->SetUniform(everyFrameParameters.get(), &params.main_color);
+		_pCoreRender->SetUniformBufferToShader(everyFrameParameters.get(), 0);
 
 		_pCoreRender->Draw(renderMesh.mesh);
 
