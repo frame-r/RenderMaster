@@ -28,24 +28,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	if (GetCore(&pCore))
 	{
 		IResourceManager *resMan;
-		IModel *pModel;
 
-		pCore->Init(INIT_FLAGS::CREATE_CONSOLE, "resources", nullptr);				
-		pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::DIRECTX11, "resources", nullptr)))
+		{
+			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-		resMan->LoadModel(&pModel, "box.fbx", nullptr);
-				
-		pCore->Start(); // begin main loop
-		pCore->CloseEngine();
+			ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
+
+			pCore->Start(); // begin main loop
+
+			pModel.reset();
+
+			pCore->CloseEngine();
+		}
 
 		FreeCore(pCore);
-
 	}
 	else
 		MessageBox(nullptr, pErrorMessage, TEXT("Unable start engine"), MB_OK | MB_ICONERROR);
 
 	return 0;
 }
+
+
+
+
 ```
 ![Alt text](box.png?raw=true "Test")
 
