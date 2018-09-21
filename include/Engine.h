@@ -537,30 +537,22 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
-	class IProgressSubscriber
-	{
-	public:
-		virtual API ProgressChanged(uint i) = 0;
-	};
-
 	class IResourceManager : public ISubSystem
 	{
 	public:
 
-		// low level resources creation
+		// Manual resource operations
+		//
 		virtual API LoadModel(OUT IResource **pMesh, const char *pFileName) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
-		// low level resource releasing
 		virtual API DeleteResource(IResource *pResource) = 0;
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
-		virtual API Free() = 0;
 
 
-
-		// hight level resource operation
-
+		// Hight-level resource operation
+		//
 		ResourcePtr<IModel> loadModel(const char *pFileName)
 		{
 			IResource *res;
@@ -603,6 +595,9 @@ namespace RENDER_MASTER
 			CreateResource(&res, type);
 			return ResourcePtr<ICoreMesh>(res);
 		}
+
+
+		virtual API Free() = 0;
 	};
 
 	

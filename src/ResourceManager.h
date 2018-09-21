@@ -53,11 +53,11 @@ public:
 
 		refCount--;
 
-		if (refCount <= 0)
-		{
-			_free();
-			delete this;
-		}
+		if (refCount > 0)
+			return S_OK;
+
+		_free();
+		delete this;
 
 		return S_OK;
 	}
