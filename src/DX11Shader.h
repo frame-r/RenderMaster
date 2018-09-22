@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include <d3d11_2.h>
 
 
 class DX11Shader : public ICoreShader

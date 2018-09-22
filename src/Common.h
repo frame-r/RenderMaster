@@ -4,17 +4,6 @@
 
 #include "Engine.h"
 
-#include <unordered_map>
-#include <unordered_set>
-#include <map>
-#include <vector>
-#include <list>
-#include <string>
-#include <stack>
-#include <functional>
-#include <cassert>
-#include <memory>
-
 using namespace RENDER_MASTER;
 
 using std::unique_ptr;

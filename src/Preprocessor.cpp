@@ -1,7 +1,6 @@
+#include "pch.h"
 #include "Preprocessor.h"
-#include <cassert>
 #include <regex>
-#include <iostream>
 
 extern list<string> get_file_content(const string& filename);
 

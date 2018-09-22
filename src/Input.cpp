@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Input.h"
 #include "Core.h"
 #include "Wnd.h"

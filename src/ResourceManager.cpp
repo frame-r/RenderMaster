@@ -1,13 +1,9 @@
+#include "pch.h"
 #include "ResourceManager.h"
-
 #include "Filesystem.h"
 #include "Core.h"
 #include "Model.h"
 #include "Camera.h"
-
-#include <filesystem>
-#include <cassert>
-#include <iterator>
 
 
 using namespace std;

@@ -1,8 +1,8 @@
+#include "pch.h"
 #include "DX11CoreRender.h"
 #include "Core.h"
 #include "DX11Shader.h"
 #include "DX11Mesh.h"
-#include <d3dcompiler.h>
 
 using WRL::ComPtr;
 

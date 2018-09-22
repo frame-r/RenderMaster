@@ -1,13 +1,4 @@
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS
-#include "tree.h"
-#include "vector_math.h"
-#include "quat.h"
-#include <sstream>
-#include <map>
-#include <vector>
-#include <string>
-#include <assert.h>
 
 using std::string;
 using std::vector;

@@ -1,3 +1,5 @@
+#include "pch.h"
+#include "Common.h"
 #include "Core.h"
 #include "Filesystem.h"
 #include "ResourceManager.h"
@@ -9,9 +11,6 @@
 #include "Render.h"
 #include "SceneManager.h"
 #include "Input.h"
-
-#include <iostream>
-#include <fstream>
 
 Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -284,7 +283,7 @@ API Core::AddUpdateCallback(IUpdateCallback* pCallback)
 	return S_OK;
 }
 
-API Core::CloseEngine()
+API Core::ReleaseEngine()
 {
 	Log("Start closing Engine...");
 

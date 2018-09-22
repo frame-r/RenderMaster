@@ -1,10 +1,5 @@
 #pragma once
 #include "Common.h"
-#include <GL\glew.h>
-
-// TODO: move platform depend stuff from this file
-#define WIN32_LEAN_AND_MEAN 
-#include <windows.h>
 
 
 class GLUniformBuffer final : public IUniformBuffer

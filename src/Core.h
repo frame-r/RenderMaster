@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Events.h"
-#include <chrono>
+#include <initguid.h>
 
 class Wnd;
 class FileSystem;
@@ -73,7 +73,7 @@ public:
 	API Log(const char *pText, LOG_TYPE type = LOG_TYPE::NORMAL) override;
 	API AddInitCallback(IInitCallback *pCallback) override;
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;
-	API CloseEngine() override;
+	API ReleaseEngine() override;
 	API GetLogPrintedEv(OUT ILogEvent **pEvent) override;
 
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;

@@ -1,8 +1,9 @@
+#include "pch.h"
 #include "Render.h"
 #include "Core.h"
 #include "SceneManager.h"
 #include "Preprocessor.h"
-#include <list>
+
 using std::string;
 using std::list;
 using std::vector;

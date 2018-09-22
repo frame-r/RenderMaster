@@ -1,7 +1,5 @@
 #pragma once
 #include "Common.h"
-#include <fstream>
-#include <experimental/filesystem>
 
 namespace fs = std::experimental::filesystem;
 

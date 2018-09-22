@@ -1,7 +1,6 @@
+#include "pch.h"
 #include "Common.h"
-#include <experimental/filesystem>
 #include "Core.h"
-#include <set>
 #include "GameObject.h"
 #include "Model.h"
 #include "Camera.h"

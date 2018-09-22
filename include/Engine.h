@@ -4,10 +4,11 @@
 #include "quat.h"
 
 #define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #define INITGUID
 #include <Unknwn.h>
 
-#include <iostream>
 
 // comment this to build without FBX SDK
 #define USE_FBX
@@ -131,7 +132,7 @@ namespace RENDER_MASTER
 		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
 		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
 		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
-		virtual API CloseEngine() = 0;
+		virtual API ReleaseEngine() = 0;
 
 		// Events
 		virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
@@ -805,7 +806,7 @@ namespace RENDER_MASTER
 		if (FAILED(CoInitialize(NULL)))
 		{
 			pErrorMessage = TEXT("Unable to initialize COM");
-			std::cout << pErrorMessage << std::endl;
+			//std::cout << pErrorMessage << std::endl;
 			return false;
 		}
 
@@ -827,8 +828,8 @@ namespace RENDER_MASTER
 			//TCHAR buf[260];
 			//swprintf(buf, TEXT("Unable to get CLSID from ProgID. HR = %02X"), hr);
 			pErrorMessage = TEXT("Unable to get CLSID from ProgID RenderMaster.Component.1");
-			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << pErrorMessage << "HR = " << hr << std::endl;
+			//std::cout.setf(std::ios::hex, std::ios::basefield);
+			//std::cout << pErrorMessage << "HR = " << hr << std::endl;
 			return false;
 		}
 
@@ -843,8 +844,8 @@ namespace RENDER_MASTER
 		if (FAILED(hr))
 		{
 			pErrorMessage = TEXT("Failed to GetClassObject server instance. HR = ");
-			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << pErrorMessage << hr << std::endl;
+			//std::cout.setf(std::ios::hex, std::ios::basefield);
+			//std::cout << pErrorMessage << hr << std::endl;
 			return false;
 		}
 
@@ -857,8 +858,8 @@ namespace RENDER_MASTER
 		if (FAILED(hr))
 		{
 			pErrorMessage = TEXT("Failed to create server instance. HR = ");
-			std::cout.setf(std::ios::hex, std::ios::basefield);
-			std::cout << pErrorMessage << hr << std::endl;
+			//std::cout.setf(std::ios::hex, std::ios::basefield);
+			//std::cout << pErrorMessage << hr << std::endl;
 			return false;
 		}
 		
@@ -869,7 +870,7 @@ namespace RENDER_MASTER
 		if (FAILED(hr))
 		{
 			pErrorMessage = TEXT("QueryInterface() for IID_Core failed");
-			std::cout << pErrorMessage << std::endl;
+			//std::cout << pErrorMessage << std::endl;
 			return false;
 		}
 		return true;

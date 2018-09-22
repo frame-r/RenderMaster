@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include <GL\glew.h>
 
 
 class GLMesh : public ICoreMesh

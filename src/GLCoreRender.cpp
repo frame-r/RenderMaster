@@ -1,11 +1,5 @@
+#include "pch.h"
 #include "GLCoreRender.h"
-
-#include <sstream>
-#include <cassert>
-
-#include <GL\glew.h>
-#include <GL\wglew.h>
-
 #include "Core.h"
 #include "ResourceManager.h"
 #include "GLShader.h"

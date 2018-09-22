@@ -1,10 +1,9 @@
+#include "pch.h"
 #include "Wnd.h"
 #include "Core.h"
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #include <Windowsx.h>
-#include <assert.h>
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)

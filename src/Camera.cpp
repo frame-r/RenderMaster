@@ -1,3 +1,5 @@
+#include "pch.h"
+#include "Common.h"
 #include "Camera.h"
 #include "Core.h"
 
