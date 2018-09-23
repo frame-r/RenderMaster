@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 
-
 class GLShader : public ICoreShader
 {
 	GLuint _programID {0};

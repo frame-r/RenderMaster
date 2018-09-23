@@ -2,9 +2,6 @@
 #include "Common.h"
 #include "Events.h"
 #include "Serialization.h"
-#include "GameObject.h"
-#include "ResourceManager.h"
-
 
 class SceneManager : public ISceneManager, public Serializable<ISceneManager>
 {	

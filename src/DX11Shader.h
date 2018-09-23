@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 
-
 class DX11Shader : public ICoreShader
 {
 	ID3D11VertexShader *pVertex{nullptr};

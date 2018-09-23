@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 
-
 class Wnd
 {
 	static Wnd *this_ptr;

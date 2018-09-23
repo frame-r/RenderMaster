@@ -32,7 +32,6 @@
     <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\GameObject.h" />
-    <ClInclude Include="..\src\GLCoreRender.h" />
     <ClInclude Include="..\src\GLMesh.h" />
     <ClInclude Include="..\src\GLShader.h" />
     <ClInclude Include="..\src\GL\glew.h" />

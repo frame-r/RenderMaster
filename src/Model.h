@@ -3,7 +3,6 @@
 #include "GameObject.h"
 #include "ResourceManager.h"
 
-
 class Model : public GameObjectBase<IModel>
 {
 	std::vector<TResource<ICoreMesh>*> _meshes;
@@ -19,4 +18,3 @@ public:
 	API GetNumberOfMesh(OUT uint *number) override;
 	API Free() override;
 };
-

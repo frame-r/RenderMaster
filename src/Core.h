@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "Events.h"
-#include <initguid.h>
 
 class Wnd;
 class FileSystem;

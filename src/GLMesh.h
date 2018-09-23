@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 
-
 class GLMesh : public ICoreMesh
 {
 	GLuint _VAO{0};

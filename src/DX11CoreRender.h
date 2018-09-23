@@ -3,7 +3,6 @@
 
 namespace WRL = Microsoft::WRL;
 
-
 class DX11ConstantBuffer final: public IUniformBuffer
 {
 	WRL::ComPtr<ID3D11Buffer> buffer;

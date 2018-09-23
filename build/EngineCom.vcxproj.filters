@@ -10,9 +10,6 @@
     <ClInclude Include="..\src\GL\wglew.h">
       <Filter>CoreRender\GL</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\GLCoreRender.h">
-      <Filter>CoreRender</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\DX11CoreRender.h">
       <Filter>CoreRender</Filter>
     </ClInclude>

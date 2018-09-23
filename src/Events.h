@@ -1,7 +1,5 @@
 #pragma once
 #include "Common.h"
-#include <algorithm>
-
 
 //#define DEFINE_EVENT_CLASS2(NAME, ARG1, ARG2) \
 //class NAME final : public I ## NAME \
