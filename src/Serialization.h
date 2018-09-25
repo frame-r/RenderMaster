@@ -112,7 +112,7 @@ public:
 	}
 };
 
-// std::string
+// string
 template<>
 class TypeSerializator<string>
 {
@@ -187,7 +187,7 @@ void r(istringstream& stream, T& value)
 class Fabric
 {
 public:
-	static SerializableBase* create(std::string className);
+	static SerializableBase* create(string className);
 };
 
 struct IField
@@ -225,7 +225,7 @@ struct FieldBase : public IField
 };
 
 //
-// Specialization for std::vector
+// Specialization for vector
 // C - class that contains field
 // V - type in vector
 //
@@ -240,7 +240,7 @@ struct FieldBase<C, vector<V>> : public IField
 	void print(void *object, std::ostringstream& stream, int depth) const
 	{
 		C *c = (C*)object;
-		std::vector<V>& vec = c->*(this->member);
+		vector<V>& vec = c->*(this->member);
 
 		print_tabs(stream, depth);
 
@@ -426,7 +426,7 @@ struct SubField : public IField
 template <class Y>
 class Serializable : public SerializableBase
 {
-	std::vector<std::shared_ptr<const IField>> _fields;
+	vector<std::shared_ptr<const IField>> _fields;
 
 public:
 

@@ -10,7 +10,7 @@ void Model::_update()
 {
 }
 
-Model::Model(const std::vector<TResource<ICoreMesh>*>& meshes) : _meshes(meshes)
+Model::Model(const vector<TResource<ICoreMesh>*>& meshes) : _meshes(meshes)
 {
 	//add_entry("meshes", &Model::_meshes);
 

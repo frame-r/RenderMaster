@@ -5,7 +5,7 @@
 #include "GLShader.h"
 #include "GLMesh.h"
 
-using string = std::string;
+using string = string;
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -594,7 +594,7 @@ API GLCoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	GLuint ubo = 0;
 	glGenBuffers(1, &ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-	std::vector<char> data(size, '\0');
+	vector<char> data(size, '\0');
 	glBufferData(GL_UNIFORM_BUFFER, size, &data[0], GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 

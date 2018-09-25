@@ -182,7 +182,7 @@ class DX11CoreRender final : public ICoreRender
 	WRL::ComPtr<ID3D11Texture2D> _depthStencilTex;
 	WRL::ComPtr<ID3D11DepthStencilView> _depthStencilView;
 
-	std::vector<std::function<void()>> _onCleanBroadcast;
+	vector<std::function<void()>> _onCleanBroadcast;
 
 	template <typename TDesc, typename TState, typename THashStruct>
 	class BaseStatePool

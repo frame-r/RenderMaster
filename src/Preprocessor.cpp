@@ -4,10 +4,10 @@
 
 extern list<string> get_file_content(const string& filename);
 
-bool replace(std::string& str, const std::string& from, const std::string& to) 
+bool replace(string& str, const string& from, const string& to) 
 {
 	size_t start_pos = str.find(from);
-	if (start_pos == std::string::npos)
+	if (start_pos == string::npos)
 		return false;
 	str.replace(start_pos, from.length(), to);
 	return true;
@@ -395,7 +395,7 @@ string Preprocessor::get_include_name(const strit& it_, const strit& str_end)
 {
 	string subject = string(it_, str_end);
 	try {
-		//std::string subject("#include <language.sh>");
+		//string subject("#include <language.sh>");
 		std::regex re("#include <(\\w|.+)>(.*)[\\n]*");
 		std::smatch match;
 

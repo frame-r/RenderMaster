@@ -40,9 +40,9 @@ class Render : public IRender
 
 	ICoreShader* _get_shader(const ShaderRequirement &req);
 	bool isOpenGL();
-	void _export_shader_to_file(std::list<std::string>& text, const std::string&& file);	
-	void _create_render_mesh_vec(std::vector<TRenderMesh>& meshes);
-	void _sort_meshes(std::vector<TRenderMesh>& meshes);
+	void _export_shader_to_file(std::list<string>& text, const string&& file);	
+	void _create_render_mesh_vec(vector<TRenderMesh>& meshes);
+	void _sort_meshes(vector<TRenderMesh>& meshes);
 
 public:
 

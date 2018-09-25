@@ -83,8 +83,8 @@ class ResourceManager final : public IResourceManager
 	bool _FBXLoad(IModel *&pMesh, const char *pFileName);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
 	void _LogSceneHierarchy(IModel *&pModel, FbxScene* pScene);
-	void _LogNode(std::vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int pDepth);
-	void _LogMesh(std::vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode);
+	void _LogNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int pDepth);
+	void _LogMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode);
 	void _LogNodeTransform(FbxNode* pNode, const char *str);
 	#endif
 

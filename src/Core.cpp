@@ -44,7 +44,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	const bool createWindow = (flags & INIT_FLAGS::WINDOW_FLAG) != INIT_FLAGS::EXTERN_WINDOW;
 	const bool createConsole = (flags & INIT_FLAGS::CREATE_CONSOLE_FLAG) == INIT_FLAGS::CREATE_CONSOLE;
 
-	std::string absoluteDataPath = pDataPath;
+	string absoluteDataPath = pDataPath;
 	if (is_relative(pDataPath))
 	{
 		absoluteDataPath = make_absolute(pDataPath, _pInstalledDir);
@@ -269,9 +269,9 @@ void Core::setWindowCaption(int is_paused, int fps)
 	_pMainWindow->SetCaption(title.c_str());
 }
 
-std::string Core::_getFullLogPath()
+string Core::_getFullLogPath()
 {
-	return std::string(_pDataDir) + "\\log.txt";
+	return string(_pDataDir) + "\\log.txt";
 }
 
 API Core::GetDataDir(OUT char **pStr)
@@ -467,7 +467,7 @@ STDMETHODIMP CoreClassFactory::CreateInstance(LPUNKNOWN pUnk, REFIID riid, void 
 	
 	// Recieve working directory from Registry
 	
-	auto get_registry_value = [](TCHAR *key) -> std::string
+	auto get_registry_value = [](TCHAR *key) -> string
 	{
 		std::wstring BaseKey(TEXT("SOFTWARE\\Classes\\CLSID\\{A889F560-58E4-11d0-A68A-0000837E3100}\\InProcServer32\\"));
 
@@ -484,8 +484,8 @@ STDMETHODIMP CoreClassFactory::CreateInstance(LPUNKNOWN pUnk, REFIID riid, void 
 		return ConvertFromUtf16ToUtf8(text_buffer.get());
 	};
 	
-	std::string workingDir = get_registry_value(TEXT("WorkingDir"));
-	std::string installedDir = get_registry_value(TEXT("InstalledDir"));
+	string workingDir = get_registry_value(TEXT("WorkingDir"));
+	string installedDir = get_registry_value(TEXT("InstalledDir"));
 
 	pCore = new Core(workingDir.c_str(), installedDir.c_str());
 

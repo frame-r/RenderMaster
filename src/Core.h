@@ -28,12 +28,12 @@ class Core : public ICore
 	unique_ptr<SceneManager>_pSceneManager;
 	unique_ptr<IInput> _pInput;
 
-	std::unique_ptr<LogEvent> _evLog{new LogEvent};
+	unique_ptr<LogEvent> _evLog{new LogEvent};
 
 	CRITICAL_SECTION _cs{};
 
-	std::vector<IInitCallback *> _init_callbacks;
-	std::vector<std::function<void()>> _update_callbacks;
+	vector<IInitCallback *> _init_callbacks;
+	vector<std::function<void()>> _update_callbacks;
 
 	long _lRef{0};
 
@@ -41,7 +41,7 @@ class Core : public ICore
 
 	void _update();
 	float update_fps();
-	std::string _getFullLogPath();
+	string _getFullLogPath();
 	void _main_loop();
 	void static _s_main_loop();
 	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);

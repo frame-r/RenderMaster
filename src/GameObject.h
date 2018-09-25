@@ -9,7 +9,7 @@ class GameObjectBase : public T, public Serializable<T>
 protected:
 
 	int _id;
-	std::string _name{"GameObject"};
+	string _name{"GameObject"};
 	vec3 _pos;
 	quat _rot;
 	vec3 _scale{1.0f, 1.0f, 1.0f};
@@ -89,7 +89,7 @@ inline API GameObjectBase<T>::GetName(OUT const char ** pName)
 template <typename T>
 inline API GameObjectBase<T>::SetName(const char* pName)
 {
-	std::string name = std::string(pName);
+	string name = string(pName);
 	if (name != _name)
 	{
 		_name = name;

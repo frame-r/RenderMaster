@@ -6,11 +6,11 @@ namespace fs = std::experimental::filesystem;
 
 class FileSystem final: public IFileSystem
 {
-	std::string _dataPath;
+	string _dataPath;
 
 public:
 
-	FileSystem(const std::string& dataPath);
+	FileSystem(const string& dataPath);
 
 	API OpenFile(OUT IFile **pFile, const char* path, FILE_OPEN_MODE mode) override;
 	API FileExist(const char *fullPath, OUT int *exist) override;

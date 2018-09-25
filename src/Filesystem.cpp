@@ -8,7 +8,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-FileSystem::FileSystem(const std::string& dataPath) :
+FileSystem::FileSystem(const string& dataPath) :
 	_dataPath(dataPath)
 {
 }

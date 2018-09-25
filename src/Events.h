@@ -4,7 +4,7 @@
 //#define DEFINE_EVENT_CLASS2(NAME, ARG1, ARG2) \
 //class NAME final : public I ## NAME \
 //{ \
-//	std::vector<I ## NAME ## Subscriber *> _subscribers; \
+//	vector<I ## NAME ## Subscriber *> _subscribers; \
 //\
 //public: \
 //\
@@ -20,7 +20,7 @@
 template <typename IDerived, typename ISubscriber, typename... Arguments>
 class EventTemplate : public IDerived
 {
-	std::vector<ISubscriber *> _subscribers;
+	vector<ISubscriber *> _subscribers;
 
 public:
 

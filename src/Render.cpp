@@ -4,9 +4,7 @@
 #include "SceneManager.h"
 #include "Preprocessor.h"
 
-using std::string;
 using std::list;
-using std::vector;
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)

@@ -13,7 +13,6 @@ DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
 using std::list;
-using std::string;
 
 bool is_relative(const char *pPath)
 {
@@ -24,7 +23,7 @@ bool is_relative(const char *pPath)
 	return wfsPath.is_relative();
 }
 
-std::string make_absolute(const char* pRelDataPath, const char* pBasePath)
+string make_absolute(const char* pRelDataPath, const char* pBasePath)
 {
 	std::wstring workingPath = ConvertFromUtf8ToUtf16(pBasePath);
 	std::wstring relPath = ConvertFromUtf8ToUtf16(pRelDataPath);
@@ -38,7 +37,7 @@ std::string make_absolute(const char* pRelDataPath, const char* pBasePath)
 }
 
 
-void split_by_eol(const char **&textOut, int &numLinesOut, const std::string& textIn)
+void split_by_eol(const char **&textOut, int &numLinesOut, const string& textIn)
 {
 	char **ret;
 	char *p_begin_line = const_cast<char*>(&textIn[0]);
@@ -204,20 +203,20 @@ const char* make_char_p(const list<string>& lines)
 }
 
 
-std::list<std::string> get_file_content(const std::string& filename)
+std::list<string> get_file_content(const string& filename)
 {
 	IFile *pFile = nullptr;
 	uint fileSize = 0;
-	std::string textIn;
+	string textIn;
 	int filseExist = 0;
 	const char **textOut;
 	int numLinesOut;
 
 	char *pInstalledDir;
 	_pCore->GetInstalledDir(&pInstalledDir);
-	std::string installedDir = std::string(pInstalledDir);
+	string installedDir = string(pInstalledDir);
 
-	std::string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + filename;
+	string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + filename;
 
 	IFileSystem *fs;
 	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
@@ -226,7 +225,7 @@ std::list<std::string> get_file_content(const std::string& filename)
 	if (!filseExist)
 	{
 		LOG_WARNING_FORMATTED("ResourceManager::LoadShaderText(): File doesn't exist '%s'", shader_path.c_str());
-		return std::list<std::string>();
+		return std::list<string>();
 	}
 
 	fs->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
@@ -248,11 +247,11 @@ std::list<std::string> get_file_content(const std::string& filename)
 
 }
 
-SerializableBase* Fabric::create(std::string className)
+SerializableBase* Fabric::create(string className)
 {
 	if (className == "GameObject") return nullptr;
 	if (className == "SceneManager") return new SceneManager;
-	if (className == "Model") return new Model(std::vector<TResource<ICoreMesh>*>());
+	if (className == "Model") return new Model(vector<TResource<ICoreMesh>*>());
 	if (className == "Camera") return new Camera();
 	return nullptr;
 }
