@@ -4,12 +4,6 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
-    <ClInclude Include="..\src\GL\glew.h">
-      <Filter>CoreRender\GL</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GL\wglew.h">
-      <Filter>CoreRender\GL</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\DX11CoreRender.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
@@ -34,16 +28,10 @@
     <ClInclude Include="..\src\GameObject.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\vector_math.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Camera.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Input.h" />
-    <ClInclude Include="..\include\quat.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\tree.h" />
     <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\Preprocessor.h" />
@@ -60,13 +48,19 @@
       <Filter>CoreRender</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pch.h" />
+    <ClInclude Include="..\include\VectorMath.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GLEW\glew.h">
+      <Filter>CoreRender\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GLEW\wglew.h">
+      <Filter>CoreRender\GLEW</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
-    <ClCompile Include="..\src\GL\glew.c">
-      <Filter>CoreRender\GL</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\GLCoreRender.cpp">
       <Filter>CoreRender</Filter>
     </ClCompile>
@@ -102,6 +96,9 @@
     </ClCompile>
     <ClCompile Include="..\src\pch.cpp" />
     <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\GLEW\glew.c">
+      <Filter>CoreRender\GLEW</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_vertex.shader">
@@ -121,14 +118,14 @@
     <Filter Include="Include">
       <UniqueIdentifier>{c0a67650-fb7e-4027-ad7f-d6775549f077}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CoreRender\GL">
-      <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{c9775c28-7faf-4e08-bfda-6fe74bbf010d}</UniqueIdentifier>
     </Filter>
     <Filter Include="GameObjects">
       <UniqueIdentifier>{cca1a3d1-8ff4-415c-a451-87784ca5df02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CoreRender\GLEW">
+      <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

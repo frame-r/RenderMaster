@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\main_preprocessor.cpp" />
     <ClCompile Include="..\src\Preprocessor.cpp" />
+    <ClCompile Include="..\src\Tests\main_preprocessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Preprocessor.h" />

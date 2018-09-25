@@ -27,11 +27,11 @@
 #include <Unknwn.h>
 #include <initguid.h>
 
-#include <GL\glew.h>
-#include <GL\wglew.h>
+#include <GLEW\glew.h>
+#include <GLEW\wglew.h>
 
 #include <d3d11_2.h>
 #include <d3dcompiler.h>
 #include <wrl/module.h>
 
-#include "tree.h"
+#include "Tree.h"

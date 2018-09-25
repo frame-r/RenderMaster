@@ -1,7 +1,6 @@
 #pragma once
 
-#include "vector_math.h"
-#include "quat.h"
+#include "VectorMath.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

@@ -11,7 +11,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	{
 		IResourceManager *resMan;
 
-		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::DIRECTX11, "resources", nullptr)))
+		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::OPENGL45, "resources", nullptr)))
 		{
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
@@ -19,7 +19,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 			pCore->Start(); // begin main loop
 
-			pModel.reset(); // delete resource before releasing engine
+			pModel.reset(); // reset this pointer in order to engine can release this resource
 
 			pCore->ReleaseEngine();
 		}

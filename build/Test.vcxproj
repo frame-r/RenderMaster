@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Test\main.cpp" />
+    <ClCompile Include="..\src\Tests\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3456A1AE-45CA-4252-963F-066BFF62E21A}</ProjectGuid>
