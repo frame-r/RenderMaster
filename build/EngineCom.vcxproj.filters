@@ -63,7 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
-    <ClCompile Include="..\src\dllmain.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
     <ClCompile Include="..\src\GL\glew.c">
       <Filter>CoreRender\GL</Filter>
@@ -102,9 +101,9 @@
       <Filter>CoreRender</Filter>
     </ClCompile>
     <ClCompile Include="..\src\pch.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\export.def" />
     <None Include="..\src\shaders\mesh_vertex.shader">
       <Filter>Shaders</Filter>
     </None>

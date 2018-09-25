@@ -54,7 +54,6 @@
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\Console.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
-    <ClCompile Include="..\src\dllmain.cpp" />
     <ClCompile Include="..\src\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\DX11Mesh.cpp" />
     <ClCompile Include="..\src\DX11Shader.cpp" />
@@ -67,6 +66,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\GLMesh.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -80,7 +80,6 @@
     <ClCompile Include="..\src\Wnd.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\export.def" />
     <None Include="..\src\shaders\mesh_common.shader" />
     <None Include="..\src\shaders\mesh_fragment.shader" />
     <None Include="..\src\shaders\mesh_vertex.shader" />
