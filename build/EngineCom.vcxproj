@@ -61,6 +61,7 @@
     <ClCompile Include="..\src\GLCoreRender.cpp" />
     <ClCompile Include="..\src\GLEW\glew.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\GLShader.cpp" />
     <ClCompile Include="..\src\GLMesh.cpp" />
@@ -234,7 +235,7 @@
       <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>..\bin\$(Platform)\$(Configuration)\pch.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
