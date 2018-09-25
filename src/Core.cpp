@@ -109,6 +109,8 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	if (createWindow)
 		_pMainWindow->Show();
 
+	_update_callbacks.push_back(std::bind(&Core::_update, this));
+
 	Log("Engine initialized");
 
 	return S_OK;
@@ -354,6 +356,24 @@ API Core::GetLogPrintedEv(OUT ILogEvent **pEvent)
 {
 	*pEvent = _evLog.get();
 	return S_OK;
+}
+
+void Core::_update()
+{
+	if (!_pConsole)
+		return;
+
+	static int tilda = 0;
+	int tilda_old = tilda;
+	_pInput->IsKeyPressed(&tilda, KEYBOARD_KEY_CODES::KEY_GRAVE);
+	if (tilda_old && !tilda)
+	{
+		int is_visible = _pConsole->IsVisible();
+		if (is_visible)
+			_pConsole->Hide();
+		else
+			_pConsole->Show();
+	}
 }
 
 float Core::update_fps()

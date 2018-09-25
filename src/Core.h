@@ -39,6 +39,7 @@ class Core : public ICore
 
 	std::chrono::steady_clock::time_point start;
 
+	void _update();
 	float update_fps();
 	std::string _getFullLogPath();
 	void _main_loop();

@@ -19,13 +19,13 @@ LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 	case WM_SHOWWINDOW:
 	{
-		this_ptr->_bVisible = (wParam == TRUE);
+		//this_ptr->_bVisible = (wParam == TRUE);
 		SetFocus(this_ptr->_hEdit);
 	}
 	break;
 
 	case WM_CLOSE:
-		ShowWindow(this_ptr->_hWnd, SW_HIDE);
+		this_ptr->Hide();
 		break;
 
 	case WM_SIZE:
@@ -51,6 +51,16 @@ LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 	}
 	break;
 
+	case WM_KEYUP:
+		if (wParam == 192) // ~
+		{
+			if (this_ptr->_is_visible)
+				this_ptr->Hide();
+			else
+				this_ptr->Show();
+		}
+		break;
+
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -59,10 +69,26 @@ LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 }
 
+WNDPROC Console::oldEditWndProc;
+
+LRESULT CALLBACK Console::_s_EditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    if( (uMsg == WM_KEYUP) && (wParam == 192) )
+    {
+		Console *this_ptr = (Console *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+        if (this_ptr->_is_visible)
+			this_ptr->Hide();
+		else
+			this_ptr->Show();
+
+        return 0;
+    }
+    return CallWindowProc(oldEditWndProc, hWnd, uMsg, wParam, lParam);
+}
+
 Console::Console()
 {
 }
-
 
 Console::~Console()
 {
@@ -115,27 +141,26 @@ void Console::Init(const WinHandle* handle)
 		ES_MULTILINE | ES_READONLY,
 		0, 0, client_rect.right - client_rect.left, client_rect.bottom - client_rect.top, _hWnd, 0, 0, NULL);
 
-	SetWindowText(_hMemo, L"Console created\r\n");
+	oldEditWndProc = (WNDPROC) SetWindowLongPtr(_hMemo, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)Console::_s_EditProc);
+	SetWindowLongPtr(_hMemo, GWLP_USERDATA, (LONG_PTR)this);
 
+	SetWindowText(_hMemo, L"Console created\r\n");	
 
 	LOGFONT LF = { 12, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, L"Lucida Console" };
 	_hFont = CreateFontIndirect(&LF);
 
 	SendMessage(_hMemo, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
 
-	_hEdit = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 0, 0, 0, 0, _hWnd, 0, 0, NULL);
-
-	SetWindowLongPtr(_hEdit, GWLP_USERDATA, (LONG_PTR)this);
-
+	//_hEdit = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 0, 0, 0, 0, _hWnd, 0, 0, NULL);
 	//_pOldEditProc = (void *)SetWindowLongPtr(_hEdit, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)CConsoleWindow::_s_WndEditProc);
 
-	SendMessage(_hEdit, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
+	//SendMessage(_hEdit, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
 
 	SendMessage(_hMemo, EM_LIMITTEXT, 200000, 0);
 
 	//ResetSizeAndPos();
 
-	ShowWindow(_hWnd, SW_SHOWNORMAL);
+	Show();
 }
 
 void Console::Destroy()
@@ -151,7 +176,7 @@ void Console::OutputTxt(const char* pStr)
 	//if (!newline)
 	//	SendMessage(_hMemo, EM_REPLACESEL, false, (LPARAM)(/*std::wstring(L"\r\n") + */std::wstring(ConvertFromUtf8ToUtf16(pStr))).c_str());
 	//else
-		SendMessage(_hMemo, EM_REPLACESEL, false, (LPARAM)(std::wstring(ConvertFromUtf8ToUtf16(pStr)) + std::wstring(L"\r\n")).c_str());
+	SendMessage(_hMemo, EM_REPLACESEL, false, (LPARAM)(std::wstring(ConvertFromUtf8ToUtf16(pStr)) + std::wstring(L"\r\n")).c_str());
 	SendMessage(_hMemo, EM_SCROLL, SB_BOTTOM, 0);
 
 	//else
@@ -168,17 +193,19 @@ void Console::OutputTxt(const char* pStr)
 	//	}
 	//}
 
-	_iPrevLineSize = (int)strlen(pStr);
+	_prev_line_size = (int)strlen(pStr);
 }
 
 void Console::Show()
 {
+	_is_visible = 1;
 	ShowWindow(_hWnd, SW_SHOW);
 	UpdateWindow(_hWnd);
 }
 
 void Console::Hide()
 {
+	_is_visible = 0;
 	ShowWindow(_hWnd, SW_HIDE);
 }
 
