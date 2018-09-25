@@ -362,20 +362,20 @@ float Core::update_fps()
 	static float accum = 0.0f;
 
 	std::chrono::duration<float> _durationSec = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start);
-	float sec = _durationSec.count();
+	dt = _durationSec.count();
 
-	accum += sec;
+	accum += dt;
 
 	if (accum > upd_interv)
 	{
 		accum = 0.0f;
-		int fps = static_cast<int>(1.0f / sec);
+		int fps = static_cast<int>(1.0f / dt);
 		setWindowCaption(0, fps);		
 	}
 
 	start = std::chrono::steady_clock::now();
 
-	return sec;
+	return dt;
 }
 
 HRESULT Core::QueryInterface(REFIID riid, void ** ppv)

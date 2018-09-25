@@ -21,6 +21,11 @@
   <ItemGroup>
     <ClCompile Include="..\src\Tests\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="EngineCom.vcxproj">
+      <Project>{a2f95159-ce4f-44b5-b6ec-96c5d392d34d}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3456A1AE-45CA-4252-963F-066BFF62E21A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

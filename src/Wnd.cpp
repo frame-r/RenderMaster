@@ -229,16 +229,16 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_LBUTTONDOWN:
 		//LOG("WM_LBUTTONDOWN");
 		SetCapture(hWnd);
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 0, 0, nullptr);
+		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 0, lParam, nullptr);
 		break;
 
 	case WM_RBUTTONDOWN:
 		
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 1, 0, nullptr);
+		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 1, lParam, nullptr);
 		break;
 
 	case WM_MBUTTONDOWN:
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 2, 0, nullptr);
+		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 2, lParam, nullptr);
 		break;
 
 	case WM_LBUTTONUP:

@@ -18,6 +18,8 @@ void Camera::_update()
 	int mouse_pressed{};
 	vec2 dM;
 
+	float dt = _pCore->getDt();
+
 	_pInput->IsKeyPressed(&left_pressd, KEYBOARD_KEY_CODES::KEY_A);
 	_pInput->IsKeyPressed(&right_pressd, KEYBOARD_KEY_CODES::KEY_D);
 	_pInput->IsKeyPressed(&forward_pressd, KEYBOARD_KEY_CODES::KEY_W);
@@ -36,45 +38,41 @@ void Camera::_update()
 		vec3 forward_direction = GetBackDirection(M); // -Z local
 		vec3 up_direction = vec3(0.0f, 0.0f, 1.0f); // Z world
 
-		const float moveSpeed = 1.3f;
+		const float moveSpeed = 60.0f;
 
 		vec3 pos = _pos;
 
 		if (left_pressd)
-			pos -= orth_direction * moveSpeed;
+			pos -= orth_direction * moveSpeed* dt;
 
 		if (right_pressd)
-			pos += orth_direction * moveSpeed;
+			pos += orth_direction * moveSpeed* dt;
 
 		if (forward_pressd)
-			pos += forward_direction * moveSpeed;
+			pos += forward_direction * moveSpeed* dt;
 
 		if (back_pressd)
-			pos -= forward_direction * moveSpeed;
+			pos -= forward_direction * moveSpeed* dt;
 
 		if (down_pressed)
-			pos -= up_direction * moveSpeed;
+			pos -= up_direction * moveSpeed* dt;
 
 		if (up_pressed)
-			pos += up_direction * moveSpeed;
-
+			pos += up_direction * moveSpeed * dt;
+		
 		SetPosition(&pos);
 	}
 
+	if (mouse_pressed)
 	{
-		const float rotSpeed = 0.1f;
-
-		if (mouse_pressed)
-		{
-			//	//LOG_FORMATTED("_rot=(%f, %f)", _rot.x, _rot.y);
-				//_rot.y = fmod(_rot.y + 0.1f * dM.x, 360.0f);
-				//_rot.x = fmod(_rot.x + 0.1f * dM.y, 360.0f);
-
-
-				//quat dqY = quat::FromEuler(0.0f, dM.x * rotSpeed, 0.0);
-				//quat dqX = quat::FromEuler(dM.y * rotSpeed, 0.0f, 0.0);
-				//_rot = _rot * dqX * dqY;
-		}
+		//LOG_FORMATTED("dt=%f dm=(%f, %f)\n",_pCore->getDt(),dM.x,dM.y);
+		const float rotSpeed = 13.0f;
+		quat rot;
+		GetRotation(&rot);
+		quat dxRot = quat(-dM.y * dt * rotSpeed, 0.0f, 0.0f);
+		quat dyRot = quat(0.0f, 0.0f,-dM.x * dt * rotSpeed);
+		rot = dyRot * rot * dxRot;
+		SetRotation(&rot);
 	}
 }
 

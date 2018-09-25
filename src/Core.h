@@ -50,6 +50,8 @@ class Core : public ICore
 
 	void setWindowCaption(int is_paused, int fps);
 
+	float dt = 0.0f;
+
 public:
 
 	Core(const char *workingDir, const char *installedDir);
@@ -65,6 +67,7 @@ public:
 	}
 	Wnd* MainWindow() { return _pMainWindow.get(); }
 	void AddUpdateCallback(std::function<void()>&& calback) { _update_callbacks.push_back(std::forward<std::function<void()>>(calback)); }
+	float getDt() { return dt; }
 
 	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) override;
 	API Start() override;

@@ -18,6 +18,8 @@ class Input : public IInput
 	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 
+	void clear_mouse();
+
 public:
 
 	Input();

@@ -7,6 +7,14 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+#define LOWORD(_dw)				((WORD)(((DWORD_PTR)(_dw)) & 0xffff))
+#define HIWORD(_dw)				((WORD)((((DWORD_PTR)(_dw)) >> 16) & 0xffff))
+#define LODWORD(_qw)			((DWORD)(_qw))
+#define HIDWORD(_qw)			((DWORD)(((_qw) >> 32) & 0xffffffff))
+#define GET_X_LPARAM(lp)        ((int)(short)LOWORD(lp))
+#define GET_Y_LPARAM(lp)        ((int)(short)HIWORD(lp))
+
+
 Input* Input::instance{nullptr};
 
 void Input::_update()
@@ -31,6 +39,10 @@ void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2,
 		break;
 
 	case WINDOW_MESSAGE::MOUSE_DOWN:
+		_cursorX = GET_X_LPARAM(param2); 
+		_cursorY = GET_Y_LPARAM(param2);
+		_oldPos.x = float(_cursorX);
+		_oldPos.y = float(_cursorY);
 		_mouse[param1] = 1;
 		break;
 
@@ -44,6 +56,15 @@ void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2,
 		_cursorY = param2;
 		break;
 
+	case WINDOW_MESSAGE::APPLICATION_ACTIVATED:
+		clear_mouse();
+		break;
+
+	case WINDOW_MESSAGE::APPLICATION_DEACTIVATED:
+		clear_mouse();
+		break;
+
+
 	default:
 		break;
 	}
@@ -52,6 +73,14 @@ void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2,
 void Input::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void * pData)
 {
 	instance->_message_callback(type, param1, param2, pData);
+}
+
+void Input::clear_mouse()
+{
+	_cursorX = 0;
+	_cursorY = 0;
+	_oldPos = vec2(0.0f);
+	_mouseDeltaPos = vec2(0.0f, 0.0f);
 }
 
 Input::Input()
