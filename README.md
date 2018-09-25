@@ -6,6 +6,13 @@ Graphic engine based on COM (Component Object Model).
 * Multi render: DirectX 11, OpenGL 4.5
 * Stable ABI. i.e engine binaries stable across different compiler (that supports COM) and different release of one compiler. Also no need recompiler all engine plugins and applications that uses engine if you migrate to new compiler.
 
+Planned:
+* Deferred Rendering
+* Physically Based Shading
+* TAA or MSAA
+* Voxel Cone Tracing
+* SSAO, SSR
+
 ## Build and Install
 Clone repositiory. Build solution Engine.sln located in build/ directory. I use Visual Studio 2017 (15.6.6), but I'm sure that the engine is compiled with VS 2015. Then you should register Engine.dll in Windows Registry. Just run install.bat as Administrator. Now everything is ready to work with the engine. See example build/Test.vcxproj for more details.
 
