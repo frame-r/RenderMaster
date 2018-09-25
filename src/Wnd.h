@@ -7,6 +7,7 @@ class Wnd
 	HWND hwnd;
 	void(*_main_loop)() {nullptr};
 	std::vector<WindowMessageCallback> _window_mesage_callbacks;
+	int passive_main_loop = 0;
 
 	void _invoke_mesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	LRESULT CALLBACK _wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -26,5 +27,6 @@ public:
 	void GetDimension(uint& w, uint& h);
 	void AddMessageCallback(WindowMessageCallback callback);
 	void SetCaption(const wchar_t* text);
+	void SetPassiveMainLoop(int value) { passive_main_loop = value; }
 };
 

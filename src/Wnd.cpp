@@ -256,14 +256,14 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_MOUSELEAVE:
-		//LOG("WM_MOUSELEAVE");
+		LOG("WM_MOUSELEAVE");
 		break;
 
 	case WM_MOUSEHOVER:
 		//LOG("WM_MOUSEHOVER");
 		break;
 
-	case WM_ACTIVATE:
+	case WM_ACTIVATE: // inside application at window level
 	{
 		int fActive = LOWORD(wParam);
 		//if (fActive) LOG("WM_ACTIVATE true");
@@ -275,11 +275,16 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 
-	case WM_ACTIVATEAPP:
+	case WM_ACTIVATEAPP: // at application level
 	{
 		int fActive = LOWORD(wParam);
 		//if (fActive) LOG("WM_ACTIVATEAPP true");
 		//else LOG("WM_ACTIVATEAPP false");
+		if (fActive)
+			_invoke_mesage(WINDOW_MESSAGE::APPLICATION_ACTIVATED, 0, 0, nullptr);
+		else
+			_invoke_mesage(WINDOW_MESSAGE::APPLICATION_DEACTIVATED, 0, 0, nullptr);
+
 	}
 	break;
 
@@ -362,7 +367,7 @@ void Wnd::StartMainLoop()
 
 	while (true)
 	{
-		if (_main_loop != nullptr)
+		if (_main_loop != nullptr && !passive_main_loop)
 		{
 
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))

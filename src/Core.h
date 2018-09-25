@@ -46,6 +46,10 @@ class Core : public ICore
 	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 
+	int window_active = 1;
+
+	void setWindowCaption(int is_paused, int fps);
+
 public:
 
 	Core(const char *workingDir, const char *installedDir);

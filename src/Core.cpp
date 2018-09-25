@@ -12,6 +12,8 @@
 #include "SceneManager.h"
 #include "Input.h"
 
+using std::wstring;
+
 Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
@@ -197,11 +199,15 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_UNMINIMIZED:
+		if (_pMainWindow)
+			_pMainWindow->SetPassiveMainLoop(0);
 		if (_pConsole)
 			_pConsole->Show();
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_MINIMIZED:
+		if (_pMainWindow)
+			_pMainWindow->SetPassiveMainLoop(1);
 		if (_pConsole)
 			_pConsole->Hide();
 		break;
@@ -211,6 +217,21 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 		_pSceneManager->GetDefaultCamera(&cam);
 		_pRender->RenderFrame(cam);
 		_pCoreRender->SwapBuffers();
+		break;
+
+	case WINDOW_MESSAGE::APPLICATION_ACTIVATED:
+		if (_pMainWindow)
+		{			
+			_pMainWindow->SetPassiveMainLoop(0);
+		}
+		break;
+
+	case WINDOW_MESSAGE::APPLICATION_DEACTIVATED:
+		if (_pMainWindow)
+		{
+			setWindowCaption(1, 0);
+			_pMainWindow->SetPassiveMainLoop(1);
+		}
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_CLOSE:
@@ -226,6 +247,24 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 void Core::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
 {
 	_pCore->_message_callback(type, param1, param2, pData);
+}
+
+void Core::setWindowCaption(int is_paused, int fps)
+{
+	if (!_pMainWindow)
+		return;
+
+	wstring title = wstring(L"Test");
+
+	if (is_paused)
+		title += wstring(L" [Paused]");
+	else
+	{
+		string fps_str = std::to_string(fps);
+		title += wstring(L" [") + wstring(fps_str.begin(), fps_str.end()) + wstring(L"]");
+	}
+
+	_pMainWindow->SetCaption(title.c_str());
 }
 
 std::string Core::_getFullLogPath()
@@ -331,10 +370,7 @@ float Core::update_fps()
 	{
 		accum = 0.0f;
 		int fps = static_cast<int>(1.0f / sec);
-		std::string fps_str = std::to_string(fps);
-		std::wstring fps_strw = std::wstring(L"Test [") + std::wstring(fps_str.begin(), fps_str.end()) + std::wstring(L"]");
-
-		_pMainWindow->SetCaption(fps_strw.c_str());
+		setWindowCaption(0, fps);		
 	}
 
 	start = std::chrono::steady_clock::now();
