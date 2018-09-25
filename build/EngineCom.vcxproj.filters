@@ -57,6 +57,9 @@
     <ClInclude Include="..\src\GLEW\wglew.h">
       <Filter>CoreRender\GLEW</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\GLCoreRender.h">
+      <Filter>CoreRender</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
