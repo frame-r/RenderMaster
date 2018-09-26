@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "Events.h"
 
-class Wnd;
+class MainWindow;
 class FileSystem;
 class ResourceManager;
 class Console;
@@ -20,15 +20,13 @@ class Core : public ICore
 
 	// subsystems
 	unique_ptr<Console> _pConsole;
-	unique_ptr<Wnd> _pMainWindow;
+	unique_ptr<MainWindow> _pMainWindow;
 	unique_ptr<FileSystem>_pfSystem;
 	unique_ptr<ResourceManager> _pResMan;
 	unique_ptr<ICoreRender>_pCoreRender;
 	unique_ptr<Render> _pRender;
 	unique_ptr<SceneManager>_pSceneManager;
 	unique_ptr<IInput> _pInput;
-
-	unique_ptr<LogEvent> _evLog{new LogEvent};
 
 	CRITICAL_SECTION _cs{};
 
@@ -41,7 +39,6 @@ class Core : public ICore
 
 	void _update();
 	float update_fps();
-	string _getFullLogPath();
 	void _main_loop();
 	void static _s_main_loop();
 	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
@@ -66,9 +63,10 @@ public:
 		sprintf(buf, pStr, args...);
 		Log(buf, type);
 	}
-	Wnd* MainWindow() { return _pMainWindow.get(); }
+	MainWindow* mainWindow() { return _pMainWindow.get(); }
 	void AddUpdateCallback(std::function<void()>&& calback) { _update_callbacks.push_back(std::forward<std::function<void()>>(calback)); }
 	float getDt() { return dt; }
+	void Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL);
 
 	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) override;
 	API Start() override;
@@ -77,11 +75,9 @@ public:
 	API GetDataDir(OUT char **pStr) override;
 	API GetWorkingDir(OUT char **pStr) override;
 	API GetInstalledDir(OUT char **pStr) override;
-	API Log(const char *pText, LOG_TYPE type = LOG_TYPE::NORMAL) override;
 	API AddInitCallback(IInitCallback *pCallback) override;
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;
 	API ReleaseEngine() override;
-	API GetLogPrintedEv(OUT ILogEvent **pEvent) override;
 
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 	STDMETHODIMP_(ULONG) AddRef() override;

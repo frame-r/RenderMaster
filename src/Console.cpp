@@ -1,7 +1,12 @@
 #include "pch.h"
 #include "Console.h"
+#include "Core.h"
 
 using namespace std;
+
+extern Core *_pCore;
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
 
 
 LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -94,8 +99,15 @@ Console::~Console()
 {
 }
 
-void Console::Init(const WinHandle* handle)
+void Console::Init(bool createWindow)
 {
+	char *pDataPath;
+	_pCore->GetDataDir(&pDataPath);
+	fullLogPath = string(pDataPath) + "\\log.txt";
+
+	if (!createWindow)
+		return;
+
 	HINSTANCE _hInst = GetModuleHandle(NULL);
 
 	WNDCLASSEX wcex;
@@ -119,8 +131,6 @@ void Console::Init(const WinHandle* handle)
 	}
 
 	HWND h = 0;
-	if (handle != nullptr)
-		h = *handle;
 
 	_hWnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"ConsoleClass", L"Render Master Console",
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX,
@@ -170,6 +180,9 @@ void Console::Destroy()
 
 void Console::OutputTxt(const char* pStr)
 {
+	if (_hMemo)
+		return;
+
 	int cur_l = GetWindowTextLength(_hMemo);
 
 	SendMessage(_hMemo, EM_SETSEL, cur_l, cur_l);
@@ -214,3 +227,39 @@ void Console::BringToFront()
 	SetActiveWindow(_hWnd);
 }
 
+API Console::Log(const char *text, LOG_TYPE type)
+{
+	OutputTxt(text);
+
+	std::ofstream log(fullLogPath, std::ios::out | std::ios::app);
+	log << text << std::endl;
+	log.close();
+
+	std::cout << text << std::endl;
+
+	_evLog->Fire(text, type);
+
+	return S_OK;
+}
+
+API Console::AddCommand(IConsoleCommand * pCommand)
+{
+	return E_NOTIMPL;
+}
+
+API Console::RemoveCommand(IConsoleCommand * pCommand)
+{
+	return E_NOTIMPL;
+}
+
+API Console::GetLogPrintedEv(OUT ILogEvent **pEvent)
+{
+	*pEvent = _evLog.get();
+	return S_OK;
+}
+
+API Console::GetName(OUT const char ** pName)
+{
+	*pName = "Console";
+	return S_OK;
+}

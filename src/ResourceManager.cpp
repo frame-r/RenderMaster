@@ -133,7 +133,7 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	return lStatus;
 }
 
-void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
+void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 {
 	vector<TResource<ICoreMesh> *> meshes;
 	FbxString lString;
@@ -141,7 +141,7 @@ void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 	LOG("[FBX]Scene hierarchy:");
 
 	FbxNode* lRootNode = pScene->GetRootNode();
-	_LogNode(meshes, lRootNode, 0);
+	_LoadNode(meshes, lRootNode, 0);
 
 	//_LogNodeTransform(lRootNode, ("[FBX] (root node!) " + lString + lRootNode->GetName()).Buffer());
 	//for (int i = 0; i < lRootNode->GetChildCount(); i++)
@@ -156,7 +156,7 @@ void ResourceManager::_LogSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 		_resources.emplace(m);
 }
 
-void ResourceManager::_LogNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int depth)
+void ResourceManager::_LoadNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int depth)
 {
 	FbxString lString;
 	FbxNodeAttribute* node = pNode->GetNodeAttribute();
@@ -165,15 +165,15 @@ void ResourceManager::_LogNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* 
 
 	switch (lAttributeType)
 	{
-		case FbxNodeAttribute::eMesh:		_LogMesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), pNode); break;
+		case FbxNodeAttribute::eMesh:		_LoadMesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), pNode); break;
 		case FbxNodeAttribute::eMarker:		LOG(("[FBX] (eMarker) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eSkeleton:	LOG(("[FBX] (eSkeleton) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eNurbs:		LOG(("[FBX] (eNurbs) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::ePatch:		LOG(("[FBX] (ePatch) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::eCamera:		_LogNodeTransform(pNode, ("[FBX] (eCamera) " + lString + pNode->GetName()).Buffer()); break;
+		case FbxNodeAttribute::eCamera:		_LoadNodeTransform(pNode, ("[FBX] (eCamera) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eLight:		LOG(("[FBX] (eLight) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eLODGroup:	LOG(("[FBX] (eLODGroup) " + lString + pNode->GetName()).Buffer()); break;
-		default:							_LogNodeTransform(pNode, ("[FBX] (unknown!) " + lString + pNode->GetName()).Buffer()); break;
+		default:							_LoadNodeTransform(pNode, ("[FBX] (unknown!) " + lString + pNode->GetName()).Buffer()); break;
 	}
 
 	int childs = pNode->GetChildCount();
@@ -181,7 +181,7 @@ void ResourceManager::_LogNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* 
 	{
 		LOG_FORMATTED("[FBX] for node=%s childs=%i", pNode->GetName(), childs);
 		for (int i = 0; i < childs; i++)
-			_LogNode(meshes, pNode->GetChild(i), depth + 1);
+			_LoadNode(meshes, pNode->GetChild(i), depth + 1);
 	}
 }
 
@@ -191,7 +191,7 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void ResourceManager::_LogMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode)
+void ResourceManager::_LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode)
 {
 	int control_points_count = pMesh->GetControlPointsCount();
 	int polygon_count = pMesh->GetPolygonCount();
@@ -331,10 +331,10 @@ void ResourceManager::_LogMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *
 	if (pCoreMesh)
 		meshes.push_back(new TResource<ICoreMesh>(pCoreMesh));
 	else
-		LOG_WARNING("[FBX]ResourceManager::_LogMesh(): Can not create mesh");
+		LOG_WARNING("[FBX]ResourceManager::_LoadMesh(): Can not create mesh");
 }
 
-void ResourceManager::_LogNodeTransform(FbxNode* pNode, const char *str)
+void ResourceManager::_LoadNodeTransform(FbxNode* pNode, const char *str)
 {
 	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
 	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
@@ -361,7 +361,7 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName)
 		LOG_FATAL("[FBX]An error occurred while loading the scene...");
 	else
 	{
-		_LogSceneHierarchy(pModel, lScene);
+		_LoadSceneHierarchy(pModel, lScene);
 		//_ImportScene(lScene);
 	}
 

@@ -1,9 +1,9 @@
 #pragma once
 #include "Common.h"
 
-class Wnd
+class MainWindow
 {
-	static Wnd *this_ptr;
+	static MainWindow *this_ptr;
 	HWND hwnd;
 	void(*_main_loop)() {nullptr};
 	vector<WindowMessageCallback> _window_mesage_callbacks;
@@ -15,8 +15,8 @@ class Wnd
 
 public:
 
-	Wnd(void(*main_loop)());
-	~Wnd();
+	MainWindow(void(*main_loop)());
+	~MainWindow();
 
 	HWND *handle() { return &hwnd; }
 

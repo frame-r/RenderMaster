@@ -7,7 +7,6 @@
     <ClInclude Include="..\src\DX11CoreRender.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Wnd.h" />
     <ClInclude Include="..\src\GLShader.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
@@ -60,6 +59,7 @@
     <ClInclude Include="..\src\GLCoreRender.h">
       <Filter>CoreRender</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\MainWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -70,7 +70,6 @@
     <ClCompile Include="..\src\DX11CoreRender.cpp">
       <Filter>CoreRender</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Wnd.cpp" />
     <ClCompile Include="..\src\GLMesh.cpp">
       <Filter>CoreRender</Filter>
     </ClCompile>
@@ -102,6 +101,7 @@
     <ClCompile Include="..\src\GLEW\glew.c">
       <Filter>CoreRender\GLEW</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\MainWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_vertex.shader">
@@ -113,6 +113,7 @@
     <None Include="..\src\shaders\mesh_fragment.shader">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CoreRender">

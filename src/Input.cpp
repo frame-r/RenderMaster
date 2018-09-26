@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Input.h"
 #include "Core.h"
-#include "Wnd.h"
+#include "MainWindow.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -87,8 +87,8 @@ Input::Input()
 {
 	instance = this;
 
-	if (_pCore->MainWindow())
-		_pCore->MainWindow()->AddMessageCallback(_s_message_callback);
+	if (_pCore->mainWindow())
+		_pCore->mainWindow()->AddMessageCallback(_s_message_callback);
 
 	_pCore->AddUpdateCallback(std::bind(&Input::_update, this));
 }

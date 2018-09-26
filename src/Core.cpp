@@ -5,7 +5,7 @@
 #include "ResourceManager.h"
 #include "DX11CoreRender.h"
 #include "GLCoreRender.h"
-#include "Wnd.h"
+#include "MainWindow.h"
 #include "Console.h"
 #include "Events.h"
 #include "Render.h"
@@ -29,7 +29,9 @@ Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 	strcpy(_pWorkingDir, pWorkingDir);
 
 	_pInstalledDir = new char[strlen(pInstalledDir) + 1];
-	strcpy(_pInstalledDir, pInstalledDir);	
+	strcpy(_pInstalledDir, pInstalledDir);
+
+	_pConsole = std::make_unique<Console>();
 }
 
 Core::~Core()
@@ -60,15 +62,8 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 
 	_pDataDir = new char[absoluteDataPath.size() + 1];
 	strcpy(_pDataDir, absoluteDataPath.c_str());
-
-	std::ofstream log(_getFullLogPath());
-	log.close();
-
-	if (createConsole)
-	{
-		_pConsole = std::make_unique<Console>();
-		_pConsole->Init(nullptr);
-	}
+	
+	_pConsole->Init(createConsole);
 
 	Log("Start initialization engine...");
 	LogFormatted("Working directory:    %s", LOG_TYPE::NORMAL, _pWorkingDir);
@@ -77,7 +72,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 
 	if (createWindow)
 	{
-		_pMainWindow = std::make_unique<Wnd>(_s_main_loop);
+		_pMainWindow = std::make_unique<MainWindow>(_s_main_loop);
 		_pMainWindow->AddMessageCallback(_s_message_callback);
 		_pMainWindow->CreateAndShow();
 	}
@@ -163,9 +158,10 @@ API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 		case SUBSYSTEM_TYPE::INPUT: *pSubSystem = _pInput.get(); break;
 		case SUBSYSTEM_TYPE::SCENE_MANAGER: *pSubSystem = _pSceneManager.get(); break;
 		case SUBSYSTEM_TYPE::RENDER: *pSubSystem = _pRender.get(); break;
+		case SUBSYSTEM_TYPE::CONSOLE: *pSubSystem = _pConsole.get(); break;
 		default:
 			LOG_WARNING("Core::GetSubSystem() unknown subsystem");
-			return S_FALSE;
+			return E_FAIL;
 	}
 
 	return S_OK;
@@ -269,11 +265,6 @@ void Core::setWindowCaption(int is_paused, int fps)
 	_pMainWindow->SetCaption(title.c_str());
 }
 
-string Core::_getFullLogPath()
-{
-	return string(_pDataDir) + "\\log.txt";
-}
-
 API Core::GetDataDir(OUT char **pStr)
 {
 	*pStr = _pDataDir;
@@ -292,24 +283,9 @@ API Core::GetInstalledDir(OUT char **pStr)
 	return S_OK;
 }
 
-API Core::Log(const char *pStr, LOG_TYPE type)
+void Core::Log(const char *pStr, LOG_TYPE type)
 {
-	EnterCriticalSection(&_cs);
-
-	if (_pConsole)
-		_pConsole->OutputTxt(pStr);
-
-	std::ofstream log(_getFullLogPath(), std::ios::out | std::ios::app);
-	log << pStr << std::endl;
-	log.close();
-
-	std::cout << pStr << std::endl;
-
-	_evLog->Fire(pStr, type);
-
-	LeaveCriticalSection(&_cs);
-
-	return S_OK;
+	_pConsole->Log(pStr, type);
 }
 
 API Core::AddInitCallback(IInitCallback* pCallback)
@@ -349,12 +325,6 @@ API Core::ReleaseEngine()
 	if (_pConsole)
 		_pConsole->Destroy();
 
-	return S_OK;
-}
-
-API Core::GetLogPrintedEv(OUT ILogEvent **pEvent)
-{
-	*pEvent = _evLog.get();
 	return S_OK;
 }
 

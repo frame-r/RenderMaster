@@ -85,6 +85,7 @@ namespace RENDER_MASTER
 	class ICamera;
 	class IGameObject;
 	enum class SUBSYSTEM_TYPE;
+	enum class LOG_TYPE;
 
 
 	//////////////////////
@@ -106,13 +107,6 @@ namespace RENDER_MASTER
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
-	enum class LOG_TYPE
-	{
-		NORMAL,
-		WARNING,
-		FATAL
-	};
-
 	// {A97B8EB3-93CE-4A45-800D-367084CFB4B1}
 	DEFINE_GUID(IID_Core,
 		0xa97b8eb3, 0x93ce, 0x4a45, 0x80, 0xd, 0x36, 0x70, 0x84, 0xcf, 0xb4, 0xb1);
@@ -120,7 +114,6 @@ namespace RENDER_MASTER
 	class ICore : public IUnknown
 	{
 	public:
-
 		virtual API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) = 0;
 		virtual API Start() = 0;
 		virtual API RenderFrame(const WinHandle *externHandle, const ICamera *pCamera) = 0;
@@ -128,13 +121,9 @@ namespace RENDER_MASTER
 		virtual API GetDataDir(OUT char **pStr) = 0;
 		virtual API GetWorkingDir(OUT char **pStr) = 0;
 		virtual API GetInstalledDir(OUT char **pStr) = 0;
-		virtual API Log(const char *pStr, LOG_TYPE type) = 0;
 		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
 		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
 		virtual API ReleaseEngine() = 0;
-
-		// Events
-		virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
 	};
 
 
@@ -149,7 +138,8 @@ namespace RENDER_MASTER
 		RENDER,
 		RESOURCE_MANAGER,
 		INPUT,
-		SCENE_MANAGER
+		SCENE_MANAGER,
+		CONSOLE
 	};
 
 	class ISubSystem
@@ -783,14 +773,41 @@ namespace RENDER_MASTER
 	class IInput : public ISubSystem
 	{
 	public:
-
 		virtual API IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) = 0;
 		virtual API IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) = 0;
 		virtual API GetMouseDeltaPos(OUT vec2 *dPos) = 0;
-
 	};
 
-	
+
+	//////////////////////
+	// Console
+	//////////////////////
+
+	enum class LOG_TYPE
+	{
+		NORMAL,
+		WARNING,
+		FATAL
+	};
+
+	class IConsoleCommand
+	{
+		virtual API GetName(OUT const char **pName) = 0;
+		virtual API Execute(const char **arguments, uint argumentsNum) = 0;
+	};
+
+	class IConsole : public ISubSystem
+	{
+	public:
+		virtual API Log(const char* text, LOG_TYPE type) = 0;
+		virtual API AddCommand(IConsoleCommand *pCommand) = 0;
+		virtual API RemoveCommand(IConsoleCommand *pCommand) = 0;
+
+		// Events
+		virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
+	};
+
+
 	//////////////////////
 	// COM stuff
 	//////////////////////

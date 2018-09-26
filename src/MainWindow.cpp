@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Wnd.h"
+#include "MainWindow.h"
 #include "Core.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -127,26 +127,26 @@ KEYBOARD_KEY_CODES ASCIIKeyToEngKey(unsigned char key)
 	}
 }
 
-Wnd *Wnd::this_ptr{nullptr};
+MainWindow *MainWindow::this_ptr{nullptr};
 
-Wnd::Wnd(void(*main_loop)())
+MainWindow::MainWindow(void(*main_loop)())
 {
 	this_ptr = this;
 	_main_loop = main_loop;
 }
 
-Wnd::~Wnd()
+MainWindow::~MainWindow()
 {
 }
 
-void Wnd::_invoke_mesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
+void MainWindow::_invoke_mesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
 {
 	for (auto c : _window_mesage_callbacks)
 		c(type, param1, param2, pData);
 }
 
 
-LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT MainWindow::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	
 	if (message == WM_CLOSE)
@@ -326,12 +326,12 @@ LRESULT Wnd::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-LRESULT CALLBACK Wnd::_s_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK MainWindow::_s_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	return this_ptr->_wndProc(hWnd, message, wParam, lParam);
 }
 
-void Wnd::CreateAndShow()
+void MainWindow::CreateAndShow()
 {
 	WNDCLASSEXW wcex = {};
 
@@ -355,13 +355,13 @@ void Wnd::CreateAndShow()
 
 }
 
-void Wnd::Show()
+void MainWindow::Show()
 {
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
 }
 
-void Wnd::StartMainLoop()
+void MainWindow::StartMainLoop()
 {
 	MSG msg;
 
@@ -397,12 +397,12 @@ void Wnd::StartMainLoop()
 	
 }
 
-void Wnd::Destroy()
+void MainWindow::Destroy()
 {
 	DestroyWindow(hwnd);
 }
 
-void Wnd::GetDimension(uint& w, uint& h)
+void MainWindow::GetDimension(uint& w, uint& h)
 {
 	RECT rect;
 
@@ -412,12 +412,12 @@ void Wnd::GetDimension(uint& w, uint& h)
 	h = rect.bottom - rect.top;
 }
 
-void Wnd::AddMessageCallback(WindowMessageCallback callback)
+void MainWindow::AddMessageCallback(WindowMessageCallback callback)
 {
 	_window_mesage_callbacks.push_back(callback);
 }
 
-void Wnd::SetCaption(const wchar_t* text)
+void MainWindow::SetCaption(const wchar_t* text)
 {
 	SetWindowText(hwnd, text);
 }
