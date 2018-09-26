@@ -91,7 +91,7 @@ class ResourceManager final : public IResourceManager
 public:
 
 	ResourceManager();
-	~ResourceManager();
+	virtual ~ResourceManager();
 
 	void Init();
 	

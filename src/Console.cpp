@@ -180,7 +180,7 @@ void Console::Destroy()
 
 void Console::OutputTxt(const char* pStr)
 {
-	if (_hMemo)
+	if (!_hMemo)
 		return;
 
 	int cur_l = GetWindowTextLength(_hMemo);
@@ -218,6 +218,7 @@ void Console::Show()
 
 void Console::Hide()
 {
+	BringToFront();
 	_is_visible = 0;
 	ShowWindow(_hWnd, SW_HIDE);
 }

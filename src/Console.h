@@ -13,7 +13,6 @@ class Console : public IConsole
 	int _is_visible = 0;
 	static WNDPROC oldEditWndProc;
 	unique_ptr<LogEvent> _evLog{new LogEvent};
-
 	string fullLogPath;
 
 	static LRESULT CALLBACK _s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -22,7 +21,7 @@ class Console : public IConsole
 public:
 
 	Console();
-	~Console();
+	virtual ~Console();
 
 	void Init(bool createWindow);
 	void Destroy();
@@ -32,15 +31,10 @@ public:
 	void Hide();
 	void BringToFront();
 
-
 	virtual API Log(const char* text, LOG_TYPE type) override;
 	virtual API AddCommand(IConsoleCommand *pCommand) override;
 	virtual API RemoveCommand(IConsoleCommand *pCommand) override;
-
-	// Events
 	virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) override;
-
 	virtual API GetName(OUT const char **pName) override;
-
 };
 
