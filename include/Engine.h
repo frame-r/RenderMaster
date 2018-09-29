@@ -153,11 +153,16 @@ namespace RENDER_MASTER
 		GAME_OBJECT,
 
 		CAMERA,
+		MODEL,
 
+		CORE_MESH,
 		MESH_PLANE,
 		MESH_AXES,
 		MESH_AXES_ARROWS,
 		MESH_GRID,
+
+		SHADER,
+		UNIFORM_BUFFER,
 
 		NUMBER
 	};
@@ -170,6 +175,7 @@ namespace RENDER_MASTER
 		virtual API Release() = 0;
 		virtual API RefCount(OUT uint *refs) = 0;
 		virtual API GetType(OUT RES_TYPE *type) = 0;
+		virtual API GetName(OUT const char **name) = 0;
 		virtual API GetPointer(OUT void **pointer) = 0;
 	};
 

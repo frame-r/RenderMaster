@@ -105,6 +105,10 @@ void Console::Init(bool createWindow)
 	_pCore->GetDataDir(&pDataPath);
 	fullLogPath = string(pDataPath) + "\\log.txt";
 
+	// clear file
+	std::ofstream log(fullLogPath, std::ios::out | std::ofstream::trunc);
+	log.close();
+
 	if (!createWindow)
 		return;
 

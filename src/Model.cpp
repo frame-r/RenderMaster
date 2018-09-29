@@ -14,6 +14,9 @@ Model::Model(const vector<TResource<ICoreMesh>*>& meshes) : _meshes(meshes)
 {
 	//add_entry("meshes", &Model::_meshes);
 
+	for (TResource<ICoreMesh>* m : _meshes)
+		m->AddRef();
+
 	_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
 }
 

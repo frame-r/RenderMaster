@@ -201,6 +201,9 @@ void ResourceManager::_LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh 
 	int tangent_layers_count = pMesh->GetElementTangentCount();
 	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
+	string meshName = pMesh->GetName();
+	string decorativeName = meshName + "::" + string(pNode->GetName());
+
 	//FbxDouble3 tr = pNode->LclTranslation.Get();
 	//FbxDouble3 rot = pNode->LclRotation.Get();
 	//FbxDouble3 sc = pNode->LclScaling.Get();
@@ -330,7 +333,7 @@ void ResourceManager::_LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh 
 	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
-		meshes.push_back(new TResource<ICoreMesh>(pCoreMesh));
+		meshes.push_back(new TResource<ICoreMesh>(pCoreMesh, RES_TYPE::CORE_MESH, decorativeName));
 	else
 		LOG_WARNING("[FBX]ResourceManager::_LoadMesh(): Can not create mesh");
 }
@@ -391,41 +394,35 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName)
 }
 #endif
 
-//const char* ResourceManager::_resourceToStr(IResource *pRes)
-//{
-//	RES_TYPE type;
-//
-//	pRes->GetType(&type);
-//
-//	switch (type)
-//	{
-//		case RENDER_MASTER::RES_TYPE::CORE_MESH:
-//			return "CORE_MESH";
-//		case RENDER_MASTER::RES_TYPE::CORE_TEXTURE:
-//			return "CORE_TEXTURE";
-//		case RENDER_MASTER::RES_TYPE::CORE_SHADER:
-//			return "CORE_SHADER";
-//		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
-//			return "UNIFORM_BUFFER";
-//		case RENDER_MASTER::RES_TYPE::GAMEOBJECT:
-//			return "GAMEOBJECT";
-//		case RENDER_MASTER::RES_TYPE::MODEL:
-//			return "MODEL";
-//		case RENDER_MASTER::RES_TYPE::CAMERA:
-//			return "CAMERA";
-//		default:
-//			return "UNKNOWN";
-//	}
-//
-//	return nullptr;
-//}
+const char* ResourceManager::_resourceToStr(IResource *pRes)
+{
+	RES_TYPE type;
+	pRes->GetType(&type);
+
+	switch (type)
+	{
+		case RENDER_MASTER::RES_TYPE::CORE_MESH:
+			return "CORE_MESH";
+		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
+			return "UNIFORM_BUFFER";
+		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:
+			return "GAMEOBJECT";
+		case RENDER_MASTER::RES_TYPE::MODEL:
+			return "MODEL";
+		case RENDER_MASTER::RES_TYPE::CAMERA:
+			return "CAMERA";
+		default:
+			return "UNKNOWN";
+	}
+	return nullptr;
+}
 
 ResourceManager::ResourceManager()
 {
 	const char *pString = nullptr;
 	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
 
-	_pCore->getConsoole()->addCommand("resources_manager", std::bind(&ResourceManager::_resources_list, this, std::placeholders::_1, std::placeholders::_2));
+	_pCore->getConsoole()->addCommand("resources_list", std::bind(&ResourceManager::_resources_list, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 ResourceManager::~ResourceManager()
@@ -443,13 +440,19 @@ void ResourceManager::Init()
 
 API ResourceManager::_resources_list(const char **args, uint argsNumber)
 {
-	LOG_FORMATTED("resources: %i\n", _resources.size());
+	LOG_FORMATTED("resources: %i", _resources.size());
 
 	for (auto it = _resources.begin(); it != _resources.end(); it++)
 	{
+		IResource *res = *it;
+
 		uint refs = 0;
-		(*it)->RefCount(&refs);
-		LOG_FORMATTED("{ refs = %i}\n", refs);
+		res->RefCount(&refs);
+
+		const char *name;
+		res->GetName(&name);
+
+		LOG_FORMATTED("{refs = %i, type = %-25s,  name = %-30s}", refs, _resourceToStr(res), name);
 	}
 
 	return S_OK;
@@ -539,7 +542,7 @@ API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName)
 	ISceneManager *pSceneManager;
 	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
 
-	TResource<IModel> *res = new TResource<IModel>(model);
+	TResource<IModel> *res = new TResource<IModel>(model, RES_TYPE::MODEL, string(pFileName));
 	_resources.emplace(res);
 
 	pSceneManager->AddRootGameObject(res);
@@ -586,7 +589,8 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 		return S_OK;
 	};
 
-	TResource<ShaderText> *res = new TResource<ShaderText>(new ShaderText);
+	string fullName = string(pVertName);
+	TResource<ShaderText> *res = new TResource<ShaderText>(new ShaderText, RES_TYPE::SHADER, fullName);
 	_resources.emplace(res);
 
 	auto ret =	load_shader((*res)->pVertText, pVertName);
@@ -771,18 +775,18 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 					return E_ABORT;
 			}
 
-			*pResource = new TResource<ICoreMesh>(ret);
+			*pResource = new TResource<ICoreMesh>(ret, RES_TYPE::CORE_MESH, "Dynamic Core Mesh");
 			_resources.emplace(*pResource);
 		}
 		break;
 
 		case RES_TYPE::CAMERA:
-			*pResource = new TResource<ICamera>(new Camera);
+			*pResource = new TResource<ICamera>(new Camera, RES_TYPE::CAMERA, "Camera");
 			_resources.emplace(*pResource);
 			break;
 
 		case RES_TYPE::GAME_OBJECT:
-			*pResource = new TResource<IGameObject>(new GameObject);
+			*pResource = new TResource<IGameObject>(new GameObject, RES_TYPE::GAME_OBJECT, "GameObject");
 			_resources.emplace(*pResource);
 			break;
 	}
@@ -794,7 +798,7 @@ API ResourceManager::CreateUniformBuffer(OUT IResource ** pResource, uint size)
 {
 	IUniformBuffer *buf = nullptr;
 	_pCoreRender->CreateUniformBuffer(&buf, size);
-	*pResource = new TResource<IUniformBuffer>(buf);
+	*pResource = new TResource<IUniformBuffer>(buf, RES_TYPE::UNIFORM_BUFFER, string("UniformBuffer: ") + to_string(size) + "b");
 	_resources.emplace(*pResource);
 	return S_OK;
 }

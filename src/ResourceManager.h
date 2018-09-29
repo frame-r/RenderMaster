@@ -11,6 +11,7 @@ class TResource : public IResource
 	T *_pointer = nullptr;
 	uint _refCount = 0;
 	RES_TYPE _type;
+	string _name;
 
 	void _free()
 	{
@@ -27,6 +28,7 @@ class TResource : public IResource
 		_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 		_pResMan->DeleteResource(this);
 
+		LOG_WARNING_FORMATTED("Deleting resource %s", _name.c_str());
 		_pointer->Free();
 		delete _pointer;
 		_pointer = nullptr;
@@ -34,7 +36,7 @@ class TResource : public IResource
 
 public:
 
-	TResource(T* pointerIn) : _pointer(pointerIn) {}
+	TResource(T* pointerIn, RES_TYPE type, const string& name) : _pointer(pointerIn), _type(type), _name(name) {}
 	virtual ~TResource() { _free(); }
 
 	T *get() { return _pointer; }
@@ -63,6 +65,7 @@ public:
 	}
 	API RefCount(OUT uint *refs) { *refs = _refCount; return S_OK; }
 	API GetType(OUT RES_TYPE *typeOut) { *typeOut = _type; return S_OK; }
+	API GetName(OUT const char **name) { *name = _name.c_str(); return S_OK; }
 	API GetPointer(OUT void **pointerOut) { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
 };
 
@@ -87,6 +90,8 @@ class ResourceManager final : public IResourceManager
 	void _LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode);
 	void _LoadNodeTransform(FbxNode* pNode, const char *str);
 	#endif
+
+	const char* _resourceToStr(IResource *pRes);
 
 public:
 
