@@ -61,9 +61,9 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	_pConsole->Init(createConsole);
 
 	Log("Start initialization engine...");
-	LogFormatted("Working directory:    %s", LOG_TYPE::NORMAL, _pWorkingDir);
-	LogFormatted("Installed directory:  %s", LOG_TYPE::NORMAL, _pInstalledDir);
-	LogFormatted("Data directory:       %s", LOG_TYPE::NORMAL, _pDataDir);	
+	LogFormatted("Working directory:    %s", LOG_TYPE::NORMAL, _pWorkingDir.c_str());
+	LogFormatted("Installed directory:  %s", LOG_TYPE::NORMAL, _pInstalledDir.c_str());
+	LogFormatted("Data directory:       %s", LOG_TYPE::NORMAL, _pDataDir.c_str());	
 
 	if (createWindow)
 	{
