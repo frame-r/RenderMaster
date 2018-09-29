@@ -80,6 +80,8 @@ class ResourceManager final : public IResourceManager
 	CRITICAL_SECTION _cs{};
 
 	#ifdef USE_FBX
+	const int fbxDebug = 0;
+
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 

@@ -150,7 +150,7 @@ void Console::Init(bool createWindow)
 
 	RECT client_rect;
 	GetClientRect(_hWnd, &client_rect);
-	_hMemo = CreateWindow(L"EDIT", L"Render Master Console created...",
+	_hMemo = CreateWindow(L"EDIT", L"",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL |
 		ES_MULTILINE | ES_READONLY,
 		0, 0, client_rect.right - client_rect.left, client_rect.bottom - client_rect.top, _hWnd, 0, 0, NULL);
@@ -158,7 +158,7 @@ void Console::Init(bool createWindow)
 	oldEditWndProc = (WNDPROC) SetWindowLongPtr(_hMemo, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)Console::_s_EditProc);
 	SetWindowLongPtr(_hMemo, GWLP_USERDATA, (LONG_PTR)this);
 
-	SetWindowText(_hMemo, L"Console created\r\n");	
+	//SetWindowText(_hMemo, L"Console created\r\n");	
 
 	LOGFONT LF = { 12, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, L"Lucida Console" };
 	_hFont = CreateFontIndirect(&LF);

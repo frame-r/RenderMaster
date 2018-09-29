@@ -302,7 +302,7 @@ API Core::AddUpdateCallback(IUpdateCallback* pCallback)
 
 API Core::ReleaseEngine()
 {
-	Log("Start closing Engine...");
+	Log("Start closing engine...");
 
 	if (_pMainWindow)
 	{
@@ -320,7 +320,7 @@ API Core::ReleaseEngine()
 	_pResMan.reset();
 	_pCoreRender.reset();
 
-	Log("Engine Closed");
+	Log("Engine closed");
 
 	if (_pConsole)
 		_pConsole->Destroy();

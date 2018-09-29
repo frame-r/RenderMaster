@@ -93,7 +93,7 @@ Camera::Camera()
 	_rot = quat(90.0f, 0.0f, 0.0f);
 
 	vec3 euler = _rot.ToEuler();
-	LOG_FORMATTED("_rot(euler) = (%f, %f, %f)", euler.x, euler.y, euler.z);
+	//LOG_FORMATTED("_rot(euler) = (%f, %f, %f)", euler.x, euler.y, euler.z);
 
 }
 
