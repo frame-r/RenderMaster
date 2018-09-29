@@ -10,7 +10,10 @@ class FileSystem final: public IFileSystem
 
 public:
 
-	FileSystem(const string& dataPath);
+	FileSystem();
+	virtual ~FileSystem(){}
+
+	void Init(const string& dataPath);
 
 	API OpenFile(OUT IFile **pFile, const char* path, FILE_OPEN_MODE mode) override;
 	API FileExist(const char *fullPath, OUT int *exist) override;

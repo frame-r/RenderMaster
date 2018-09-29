@@ -31,7 +31,9 @@ Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 	_pInstalledDir = new char[strlen(pInstalledDir) + 1];
 	strcpy(_pInstalledDir, pInstalledDir);
 
+	_pfSystem = std::make_unique<FileSystem>();
 	_pConsole = std::make_unique<Console>();
+	_pResMan = std::make_unique<ResourceManager>();
 }
 
 Core::~Core()
@@ -77,9 +79,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 		_pMainWindow->CreateAndShow();
 	}
 
-	_pfSystem = std::make_unique<FileSystem>(_pDataDir);
-
-	_pResMan = std::make_unique<ResourceManager>();
+	_pfSystem->Init(string(_pDataDir));
 
 	_pInput = std::make_unique<Input>();
 

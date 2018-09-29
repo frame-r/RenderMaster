@@ -243,19 +243,47 @@ API Console::Log(const char *text, LOG_TYPE type)
 	return S_OK;
 }
 
-API Console::AddCommand(IConsoleCommand * pCommand)
+API Console::AddCommand(IConsoleCommand *pCommand)
 {
-	return E_NOTIMPL;
+	const char *pName;
+	pCommand->GetName(&pName);
+	string name = string(pName);
+	_commands.emplace(name, std::bind(&IConsoleCommand::Execute, pCommand, std::placeholders::_1, std::placeholders::_2));
+	return S_OK;
 }
 
-API Console::RemoveCommand(IConsoleCommand * pCommand)
+API Console::ExecuteCommand(const char *name, const char **arguments, uint argumentsNum)
 {
-	return E_NOTIMPL;
+	auto it = _commands.find(string(name));
+
+	if (it == _commands.end())
+		return S_OK;
+
+	std::function<API(const char** arguments, uint argumentsNum)> f = it->second;
+
+	f(arguments, argumentsNum);
+
+	return S_OK;
 }
 
 API Console::GetLogPrintedEv(OUT ILogEvent **pEvent)
 {
 	*pEvent = _evLog.get();
+	return S_OK;
+}
+
+API Console::GetCommands(OUT uint * number)
+{
+	*number = (uint) _commands.size();
+	return S_OK;
+}
+
+API Console::GetCommand(OUT const char **name, uint idx)
+{
+	auto it = _commands.begin();
+	for(uint i = 0; i < idx; it++);
+	*name = it->first.c_str();
+
 	return S_OK;
 }
 

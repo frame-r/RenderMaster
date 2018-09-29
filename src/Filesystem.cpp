@@ -8,9 +8,13 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-FileSystem::FileSystem(const string& dataPath) :
-	_dataPath(dataPath)
+FileSystem::FileSystem()
 {
+}
+
+void FileSystem::Init(const string& dataPath)
+{
+	_dataPath = dataPath;
 }
 
 API FileSystem::OpenFile(OUT IFile **pFile, const char* pPath, FILE_OPEN_MODE mode)

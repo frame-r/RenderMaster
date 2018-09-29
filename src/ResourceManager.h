@@ -8,18 +8,18 @@
 template<typename T>
 class TResource : public IResource
 {
-	T *pointer = nullptr;
-	uint refCount = 0;
-	RES_TYPE type;
+	T *_pointer = nullptr;
+	uint _refCount = 0;
+	RES_TYPE _type;
 
 	void _free()
 	{
-		if (pointer == nullptr)
+		if (_pointer == nullptr)
 			return;
 
-		if (refCount != 0)
+		if (_refCount != 0)
 		{
-			LOG_WARNING_FORMATTED("TResource::Free(): unable delete resource because refs = %i!\n", refCount);
+			LOG_WARNING_FORMATTED("TResource::Free(): unable delete resource because refs = %i!\n", _refCount);
 			return;
 		}
 
@@ -27,33 +27,33 @@ class TResource : public IResource
 		_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 		_pResMan->DeleteResource(this);
 
-		pointer->Free();
-		delete pointer;
-		pointer = nullptr;
+		_pointer->Free();
+		delete _pointer;
+		_pointer = nullptr;
 	}
 
 public:
 
-	TResource(T* pointerIn) : pointer(pointerIn) {}
+	TResource(T* pointerIn) : _pointer(pointerIn) {}
 	virtual ~TResource() { _free(); }
 
-	T *get() { return pointer; }
+	T *get() { return _pointer; }
 
-	inline T *operator->() { return pointer; }
+	inline T *operator->() { return _pointer; }
 
-	API AddRef() override { refCount++; return S_OK; }
+	API AddRef() override { _refCount++; return S_OK; }
 	API Release() override
 	{
-		if (refCount == 0)
+		if (_refCount == 0)
 		{
 			_free();
 			delete this;
 			return S_OK;
 		}
 
-		refCount--;
+		_refCount--;
 
-		if (refCount > 0)
+		if (_refCount > 0)
 			return S_OK;
 
 		_free();
@@ -61,9 +61,9 @@ public:
 
 		return S_OK;
 	}
-	API RefCount(OUT uint *refs) { *refs = refCount; return S_OK; }
-	API GetType(OUT RES_TYPE *typeOut) { *typeOut = type; return S_OK; }
-	API GetPointer(OUT void **pointerOut) { *pointerOut = dynamic_cast<T*>(pointer); return S_OK; }
+	API RefCount(OUT uint *refs) { *refs = _refCount; return S_OK; }
+	API GetType(OUT RES_TYPE *typeOut) { *typeOut = _type; return S_OK; }
+	API GetPointer(OUT void **pointerOut) { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
 };
 
 
@@ -94,6 +94,7 @@ public:
 	virtual ~ResourceManager();
 
 	void Init();
+	API _resources_list(const char **args, uint argsNumber);
 	
 	API LoadModel(OUT IResource **pModel, const char *pFileName) override;
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;

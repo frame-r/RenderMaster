@@ -4,6 +4,7 @@
 #include "Core.h"
 #include "Model.h"
 #include "Camera.h"
+#include "Console.h"
 
 
 using namespace std;
@@ -422,7 +423,9 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFileName)
 ResourceManager::ResourceManager()
 {
 	const char *pString = nullptr;
-	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);	
+	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
+
+	_pCore->getConsoole()->addCommand("resources_manager", std::bind(&ResourceManager::_resources_list, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 ResourceManager::~ResourceManager()
@@ -436,6 +439,20 @@ void ResourceManager::Init()
 	_pCore->GetSubSystem((ISubSystem**)&_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
 
 	LOG("Resource Manager initalized");
+}
+
+API ResourceManager::_resources_list(const char **args, uint argsNumber)
+{
+	LOG_FORMATTED("resources: %i\n", _resources.size());
+
+	for (auto it = _resources.begin(); it != _resources.end(); it++)
+	{
+		uint refs = 0;
+		(*it)->RefCount(&refs);
+		LOG_FORMATTED("{ refs = %i}\n", refs);
+	}
+
+	return S_OK;
 }
 
 API ResourceManager::GetName(OUT const char **pName)

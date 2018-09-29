@@ -792,6 +792,7 @@ namespace RENDER_MASTER
 
 	class IConsoleCommand
 	{
+	public:
 		virtual API GetName(OUT const char **pName) = 0;
 		virtual API Execute(const char **arguments, uint argumentsNum) = 0;
 	};
@@ -801,8 +802,9 @@ namespace RENDER_MASTER
 	public:
 		virtual API Log(const char* text, LOG_TYPE type) = 0;
 		virtual API AddCommand(IConsoleCommand *pCommand) = 0;
-		virtual API RemoveCommand(IConsoleCommand *pCommand) = 0;
-
+		virtual API ExecuteCommand(const char *name, const char** arguments, uint argumentsNum) = 0;
+		virtual API GetCommands(OUT uint *number) = 0;
+		virtual API GetCommand(OUT const char **name, uint idx) = 0;
 		// Events
 		virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
 	};

@@ -15,6 +15,8 @@ class Console : public IConsole
 	unique_ptr<LogEvent> _evLog{new LogEvent};
 	string fullLogPath;
 
+	std::map<string, std::function<API(const char** arguments, uint argumentsNum)>> _commands;
+
 	static LRESULT CALLBACK _s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK _s_EditProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -30,11 +32,17 @@ public:
 	int IsVisible() { return _is_visible; }
 	void Hide();
 	void BringToFront();
+	void addCommand(const string name, std::function<API(const char**, uint)>&& calback)
+	{
+		_commands.emplace(name, std::forward<std::function<API(const char**, uint)>>(calback));
+	}
 
 	virtual API Log(const char* text, LOG_TYPE type) override;
 	virtual API AddCommand(IConsoleCommand *pCommand) override;
-	virtual API RemoveCommand(IConsoleCommand *pCommand) override;
+	virtual API ExecuteCommand(const char *name, const char** arguments, uint argumentsNum) override;
 	virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) override;
+	virtual API GetCommands(OUT uint *number) override;
+	virtual API GetCommand(OUT const char **name, uint idx) override;
 	virtual API GetName(OUT const char **pName) override;
 };
 

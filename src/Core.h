@@ -67,6 +67,7 @@ public:
 	void AddUpdateCallback(std::function<void()>&& calback) { _update_callbacks.push_back(std::forward<std::function<void()>>(calback)); }
 	float getDt() { return dt; }
 	void Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL);
+	Console *getConsoole() { return _pConsole.get(); }
 
 	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) override;
 	API Start() override;
