@@ -14,9 +14,9 @@ DEFINE_GUID(CLSID_Core,
 
 class Core : public ICore
 {
-	char *_pDataDir{nullptr};
-	char *_pWorkingDir{nullptr};
-	char *_pInstalledDir{nullptr};	
+	string _pDataDir;
+	string _pWorkingDir;
+	string _pInstalledDir;
 
 	// subsystems
 	unique_ptr<Console> _pConsole;
@@ -53,7 +53,7 @@ class Core : public ICore
 public:
 
 	Core(const char *workingDir, const char *installedDir);
-	~Core();
+	virtual ~Core();
 
 	template <typename... Arguments>
 	void LogFormatted(const char *pStr, LOG_TYPE type, Arguments ...args)
@@ -73,9 +73,9 @@ public:
 	API Start() override;
 	API RenderFrame(const WinHandle* externHandle, const ICamera *pCamera) override;
 	API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) override;
-	API GetDataDir(OUT char **pStr) override;
-	API GetWorkingDir(OUT char **pStr) override;
-	API GetInstalledDir(OUT char **pStr) override;
+	API GetDataDir(OUT const char **pStr) override;
+	API GetWorkingDir(OUT const char **pStr) override;
+	API GetInstalledDir(OUT const char **pStr) override;
 	API AddInitCallback(IInitCallback *pCallback) override;
 	API AddUpdateCallback(IUpdateCallback *pCallback) override;
 	API ReleaseEngine() override;

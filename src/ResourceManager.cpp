@@ -527,7 +527,7 @@ API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName)
 {
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
 	
-	char *pDataPath;
+	const char *pDataPath;
 	_pCore->GetDataDir(&pDataPath);
 	string dataPath = string(pDataPath);
 
@@ -570,7 +570,7 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 		uint fileSize = 0;
 		int filseExist = 0;
 		
-		char *pString;
+		const char *pString;
 		_pCore->GetInstalledDir(&pString);
 		string installedDir = string(pString);
 

@@ -118,9 +118,9 @@ namespace RENDER_MASTER
 		virtual API Start() = 0;
 		virtual API RenderFrame(const WinHandle *externHandle, const ICamera *pCamera) = 0;
 		virtual API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) = 0;
-		virtual API GetDataDir(OUT char **pStr) = 0;
-		virtual API GetWorkingDir(OUT char **pStr) = 0;
-		virtual API GetInstalledDir(OUT char **pStr) = 0;
+		virtual API GetDataDir(OUT const char **pStr) = 0;
+		virtual API GetWorkingDir(OUT const char **pStr) = 0;
+		virtual API GetInstalledDir(OUT const char **pStr) = 0;
 		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
 		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
 		virtual API ReleaseEngine() = 0;

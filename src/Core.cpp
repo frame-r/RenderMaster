@@ -25,11 +25,8 @@ Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 	
 	InitializeCriticalSection(&_cs);
 
-	_pWorkingDir = new char[strlen(pWorkingDir) + 1];
-	strcpy(_pWorkingDir, pWorkingDir);
-
-	_pInstalledDir = new char[strlen(pInstalledDir) + 1];
-	strcpy(_pInstalledDir, pInstalledDir);
+	_pWorkingDir = string(pWorkingDir);
+	_pInstalledDir = string(pInstalledDir);
 
 	_pfSystem = std::make_unique<FileSystem>();
 	_pConsole = std::make_unique<Console>();
@@ -38,9 +35,6 @@ Core::Core(const char *pWorkingDir, const char *pInstalledDir)
 
 Core::~Core()
 {
-	delete _pDataDir;
-	delete _pWorkingDir;
-	delete _pInstalledDir;
 }
 
 API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle)
@@ -51,7 +45,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 	string absoluteDataPath = pDataPath;
 	if (is_relative(pDataPath))
 	{
-		absoluteDataPath = make_absolute(pDataPath, _pInstalledDir);
+		absoluteDataPath = make_absolute(pDataPath, _pInstalledDir.c_str());
 	}
 
 	int exist = 0;
@@ -62,8 +56,7 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 		return E_ABORT;
 	}
 
-	_pDataDir = new char[absoluteDataPath.size() + 1];
-	strcpy(_pDataDir, absoluteDataPath.c_str());
+	_pDataDir = string(absoluteDataPath);
 	
 	_pConsole->Init(createConsole);
 
@@ -265,21 +258,21 @@ void Core::setWindowCaption(int is_paused, int fps)
 	_pMainWindow->SetCaption(title.c_str());
 }
 
-API Core::GetDataDir(OUT char **pStr)
+API Core::GetDataDir(OUT const char **pStr)
 {
-	*pStr = _pDataDir;
+	*pStr = _pDataDir.c_str();
 	return S_OK;
 }
 
-API Core::GetWorkingDir(OUT char **pStr)
+API Core::GetWorkingDir(OUT const char **pStr)
 {
-	*pStr = _pWorkingDir;
+	*pStr = _pWorkingDir.c_str();
 	return S_OK;
 }
 
-API Core::GetInstalledDir(OUT char **pStr)
+API Core::GetInstalledDir(OUT const char **pStr)
 {
-	*pStr = _pInstalledDir;
+	*pStr = _pInstalledDir.c_str();
 	return S_OK;
 }
 

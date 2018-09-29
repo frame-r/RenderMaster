@@ -212,7 +212,7 @@ std::list<string> get_file_content(const string& filename)
 	const char **textOut;
 	int numLinesOut;
 
-	char *pInstalledDir;
+	const char *pInstalledDir;
 	_pCore->GetInstalledDir(&pInstalledDir);
 	string installedDir = string(pInstalledDir);
 

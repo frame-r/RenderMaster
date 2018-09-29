@@ -101,7 +101,7 @@ Console::~Console()
 
 void Console::Init(bool createWindow)
 {
-	char *pDataPath;
+	const char *pDataPath;
 	_pCore->GetDataDir(&pDataPath);
 	fullLogPath = string(pDataPath) + "\\log.txt";
 
