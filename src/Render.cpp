@@ -227,8 +227,8 @@ void Render::RenderFrame(const ICamera *pCamera)
 			params.NM = mat4();
 			params.nL = vec3(1.0f, 0.0f, 1.0f).Normalized();
 		}
-		_pCoreRender->SetUniform(everyFrameParameters.get(), &params.main_color);
-		_pCoreRender->SetUniformBufferToShader(everyFrameParameters.get(), 0);
+		_pCoreRender->SetUniformBufferData(everyFrameParameters.get(), &params.main_color);
+		_pCoreRender->SetUniformBuffer(everyFrameParameters.get(), 0);
 
 		_pCoreRender->Draw(renderMesh.mesh);
 
@@ -247,7 +247,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 		//	params.main_color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 		//	_pCoreRender->SetUniform(everyFrameParameters, &params.main_color);
-		//	_pCoreRender->SetUniformBufferToShader(everyFrameParameters, 0);
+		//	_pCoreRender->SetUniformBuffer(everyFrameParameters, 0);
 
 
 		//	_pCoreRender->SetDepthState(true);

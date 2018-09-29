@@ -440,17 +440,6 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *sh
 	return S_OK;
 }
 
-API DX11CoreRender::SetShader(const ICoreShader* pShader)
-{
-	const DX11Shader *dxShader = static_cast<const DX11Shader*>(pShader);
-
-	_context->VSSetShader(dxShader->vs(), nullptr, 0);
-	_context->GSSetShader(dxShader->gs(), nullptr, 0);
-	_context->PSSetShader(dxShader->fs(), nullptr, 0);
-
-	return S_OK;
-}
-
 API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 {
 	ComPtr<ID3D11Buffer> ret;
@@ -469,20 +458,13 @@ API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	return hr;
 }
 
-API DX11CoreRender::SetUniform(IUniformBuffer *pBuffer, const void *pData)
+API DX11CoreRender::SetShader(const ICoreShader* pShader)
 {
-	_context->UpdateSubresource(static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer(), 0, nullptr, pData, 0, 0);
+	const DX11Shader *dxShader = static_cast<const DX11Shader*>(pShader);
 
-	return S_OK;
-}
-
-API DX11CoreRender::SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot)
-{
-	ID3D11Buffer *buf = static_cast<DX11ConstantBuffer *>(pBuffer)->nativeBuffer();
-
-	_context->VSSetConstantBuffers(slot, 1, &buf);
-	_context->PSSetConstantBuffers(slot, 1, &buf);
-	_context->GSSetConstantBuffers(slot, 1, &buf);
+	_context->VSSetShader(dxShader->vs(), nullptr, 0);
+	_context->GSSetShader(dxShader->gs(), nullptr, 0);
+	_context->PSSetShader(dxShader->fs(), nullptr, 0);
 
 	return S_OK;
 }
@@ -503,6 +485,24 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 		_context->IASetIndexBuffer(dxMesh->indexBuffer(), (dxMesh->indexFormat() == MESH_INDEX_FORMAT::INT16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT), 0);
 	
 	_context->IASetPrimitiveTopology(dxMesh->topology() == VERTEX_TOPOLOGY::TRIANGLES? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST : D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
+	return S_OK;
+}
+
+API DX11CoreRender::SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot)
+{
+	ID3D11Buffer *buf = static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer();
+
+	_context->VSSetConstantBuffers(slot, 1, &buf);
+	_context->PSSetConstantBuffers(slot, 1, &buf);
+	_context->GSSetConstantBuffers(slot, 1, &buf);
+
+	return S_OK;
+}
+
+API DX11CoreRender::SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData)
+{
+	_context->UpdateSubresource(static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer(), 0, nullptr, pData, 0, 0);
 
 	return S_OK;
 }

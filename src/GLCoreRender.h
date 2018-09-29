@@ -78,7 +78,6 @@ public:
 	GLCoreRender();
 	virtual ~GLCoreRender();
 
-
 	API Init(const WinHandle* handle) override;
 	API Free() override;
 	API MakeCurrent(const WinHandle* handle) override;
@@ -89,11 +88,11 @@ public:
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc) override;
-	API SetShader(const ICoreShader *pShader) override;
 	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
-	API SetUniform(IUniformBuffer *pBuffer, const void *pData) override;
-	API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) override;
+	API SetShader(const ICoreShader *pShader) override;
 	API SetMesh(const ICoreMesh* mesh) override;
+	API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) override;
+	API SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData) override;
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint wIn, uint hIn) override;

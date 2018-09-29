@@ -347,11 +347,11 @@ namespace RENDER_MASTER
 
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(OUT ICoreShader **pShader, const ShaderText* shaderDesc) = 0;
-		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) = 0;
-		virtual API SetUniform(IUniformBuffer *pBuffer, const void *pData) = 0;
-		virtual API SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot) = 0;
+		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
+		virtual API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) = 0;
+		virtual API SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;

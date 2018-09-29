@@ -562,6 +562,20 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 	return S_OK;
 }
 
+API GLCoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
+{
+	GLuint ubo = 0;
+	glGenBuffers(1, &ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	vector<char> data(size, '\0');
+	glBufferData(GL_UNIFORM_BUFFER, size, &data[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	*pBuffer = static_cast<IUniformBuffer*>(new GLUniformBuffer(ubo, size));
+
+	return S_OK;
+}
+
 API GLCoreRender::SetShader(const ICoreShader* pShader)
 {
 	CHECK_GL_ERRORS();
@@ -589,56 +603,6 @@ API GLCoreRender::SetShader(const ICoreShader* pShader)
 	return S_OK;
 }
 
-API GLCoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
-{
-	GLuint ubo = 0;
-	glGenBuffers(1, &ubo);
-	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-	vector<char> data(size, '\0');
-	glBufferData(GL_UNIFORM_BUFFER, size, &data[0], GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	*pBuffer = static_cast<IUniformBuffer*>(new GLUniformBuffer(ubo, size));
-
-	return S_OK;
-}
-
-API GLCoreRender::SetUniform(IUniformBuffer *pBuffer, const void *pData)
-{
-	CHECK_GL_ERRORS();
-
-	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, glBuf->ID());
-	GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-	memcpy(p, pData, glBuf->size());
-	glUnmapBuffer(GL_UNIFORM_BUFFER);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
-API GLCoreRender::SetUniformBufferToShader(IUniformBuffer *pBuffer, uint slot)
-{
-	assert(_currentState.shader_program_id != 0 && "shader not set");
-
-	CHECK_GL_ERRORS();
-
-	// uniform buffer -> UBO slot
-	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
-	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
-
-	// shader -> UBO slot
-	string s = "const_buffer_" + std::to_string(slot);
-	unsigned int block_index = glGetUniformBlockIndex(_currentState.shader_program_id, s.c_str());
-	glUniformBlockBinding(_currentState.shader_program_id, block_index, slot);
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
 API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 {
 	CHECK_GL_ERRORS();
@@ -656,8 +620,46 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 	return S_OK;
 }
 
+API GLCoreRender::SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot)
+{
+	assert(_currentState.shader_program_id != 0 && "GLCoreRender::SetUniformBuffer(): shader not set");
+
+	CHECK_GL_ERRORS();
+
+	// uniform buffer -> UBO slot
+	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
+
+	// shader -> UBO slot
+	string s = "const_buffer_" + std::to_string(slot);
+	unsigned int block_index = glGetUniformBlockIndex(_currentState.shader_program_id, s.c_str());
+	glUniformBlockBinding(_currentState.shader_program_id, block_index, slot);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData)
+{
+	CHECK_GL_ERRORS();
+
+	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, glBuf->ID());
+	GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+	memcpy(p, pData, glBuf->size());
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
 API GLCoreRender::Draw(ICoreMesh *mesh)
 {
+	assert(_currentState.shader_program_id != 0 && "GLCoreRender::SetUniformBuffer(): shader not set");
+
 	CHECK_GL_ERRORS();
 
 	if (!mesh)
