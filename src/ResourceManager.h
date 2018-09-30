@@ -96,14 +96,15 @@ class ResourceManager final : public IResourceManager
 
 	bool _FBXLoad(IModel *&pMesh, const char *pFileName);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
-	void _LoadSceneHierarchy(IModel *&pModel, FbxScene* pScene);
-	void _LoadNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int pDepth);
-	void _LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode);
+	void _LoadSceneHierarchy(IModel *&pModel, FbxScene* pScene, const char *fullPath);
+	void _LoadNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int pDepth, const char *fullPath);
+	void _LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath);
 	void _LoadNodeTransform(FbxNode* pNode, const char *str);
 	#endif
 
 	const char* _resourceToStr(IResource *pRes);
 	IResource *_createResource(void *pointer, RES_TYPE type, const string& name, const string& file);
+	API _resources_list(const char **args, uint argsNumber);
 
 public:
 
@@ -111,7 +112,6 @@ public:
 	virtual ~ResourceManager();
 
 	void Init();
-	API _resources_list(const char **args, uint argsNumber);
 	
 	API LoadModel(OUT IResource **pModel, const char *pFileName) override;
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
