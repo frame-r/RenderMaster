@@ -97,8 +97,8 @@ class ResourceManager final : public IResourceManager
 	bool _FBXLoad(IModel *&pMesh, const char *pFileName);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
 	void _LoadSceneHierarchy(IModel *&pModel, FbxScene* pScene, const char *fullPath);
-	void _LoadNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int pDepth, const char *fullPath);
-	void _LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath);
+	void _LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int pDepth, const char *fullPath);
+	void _LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath);
 	void _LoadNodeTransform(FbxNode* pNode, const char *str);
 	#endif
 

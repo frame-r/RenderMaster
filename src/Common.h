@@ -135,6 +135,10 @@ const char* make_char_p(const std::list<string>& lines);
 void split_by_eol(const char **&text, int &num_lines, const string& str);
 void delete_char_pp(const char **pText);
 
+template<typename Out>
+void split(const string &s, char delim, Out result);
+vector<string> split(const string &s, char delim);
+
 
 void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center);
 

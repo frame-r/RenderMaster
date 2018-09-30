@@ -5,13 +5,13 @@
 
 class Model : public GameObjectBase<IModel>
 {
-	vector<TResource<ICoreMesh>*> _meshes;
+	vector<IResource*> _meshes;
 
 	void _update();
 
 public:
 
-	Model(const vector<TResource<ICoreMesh>*>& meshes);
+	Model(const vector<IResource*>& meshes);
 	virtual ~Model();
 		
 	API GetMesh(OUT ICoreMesh **pMesh, uint idx) override;

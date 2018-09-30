@@ -135,7 +135,7 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 
 void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene, const char *fullPath)
 {
-	vector<TResource<ICoreMesh> *> meshes;
+	vector<IResource*> meshes;
 	FbxString lString;
 
 	if (fbxDebug) LOG("Scene hierarchy:");
@@ -148,11 +148,11 @@ void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene, co
 
 	pModel = new Model(meshes);
 
-	for (TResource<ICoreMesh> *m : meshes)
+	for (IResource *m : meshes)
 		_resources.emplace(m);
 }
 
-void ResourceManager::_LoadNode(vector<TResource<ICoreMesh> *>& meshes, FbxNode* pNode, int depth, const char *fullPath)
+void ResourceManager::_LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int depth, const char *fullPath)
 {
 	FbxString lString;
 	FbxNodeAttribute* node = pNode->GetNodeAttribute();
@@ -187,7 +187,7 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void ResourceManager::_LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath)
+void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath)
 {
 	int control_points_count = pMesh->GetControlPointsCount();
 	int polygon_count = pMesh->GetPolygonCount();
@@ -555,6 +555,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 		LOG_FATAL_FORMATTED("File \"%s\" doesn't exist", fullPath.c_str());
 		return E_FAIL;
 	}
+
 
 	IModel *model{nullptr};
 

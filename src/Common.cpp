@@ -91,6 +91,22 @@ void delete_char_pp(const char **pText)
 	delete[] pText;
 }
 
+template<typename Out>
+void split(const std::string &s, char delim, Out result)
+{
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        *(result++) = item;
+    }
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, std::back_inserter(elems));
+    return elems;
+}
+
 void look_at(Matrix4x4& Result, const Vector3 &eye, const Vector3 &center)
 {
 	Result = Matrix4x4(1.0f);
@@ -251,7 +267,7 @@ SerializableBase* Fabric::create(string className)
 {
 	if (className == "GameObject") return nullptr;
 	if (className == "SceneManager") return new SceneManager;
-	if (className == "Model") return new Model(vector<TResource<ICoreMesh>*>());
+	if (className == "Model") return new Model(vector<IResource*>());
 	if (className == "Camera") return new Camera();
 	return nullptr;
 }

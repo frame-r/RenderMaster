@@ -10,11 +10,11 @@ void Model::_update()
 {
 }
 
-Model::Model(const vector<TResource<ICoreMesh>*>& meshes) : _meshes(meshes)
+Model::Model(const vector<IResource*>& meshes) : _meshes(meshes)
 {
 	//add_entry("meshes", &Model::_meshes);
 
-	for (TResource<ICoreMesh>* m : _meshes)
+	for (IResource *m : _meshes)
 		m->AddRef();
 
 	_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
@@ -26,7 +26,10 @@ Model::~Model()
 
 API Model::GetMesh(OUT ICoreMesh  **pMesh, uint idx)
 {
-	*pMesh = (*_meshes[idx]).get();
+	IResource * res = _meshes[idx];
+	ICoreMesh *mesh;
+	res->GetPointer((void**)&mesh);
+	*pMesh = mesh;
 	return S_OK;
 }
 
@@ -39,11 +42,8 @@ API Model::GetNumberOfMesh(OUT uint *number)
 API Model::Free()
 {
 	// free each mesh
-
-	for (TResource<ICoreMesh>* m : _meshes)
-	{
-		(*m).Release();
-	}
+	for (IResource *m : _meshes)
+		m->Release();
 
 	return S_OK;
 }
