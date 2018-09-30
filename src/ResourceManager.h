@@ -13,6 +13,12 @@ class TResource : public IResource
 	RES_TYPE _type;
 	string _name;
 
+	// <full path> or <full path>::<subresource identificator>
+	// For example:
+	// C:\box.fbx
+	// C:\box.fbx::box01
+	string _id;
+
 	void _free()
 	{
 		if (_pointer == nullptr)
@@ -36,7 +42,9 @@ class TResource : public IResource
 
 public:
 
-	TResource(T* pointerIn, RES_TYPE type, const string& name) : _pointer(pointerIn), _type(type), _name(name) {}
+	TResource(T* pointerIn, RES_TYPE type, const string& name, const string& file) :
+		_pointer(pointerIn), _type(type), _name(name), _id(file) {}
+
 	virtual ~TResource() { _free(); }
 
 	T *get() { return _pointer; }
@@ -63,10 +71,11 @@ public:
 
 		return S_OK;
 	}
-	API RefCount(OUT uint *refs) { *refs = _refCount; return S_OK; }
-	API GetType(OUT RES_TYPE *typeOut) { *typeOut = _type; return S_OK; }
-	API GetName(OUT const char **name) { *name = _name.c_str(); return S_OK; }
-	API GetPointer(OUT void **pointerOut) { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
+	API RefCount(OUT uint *refs) override { *refs = _refCount; return S_OK; }
+	API GetType(OUT RES_TYPE *typeOut) override { *typeOut = _type; return S_OK; }
+	API GetID(OUT const char **id) override { *id = _id.c_str(); return S_OK; }
+	API GetTitle(OUT const char **name) override { *name = _name.c_str(); return S_OK; }
+	API GetPointer(OUT void **pointerOut) override { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
 };
 
 
@@ -94,6 +103,7 @@ class ResourceManager final : public IResourceManager
 	#endif
 
 	const char* _resourceToStr(IResource *pRes);
+	IResource *_createResource(void *pointer, RES_TYPE type, const string& name, const string& file);
 
 public:
 

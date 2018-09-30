@@ -171,7 +171,8 @@ namespace RENDER_MASTER
 		virtual API Release() = 0;
 		virtual API RefCount(OUT uint *refs) = 0;
 		virtual API GetType(OUT RES_TYPE *type) = 0;
-		virtual API GetName(OUT const char **name) = 0;
+		virtual API GetID(OUT const char **file) = 0;
+		virtual API GetTitle(OUT const char **name) = 0;
 		virtual API GetPointer(OUT void **pointer) = 0;
 	};
 

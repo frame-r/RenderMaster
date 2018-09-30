@@ -144,7 +144,7 @@ void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene)
 	FbxNode* lRootNode = pScene->GetRootNode();
 	_LoadNode(meshes, lRootNode, 0);
 
-	//_LogNodeTransform(lRootNode, ("(root node!) " + lString + lRootNode->GetName()).Buffer());
+	//_LogNodeTransform(lRootNode, ("(root node!) " + lString + lRootNode->GetTitle()).Buffer());
 	//for (int i = 0; i < lRootNode->GetChildCount(); i++)
 	//	_LogNode(meshes, lRootNode->GetChild(i), 0);
 
@@ -334,7 +334,7 @@ void ResourceManager::_LoadMesh(vector<TResource<ICoreMesh> *>& meshes, FbxMesh 
 	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
-		meshes.push_back(new TResource<ICoreMesh>(pCoreMesh, RES_TYPE::CORE_MESH, decorativeName));
+		meshes.push_back((TResource<ICoreMesh> *)_createResource(pCoreMesh, RES_TYPE::CORE_MESH, decorativeName, ""));
 	else
 		LOG_FATAL("ResourceManager::_LoadMesh(): Can not create mesh");
 }
@@ -403,16 +403,15 @@ const char* ResourceManager::_resourceToStr(IResource *pRes)
 
 	switch (type)
 	{
-		case RENDER_MASTER::RES_TYPE::CORE_MESH:
-			return "CORE_MESH";
-		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
-			return "UNIFORM_BUFFER";
 		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:
 			return "GAMEOBJECT";
-		case RENDER_MASTER::RES_TYPE::MODEL:
-			return "MODEL";
 		case RENDER_MASTER::RES_TYPE::CAMERA:
 			return "CAMERA";
+		case RENDER_MASTER::RES_TYPE::MODEL:
+			return "MODEL";
+
+		case RENDER_MASTER::RES_TYPE::CORE_MESH:
+			return "CORE_MESH";
 		case RENDER_MASTER::RES_TYPE::MESH_AXES:
 			return "MESH_AXES";
 		case RENDER_MASTER::RES_TYPE::MESH_AXES_ARROWS:
@@ -421,9 +420,51 @@ const char* ResourceManager::_resourceToStr(IResource *pRes)
 			return "MESH_GRID";
 		case RENDER_MASTER::RES_TYPE::MESH_PLANE:
 			return "MESH_PLANE";
+
+		case RENDER_MASTER::RES_TYPE::SHADER:
+			return "SHADER";
+
+		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
+			return "UNIFORM_BUFFER";
+
 		default:
 			return "UNKNOWN";
 	}
+	return nullptr;
+}
+
+IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const string& name, const string& file)
+{
+	switch (type)
+	{
+		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:
+			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::GAME_OBJECT, name, file);
+		case RENDER_MASTER::RES_TYPE::CAMERA:
+			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::GAME_OBJECT, name, file);
+		case RENDER_MASTER::RES_TYPE::MODEL:
+			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::GAME_OBJECT, name, file);
+
+		case RENDER_MASTER::RES_TYPE::CORE_MESH:
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, name, file);
+		case RENDER_MASTER::RES_TYPE::MESH_AXES:
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_AXES, name, file);
+		case RENDER_MASTER::RES_TYPE::MESH_AXES_ARROWS:
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_AXES_ARROWS, name, file);
+		case RENDER_MASTER::RES_TYPE::MESH_GRID:
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_GRID, name, file);
+		case RENDER_MASTER::RES_TYPE::MESH_PLANE:
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_PLANE, name, file);
+
+		case RENDER_MASTER::RES_TYPE::SHADER:
+			return new TResource<ShaderText>((ShaderText*)pointer, RES_TYPE::SHADER, name, file);
+
+		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
+			return new TResource<IUniformBuffer>((IUniformBuffer*)pointer, RES_TYPE::UNIFORM_BUFFER, name, file);
+
+		default:
+			return nullptr;
+	}
+
 	return nullptr;
 }
 
@@ -460,9 +501,12 @@ API ResourceManager::_resources_list(const char **args, uint argsNumber)
 		res->RefCount(&refs);
 
 		const char *name;
-		res->GetName(&name);
+		res->GetTitle(&name);
 
-		LOG_FORMATTED("{refs = %i, type = %-25s,  name = %-30s}", refs, _resourceToStr(res), name);
+		const char *id;
+		res->GetID(&id);
+
+		LOG_FORMATTED("{refs = %i, type = %-25s, title = \"%-30s\", id = \"%s\"}", refs, _resourceToStr(res), name, id);
 	}
 
 	return S_OK;
@@ -523,7 +567,7 @@ API ResourceManager::Free()
 	return S_OK;
 }
 
-API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName)
+API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFileName)
 {
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
 	
@@ -532,6 +576,15 @@ API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName)
 	string dataPath = string(pDataPath);
 
 	string fullPath = dataPath + '\\' + string(pFileName);
+
+	int exist;
+	_pFilesystem->FileExist(fullPath.c_str(), &exist);
+	if (!exist)
+	{
+		*pModelResource = nullptr;
+		LOG_FATAL_FORMATTED("File \"%s\" doesn't exist", fullPath.c_str());
+		return E_FAIL;
+	}
 
 	IModel *model{nullptr};
 
@@ -552,19 +605,19 @@ API ResourceManager::LoadModel(OUT IResource **pModel, const char *pFileName)
 	ISceneManager *pSceneManager;
 	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
 
-	TResource<IModel> *res = new TResource<IModel>(model, RES_TYPE::MODEL, string(pFileName));
+	TResource<IModel> *res = (TResource<IModel> *)_createResource(model, RES_TYPE::MODEL, string(pFileName), fullPath);
 	_resources.emplace(res);
 
 	pSceneManager->AddRootGameObject(res);
 	
-	*pModel = res;
+	*pModelResource = res;
 
 	return S_OK;
 }
 
 API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
-	auto load_shader = [=](const char *&textOut, const char *pName) -> APIRESULT
+	auto load_shader = [=](string &paths, const char *&textOut, const char *pName) -> APIRESULT
 	{
 		IFile *pFile = nullptr;
 		uint fileSize = 0;
@@ -583,6 +636,7 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 			LOG_WARNING_FORMATTED("ResourceManager::LoadShaderText(): File doesn't exist '%s'", shader_path.c_str());
 			return S_FALSE;
 		}
+		paths += shader_path + ";";
 
 		_pFilesystem->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
 
@@ -599,17 +653,18 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 		return S_OK;
 	};
 
-	string fullName = string(pVertName);
-	TResource<ShaderText> *res = new TResource<ShaderText>(new ShaderText, RES_TYPE::SHADER, fullName);
-	_resources.emplace(res);
+	auto *tex = new ShaderText;
+	string paths;
 
-	auto ret =	load_shader((*res)->pVertText, pVertName);
+	auto ret =	load_shader(paths, tex->pVertText, pVertName);
 
 	if (pGeomName)
-		ret &=	load_shader((*res)->pGeomText, pGeomName);
+		ret &=	load_shader(paths, tex->pGeomText, pGeomName);
 
-	ret &=		load_shader((*res)->pFragText, pFragName);
+	ret &=		load_shader(paths, tex->pFragText, pFragName);
 
+	TResource<ShaderText> *res = (TResource<ShaderText> *) _createResource(tex, RES_TYPE::SHADER, pFragName, paths.c_str());
+	_resources.emplace(res);
 	*pShader = res;
 
 	return ret;
@@ -785,18 +840,18 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 					return E_ABORT;
 			}
 
-			*pResource = new TResource<ICoreMesh>(ret, type, "CoreMesh");
+			*pResource = _createResource(ret, type, "CoreMesh", "");
 			_resources.emplace(*pResource);
 		}
 		break;
 
 		case RES_TYPE::CAMERA:
-			*pResource = new TResource<ICamera>(new Camera, RES_TYPE::CAMERA, "Camera");
+			*pResource = _createResource(new Camera, RES_TYPE::CAMERA, "Camera", "");
 			_resources.emplace(*pResource);
 			break;
 
 		case RES_TYPE::GAME_OBJECT:
-			*pResource = new TResource<IGameObject>(new GameObject, RES_TYPE::GAME_OBJECT, "GameObject");
+			*pResource = _createResource(new GameObject, RES_TYPE::GAME_OBJECT, "GameObject", "");
 			_resources.emplace(*pResource);
 			break;
 	}
@@ -808,7 +863,7 @@ API ResourceManager::CreateUniformBuffer(OUT IResource ** pResource, uint size)
 {
 	IUniformBuffer *buf = nullptr;
 	_pCoreRender->CreateUniformBuffer(&buf, size);
-	*pResource = new TResource<IUniformBuffer>(buf, RES_TYPE::UNIFORM_BUFFER, string("UniformBuffer: ") + to_string(size) + "b");
+	*pResource = _createResource(buf, RES_TYPE::UNIFORM_BUFFER, string("UniformBuffer: ") + to_string(size) + "b", "");
 	_resources.emplace(*pResource);
 	return S_OK;
 }
