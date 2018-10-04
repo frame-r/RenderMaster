@@ -7,12 +7,12 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-tree<ResourcePtr<IGameObject>>::iterator SceneManager::find_(IResource * pGameObject)
+tree<IResource*>::iterator SceneManager::find_(IResource * pGameObject)
 {
 	for (auto it = _gameobjects.begin(); it != _gameobjects.end(); ++it)
 	{
-		ResourcePtr<IGameObject>& res = *it;
-		if (res.getResource() == pGameObject)
+		IResource* res = *it;
+		if (res == pGameObject)
 		{
 			return it;
 		}
@@ -24,25 +24,25 @@ SceneManager::SceneManager()
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-	//add_entry("gameobjects", &SceneManager::_gameobjects);
+	add_entry("gameobjects", &SceneManager::_gameobjects);
 }
 
 API SceneManager::SaveScene(const char *name)
 {
-	//IFileSystem *fs;
-	//_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-	//
-	//std::ostringstream out;
-	//dynamic_cast<SceneManager*>(this)->serialize(out, 0);
-	//
-	//IFile *f = nullptr;
-	//fs->OpenFile(&f, name, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
-	//
-	//f->WriteStr(out.str().c_str());
-	//
-	//f->CloseAndFree();
-	//
-	//LOG_FORMATTED("Scene saved to %s\n", name);
+	IFileSystem *fs;
+	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+	
+	std::ostringstream out;
+	dynamic_cast<SceneManager*>(this)->serialize(out, 0);
+	
+	IFile *f = nullptr;
+	fs->OpenFile(&f, name, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
+	
+	f->WriteStr(out.str().c_str());
+	
+	f->CloseAndFree();
+	
+	LOG_FORMATTED("Scene saved to %s\n", name);
 
 	return S_OK;
 }
@@ -57,8 +57,9 @@ API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 
 API SceneManager::AddRootGameObject(IResource* pGameObject)
 {
-	tree<ResourcePtr<IGameObject>>::iterator top = _gameobjects.begin();
-	auto it = _gameobjects.insert(top, ResourcePtr<IGameObject>(pGameObject));
+	tree<IResource*>::iterator top = _gameobjects.begin();
+	pGameObject->AddRef();
+	auto it = _gameobjects.insert(top, pGameObject);
 	_gameObjectAddedEvent->Fire(pGameObject);
 	return S_OK;
 }
@@ -100,10 +101,10 @@ API SceneManager::GetChild(OUT IResource **pGameObject, IResource *parent, uint 
 			return E_FAIL;
 		}
 
-		*pGameObject = _gameobjects.child(it, idx)->getResource();
+		*pGameObject = *_gameobjects.child(it, idx);
 	}else
 	{
-		*pGameObject = _gameobjects.sibling(_gameobjects.begin(), idx)->getResource();
+		*pGameObject = *_gameobjects.sibling(_gameobjects.begin(), idx);
 	}
 
 	return S_OK;
@@ -125,6 +126,9 @@ void SceneManager::Free()
 	#endif
 
 	_pCam.reset();
+
+	for (IResource *go : _gameobjects)
+		go->Release();
 
 	_gameobjects.clear();			
 

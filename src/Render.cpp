@@ -114,9 +114,10 @@ void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 {
 	SceneManager *sm = (SceneManager*)_pSceneMan;	
 
-	for (tree<ResourcePtr<IGameObject>>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
+	for (tree<IResource*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
 	{
-		IGameObject *go = it->get();
+		IGameObject *go;
+		(*it)->GetPointer((void**)&go);
 		
 		IModel *model = dynamic_cast<IModel*>(go);
 		if (model)

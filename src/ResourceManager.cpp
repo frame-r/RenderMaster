@@ -197,7 +197,7 @@ void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxN
 	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
 	string meshName = pMesh->GetName();
-	string decorativeName = string(fullPath) + "::" + string(pNode->GetName());
+	string decorativeName = string(fullPath) + "*" + string(pNode->GetName());
 
 	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
 	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
@@ -325,7 +325,7 @@ void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxN
 	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
-		meshes.push_back((TResource<ICoreMesh> *)_createResource(pCoreMesh, RES_TYPE::CORE_MESH, decorativeName, ""));
+		meshes.push_back((TResource<ICoreMesh> *)_createResource(pCoreMesh, RES_TYPE::CORE_MESH, decorativeName, decorativeName));
 	else
 		LOG_FATAL("ResourceManager::_LoadMesh(): Can not create mesh");
 }
@@ -556,8 +556,37 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 		return E_FAIL;
 	}
 
+	vector<IResource*> _loaded_meshes;
+	for (auto it = _resources.begin(); it != _resources.end(); it++)
+	{
+		RES_TYPE type;
+		(*it)->GetType(&type);
 
-	IModel *model{nullptr};
+		if (type != RES_TYPE::CORE_MESH)
+			continue;
+
+		const char *path;
+		(*it)->GetID(&path);
+
+		vector<string> paths = split(string(path), '*');
+		if (paths.size() < 2)
+			continue;
+
+		string basePath = paths[0];
+
+		if (basePath == fullPath)
+		{
+			_loaded_meshes.push_back(*it);
+			(*it)->AddRef();
+		}
+	}
+
+	IModel *model = nullptr;
+
+	if (_loaded_meshes.size())
+	{
+		model = new Model(_loaded_meshes);
+	} else	
 
 #ifdef USE_FBX
 	if (file_ext == "fbx")

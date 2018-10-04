@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Model.h"
 #include "Core.h"
+#include "Serialization.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -12,7 +13,7 @@ void Model::_update()
 
 Model::Model(const vector<IResource*>& meshes) : _meshes(meshes)
 {
-	//add_entry("meshes", &Model::_meshes);
+	add_entry("meshes", &Model::_meshes);
 
 	for (IResource *m : _meshes)
 		m->AddRef();

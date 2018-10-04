@@ -16,10 +16,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 			ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
+			ResourcePtr<IModel> pModel1 = resMan->loadModel("box.fbx");
+			pModel1->SetPosition(&vec3(11.0f, 0.0, 0.0));
 
 			pCore->Start(); // begin main loop
 
 			pModel.reset(); // reset this pointer in order to engine can release this resource
+			pModel1.reset(); // reset this pointer in order to engine can release this resource
 
 			pCore->ReleaseEngine();
 		}

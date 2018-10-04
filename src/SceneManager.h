@@ -9,11 +9,11 @@ class SceneManager : public ISceneManager, public Serializable<ISceneManager>
 	IResourceManager *_pResMan{nullptr};
 	std::unique_ptr<ResourceEvent> _gameObjectAddedEvent{new ResourceEvent};
 
-	tree<ResourcePtr<IGameObject>>::iterator find_(IResource *pGameObject);
+	tree<IResource*>::iterator find_(IResource *pGameObject);
 
 public:
 
-	tree<ResourcePtr<IGameObject>> _gameobjects;
+	tree<IResource*> _gameobjects;
 
 public:
 

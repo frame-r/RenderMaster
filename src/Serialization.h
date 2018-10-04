@@ -10,6 +10,13 @@ using std::ostringstream;
 using std::istringstream;
 using std::is_integral;
 
+
+template<typename T>
+void f(ostringstream& stream, const string& name, const T& value, int depth, bool tabs = true);
+
+template<typename T>
+void r(istringstream& stream, T& value);
+
 inline void print_tabs(std::ostringstream& stream, int depth)
 {
 	string tabs(depth * 2, ' ');
@@ -132,6 +139,42 @@ public:
 	}
 };
 
+// IResource*
+template<>
+class TypeSerializator<IResource*>
+{
+public:
+	static void serilaize(ostringstream& stream, const string& name, IResource* value, int depth)
+	{
+		RES_TYPE type;
+		value->GetType(&type);
+	
+		IGameObject *go;
+		value->GetPointer((void**)&go);
+		SerializableBase* gosb = dynamic_cast<SerializableBase*>(go);
+		if (gosb)
+		{
+			f(stream, name, gosb, depth);
+		} else
+		{
+			assert(type == RES_TYPE::CORE_MESH);
+			const char *mesh_path;
+			value->GetID(&mesh_path);
+			stream << "\"" << mesh_path << "\"\n";
+		}
+	}
+	static void deserialize(istringstream& stream, string& s)
+	{
+		//string line;
+		//std::getline(stream, line);
+		//char name[10];
+		//char val[260];
+		//sscanf(line.c_str(), "%s : \"%[^\"]\"\n", name, val);
+		//s = string(val);
+		assert(false); // not impl
+	}
+};
+
 // SerializableBase
 template <typename T>
 class TypeSerializator<T, typename enable_if<is_base_of<SerializableBase, T>::value>::type>
@@ -169,9 +212,9 @@ public:
 ////////////////////////////
 
 template<typename T>
-void f(ostringstream& stream, const string& name, const T& value, int depth)
+void f(ostringstream& stream, const string& name, const T& value, int depth, bool tabs)
 {
-	print_tabs(stream, depth);
+	if (tabs) print_tabs(stream, depth);
 	TypeSerializator<T>::serilaize(stream, name, value, depth);
 }
 
@@ -244,15 +287,14 @@ struct FieldBase<C, vector<V>> : public IField
 
 		print_tabs(stream, depth);
 
-		stream << this->field_name << " :\n";
+		stream << this->field_name << " : {num: " << vec.size() << "}\n";
 
 		for (auto& v : vec)
 		{
-			print_tabs(stream, depth);
+			print_tabs(stream, depth + 1);
+			stream << "- ";
 
-			stream << "-\n";
-
-			f(stream, field_name, v, depth);
+			f(stream, "", v, depth + 1, false);
 		}
 	}
 
@@ -293,16 +335,21 @@ struct FieldBase<C, tree<V>> : public IField
 
 		for (auto it = _tree.begin(); it != _tree.end(); ++it)
 		{
-			int id_ = 0;
-			(*it)->GetID(&id_);
+			IGameObject *go;
+			(*it)->GetPointer((void**)&go);
+
+			int child_id;
+			go->GetID(&child_id);
 
 			if (_tree.depth(it) <= 0)
-				stream << ", " << id_ << " : " << 0;
+				stream << ", " << child_id << " : " << 0;
 			else
 			{
-				int parent_id_;
-				(*_tree.parent(it))->GetID(&parent_id_);
-				stream << ", " << id_ << " : " << parent_id_;
+				int parent_id;
+				IGameObject *parent_go;
+				(*_tree.parent(it))->GetPointer((void**)&parent_go);
+				parent_go->GetID(&parent_id);
+				stream << ", " << child_id << " : " << parent_id;
 			}
 		}
 		stream << "}\n";
@@ -313,84 +360,84 @@ struct FieldBase<C, tree<V>> : public IField
 
 			stream << "-\n";
 
-			SerializableBase *s = dynamic_cast<SerializableBase*>(v);
-			f(stream, field_name, s, depth);
+			//SerializableBase *s = dynamic_cast<SerializableBase*>(v);
+			f(stream, field_name, v, depth);
 		}
 	}
 
 	void scan(void *object, istringstream& stream) const
 	{
-		C *c = (C*)object;
-		tree<V>& _tree = c->*(this->member);
+		//C *c = (C*)object;
+		//tree<V>& _tree = c->*(this->member);
 
-		string line;
-		std::getline(stream, line);
+		//string line;
+		//std::getline(stream, line);
 
-		char name[20];
-		int size;
-		int pos;
+		//char name[20];
+		//int size;
+		//int pos;
 
-		sscanf(line.c_str(), "%s : {num : %i%n", name, &size, &pos);
+		//sscanf(line.c_str(), "%s : {num : %i%n", name, &size, &pos);
 
-		if (size == 0)
-			return;
+		//if (size == 0)
+		//	return;
 
-		pos++; // skip ","
+		//pos++; // skip ","
 
-		line = line.substr(pos);
-		istringstream in(line);
+		//line = line.substr(pos);
+		//istringstream in(line);
 
-		std::map<int, int> parent_map; // id -> parent id
+		//std::map<int, int> parent_map; // id -> parent id
 
-		for (int i = 0; i < size; i++)
-		{
-			int id, parent_id;
-			char c;
-			in >> id >> c >> parent_id;
+		//for (int i = 0; i < size; i++)
+		//{
+		//	int id, parent_id;
+		//	char c;
+		//	in >> id >> c >> parent_id;
 
-			parent_map[id] = parent_id;
+		//	parent_map[id] = parent_id;
 
-			if (i != size - 1) in >> c; // ","
-		}
+		//	if (i != size - 1) in >> c; // ","
+		//}
 
-		for (int i = 0; i < size; i++)
-		{
-			string line;
-			std::getline(stream, line); // "-"
-			std::getline(stream, line); // class name
+		//for (int i = 0; i < size; i++)
+		//{
+		//	string line;
+		//	std::getline(stream, line); // "-"
+		//	std::getline(stream, line); // class name
 
-			char class_name[260];
-			sscanf(line.c_str(), "%s :", class_name);
+		//	char class_name[260];
+		//	sscanf(line.c_str(), "%s :", class_name);
 
-			SerializableBase *obj = Fabric::create(string(class_name));
-			V v_obj = dynamic_cast<V>(obj);
+		//	SerializableBase *obj = Fabric::create(string(class_name));
+		//	V v_obj = dynamic_cast<V>(obj);
 
-			r(stream, obj);
+		//	r(stream, obj);
 
-			int parent_id;
-			v_obj->GetID(&parent_id);
-			parent_map[parent_id];
+		//	int parent_id;
+		//	v_obj->GetID(&parent_id);
+		//	parent_map[parent_id];
 
-			auto get_item_by_id = [&](int id) -> typename tree<V>::iterator
-			{
-				for (auto it = _tree.begin(); it != _tree.end(); ++it)
-				{
-					int id_;
-					(*it)->GetID(&id_);
-					if (id_ == id) return it;
-				}
-				return _tree.end();
-			};
+		//	auto get_item_by_id = [&](int id) -> typename tree<V>::iterator
+		//	{
+		//		for (auto it = _tree.begin(); it != _tree.end(); ++it)
+		//		{
+		//			int id_;
+		//			(*it)->GetID(&id_);
+		//			if (id_ == id) return it;
+		//		}
+		//		return _tree.end();
+		//	};
 
-			if (parent_id == 0) // => at 0 tree level
-				_tree.insert(_tree.begin(), v_obj);
-			else
-			{ // some child
-				auto it = get_item_by_id(parent_id);
-				if (it != _tree.end())
-					_tree.append_child(it, v_obj);
-			}
-		}
+		//	if (parent_id == 0) // => at 0 tree level
+		//		_tree.insert(_tree.begin(), v_obj);
+		//	else
+		//	{ // some child
+		//		auto it = get_item_by_id(parent_id);
+		//		if (it != _tree.end())
+		//			_tree.append_child(it, v_obj);
+		//	}
+		//}
 	}
 };
 
