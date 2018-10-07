@@ -6,8 +6,11 @@
 class SceneManager : public ISceneManager, public Serializable<ISceneManager>
 {	
 	ResourcePtr<ICamera> _pCam;
-	IResourceManager *_pResMan{nullptr};
+
+	bool _sceneLoaded = false;
+
 	std::unique_ptr<ResourceEvent> _gameObjectAddedEvent{new ResourceEvent};
+	std::unique_ptr<ResourceEvent> _gameObjectDeleteEvent{new ResourceEvent};
 
 	tree<IResource*>::iterator find_(IResource *pGameObject);
 
@@ -23,6 +26,7 @@ public:
 	void Free();
 
 	API SaveScene(const char *name) override;
+	API CloseScene() override;
 	API GetDefaultCamera(OUT ICamera **pCamera) override;
 	API AddRootGameObject(IResource *pGameObject) override;
 	API GetChilds(OUT uint *number, IResource *parent) override;
@@ -30,6 +34,7 @@ public:
 	
 	// Events
 	API GetGameObjectAddedEvent(IResourceEvent** pEvent) override;
+	API GetDeleteGameObjectEvent(IResourceEvent** pEvent) override;
 
 	// ISubSystem
 	API GetName(OUT const char **pName) override;

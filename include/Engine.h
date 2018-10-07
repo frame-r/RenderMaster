@@ -435,6 +435,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API SaveScene(const char *name) = 0;
+		virtual API CloseScene() = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 		virtual API AddRootGameObject(IResource* pGameObject) = 0;
 		virtual API GetChilds(OUT uint *number, IResource *parent) = 0;
@@ -442,6 +443,7 @@ namespace RENDER_MASTER
 
 		//events
 		virtual API GetGameObjectAddedEvent(OUT IResourceEvent **pEvent) = 0;
+		virtual API GetDeleteGameObjectEvent(IResourceEvent** pEvent) = 0;
 	};
 
 

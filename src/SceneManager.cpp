@@ -22,8 +22,6 @@ tree<IResource*>::iterator SceneManager::find_(IResource * pGameObject)
 
 SceneManager::SceneManager()
 {
-	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-
 	add_entry("gameobjects", &SceneManager::_gameobjects);
 }
 
@@ -41,8 +39,27 @@ API SceneManager::SaveScene(const char *name)
 	f->WriteStr(out.str().c_str());
 	
 	f->CloseAndFree();
+
+	_sceneLoaded = true;
 	
-	LOG_FORMATTED("Scene saved to %s\n", name);
+	LOG_FORMATTED("Scene saved to: %s\n", name);
+
+	return S_OK;
+}
+
+API SceneManager::CloseScene()
+{
+	_pCam.reset();
+
+	for (IResource *obj : _gameobjects)
+	{
+		_gameObjectDeleteEvent->Fire(obj);
+		obj->Release();
+	}
+
+	_gameobjects.clear();
+
+	LOG("Scene closed");
 
 	return S_OK;
 }
@@ -112,6 +129,7 @@ API SceneManager::GetChild(OUT IResource **pGameObject, IResource *parent, uint 
 
 void SceneManager::Init()
 {
+	IResourceManager *_pResMan = getResourceManager(_pCore);
 	_pCam = _pResMan->createCamera();
 	AddRootGameObject(_pCam.getResource());
 	LOG("Scene Manager initialized");
@@ -119,18 +137,15 @@ void SceneManager::Init()
 
 void SceneManager::Free()
 {
+	IResourceManager *_pResMan = getResourceManager(_pCore);
+
 	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _gameobjects.size());
 	#ifdef _DEBUG
 		uint res_before = 0;
 		_pResMan->GetNumberOfResources(&res_before);
 	#endif
 
-	_pCam.reset();
-
-	for (IResource *go : _gameobjects)
-		go->Release();
-
-	_gameobjects.clear();			
+	CloseScene();
 
 	#ifdef _DEBUG
 		uint res_after = 0;
@@ -148,5 +163,11 @@ API SceneManager::GetName(OUT const char **pName)
 API SceneManager::GetGameObjectAddedEvent(IResourceEvent** pEvent)
 {
 	*pEvent = _gameObjectAddedEvent.get();
+	return S_OK;
+}
+
+API SceneManager::GetDeleteGameObjectEvent(IResourceEvent ** pEvent)
+{
+	*pEvent = _gameObjectDeleteEvent.get();
 	return S_OK;
 }
