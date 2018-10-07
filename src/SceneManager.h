@@ -4,15 +4,13 @@
 #include "Serialization.h"
 
 class SceneManager : public ISceneManager, public Serializable<ISceneManager>
-{	
-	ResourcePtr<ICamera> _pCam;
-
+{
 	bool _sceneLoaded = false;
 
 	std::unique_ptr<ResourceEvent> _gameObjectAddedEvent{new ResourceEvent};
 	std::unique_ptr<ResourceEvent> _gameObjectDeleteEvent{new ResourceEvent};
 
-	tree<IResource*>::iterator find_(IResource *pGameObject);
+	tree<IResource*>::iterator gameobject_to_iterator(IResource *pGameObject);
 
 public:
 

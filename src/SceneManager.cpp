@@ -7,7 +7,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-tree<IResource*>::iterator SceneManager::find_(IResource * pGameObject)
+tree<IResource*>::iterator SceneManager::gameobject_to_iterator(IResource * pGameObject)
 {
 	for (auto it = _gameobjects.begin(); it != _gameobjects.end(); ++it)
 	{
@@ -49,8 +49,6 @@ API SceneManager::SaveScene(const char *name)
 
 API SceneManager::CloseScene()
 {
-	_pCam.reset();
-
 	for (IResource *obj : _gameobjects)
 	{
 		_gameObjectDeleteEvent->Fire(obj);
@@ -66,9 +64,17 @@ API SceneManager::CloseScene()
 
 API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 {
-	void * f = (&_pCam);
-	ICamera *res = _pCam.get();
-	*pCamera = res;
+	for (IResource *obj : _gameobjects)
+	{
+		RES_TYPE type;
+		obj->GetType(&type);
+		if (type == RES_TYPE::CAMERA)
+		{
+			obj->GetPointer((void**)pCamera);
+			return S_OK;
+		}
+	}
+	*pCamera = nullptr;
 	return S_OK;
 }
 
@@ -85,7 +91,7 @@ API SceneManager::GetChilds(OUT uint *number, IResource *parent)
 {
 	if (parent)
 	{
-		auto it = find_(parent);
+		auto it = gameobject_to_iterator(parent);
 
 		if (it == _gameobjects.end())
 		{
@@ -110,7 +116,7 @@ API SceneManager::GetChild(OUT IResource **pGameObject, IResource *parent, uint 
 
 	if (parent)
 	{
-		auto it = find_(parent);
+		auto it = gameobject_to_iterator(parent);
 
 		if (it == _gameobjects.end())
 		{
@@ -130,8 +136,8 @@ API SceneManager::GetChild(OUT IResource **pGameObject, IResource *parent, uint 
 void SceneManager::Init()
 {
 	IResourceManager *_pResMan = getResourceManager(_pCore);
-	_pCam = _pResMan->createCamera();
-	AddRootGameObject(_pCam.getResource());
+	ResourcePtr<ICamera> camera = _pResMan->createCamera();
+	AddRootGameObject(camera.getResource());
 	LOG("Scene Manager initialized");
 }
 

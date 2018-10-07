@@ -410,7 +410,7 @@ IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const 
 		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:
 			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::GAME_OBJECT, name, id);
 		case RENDER_MASTER::RES_TYPE::CAMERA:
-			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::GAME_OBJECT, name, id);
+			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::CAMERA, name, id);
 		case RENDER_MASTER::RES_TYPE::MODEL:
 			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::MODEL, name, id);
 
