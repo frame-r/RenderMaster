@@ -133,7 +133,7 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	return lStatus;
 }
 
-void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene, const char *fullPath)
+void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene, const char *pFullPath, const char *pRelativePath)
 {
 	vector<IResource*> meshes;
 	FbxString lString;
@@ -141,7 +141,7 @@ void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene, co
 	if (fbxDebug) LOG("Scene hierarchy:");
 
 	FbxNode* lRootNode = pScene->GetRootNode();
-	_LoadNode(meshes, lRootNode, 0, fullPath);
+	_LoadNode(meshes, lRootNode, 0, pFullPath, pRelativePath);
 
 	if (meshes.size() == 0)
 		LOG_WARNING("No meshes loaded");
@@ -152,7 +152,7 @@ void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene, co
 		_resources.emplace(m);
 }
 
-void ResourceManager::_LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int depth, const char *fullPath)
+void ResourceManager::_LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int depth, const char *fullPath, const char *pRelativePath)
 {
 	FbxString lString;
 	FbxNodeAttribute* node = pNode->GetNodeAttribute();
@@ -161,7 +161,7 @@ void ResourceManager::_LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int 
 
 	switch (lAttributeType)
 	{
-		case FbxNodeAttribute::eMesh:		_LoadMesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), pNode, fullPath); break;
+		case FbxNodeAttribute::eMesh:		_LoadMesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), pNode, fullPath, pRelativePath); break;
 		case FbxNodeAttribute::eMarker:		LOG(("(eMarker) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eSkeleton:	LOG(("(eSkeleton) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eNurbs:		LOG(("(eNurbs) " + lString + pNode->GetName()).Buffer()); break;
@@ -177,7 +177,7 @@ void ResourceManager::_LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int 
 	{
 		if (fbxDebug) LOG_FORMATTED("for node=%s childs=%i", pNode->GetName(), childs);
 		for (int i = 0; i < childs; i++)
-			_LoadNode(meshes, pNode->GetChild(i), depth + 1, fullPath);
+			_LoadNode(meshes, pNode->GetChild(i), depth + 1, fullPath, pRelativePath);
 	}
 }
 
@@ -187,7 +187,7 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath)
+void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const char *pRelativePath)
 {
 	int control_points_count = pMesh->GetControlPointsCount();
 	int polygon_count = pMesh->GetPolygonCount();
@@ -197,7 +197,7 @@ void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxN
 	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
 	string meshName = pMesh->GetName();
-	string decorativeName = string(fullPath) + "*" + string(pNode->GetName());
+	string decorativeName = string(pRelativePath) + ":" + string(pNode->GetName());
 
 	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
 	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
@@ -339,7 +339,7 @@ void ResourceManager::_LoadNodeTransform(FbxNode* pNode, const char *str)
 	if (fbxDebug)
 		DEBUG_LOG_FORMATTED("%s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", str, tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2]);
 }
-bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFullPath)
+bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFullPath, const char *pRelativePath)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
@@ -357,7 +357,7 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFullPath)
 	if (!lResult)
 		LOG_FATAL("An error occurred while loading the scene...");
 	else
-		_LoadSceneHierarchy(pModel, lScene, pFullPath);
+		_LoadSceneHierarchy(pModel, lScene, pFullPath, pRelativePath);
 
 	if (fbxDebug) LOG("Destroying FBX SDK...");
 	_DestroySdkObjects(lSdkManager, lResult);
@@ -403,33 +403,33 @@ const char* ResourceManager::_resourceToStr(IResource *pRes)
 	return nullptr;
 }
 
-IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const string& name, const string& file)
+IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const string& name, const string& id)
 {
 	switch (type)
 	{
 		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:
-			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::GAME_OBJECT, name, file);
+			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::GAME_OBJECT, name, id);
 		case RENDER_MASTER::RES_TYPE::CAMERA:
-			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::GAME_OBJECT, name, file);
+			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::GAME_OBJECT, name, id);
 		case RENDER_MASTER::RES_TYPE::MODEL:
-			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::MODEL, name, file);
+			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::MODEL, name, id);
 
 		case RENDER_MASTER::RES_TYPE::CORE_MESH:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, name, file);
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, name, id);
 		case RENDER_MASTER::RES_TYPE::MESH_AXES:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_AXES, name, file);
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_AXES, name, id);
 		case RENDER_MASTER::RES_TYPE::MESH_AXES_ARROWS:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_AXES_ARROWS, name, file);
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_AXES_ARROWS, name, id);
 		case RENDER_MASTER::RES_TYPE::MESH_GRID:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_GRID, name, file);
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_GRID, name, id);
 		case RENDER_MASTER::RES_TYPE::MESH_PLANE:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_PLANE, name, file);
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_PLANE, name, id);
 
 		case RENDER_MASTER::RES_TYPE::SHADER:
-			return new TResource<ShaderText>((ShaderText*)pointer, RES_TYPE::SHADER, name, file);
+			return new TResource<ShaderText>((ShaderText*)pointer, RES_TYPE::SHADER, name, id);
 
 		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
-			return new TResource<IUniformBuffer>((IUniformBuffer*)pointer, RES_TYPE::UNIFORM_BUFFER, name, file);
+			return new TResource<IUniformBuffer>((IUniformBuffer*)pointer, RES_TYPE::UNIFORM_BUFFER, name, id);
 
 		default:
 			return nullptr;
@@ -474,7 +474,7 @@ API ResourceManager::_resources_list(const char **args, uint argsNumber)
 		res->GetTitle(&name);
 
 		const char *id;
-		res->GetID(&id);
+		res->GetFileID(&id);
 
 		LOG_FORMATTED("{refs = %i, type = %-25s, title = \"%-30s\", id = \"%s\"}", refs, _resourceToStr(res), name, id);
 	}
@@ -539,6 +539,8 @@ API ResourceManager::Free()
 
 API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFileName)
 {
+	assert(is_relative(pFileName) && "ResourceManager::LoadModel(): fileName must be relative");
+
 	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
 	
 	const char *pDataPath;
@@ -548,7 +550,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 	string fullPath = dataPath + '\\' + string(pFileName);
 
 	int exist;
-	_pFilesystem->FileExist(fullPath.c_str(), &exist);
+	_pFilesystem->FileExist(pFileName, &exist);
 	if (!exist)
 	{
 		*pModelResource = nullptr;
@@ -566,15 +568,15 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 			continue;
 
 		const char *path;
-		(*it)->GetID(&path);
+		(*it)->GetFileID(&path);
 
-		vector<string> paths = split(string(path), '*');
+		vector<string> paths = split(string(path), ':');
 		if (paths.size() < 2)
 			continue;
 
 		string basePath = paths[0];
 
-		if (basePath == fullPath)
+		if (basePath == pFileName)
 		{
 			_loaded_meshes.push_back(*it);
 			(*it)->AddRef();
@@ -591,7 +593,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoad(model, fullPath.c_str());
+		bool ret = _FBXLoad(model, fullPath.c_str(), pFileName);
 		if (!ret)
 			return E_FAIL;
 	}
@@ -605,7 +607,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 	ISceneManager *pSceneManager;
 	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
 
-	TResource<IModel> *res = (TResource<IModel> *)_createResource(model, RES_TYPE::MODEL, string(pFileName), fullPath);
+	TResource<IModel> *res = (TResource<IModel> *)_createResource(model, RES_TYPE::MODEL, string(pFileName), pFileName);
 	_resources.emplace(res);
 
 	pSceneManager->AddRootGameObject(res);

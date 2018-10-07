@@ -159,7 +159,7 @@ public:
 		{
 			assert(type == RES_TYPE::CORE_MESH);
 			const char *mesh_path;
-			value->GetID(&mesh_path);
+			value->GetFileID(&mesh_path);
 			stream << "\"" << mesh_path << "\"\n";
 		}
 	}

@@ -226,7 +226,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 		if ((int)(a & INPUT_ATTRUBUTE::NORMAL))
 		{
 			params.NM = mat4();
-			params.nL = vec3(1.0f, 0.0f, 1.0f).Normalized();
+			params.nL = vec3(1.0f, -2.0f, 3.0f).Normalized();
 		}
 		_pCoreRender->SetUniformBufferData(everyFrameParameters.get(), &params.main_color);
 		_pCoreRender->SetUniformBuffer(everyFrameParameters.get(), 0);

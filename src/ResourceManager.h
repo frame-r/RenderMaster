@@ -13,11 +13,11 @@ class TResource : public IResource
 	RES_TYPE _type;
 	string _name;
 
-	// <full path> or <full path>::<subresource identificator>
+	// <full path> or <full path>:<subresource identificator>
 	// For example:
 	// C:\box.fbx
 	// C:\box.fbx::box01
-	string _id;
+	string _fileID;
 
 	void _free()
 	{
@@ -43,7 +43,7 @@ class TResource : public IResource
 public:
 
 	TResource(T* pointerIn, RES_TYPE type, const string& name, const string& file) :
-		_pointer(pointerIn), _type(type), _name(name), _id(file) {}
+		_pointer(pointerIn), _type(type), _name(name), _fileID(file) {}
 
 	virtual ~TResource() { _free(); }
 
@@ -73,7 +73,7 @@ public:
 	}
 	API RefCount(OUT uint *refs) override { *refs = _refCount; return S_OK; }
 	API GetType(OUT RES_TYPE *typeOut) override { *typeOut = _type; return S_OK; }
-	API GetID(OUT const char **id) override { *id = _id.c_str(); return S_OK; }
+	API GetFileID(OUT const char **id) override { *id = _fileID.c_str(); return S_OK; }
 	API GetTitle(OUT const char **name) override { *name = _name.c_str(); return S_OK; }
 	API GetPointer(OUT void **pointerOut) override { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
 };
@@ -94,11 +94,11 @@ class ResourceManager final : public IResourceManager
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
-	bool _FBXLoad(IModel *&pMesh, const char *pFileName);
+	bool _FBXLoad(IModel *&pMesh, const char *pFullPath, const char *pRelativePath);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
-	void _LoadSceneHierarchy(IModel *&pModel, FbxScene* pScene, const char *fullPath);
-	void _LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int pDepth, const char *fullPath);
-	void _LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath);
+	void _LoadSceneHierarchy(IModel *&pModel, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
+	void _LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
+	void _LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
 	void _LoadNodeTransform(FbxNode* pNode, const char *str);
 	#endif
 

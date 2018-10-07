@@ -125,7 +125,7 @@ inline std::wstring ConvertFromUtf8ToUtf16(const string& str)
 	return res;
 }
 std::list<string> get_file_content(const string& filename);
-bool is_relative(const char *pPath);
+int is_relative(const char *pPath);
 string make_absolute(const char *pRelDataPath, const char *pWorkingPath);
 
 // lines manipulation

@@ -8,7 +8,7 @@ class GameObjectBase : public T, public Serializable<T>
 {
 protected:
 
-	int _id;
+	int _fileID;
 	string _name{"GameObject"};
 	vec3 _pos;
 	quat _rot;
@@ -22,13 +22,13 @@ public:
 
 	GameObjectBase()
 	{
-		add_entry("id", &GameObjectBase::_id);
+		add_entry("id", &GameObjectBase::_fileID);
 		add_entry("name", &GameObjectBase::_name);
 		add_entry("positon", &GameObjectBase::_pos);
 		add_entry("rotation", &GameObjectBase::_rot);
 		add_entry("scale", &GameObjectBase::_scale);
 
-		_id = getRandomInt();
+		_fileID = getRandomInt();
 	}
 
 	virtual ~GameObjectBase() {}
@@ -75,7 +75,7 @@ class GameObject : public GameObjectBase<IGameObject> {};
 template<typename T>
 inline API GameObjectBase<T>::GetID(OUT int *id)
 {
-	*id = _id;
+	*id = _fileID;
 	return S_OK;
 }
 

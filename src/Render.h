@@ -18,13 +18,15 @@ class Render : public IRender
 	ResourcePtr<ICoreMesh> _pAxesArrowMesh;
 	ResourcePtr<ICoreMesh> _pGridMesh;
 
-	struct alignas(16) EveryFrameParameters
+	#pragma pack(push, 4)
+	struct EveryFrameParameters
 	{
 		vec4 main_color;
 		vec4 nL;
 		mat4 NM;
 		mat4 MVP;
 	} params;
+	#pragma pack(pop)
 
 	ResourcePtr<IUniformBuffer> everyFrameParameters;
 

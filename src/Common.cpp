@@ -14,7 +14,7 @@ DEFINE_LOG_HELPERS(_pCore)
 
 using std::list;
 
-bool is_relative(const char *pPath)
+int is_relative(const char *pPath)
 {
 	std::wstring wpPath = ConvertFromUtf8ToUtf16(pPath);
 
@@ -23,7 +23,7 @@ bool is_relative(const char *pPath)
 	return wfsPath.is_relative();
 }
 
-string make_absolute(const char* pRelDataPath, const char* pBasePath)
+string make_absolute(const char *pRelDataPath, const char *pBasePath)
 {
 	std::wstring workingPath = ConvertFromUtf8ToUtf16(pBasePath);
 	std::wstring relPath = ConvertFromUtf8ToUtf16(pRelDataPath);
@@ -35,7 +35,6 @@ string make_absolute(const char* pRelDataPath, const char* pBasePath)
 
 	return p.string();
 }
-
 
 void split_by_eol(const char **&textOut, int &numLinesOut, const string& textIn)
 {

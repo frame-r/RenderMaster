@@ -80,21 +80,21 @@ bool GLCoreRender::check_shader_errors(int id, GLenum constant)
 
 bool GLCoreRender::create_shader(GLuint& id, GLenum type, const char* pText, GLuint programID)
 {
-	GLuint _id = glCreateShader(type);
-	glShaderSource(_id, 1, (const GLchar **)&pText, nullptr);
-	glCompileShader(_id);
+	GLuint _fileID = glCreateShader(type);
+	glShaderSource(_fileID, 1, (const GLchar **)&pText, nullptr);
+	glCompileShader(_fileID);
 
-	if (!check_shader_errors(_id, GL_COMPILE_STATUS))
+	if (!check_shader_errors(_fileID, GL_COMPILE_STATUS))
 	{
-		glDeleteShader(_id);
+		glDeleteShader(_fileID);
 		return false;
 	}
-	glAttachShader(programID, _id);
+	glAttachShader(programID, _fileID);
 	glLinkProgram(programID);
 	if (!check_shader_errors(programID, GL_LINK_STATUS))
 		return false;
 
-	id = _id;
+	id = _fileID;
 
 	return true;
 }
