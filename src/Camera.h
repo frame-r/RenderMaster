@@ -18,5 +18,6 @@ public:
 	virtual ~Camera();
 
 	API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) override;
+	API GetFovAngle(OUT float *fovInDegrees) override;
 	API Free() override;
 };

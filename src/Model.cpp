@@ -7,10 +7,6 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-void Model::_update()
-{
-}
-
 Model::Model(const vector<IResource*>& meshes) : _meshes(meshes)
 {
 	add_entry("meshes", &Model::_meshes);
@@ -22,6 +18,14 @@ Model::Model(const vector<IResource*>& meshes) : _meshes(meshes)
 }
 
 Model::~Model()
+{
+}
+
+void Model::_update()
+{
+}
+
+void Model::_recalculate_aabb()
 {
 }
 
@@ -37,6 +41,13 @@ API Model::GetMesh(OUT ICoreMesh  **pMesh, uint idx)
 API Model::GetNumberOfMesh(OUT uint *number)
 {
 	*number = (uint)_meshes.size();
+	return S_OK;
+}
+
+API Model::GetAABB(OUT AABB *aabb)
+{
+	const static AABB _unitAABB = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f};
+	*aabb = _unitAABB;
 	return S_OK;
 }
 

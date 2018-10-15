@@ -387,6 +387,17 @@ namespace RENDER_MASTER
 	};
 
 
+	// Axis aligned bound box
+	// All values specified in local game object coordinates
+	struct AABB
+	{
+		float maxX = 0.0f;
+		float minX = 0.0f;
+		float maxY = 0.0f;
+		float minY = 0.0f;
+		float maxZ = 0.0f;
+		float minZ = 0.0f;
+	};
 
 	//////////////////////
 	// Game Objects
@@ -406,6 +417,7 @@ namespace RENDER_MASTER
 		virtual API GetScale(OUT vec3 *scale) = 0;
 		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
+		virtual API GetAABB(OUT AABB *aabb) = 0;
 		virtual API Free() = 0;
 
 		// Events
@@ -418,6 +430,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
+		virtual API GetFovAngle(OUT float *fovInDegrees) = 0;
 	};
 
 	class IModel : public IGameObject

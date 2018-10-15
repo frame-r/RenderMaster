@@ -42,15 +42,18 @@ public:
 	API GetPosition(OUT vec3 *pos) override;
 	API GetRotation(OUT quat *rot) override;
 	API GetScale(OUT vec3 *scale) override;
+	API GetAABB(OUT AABB *aabb) override;
 	API Free() override;
 
 	//
 	// Model Matrix
 	// Matrix transforms coordinates local -> world
 	// p' (world) = mat * p (local)
-	// last column - translate in world space
-	// columns - (Right, Forward, Up) vectors in world space
 	//
+	// Note:
+	// * Translate in world space = last column 
+	// * Columns - (Right, Forward, Up) vectors in world space
+	// * View vector = M.el_2d.Column3(2).Normalized();
 	API GetModelMatrix(OUT mat4 *mat) override;
 
 	//
@@ -151,6 +154,14 @@ template <typename T>
 inline API GameObjectBase<T>::GetScale(vec3* scale)
 {
 	*scale = _scale;
+	return S_OK;
+}
+
+template <typename T>
+inline API GameObjectBase<T>::GetAABB(OUT AABB* aabb)
+{
+	const static AABB _unitAABB = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f};
+	*aabb = _unitAABB;
 	return S_OK;
 }
 

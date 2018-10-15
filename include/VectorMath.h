@@ -238,6 +238,11 @@ struct Matrix4x4
 		return Vector4(el_2D[0][i], el_2D[1][i], el_2D[2][i], el_2D[3][i]);
 	}
 
+	Vector3 Column3(int i) const
+	{
+		return Vector3(el_2D[0][i], el_2D[1][i], el_2D[2][i]);
+	}
+
 	Vector4 operator*(const Vector4& v) const
 	{
 		Vector4 ret(0.0f, 0.0f, 0.0f, 0.0f);

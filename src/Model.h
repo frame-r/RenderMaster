@@ -6,8 +6,10 @@
 class Model : public GameObjectBase<IModel>
 {
 	vector<IResource*> _meshes;
+	AABB _aabb;
 
 	void _update();
+	void _recalculate_aabb();
 
 public:
 
@@ -16,5 +18,6 @@ public:
 		
 	API GetMesh(OUT ICoreMesh **pMesh, uint idx) override;
 	API GetNumberOfMesh(OUT uint *number) override;
+	API GetAABB(OUT AABB *aabb) override;
 	API Free() override;
 };
