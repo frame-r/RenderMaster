@@ -13,10 +13,10 @@ class TResource : public IResource
 	RES_TYPE _type;
 	string _name;
 
-	// <full path> or <full path>:<subresource identificator>
+	// <relative path> or <relative path>:<subresource identificator>
 	// For example:
-	// C:\box.fbx
-	// C:\box.fbx::box01
+	// box.fbx
+	// box.fbx:box01
 	string _fileID;
 
 	void _free()
