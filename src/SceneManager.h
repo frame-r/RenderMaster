@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "Events.h"
+#include "Serialization.h"
 
 class SceneManager : public ISceneManager
 {
@@ -10,6 +11,9 @@ class SceneManager : public ISceneManager
 	std::unique_ptr<ResourceEvent> _gameObjectDeleteEvent{new ResourceEvent};
 
 	tree<IResource*>::iterator gameobject_to_iterator(IResource *pGameObject);
+
+	friend void readSceneManager(YAML::Node& n, SceneManager &sm);
+	friend YAML::Emitter& operator<<(YAML::Emitter& out, const SceneManager& sm);
 
 public:
 

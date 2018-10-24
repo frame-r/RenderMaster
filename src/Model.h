@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "GameObject.h"
 #include "ResourceManager.h"
+#include "Serialization.h"
 
 class Model : public GameObjectBase<IModel>
 {
@@ -10,6 +11,9 @@ class Model : public GameObjectBase<IModel>
 
 	void _update();
 	void _recalculate_aabb();
+
+	friend YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);
+	friend void readResource(YAML::Node& n, IResource *go);
 
 public:
 

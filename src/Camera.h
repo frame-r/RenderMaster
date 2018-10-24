@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include "GameObject.h"
+#include "Serialization.h"
 
 class Camera : public GameObjectBase<ICamera>
 {
@@ -11,6 +12,9 @@ class Camera : public GameObjectBase<ICamera>
 	IInput *_pInput{nullptr};
 
 	void _update();
+
+	friend YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);
+	friend void readResource(YAML::Node& n, IResource *go);
 
 public:
 
