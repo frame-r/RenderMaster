@@ -3,7 +3,7 @@
 
 class SceneManager;
 
-void readSceneManager(YAML::Node& n, SceneManager &sm);
+void loadSceneManager(YAML::Node& n, SceneManager &sm);
 YAML::Emitter& operator<<(YAML::Emitter& out, const SceneManager& sm);
 
 YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);

@@ -12,7 +12,7 @@ class SceneManager : public ISceneManager
 
 	tree<IResource*>::iterator gameobject_to_iterator(IResource *pGameObject);
 
-	friend void readSceneManager(YAML::Node& n, SceneManager &sm);
+	friend void loadSceneManager(YAML::Node& n, SceneManager &sm);
 	friend YAML::Emitter& operator<<(YAML::Emitter& out, const SceneManager& sm);
 
 public:

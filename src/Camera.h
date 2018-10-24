@@ -14,7 +14,7 @@ class Camera : public GameObjectBase<ICamera>
 	void _update();
 
 	friend YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);
-	friend void readResource(YAML::Node& n, IResource *go);
+	friend void loadResource(YAML::Node& n, IResource *go);
 
 public:
 
