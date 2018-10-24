@@ -47,18 +47,20 @@ public:
 
 	//
 	// Model Matrix
-	// Matrix transforms coordinates local -> world
+	//
+	// Transforms local -> world coordinates
 	// p' (world) = mat * p (local)
 	//
 	// Note:
 	// * Translate in world space = last column 
-	// * Columns - (Right, Forward, Up) vectors in world space
-	// * View vector = M.el_2d.Column3(2).Normalized();
+	// * Columns = (Right, Forward, Up) vectors in world space
+	// * View vector = -M.el_2d.Column3(2).Normalized();
 	API GetModelMatrix(OUT mat4 *mat) override;
 
 	//
 	// Inverse of Model Matrix
-	// Matrix transforms coordinates world -> local
+	//
+	// Transforms world -> local coordinates
 	// p' (local) = mat * p (world)
 	//
 	API GetInvModelMatrix(OUT mat4 *mat) override;

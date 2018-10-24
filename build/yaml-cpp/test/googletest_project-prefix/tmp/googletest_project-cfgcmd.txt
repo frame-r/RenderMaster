@@ -1,0 +1,1 @@
+cmd='C:/Program Files/CMake/bin/cmake.exe;-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>;-DBUILD_GMOCK=ON;-Dgtest_force_shared_crt=ON;-GVisual Studio 15 2017 Win64;-DCMAKE_GENERATOR_INSTANCE:INTERNAL=C:/Program Files (x86)/Microsoft Visual Studio/2017/Community;<SOURCE_DIR><SOURCE_SUBDIR>'
