@@ -43,6 +43,7 @@
     <ClInclude Include="..\src\Render.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
+    <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\shaders\language_dx11.h" />
     <ClInclude Include="..\src\shaders\language_gl.h" />
     <ClInclude Include="..\src\Tree.h" />
@@ -77,6 +78,7 @@
     <ClCompile Include="..\src\SceneManager.cpp" />
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\MainWindow.cpp" />
+    <ClCompile Include="..\src\Serialization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_common.shader" />
@@ -184,7 +186,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\yaml-cpp\include</AdditionalIncludeDirectories>
       <ShowIncludes>false</ShowIncludes>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
@@ -197,7 +199,8 @@
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>../src/export.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\debug\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>yaml-cpp.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\debug\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\bin\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
     <BuildLog>
       <Path>..\bin\$(Platform)\$(Configuration)\$(ProjectName).log</Path>
@@ -233,7 +236,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\yaml-cpp\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
@@ -247,7 +250,8 @@
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>../src/export.def</ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\release\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>yaml-cpp.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\release\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\bin\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
     <BuildLog>
       <Path>..\bin\$(Platform)\$(Configuration)\$(ProjectName).log</Path>

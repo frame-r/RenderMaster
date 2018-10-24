@@ -59,6 +59,7 @@
       <Filter>CoreRender</Filter>
     </ClInclude>
     <ClInclude Include="..\src\MainWindow.h" />
+    <ClInclude Include="..\src\Serialization.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -101,6 +102,7 @@
       <Filter>CoreRender\GLEW</Filter>
     </ClCompile>
     <ClCompile Include="..\src\MainWindow.cpp" />
+    <ClCompile Include="..\src\Serialization.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_vertex.shader">
