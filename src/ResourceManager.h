@@ -8,16 +8,26 @@
 template<typename T>
 class TResource : public IResource
 {
+	// Every type which supports Free() method
 	T *_pointer = nullptr;
-	uint _refCount = 0;
-	RES_TYPE _type;
-	string _name;
 
-	// <relative path> or <relative path>:<subresource identificator>
-	// For example:
-	// box.fbx
-	// box.fbx:box01
-	string _fileID;
+	// Type of _pointer to which you can safely cast
+	RES_TYPE _type;
+
+	uint _refCount = 0;
+
+	// Human readable string
+	string _title;
+
+	// Unique string identificator
+	// Example:
+	// - box.fbx
+	// - box.fbx:mesh01
+	// - picture.png
+	string _resourceID;
+
+
+private:
 
 	void _free()
 	{
@@ -34,21 +44,20 @@ class TResource : public IResource
 		_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 		_pResMan->DeleteResource(this);
 
-		LOG_WARNING_FORMATTED("Deleting resource %s", _name.c_str());
+		LOG_WARNING_FORMATTED("Deleting resource %s", _title.c_str());
+
 		_pointer->Free();
+
 		delete _pointer;
 		_pointer = nullptr;
 	}
 
 public:
 
-	TResource(T* pointerIn, RES_TYPE type, const string& name, const string& file) :
-		_pointer(pointerIn), _type(type), _name(name), _fileID(file) {}
-
+	TResource(T* pointerIn, RES_TYPE type, const string& name, const string& file) : _pointer(pointerIn), _type(type), _title(name), _resourceID(file) {}
 	virtual ~TResource() { _free(); }
 
 	T *get() { return _pointer; }
-
 	inline T *operator->() { return _pointer; }
 
 	API AddRef() override { _refCount++; return S_OK; }
@@ -68,13 +77,12 @@ public:
 
 		_free();
 		delete this;
-
 		return S_OK;
 	}
 	API RefCount(OUT uint *refs) override { *refs = _refCount; return S_OK; }
 	API GetType(OUT RES_TYPE *typeOut) override { *typeOut = _type; return S_OK; }
-	API GetFileID(OUT const char **id) override { *id = _fileID.c_str(); return S_OK; }
-	API GetTitle(OUT const char **name) override { *name = _name.c_str(); return S_OK; }
+	API GetFileID(OUT const char **id) override { *id = _resourceID.c_str(); return S_OK; }
+	API GetTitle(OUT const char **name) override { *name = _title.c_str(); return S_OK; }
 	API GetPointer(OUT void **pointerOut) override { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
 };
 
