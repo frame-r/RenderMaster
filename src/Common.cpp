@@ -262,13 +262,13 @@ std::list<string> get_file_content(const string& filename)
 
 }
 
-SerializableBase* Fabric::create(string className)
-{
-	if (className == "GameObject") return nullptr;
-	if (className == "SceneManager") return new SceneManager;
-	if (className == "Model") return new Model(vector<IResource*>());
-	if (className == "Camera") return new Camera();
-	return nullptr;
-}
+//SerializableBase* Fabric::create(string className)
+//{
+//	if (className == "GameObject") return nullptr;
+//	if (className == "SceneManager") return new SceneManager;
+//	if (className == "Model") return new Model(vector<IResource*>());
+//	if (className == "Camera") return new Camera();
+//	return nullptr;
+//}
 
 

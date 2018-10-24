@@ -128,6 +128,9 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="yaml-cpp\yaml-cpp.vcxproj">
+      <Project>{85a87a52-3af1-359c-9e62-cab1b86d8355}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

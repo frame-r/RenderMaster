@@ -32,7 +32,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Input.h" />
     <ClInclude Include="..\src\tree.h" />
-    <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\Preprocessor.h" />
     <ClInclude Include="..\src\shaders\language_gl.h">
       <Filter>Shaders</Filter>

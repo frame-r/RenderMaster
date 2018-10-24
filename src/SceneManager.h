@@ -1,9 +1,8 @@
 #pragma once
 #include "Common.h"
 #include "Events.h"
-#include "Serialization.h"
 
-class SceneManager : public ISceneManager, public Serializable<ISceneManager>
+class SceneManager : public ISceneManager
 {
 	bool _sceneLoaded = false;
 

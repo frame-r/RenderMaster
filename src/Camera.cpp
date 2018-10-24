@@ -78,10 +78,6 @@ void Camera::_update()
 
 Camera::Camera()
 {
-	add_entry("zNear", &Camera::_zNear);
-	add_entry("zFar", &Camera::_zFar);
-	add_entry("fovAngle", &Camera::_fovAngle);
-
 	_name = "Camera";
 
 	_pCore->AddUpdateCallback(std::bind(&Camera::_update, this));

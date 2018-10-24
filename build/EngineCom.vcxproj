@@ -43,7 +43,6 @@
     <ClInclude Include="..\src\Render.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
-    <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\shaders\language_dx11.h" />
     <ClInclude Include="..\src\shaders\language_gl.h" />
     <ClInclude Include="..\src\Tree.h" />

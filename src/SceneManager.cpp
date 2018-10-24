@@ -22,27 +22,26 @@ tree<IResource*>::iterator SceneManager::gameobject_to_iterator(IResource * pGam
 
 SceneManager::SceneManager()
 {
-	add_entry("gameobjects", &SceneManager::_gameobjects);
 }
 
 API SceneManager::SaveScene(const char *name)
 {
-	IFileSystem *fs;
-	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-	
-	std::ostringstream out;
-	dynamic_cast<SceneManager*>(this)->serialize(out, 0);
-	
-	IFile *f = nullptr;
-	fs->OpenFile(&f, name, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
-	
-	f->WriteStr(out.str().c_str());
-	
-	f->CloseAndFree();
-
-	_sceneLoaded = true;
-	
-	LOG_FORMATTED("Scene saved to: %s\n", name);
+	//IFileSystem *fs;
+	//_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+	//
+	//std::ostringstream out;
+	//dynamic_cast<SceneManager*>(this)->serialize(out, 0);
+	//
+	//IFile *f = nullptr;
+	//fs->OpenFile(&f, name, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
+	//
+	//f->WriteStr(out.str().c_str());
+	//
+	//f->CloseAndFree();
+	//
+	//_sceneLoaded = true;
+	//
+	//LOG_FORMATTED("Scene saved to: %s\n", name);
 
 	return S_OK;
 }
