@@ -144,9 +144,6 @@ void ResourceManager::_LoadSceneHierarchy(vector<IResource*>& meshes, FbxScene *
 
 	if (meshes.size() == 0)
 		LOG_WARNING("No meshes loaded");
-
-	for (IResource *m : meshes)
-		_resources.emplace(m);
 }
 
 void ResourceManager::_LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int depth, const char *fullPath, const char *pRelativePath)
@@ -336,10 +333,11 @@ void ResourceManager::_LoadNodeTransform(FbxNode* pNode, const char *str)
 	if (fbxDebug)
 		DEBUG_LOG_FORMATTED("%s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", str, tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2]);
 }
-bool ResourceManager::_FBXLoadMeshes(vector<IResource*>& meshes, const char *pFullPath, const char *pRelativePath)
+vector<IResource*> ResourceManager::_FBXLoadMeshes(const char *pFullPath, const char *pRelativePath)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
+	vector<IResource*> meshes;
 
 	if (fbxDebug) LOG("Initializing FBX SDK...");
 
@@ -359,7 +357,7 @@ bool ResourceManager::_FBXLoadMeshes(vector<IResource*>& meshes, const char *pFu
 	if (fbxDebug) LOG("Destroying FBX SDK...");
 	_DestroySdkObjects(lSdkManager, lResult);
 
-	return true;
+	return std::move(meshes);
 }
 #endif
 
@@ -555,7 +553,7 @@ API ResourceManager::Free()
 
 void splitMeshID(const string& meshPath, string& relativeModelPath, string& meshID)
 {
-	vector<string> paths = split(string(meshID), ':');
+	vector<string> paths = split(string(meshPath), ':');
 	if (paths.size() < 2)
 		relativeModelPath = meshPath;
 	else
@@ -567,7 +565,7 @@ void splitMeshID(const string& meshPath, string& relativeModelPath, string& mesh
 
 void ResourceManager::collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* pRelativeModelPath, const char *pMeshID)
 {
-	for (auto it = res_out.begin(); it != res_out.end(); it++)
+	for (auto it = res_vec.begin(); it != res_vec.end(); it++)
 	{
 		RES_TYPE type;
 		(*it)->GetType(&type);
@@ -618,9 +616,11 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pRela
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoadMeshes(loaded_meshes, fullPath.c_str(), pRelativeModelPath);
-		if (!ret)
-			return E_FAIL;
+		loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), pRelativeModelPath);
+
+		for (IResource *m : loaded_meshes)
+			_resources.emplace(m);
+
 		model = new Model(loaded_meshes);
 	}
 	else
@@ -643,8 +643,73 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pRela
 	return S_OK;
 }
 
-API ResourceManager::LoadMesh(OUT IResource ** pModel, const char *pMeshID)
+API ResourceManager::LoadMesh(OUT IResource** pMesh, const char *pMeshID)
 {
+	string relativeModelPath;
+	string meshID;
+	splitMeshID(pMeshID, relativeModelPath, meshID);
+
+	vector<IResource*> loaded_meshes;
+
+	collect_model_mesh(loaded_meshes, _cache_resources, relativeModelPath.c_str(), meshID.c_str());
+	if (loaded_meshes.size())
+	{
+		// _cache_resources -> _resources
+		auto it = _resources.find(loaded_meshes[0]);
+		_cache_resources.insert(loaded_meshes[0]);
+		_resources.erase(it);
+
+		*pMesh = loaded_meshes[0];
+
+		return S_OK;
+	}
+
+	collect_model_mesh(loaded_meshes, _resources, relativeModelPath.c_str(), meshID.c_str());
+	if (loaded_meshes.size())
+	{
+		*pMesh = loaded_meshes[0];
+		return S_OK;
+	}
+
+	#ifdef USE_FBX
+
+		auto fullPath = constructFullPath(relativeModelPath);
+
+		if (!check_file_not_exist(fullPath))
+		{
+			*pMesh = nullptr;
+			return E_FAIL;
+		}
+
+		const string file_ext = ToLowerCase(fs::path(relativeModelPath).extension().string().erase(0, 1));
+		if (file_ext == "fbx")
+		{
+			loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), relativeModelPath.c_str());
+
+			for (IResource *m : loaded_meshes)
+				_cache_resources.emplace(m);
+
+				collect_model_mesh(loaded_meshes, _cache_resources, relativeModelPath.c_str(), meshID.c_str());
+			if (loaded_meshes.size())
+			{
+				// _cache_resources -> _resources
+				auto it = _resources.find(loaded_meshes[0]);
+				_cache_resources.insert(loaded_meshes[0]);
+				_resources.erase(it);
+
+				*pMesh = loaded_meshes[0];
+
+				return S_OK;
+			}
+		}
+		else
+
+	#endif
+		{
+			LOG_FATAL_FORMATTED("ResourceManager::LoadMesh unsupported format \"%s\"", file_ext.c_str());
+			return E_FAIL;
+		}
+
 	return S_OK;
 }
 

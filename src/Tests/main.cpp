@@ -15,6 +15,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		{
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
+			IResource*i;
+			resMan->LoadMesh(&i, "hhhh\\path:mesh");
+
 			ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
 			ResourcePtr<IModel> pModel1 = resMan->loadModel("box.fbx");
 			pModel1->SetPosition(&vec3(11.0f, 0.0, 0.0));

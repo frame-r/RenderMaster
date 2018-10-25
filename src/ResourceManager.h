@@ -90,6 +90,7 @@ public:
 class ResourceManager final : public IResourceManager
 {
 	std::unordered_set<IResource*> _resources;
+	std::unordered_set<IResource*> _cache_resources;
 		
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
@@ -102,7 +103,7 @@ class ResourceManager final : public IResourceManager
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
-	bool _FBXLoadMeshes(vector<IResource*>& meshes, const char *pFullPath, const char *pRelativePath);
+	vector<IResource*> _FBXLoadMeshes(const char *pFullPath, const char *pRelativePath);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
 	void _LoadSceneHierarchy(vector<IResource*>& meshes, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
 	void _LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
