@@ -479,6 +479,25 @@ API ResourceManager::_resources_list(const char **args, uint argsNumber)
 	return S_OK;
 }
 
+string ResourceManager::constructFullPath(const string& file)
+{
+	const char *pDataPath;
+	_pCore->GetDataDir(&pDataPath);
+	string dataPath = string(pDataPath);
+	return dataPath + '\\' + file;
+}
+
+bool ResourceManager::check_file_not_exist(const string& fullPath)
+{
+	int exist;
+	_pFilesystem->FileExist(fullPath.c_str(), &exist);
+	if (!exist)
+	{
+		LOG_WARNING_FORMATTED("File \"%s\" doesn't exist", fullPath.c_str());
+	}
+	return exist;
+}
+
 API ResourceManager::GetName(OUT const char **pName)
 {
 	*pName = "ResourceManager";
@@ -534,29 +553,9 @@ API ResourceManager::Free()
 	return S_OK;
 }
 
-API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFileName)
+void ResourceManager::collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* modelPath)
 {
-	assert(is_relative(pFileName) && "ResourceManager::LoadModel(): fileName must be relative");
-
-	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
-	
-	const char *pDataPath;
-	_pCore->GetDataDir(&pDataPath);
-	string dataPath = string(pDataPath);
-
-	string fullPath = dataPath + '\\' + string(pFileName);
-
-	int exist;
-	_pFilesystem->FileExist(pFileName, &exist);
-	if (!exist)
-	{
-		*pModelResource = nullptr;
-		LOG_FATAL_FORMATTED("File \"%s\" doesn't exist", fullPath.c_str());
-		return E_FAIL;
-	}
-
-	vector<IResource*> _loaded_meshes;
-	for (auto it = _resources.begin(); it != _resources.end(); it++)
+	for (auto it = res_out.begin(); it != res_out.end(); it++)
 	{
 		RES_TYPE type;
 		(*it)->GetType(&type);
@@ -573,27 +572,46 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 
 		string basePath = paths[0];
 
-		if (basePath == pFileName)
+		if (basePath == modelPath)
 		{
-			_loaded_meshes.push_back(*it);
+			res_out.push_back(*it);
 			(*it)->AddRef();
 		}
 	}
 
+}
+
+API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFileName)
+{
+	assert(is_relative(pFileName) && "ResourceManager::LoadModel(): fileName must be relative");
+
+	auto fullPath = constructFullPath(pFileName);
+
+	if (!check_file_not_exist(fullPath))
+	{
+		*pModelResource = nullptr;
+		return E_FAIL;
+	}
+
+	vector<IResource*> loaded_meshes;
+	collect_model_mesh(loaded_meshes, _resources, pFileName);
+
 	IModel *model = nullptr;
 
-	if (_loaded_meshes.size())
+	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
+
+	if (loaded_meshes.size())
 	{
-		model = new Model(_loaded_meshes);
+		model = new Model(loaded_meshes);
 	} else	
 
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoadMeshes(_loaded_meshes, fullPath.c_str(), pFileName);
+		bool ret = _FBXLoadMeshes(loaded_meshes, fullPath.c_str(), pFileName);
 		if (!ret)
 			return E_FAIL;
-		model = new Model(_loaded_meshes);
+		model = new Model(loaded_meshes);
 	}
 	else
 #endif
@@ -615,13 +633,17 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 	return S_OK;
 }
 
+API ResourceManager::LoadMesh(OUT IResource ** pModel, const char * pMeshID)
+{
+	return S_OK;
+}
+
 API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
 	auto load_shader = [=](string &paths, const char *&textOut, const char *pName) -> APIRESULT
 	{
 		IFile *pFile = nullptr;
 		uint fileSize = 0;
-		int filseExist = 0;
 		
 		const char *pString;
 		_pCore->GetInstalledDir(&pString);
@@ -629,13 +651,9 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 
 		string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pName + ".shader";
 
-		_pFilesystem->FileExist(const_cast<char*>(shader_path.c_str()), &filseExist);
-
-		if (!filseExist)
-		{
-			LOG_WARNING_FORMATTED("ResourceManager::LoadShaderText(): File doesn't exist '%s'", shader_path.c_str());
+		if (!check_file_not_exist(shader_path))
 			return S_FALSE;
-		}
+
 		paths += shader_path + ";";
 
 		_pFilesystem->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);

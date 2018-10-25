@@ -564,6 +564,7 @@ namespace RENDER_MASTER
 		// Manual resource operations
 		//
 		virtual API LoadModel(OUT IResource **pMesh, const char *pFileName) = 0;
+		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshID) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;

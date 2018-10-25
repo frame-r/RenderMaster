@@ -114,6 +114,14 @@ class ResourceManager final : public IResourceManager
 	IResource *_createResource(void *pointer, RES_TYPE type, const string& name, const string& file);
 	API _resources_list(const char **args, uint argsNumber);
 
+	string constructFullPath(const string& file);
+	bool check_file_not_exist(const string& fullPath);
+
+	IResource* fetch_from_cahche(const string& meshID);
+	IResource* fetch_from_resources(const string& meshID);
+	void load_all_model_to_cache(const string& fullPath);
+	void collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* modelPath);
+
 public:
 
 	ResourceManager();
@@ -122,6 +130,7 @@ public:
 	void Init();
 	
 	API LoadModel(OUT IResource **pModel, const char *pFileName) override;
+	API LoadMesh(OUT IResource **pModel, const char *pMeshID) override;
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	API CreateResource(OUT IResource **pResource, RES_TYPE type) override;
 	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;
