@@ -584,7 +584,6 @@ void ResourceManager::collect_model_mesh(vector<IResource*>& res_out, std::unord
 			(!pMeshID && relativeModelPath == pRelativeModelPath))
 		{
 			res_out.push_back(*it);
-			(*it)->AddRef();
 		}
 	}
 }
@@ -775,6 +774,8 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 		return E_ABORT;
 	}
 
+	string name;
+
 	switch (type)
 	{
 	case RES_TYPE::MESH_PLANE:
@@ -795,8 +796,9 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 
 			if (it != _resources.end())
 			{
-				(*it)->AddRef();
+				//(*it)->AddRef();
 				*pResource = *it;
+				return S_OK;
 			}
 
 			// else create new resource
@@ -805,6 +807,8 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 
 			if (type == RES_TYPE::MESH_PLANE)
 			{
+				name = "CoreMesh MESH_PLANE";
+
 				float vertexPlane[16] =
 				{
 					-1.0f, 1.0f, 0.0f, 1.0f,
@@ -834,6 +838,8 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 
 			} else if (type == RES_TYPE::MESH_AXES)
 			{
+				name = "CoreMesh MESH_AXES";
+
 				float vertexAxes[] = {0.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,
 										0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,
 										0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f};
@@ -853,6 +859,8 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 
 			} else if (type == RES_TYPE::MESH_AXES_ARROWS)
 			{
+				name = "CoreMesh MESH_AXES_ARROWS";
+
 				// Layout: position, color, position, color, ...
 
 				const float arrowRadius = 0.065f;
@@ -912,6 +920,8 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 
 			} else if (type == RES_TYPE::MESH_GRID)
 			{
+				name = "CoreMesh MESH_GRID";
+
 				const float linesInterval = 5.0f;
 				const int linesNumber = 31;
 				const float startOffset = linesInterval * (linesNumber / 2);
@@ -936,7 +946,7 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 					return E_ABORT;
 			}
 
-			*pResource = _createResource(ret, type, "CoreMesh", "");
+			*pResource = _createResource(ret, type, name, "");
 			_resources.emplace(*pResource);
 		}
 		break;
