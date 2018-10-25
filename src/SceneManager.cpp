@@ -72,7 +72,6 @@ API SceneManager::LoadScene(const char *pRelativeScenePath)
 	loadSceneManager(model_yaml, *this);
 
 	delete tmp;
-	//LOG_FORMATTED("Scene saved to: %s\n", name);
 
 	return S_OK;
 }
