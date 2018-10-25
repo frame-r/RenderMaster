@@ -120,7 +120,7 @@ class ResourceManager final : public IResourceManager
 	IResource* fetch_from_cahche(const string& meshID);
 	IResource* fetch_from_resources(const string& meshID);
 	void load_all_model_to_cache(const string& fullPath);
-	void collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* modelPath);
+	void collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* pRelativeModelPath, const char *pMeshID);
 
 public:
 
@@ -129,7 +129,7 @@ public:
 
 	void Init();
 	
-	API LoadModel(OUT IResource **pModel, const char *pFileName) override;
+	API LoadModel(OUT IResource **pModel, const char *pRelativeModelPath) override;
 	API LoadMesh(OUT IResource **pModel, const char *pMeshID) override;
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	API CreateResource(OUT IResource **pResource, RES_TYPE type) override;

@@ -553,7 +553,19 @@ API ResourceManager::Free()
 	return S_OK;
 }
 
-void ResourceManager::collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* modelPath)
+void splitMeshID(const string& meshPath, string& relativeModelPath, string& meshID)
+{
+	vector<string> paths = split(string(meshID), ':');
+	if (paths.size() < 2)
+		relativeModelPath = meshPath;
+	else
+	{
+		relativeModelPath = paths[0];
+		meshID = paths[1];
+	}
+}
+
+void ResourceManager::collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* pRelativeModelPath, const char *pMeshID)
 {
 	for (auto it = res_out.begin(); it != res_out.end(); it++)
 	{
@@ -566,26 +578,24 @@ void ResourceManager::collect_model_mesh(vector<IResource*>& res_out, std::unord
 		const char *path;
 		(*it)->GetFileID(&path);
 
-		vector<string> paths = split(string(path), ':');
-		if (paths.size() < 2)
-			continue;
+		string relativeModelPath;
+		string meshID;
+		splitMeshID(path, relativeModelPath, meshID);
 
-		string basePath = paths[0];
-
-		if (basePath == modelPath)
+		if ((pMeshID && relativeModelPath == pRelativeModelPath && meshID == pMeshID)||
+			(!pMeshID && relativeModelPath == pRelativeModelPath))
 		{
 			res_out.push_back(*it);
 			(*it)->AddRef();
 		}
 	}
-
 }
 
-API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFileName)
+API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pRelativeModelPath)
 {
-	assert(is_relative(pFileName) && "ResourceManager::LoadModel(): fileName must be relative");
+	assert(is_relative(pRelativeModelPath) && "ResourceManager::LoadModel(): fileName must be relative");
 
-	auto fullPath = constructFullPath(pFileName);
+	auto fullPath = constructFullPath(pRelativeModelPath);
 
 	if (!check_file_not_exist(fullPath))
 	{
@@ -594,11 +604,11 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 	}
 
 	vector<IResource*> loaded_meshes;
-	collect_model_mesh(loaded_meshes, _resources, pFileName);
+	collect_model_mesh(loaded_meshes, _resources, pRelativeModelPath, nullptr);
 
 	IModel *model = nullptr;
 
-	const string file_ext = ToLowerCase(fs::path(pFileName).extension().string().erase(0, 1));
+	const string file_ext = ToLowerCase(fs::path(pRelativeModelPath).extension().string().erase(0, 1));
 
 	if (loaded_meshes.size())
 	{
@@ -608,7 +618,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoadMeshes(loaded_meshes, fullPath.c_str(), pFileName);
+		bool ret = _FBXLoadMeshes(loaded_meshes, fullPath.c_str(), pRelativeModelPath);
 		if (!ret)
 			return E_FAIL;
 		model = new Model(loaded_meshes);
@@ -623,7 +633,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 	ISceneManager *pSceneManager;
 	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
 
-	TResource<IModel> *res = (TResource<IModel> *)_createResource(model, RES_TYPE::MODEL, string(pFileName), pFileName);
+	TResource<IModel> *res = (TResource<IModel> *)_createResource(model, RES_TYPE::MODEL, string(pRelativeModelPath), pRelativeModelPath);
 	_resources.emplace(res);
 
 	pSceneManager->AddRootGameObject(res);
@@ -633,7 +643,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 	return S_OK;
 }
 
-API ResourceManager::LoadMesh(OUT IResource ** pModel, const char * pMeshID)
+API ResourceManager::LoadMesh(OUT IResource ** pModel, const char *pMeshID)
 {
 	return S_OK;
 }
