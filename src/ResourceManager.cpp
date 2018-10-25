@@ -655,9 +655,9 @@ API ResourceManager::LoadMesh(OUT IResource** pMesh, const char *pMeshID)
 	if (loaded_meshes.size())
 	{
 		// _cache_resources -> _resources
-		auto it = _resources.find(loaded_meshes[0]);
-		_cache_resources.insert(loaded_meshes[0]);
-		_resources.erase(it);
+		auto it = _cache_resources.find(loaded_meshes[0]);
+		_resources.insert(loaded_meshes[0]);
+		_cache_resources.erase(it);
 
 		*pMesh = loaded_meshes[0];
 
@@ -689,13 +689,16 @@ API ResourceManager::LoadMesh(OUT IResource** pMesh, const char *pMeshID)
 			for (IResource *m : loaded_meshes)
 				_cache_resources.emplace(m);
 
-				collect_model_mesh(loaded_meshes, _cache_resources, relativeModelPath.c_str(), meshID.c_str());
+			loaded_meshes.clear();
+
+			collect_model_mesh(loaded_meshes, _cache_resources, relativeModelPath.c_str(), meshID.c_str());
 			if (loaded_meshes.size())
 			{
 				// _cache_resources -> _resources
-				auto it = _resources.find(loaded_meshes[0]);
-				_cache_resources.insert(loaded_meshes[0]);
-				_resources.erase(it);
+				auto it = _cache_resources.find(loaded_meshes[0]);
+				_resources.insert(loaded_meshes[0]);
+				_cache_resources.erase(it);
+
 
 				*pMesh = loaded_meshes[0];
 
@@ -937,6 +940,11 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 			_resources.emplace(*pResource);
 		}
 		break;
+
+		case RES_TYPE::MODEL:
+			*pResource = _createResource(new Model, RES_TYPE::MODEL, "Model", "");
+			_resources.emplace(*pResource);
+			break;
 
 		case RES_TYPE::CAMERA:
 			*pResource = _createResource(new Camera, RES_TYPE::CAMERA, "Camera", "");

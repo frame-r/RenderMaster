@@ -26,7 +26,8 @@ public:
 	void Init();
 	void Free();
 
-	API SaveScene(const char *name) override;
+	API SaveScene(const char *pRelativeScenePath) override;
+	API LoadScene(const char *pRelativeScenePath) override;
 	API CloseScene() override;
 	API GetDefaultCamera(OUT ICamera **pCamera) override;
 	API AddRootGameObject(IResource *pGameObject) override;

@@ -27,6 +27,7 @@ public:
 	virtual ~GameObjectBase() {}
 
 	API GetID(OUT int *id) override;
+	API SetID(int *id) override;
 	API GetName(OUT const char **pName) override;
 	API SetName(const char *pName) override;
 	API SetPosition(const vec3 *pos) override;
@@ -74,6 +75,13 @@ template<typename T>
 inline API GameObjectBase<T>::GetID(OUT int *id)
 {
 	*id = _fileID;
+	return S_OK;
+}
+
+template<typename T>
+inline API GameObjectBase<T>::SetID(int *id)
+{
+	_fileID = *id;
 	return S_OK;
 }
 

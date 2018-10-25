@@ -200,7 +200,9 @@ IResource *createResourceUtil(const string& name)
 	if (name == "!GameObject") resMan->CreateResource(&ret, RES_TYPE::GAME_OBJECT);
 	else if (name == "!Model") resMan->CreateResource(&ret, RES_TYPE::MODEL);
 	else if (name == "!Camera") resMan->CreateResource(&ret, RES_TYPE::CAMERA);
-	//else if (name == "!Mesh") resMan->LoadModel
+	//else if (name == "!Mesh") resMan->LoadModel()
+
+	ret->AddRef();
 
 	return ret;
 }
@@ -287,6 +289,44 @@ void loadSceneManager(Node& n, SceneManager &sm)
 	}
 }
 
+void loadGameObjectBase(Node& n, IGameObject *go)
+{
+	if (n["id"])
+	{
+		int id = n["id"].as<int>();
+		go->SetID(&id);
+	}
+	if (n["name"])
+	{
+		string name = n["name"].as<string>();
+		go->SetName(name.c_str());
+	}
+	if (n["pos"])
+	{
+		vec3 v3;
+		Node pos = n["pos"];
+		for (std::size_t i = 0; i < 3; i++)
+			v3.xyz[i] = pos[i].as<float>();
+		go->SetPosition(&v3);
+	}
+	if (n["rot"])
+	{
+		quat q;
+		Node rot = n["rot"];
+		for (std::size_t i = 0; i < 4; i++)
+			q.xyzw[i] = rot[i].as<float>();
+		go->SetRotation(&q);
+	}
+	if (n["scale"])
+	{
+		vec3 s;
+		Node scale = n["scale"];
+		for (std::size_t i = 0; i < 3; i++)
+			s.xyz[i] = scale[i].as<float>();
+		go->SetScale(&s);
+	}
+}
+
 void loadResource(Node& n, IResource *go)
 {
 	RES_TYPE type;
@@ -296,45 +336,42 @@ void loadResource(Node& n, IResource *go)
 
 	if (type == RES_TYPE::GAME_OBJECT)
 	{
-		//if (n["id"])
-		//	go->_fileID = n["id"].as<int>();
-		//if (n["name"])
-		//	go->_name = n["name"].as<string>();
-		//if (n["pos"])
-		//{
-		//	Node pos = n["pos"];
-		//	for (std::size_t i = 0; i < 3; i++)
-		//		go->_pos.xyz[i] = pos[i].as<float>();
-		//}
-		//if (n["rot"])
-		//{
-		//	Node rot = n["rot"];
-		//	for (std::size_t i = 0; i < 4; i++)
-		//		go->_rot.xyzw[i] = rot[i].as<float>();
-		//}
-		//if (n["scale"])
-		//{
-		//	Node scale = n["scale"];
-		//	for (std::size_t i = 0; i < 3; i++)
-		//		go->_scale.xyz[i] = scale[i].as<float>();
-		//}
+		IGameObject *g;
+		go->GetPointer((void**)&g);
+		loadGameObjectBase(n, g);
 	} else if (type == RES_TYPE::MODEL)
 	{
 		if (n["meshes"])
 		{
-			//auto meshes_yaml = n["meshes"];
-			//for (std::size_t i = 0; i < meshes_yaml.size(); i++)
-			//{
-			//	Node m_yaml = meshes_yaml[i];
-			//	auto t = m_yaml.Tag();
-			//	Mesh *m = createMesh(m_yaml["path"].as<string>());
-			//	ml->meshes.push_back(m);
-			//}
+			Model* ml;
+			go->GetPointer((void**)&ml);
+
+			loadGameObjectBase(n, ml);
+
+			IResourceManager *resMan;
+			_pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+
+			auto meshes_yaml = n["meshes"];
+			for (std::size_t i = 0; i < meshes_yaml.size(); i++)
+			{
+				Node m_yaml = meshes_yaml[i];
+				auto t = m_yaml.Tag();
+
+				IResource *mesh;
+				resMan->LoadMesh(&mesh, m_yaml["path"].as<string>().c_str());
+
+				mesh->AddRef();
+
+				ml->_meshes.push_back(mesh);
+			}
 		}
 	} else if (type == RES_TYPE::CAMERA)
 	{
 		Camera *cm;
 		go->GetPointer((void**)&cm);
+
+		loadGameObjectBase(n, cm);
+
 		if (n["zNear"])
 			cm->_zNear = n["zNear"].as<float>();
 		if (n["zFar"])

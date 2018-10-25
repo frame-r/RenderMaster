@@ -24,7 +24,7 @@ SceneManager::SceneManager()
 {
 }
 
-API SceneManager::SaveScene(const char *name)
+API SceneManager::SaveScene(const char *pRelativeScenePath)
 {
 	IFileSystem *fs;
 	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
@@ -33,7 +33,7 @@ API SceneManager::SaveScene(const char *name)
 	out << YAML::Block << *this;
 	
 	IFile *f = nullptr;
-	fs->OpenFile(&f, name, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
+	fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
 	
 	f->WriteStr(out.c_str());
 	
@@ -41,7 +41,38 @@ API SceneManager::SaveScene(const char *name)
 	
 	_sceneLoaded = true;
 	
-	LOG_FORMATTED("Scene saved to: %s\n", name);
+	LOG_FORMATTED("Scene saved to: %s\n", pRelativeScenePath);
+
+	return S_OK;
+}
+
+API SceneManager::LoadScene(const char *pRelativeScenePath)
+{
+	IFileSystem *fs;
+	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+	
+	YAML::Emitter out;
+	out << YAML::Block << *this;
+	
+	IFile *f = nullptr;
+	fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+
+	uint fileSize;
+	f->FileSize(&fileSize);
+
+	char *tmp = new char[fileSize + 1];
+	tmp[fileSize] = '\0';
+
+	f->Read((uint8 *)tmp, fileSize);
+	f->CloseAndFree();
+	
+	YAML::Node model_yaml = YAML::Load(tmp);
+	auto t = model_yaml.Type();	
+
+	loadSceneManager(model_yaml, *this);
+
+	delete tmp;
+	//LOG_FORMATTED("Scene saved to: %s\n", name);
 
 	return S_OK;
 }

@@ -18,6 +18,7 @@ class Model : public GameObjectBase<IModel>
 public:
 
 	Model(const vector<IResource*>& meshes);
+	Model(){}
 	virtual ~Model();
 		
 	API GetMesh(OUT ICoreMesh **pMesh, uint idx) override;

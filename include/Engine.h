@@ -407,6 +407,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetID(OUT int *id) = 0;
+		virtual API SetID(int *id) = 0;
 		virtual API GetName(OUT const char **pName) = 0;
 		virtual API SetName(const char *pName) = 0;
 		virtual API SetPosition(const vec3 *pos) = 0;
@@ -447,7 +448,8 @@ namespace RENDER_MASTER
 	class ISceneManager : public ISubSystem
 	{
 	public:
-		virtual API SaveScene(const char *name) = 0;
+		virtual API SaveScene(const char *pRelativeScenePath) = 0;
+		virtual API LoadScene(const char *pRelativeScenePath) = 0;
 		virtual API CloseScene() = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 		virtual API AddRootGameObject(IResource* pGameObject) = 0;
