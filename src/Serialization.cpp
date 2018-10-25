@@ -156,7 +156,7 @@ Emitter& operator<<(Emitter& out, const tree<IResource*>& _tree)
 			{
 				int parent_id;
 				GameObject *parent_go;
-				(*_tree.parent(it))->GetPointer((void**)parent_go);
+				(*_tree.parent(it))->GetPointer((void**)&parent_go);
 				parent_go->GetID(&parent_id);
 				out << Key << "parent" << Value << parent_id;
 			}
