@@ -102,9 +102,9 @@ class ResourceManager final : public IResourceManager
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
-	bool _FBXLoad(IModel *&pMesh, const char *pFullPath, const char *pRelativePath);
+	bool _FBXLoadMeshes(vector<IResource*>& meshes, const char *pFullPath, const char *pRelativePath);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
-	void _LoadSceneHierarchy(IModel *&pModel, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
+	void _LoadSceneHierarchy(vector<IResource*>& meshes, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
 	void _LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
 	void _LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
 	void _LoadNodeTransform(FbxNode* pNode, const char *str);

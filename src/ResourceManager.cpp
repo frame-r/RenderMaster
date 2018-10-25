@@ -133,9 +133,8 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	return lStatus;
 }
 
-void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene, const char *pFullPath, const char *pRelativePath)
+void ResourceManager::_LoadSceneHierarchy(vector<IResource*>& meshes, FbxScene * pScene, const char *pFullPath, const char *pRelativePath)
 {
-	vector<IResource*> meshes;
 	FbxString lString;
 
 	if (fbxDebug) LOG("Scene hierarchy:");
@@ -145,8 +144,6 @@ void ResourceManager::_LoadSceneHierarchy(IModel *&pModel, FbxScene * pScene, co
 
 	if (meshes.size() == 0)
 		LOG_WARNING("No meshes loaded");
-
-	pModel = new Model(meshes);
 
 	for (IResource *m : meshes)
 		_resources.emplace(m);
@@ -339,7 +336,7 @@ void ResourceManager::_LoadNodeTransform(FbxNode* pNode, const char *str)
 	if (fbxDebug)
 		DEBUG_LOG_FORMATTED("%s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", str, tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2]);
 }
-bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFullPath, const char *pRelativePath)
+bool ResourceManager::_FBXLoadMeshes(vector<IResource*>& meshes, const char *pFullPath, const char *pRelativePath)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
@@ -357,7 +354,7 @@ bool ResourceManager::_FBXLoad(IModel *&pModel, const char *pFullPath, const cha
 	if (!lResult)
 		LOG_FATAL("An error occurred while loading the scene...");
 	else
-		_LoadSceneHierarchy(pModel, lScene, pFullPath, pRelativePath);
+		_LoadSceneHierarchy(meshes, lScene, pFullPath, pRelativePath);
 
 	if (fbxDebug) LOG("Destroying FBX SDK...");
 	_DestroySdkObjects(lSdkManager, lResult);
@@ -593,9 +590,10 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pFile
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		bool ret = _FBXLoad(model, fullPath.c_str(), pFileName);
+		bool ret = _FBXLoadMeshes(_loaded_meshes, fullPath.c_str(), pFileName);
 		if (!ret)
 			return E_FAIL;
+		model = new Model(_loaded_meshes);
 	}
 	else
 #endif
