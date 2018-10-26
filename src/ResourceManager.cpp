@@ -407,7 +407,7 @@ IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const 
 		case RENDER_MASTER::RES_TYPE::CAMERA:
 			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::CAMERA, name, id);
 		case RENDER_MASTER::RES_TYPE::MODEL:
-			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::MODEL, name, id);
+			return new TResource<IModel>((IModel*)pointer, RES_TYPE::MODEL, name, id);
 
 		case RENDER_MASTER::RES_TYPE::CORE_MESH:
 			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, name, id);

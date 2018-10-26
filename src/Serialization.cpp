@@ -156,7 +156,7 @@ Emitter& operator<<(Emitter& out, const tree<IResource*>& _tree)
 			{
 				int parent_id;
 				GameObject *parent_go;
-				(*_tree.parent(it))->GetPointer((void**)parent_go);
+				(*_tree.parent(it))->GetPointer((void**)&parent_go);
 				parent_go->GetID(&parent_id);
 				out << Key << "parent" << Value << parent_id;
 			}
@@ -190,7 +190,7 @@ Emitter& operator<<(Emitter& out, const SceneManager& sm)
 	return out;
 }
 
-IResource *createResourceUtil(const string& name)
+IResource *createSceneObject(const string& name)
 {
 	IResourceManager *resMan;
 	_pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
@@ -201,8 +201,6 @@ IResource *createResourceUtil(const string& name)
 	else if (name == "!Model") resMan->CreateResource(&ret, RES_TYPE::MODEL);
 	else if (name == "!Camera") resMan->CreateResource(&ret, RES_TYPE::CAMERA);
 	//else if (name == "!Mesh") resMan->LoadModel()
-
-	ret->AddRef();
 
 	return ret;
 }
@@ -220,13 +218,19 @@ tree<IResource*>::iterator find(tree<IResource*>& tree, int idIn)
 	return tree.end();
 }
 
-void insertResourceToTree(tree<IResource*>& tree, int parent_id, IResource *res)
+void insertResourceToTree(SceneManager& sm, int parent_id, IResource *res)
 {
-	auto it = find(tree, parent_id);
-	if (it == tree.end()) // root
-		tree.insert(tree.begin(), res);
+	auto it = find(sm._gameobjects, parent_id);
+	if (it == sm._gameobjects.end()) // root
+	{
+		sm.AddRootGameObject(res);
+	}
 	else
-		tree.append_child(it, res);
+	{
+		// TODO: do through SceneManager API!!! else child object won't shown in tree hierarchy
+		sm._gameobjects.append_child(it, res);
+		res->AddRef();
+	}
 }
 
 void loadSceneManager(Node& n, SceneManager &sm)
@@ -253,14 +257,14 @@ void loadSceneManager(Node& n, SceneManager &sm)
 				Node n = tree_items_yaml[i];
 				auto t4 = n.Tag();
 
-				IResource *res = createResourceUtil(t4);
-				loadResource(n, res);
+				IResource *go_res = createSceneObject(t4);
+				loadResource(n, go_res);
 
-				IGameObject *g;
-				res->GetPointer((void**)&g);
+				IGameObject *go;
+				go_res->GetPointer((void**)&go);
 				int id;
-				g->GetID(&id);
-				pool.emplace(id, res);
+				go->GetID(&id);
+				pool.emplace(id, go_res);
 			}
 		}
 	}
@@ -283,7 +287,7 @@ void loadSceneManager(Node& n, SceneManager &sm)
 
 				IResource *res = pool[childs_id];
 
-				insertResourceToTree(sm._gameobjects, parent_id, res);
+				insertResourceToTree(sm, parent_id, res);
 			}
 		}
 	}
@@ -331,9 +335,7 @@ void loadResource(Node& n, IResource *go)
 {
 	RES_TYPE type;
 	go->GetType(&type);
-
-	// TODO: loading
-
+	
 	if (type == RES_TYPE::GAME_OBJECT)
 	{
 		IGameObject *g;

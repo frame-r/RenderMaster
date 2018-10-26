@@ -8,7 +8,6 @@
 #define INITGUID
 #include <Unknwn.h>
 
-
 // comment this to build without FBX SDK
 #define USE_FBX
 
@@ -30,52 +29,6 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 	return static_cast<ENUM_NAME>(static_cast<int>(a) & static_cast<int>(b)); \
 }
 
-#define DEFINE_EVENT(NAME) \
-class NAME ## Subscriber \
-{ \
-public: \
-	virtual API Call() = 0; \
-}; \
-\
-class NAME \
-{ \
-public: \
-	\
-	virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
-	virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
-};
-
-#define DEFINE_EVENT1(NAME, ARG) \
-class NAME ## Subscriber \
-{ \
-public: \
-	virtual API Call(ARG) = 0; \
-}; \
-\
-class NAME \
-{ \
-public: \
-	\
-	virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
-	virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
-};
-
-#define DEFINE_EVENT2(NAME, ARG1, ARG2) \
-class NAME ## Subscriber \
-{ \
-public: \
-	virtual API Call(ARG1, ARG2) = 0; \
-}; \
- \
-class NAME \
-{ \
-public: \
- \
-	virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
-	virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
-};
-
-
 namespace RENDER_MASTER 
 {
 	class ISubSystem;
@@ -87,7 +40,6 @@ namespace RENDER_MASTER
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
 
-
 	//////////////////////
 	// Core
 	//////////////////////
@@ -96,11 +48,9 @@ namespace RENDER_MASTER
 	{
 		WINDOW_FLAG				= 0x0000000F, 
 		EXTERN_WINDOW			= 0x00000002, // engine uses client's created window	
-
 		GRAPHIC_LIBRARY_FLAG	= 0x000000F0,
 		OPENGL45				= 0x00000010,
-		DIRECTX11				= 0x00000020,		
-
+		DIRECTX11				= 0x00000020,
 		CREATE_CONSOLE_FLAG		= 0x00000F00,
 		NO_CREATE_CONSOLE		= 0x00000100,  // no need create console
 		CREATE_CONSOLE			= 0x00000200 // engine should create console		
@@ -192,6 +142,51 @@ namespace RENDER_MASTER
 	//////////////////////
 	// Events
 	//////////////////////
+
+	#define DEFINE_EVENT(NAME) \
+	class NAME ## Subscriber \
+	{ \
+	public: \
+		virtual API Call() = 0; \
+	}; \
+	\
+	class NAME \
+	{ \
+	public: \
+		\
+		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+	};
+
+	#define DEFINE_EVENT1(NAME, ARG) \
+	class NAME ## Subscriber \
+	{ \
+	public: \
+		virtual API Call(ARG) = 0; \
+	}; \
+	\
+	class NAME \
+	{ \
+	public: \
+		\
+		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+	};
+
+	#define DEFINE_EVENT2(NAME, ARG1, ARG2) \
+	class NAME ## Subscriber \
+	{ \
+	public: \
+		virtual API Call(ARG1, ARG2) = 0; \
+	}; \
+	 \
+	class NAME \
+	{ \
+	public: \
+	 \
+		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+	};
 
 	DEFINE_EVENT(IEvent)
 	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pos)
@@ -286,7 +281,7 @@ namespace RENDER_MASTER
 	struct MeshIndexDesc
 	{
 		uint8 *pData{nullptr};
-		uint number{0}; // number of index
+		uint number{0}; // number of indexes
 		MESH_INDEX_FORMAT format{MESH_INDEX_FORMAT::NOTHING};
 	};
 
@@ -453,7 +448,7 @@ namespace RENDER_MASTER
 		virtual API CloseScene() = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 		virtual API AddRootGameObject(IResource* pGameObject) = 0;
-		virtual API GetChilds(OUT uint *number, IResource *parent) = 0;
+		virtual API GetNumberOfChilds(OUT uint *number, IResource *parent) = 0;
 		virtual API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) = 0;
 
 		//events

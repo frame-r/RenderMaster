@@ -72,7 +72,6 @@ API SceneManager::LoadScene(const char *pRelativeScenePath)
 	loadSceneManager(model_yaml, *this);
 
 	delete tmp;
-	//LOG_FORMATTED("Scene saved to: %s\n", name);
 
 	return S_OK;
 }
@@ -117,7 +116,7 @@ API SceneManager::AddRootGameObject(IResource* pGameObject)
 	return S_OK;
 }
 
-API SceneManager::GetChilds(OUT uint *number, IResource *parent)
+API SceneManager::GetNumberOfChilds(OUT uint *number, IResource *parent)
 {
 	if (parent)
 	{
@@ -141,7 +140,7 @@ API SceneManager::GetChilds(OUT uint *number, IResource *parent)
 API SceneManager::GetChild(OUT IResource **pGameObject, IResource *parent, uint idx)
 {
 	uint number;
-	GetChilds(&number, parent);
+	GetNumberOfChilds(&number, parent);
 	assert(idx < number && "SceneManager::GetChild() idx is out of range");
 
 	if (parent)
