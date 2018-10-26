@@ -31,7 +31,7 @@ public:
 	API CloseScene() override;
 	API GetDefaultCamera(OUT ICamera **pCamera) override;
 	API AddRootGameObject(IResource *pGameObject) override;
-	API GetChilds(OUT uint *number, IResource *parent) override;
+	API GetNumberOfChilds(OUT uint *number, IResource *parent) override;
 	API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) override;
 	
 	// Events

@@ -448,7 +448,7 @@ namespace RENDER_MASTER
 		virtual API CloseScene() = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 		virtual API AddRootGameObject(IResource* pGameObject) = 0;
-		virtual API GetChilds(OUT uint *number, IResource *parent) = 0;
+		virtual API GetNumberOfChilds(OUT uint *number, IResource *parent) = 0;
 		virtual API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) = 0;
 
 		//events
