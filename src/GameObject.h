@@ -19,25 +19,21 @@ protected:
 
 public:
 
-	GameObjectBase()
-	{
-		_fileID = getRandomInt();
-	}
-
+	GameObjectBase(){ _fileID = getRandomInt(); }
 	virtual ~GameObjectBase() {}
 
-	API GetID(OUT int *id) override;
-	API SetID(int *id) override;
-	API GetName(OUT const char **pName) override;
+	API GetID(OUT int *id) override					{ *id = _fileID; return S_OK; }
+	API SetID(int *id) override						{ _fileID = *id; return S_OK; }
+	API GetName(OUT const char **pName) override	{ *pName = _name.c_str(); return S_OK; }
 	API SetName(const char *pName) override;
 	API SetPosition(const vec3 *pos) override;
 	API SetRotation(const quat *rot) override;
-	API SetScale(const vec3 *scale) override;
-	API GetPosition(OUT vec3 *pos) override;
-	API GetRotation(OUT quat *rot) override;
-	API GetScale(OUT vec3 *scale) override;
+	API SetScale(const vec3 *scale) override		{ _scale = *scale; return S_OK; }
+	API GetPosition(OUT vec3 *pos) override			{ *pos = _pos; return S_OK; }
+	API GetRotation(OUT quat *rot) override			{ *rot = _rot; return S_OK; }
+	API GetScale(OUT vec3 *scale) override			{ *scale = _scale; return S_OK; }
 	API GetAABB(OUT AABB *aabb) override;
-	API Free() override;
+	API Free() override								{ return S_OK; }
 
 	//
 	// Model Matrix
@@ -59,10 +55,9 @@ public:
 	//
 	API GetInvModelMatrix(OUT mat4 *mat) override;
 
-
-	API GetNameEv(OUT IStringEvent **pEvent) override;
-	API GetPositionEv(OUT IPositionEvent **pEvent) override;
-	API GetRotationEv(OUT IRotationEvent **pEvent) override;
+	API GetNameEv(OUT IStringEvent **pEvent) override			{ *pEvent = _nameEvent.get(); return S_OK; }
+	API GetPositionEv(OUT IPositionEvent **pEvent) override		{ *pEvent = _positionEvent.get(); return S_OK; }
+	API GetRotationEv(OUT IRotationEvent **pEvent) override		{ *pEvent = _rotationEvent.get(); return S_OK; }
 };
 
 class GameObject : public GameObjectBase<IGameObject> {};
@@ -70,27 +65,6 @@ class GameObject : public GameObjectBase<IGameObject> {};
 
 
 // implementation
-
-template<typename T>
-inline API GameObjectBase<T>::GetID(OUT int *id)
-{
-	*id = _fileID;
-	return S_OK;
-}
-
-template<typename T>
-inline API GameObjectBase<T>::SetID(int *id)
-{
-	_fileID = *id;
-	return S_OK;
-}
-
-template<typename T>
-inline API GameObjectBase<T>::GetName(OUT const char ** pName)
-{
-	*pName = _name.c_str();
-	return S_OK;
-}
 
 template <typename T>
 inline API GameObjectBase<T>::SetName(const char* pName)
@@ -123,40 +97,6 @@ inline API GameObjectBase<T>::SetRotation(const quat *rot)
 		_rot = *rot;
 		_rotationEvent->Fire(&_rot);
 	}
-	return S_OK;
-}
-
-template <typename T>
-inline API GameObjectBase<T>::SetScale(const vec3* scale)
-{
-	_scale = *scale;
-	return S_OK;
-}
-
-template<typename T>
-inline API GameObjectBase<T>::GetPosition(OUT vec3 * pos)
-{
-	*pos = _pos;
-	return S_OK;
-}
-
-template<typename T>
-inline API GameObjectBase<T>::GetRotation(OUT quat *rot)
-{
-	*rot = _rot;
-	return S_OK;
-}
-
-template<typename T>
-inline API GameObjectBase<T>::Free()
-{
-	return S_OK;
-}
-
-template <typename T>
-inline API GameObjectBase<T>::GetScale(vec3* scale)
-{
-	*scale = _scale;
 	return S_OK;
 }
 
@@ -202,23 +142,3 @@ inline API GameObjectBase<T>::GetInvModelMatrix(OUT mat4 *mat)
 	return S_OK;
 }
 
-template<typename T>
-inline API GameObjectBase<T>::GetNameEv(OUT IStringEvent **pEvent)
-{
-	*pEvent = _nameEvent.get();
-	return S_OK;
-}
-
-template<typename T>
-inline API GameObjectBase<T>::GetPositionEv(OUT IPositionEvent **pEvent)
-{
-	*pEvent = _positionEvent.get();
-	return S_OK;
-}
-
-template<typename T>
-inline API GameObjectBase<T>::GetRotationEv(OUT IRotationEvent **pEvent)
-{
-	*pEvent = _rotationEvent.get();
-	return S_OK;
-}
