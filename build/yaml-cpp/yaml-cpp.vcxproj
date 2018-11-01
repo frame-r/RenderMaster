@@ -56,14 +56,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\bin\x64\Debug</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\bin\x64\Debug\obj\yaml-cpp</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\bin\x64\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\bin\x64\Debug\obj\yaml-cpp\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">yaml-cpp</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.dll</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\bin\x64\Release</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\bin\x64\Release\obj\yaml-cpp</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\bin\x64\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\bin\x64\Release\obj\yaml-cpp\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">yaml-cpp</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.dll</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
@@ -74,7 +74,7 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.dll</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\RelWithDebInfo\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">..\..\build\yaml-cpp\RelWithDebInfo\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">yaml-cpp.dir\RelWithDebInfo\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">yaml-cpp</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.dll</TargetExt>
@@ -101,10 +101,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR=\"Debug\";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -145,10 +145,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR=\"Release\";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -189,10 +189,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR=\"MinSizeRel\";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -215,7 +215,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -232,10 +232,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR=\"RelWithDebInfo\";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\yaml-cpp\include;..\..\src\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -257,154 +257,92 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp -BC:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp --check-stamp-file C:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp/CMakeFiles/generate.stamp
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MIPSpro-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-C-FeatureTests.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-CXX-FeatureTests.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.12\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\WindowsPaths.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeCCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeCXXCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeRCCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeSystem.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\feature_tests.c;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\feature_tests.cxx;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\yaml-cpp-config-version.cmake.in;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\yaml-cpp-config.cmake.in;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp -BC:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp --check-stamp-file C:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp/CMakeFiles/generate.stamp
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MIPSpro-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-C-FeatureTests.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-CXX-FeatureTests.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.12\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\WindowsPaths.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeCCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeCXXCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeRCCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeSystem.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\feature_tests.c;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\feature_tests.cxx;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\yaml-cpp-config-version.cmake.in;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\yaml-cpp-config.cmake.in;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp -BC:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp --check-stamp-file C:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp/CMakeFiles/generate.stamp
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MIPSpro-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-C-FeatureTests.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-CXX-FeatureTests.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.12\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\WindowsPaths.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeCCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeCXXCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeRCCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeSystem.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\feature_tests.c;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\feature_tests.cxx;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\yaml-cpp-config-version.cmake.in;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\yaml-cpp-config.cmake.in;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" -HC:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp -BC:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp --check-stamp-file C:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp/CMakeFiles/generate.stamp
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:/Users/Konstantin/Documents/RenderMaster/src/yaml-cpp/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCheckCompilerFlagCommonPatterns.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompileFeatures.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Comeau-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MIPSpro-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-C-FeatureTests.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-CXX-FeatureTests.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-3.12\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.12\Modules\Platform\WindowsPaths.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeCCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeCXXCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeRCCompiler.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\3.12.0\CMakeSystem.cmake;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\feature_tests.c;C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\feature_tests.cxx;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\yaml-cpp-config-version.cmake.in;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\yaml-cpp-config.cmake.in;C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt;%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\binary.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\convert.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\directives.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emit.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitfromevents.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitter.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitterstate.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitterutils.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\exceptions.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\exp.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\memory.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\node.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\node_data.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\nodebuilder.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\nodeevents.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\null.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\ostream_wrapper.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\parse.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\parser.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\regex_yaml.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scanner.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scanscalar.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scantag.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scantoken.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\simplekey.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\singledocparser.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\stream.cpp" />
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\tag.cpp" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\anchor.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\binary.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\contrib\anchordict.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\contrib\graphbuilder.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\dll.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emitfromevents.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emitter.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emitterdef.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emittermanip.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emitterstyle.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\eventhandler.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\exceptions.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\mark.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\convert.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\bool_type.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\impl.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\iterator.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\iterator_fwd.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\memory.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\node.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\node_data.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\node_iterator.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\node_ref.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\emit.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\impl.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\iterator.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\node.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\parse.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\ptr.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\type.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\noncopyable.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\null.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\ostream_wrapper.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\parser.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\stlemitter.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\traits.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\yaml.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\collectionstack.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\directives.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitterstate.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitterutils.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\exp.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\indentation.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\nodebuilder.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\nodeevents.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\ptr_vector.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\regex_yaml.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\regeximpl.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scanner.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scanscalar.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scantag.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\setting.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\singledocparser.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\stream.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\streamcharsource.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\stringsource.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\tag.h" />
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\token.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="C:\Users\Konstantin\Documents\RenderMaster\build\yaml-cpp\ZERO_CHECK.vcxproj">
-      <Project>{E9319892-434F-3F5C-B03D-613338667FD4}</Project>
-      <Name>ZERO_CHECK</Name>
-    </ProjectReference>
+    <ClCompile Include="..\..\src\yaml-cpp\src\binary.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\convert.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\directives.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emit.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emitfromevents.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emitter.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emitterstate.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emitterutils.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\exceptions.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\exp.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\memory.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\node.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\node_data.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\nodebuilder.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\nodeevents.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\null.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\ostream_wrapper.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\parse.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\parser.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\regex_yaml.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\scanner.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\scanscalar.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\scantag.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\scantoken.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\simplekey.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\singledocparser.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\stream.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\tag.cpp" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\anchor.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\binary.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\contrib\anchordict.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\contrib\graphbuilder.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\dll.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emitfromevents.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emitter.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emitterdef.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emittermanip.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emitterstyle.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\eventhandler.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\exceptions.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\mark.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\convert.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\bool_type.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\impl.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\iterator.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\iterator_fwd.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\memory.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\node.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\node_data.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\node_iterator.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\node_ref.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\emit.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\impl.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\iterator.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\node.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\parse.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\ptr.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\type.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\noncopyable.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\null.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\ostream_wrapper.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\parser.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\stlemitter.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\traits.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\yaml.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\collectionstack.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\directives.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\emitterstate.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\emitterutils.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\exp.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\indentation.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\nodebuilder.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\nodeevents.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\ptr_vector.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\regex_yaml.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\regeximpl.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\scanner.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\scanscalar.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\scantag.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\setting.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\singledocparser.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\stream.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\streamcharsource.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\stringsource.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\tag.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\token.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
