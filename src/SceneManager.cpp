@@ -39,8 +39,6 @@ API SceneManager::SaveScene(const char *pRelativeScenePath)
 	
 	f->CloseAndFree();
 	
-	_sceneLoaded = true;
-	
 	LOG_FORMATTED("Scene saved to: %s\n", pRelativeScenePath);
 
 	return S_OK;
@@ -48,6 +46,11 @@ API SceneManager::SaveScene(const char *pRelativeScenePath)
 
 API SceneManager::LoadScene(const char *pRelativeScenePath)
 {
+	if (_sceneLoaded)
+	{
+		LOG_WARNING("Closing scene...");
+		CloseScene();
+	}
 	IFileSystem *fs;
 	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
 	
@@ -71,6 +74,8 @@ API SceneManager::LoadScene(const char *pRelativeScenePath)
 
 	loadSceneManager(model_yaml, *this);
 
+	_sceneLoaded = true;
+
 	delete tmp;
 
 	return S_OK;
@@ -85,6 +90,8 @@ API SceneManager::CloseScene()
 	}
 
 	_gameobjects.clear();
+
+	_sceneLoaded = false;
 
 	LOG("Scene closed");
 

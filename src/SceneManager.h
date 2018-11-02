@@ -5,7 +5,7 @@
 
 class SceneManager : public ISceneManager
 {
-	bool _sceneLoaded = false;
+	bool _sceneLoaded = true;
 
 	std::unique_ptr<ResourceEvent> _gameObjectAddedEvent{new ResourceEvent};
 	std::unique_ptr<ResourceEvent> _gameObjectDeleteEvent{new ResourceEvent};
@@ -26,13 +26,18 @@ public:
 	void Init();
 	void Free();
 
+	// Scene
 	API SaveScene(const char *pRelativeScenePath) override;
 	API LoadScene(const char *pRelativeScenePath) override;
 	API CloseScene() override;
-	API GetDefaultCamera(OUT ICamera **pCamera) override;
+
+	// GameObjects manipulations
 	API AddRootGameObject(IResource *pGameObject) override;
 	API GetNumberOfChilds(OUT uint *number, IResource *parent) override;
-	API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) override;
+	API GetChild(OUT IResource **pChildOut, IResource *parent, uint idx) override;
+
+	// Misc
+	API GetDefaultCamera(OUT ICamera **pCamera) override;
 	
 	// Events
 	API GetGameObjectAddedEvent(IResourceEvent** pEvent) override;
