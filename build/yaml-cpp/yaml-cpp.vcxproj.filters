@@ -1,269 +1,94 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\binary.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\convert.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\directives.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitfromevents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitterstate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitterutils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\exceptions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\exp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\memory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\node.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\node_data.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\nodebuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\nodeevents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\null.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\ostream_wrapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\parse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\regex_yaml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scanner.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scanscalar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scantag.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scantoken.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\simplekey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\singledocparser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\stream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\tag.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\src\yaml-cpp\src\binary.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\convert.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\directives.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emit.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emitfromevents.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emitter.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emitterstate.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\emitterutils.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\exceptions.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\exp.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\memory.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\node.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\node_data.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\nodebuilder.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\nodeevents.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\null.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\ostream_wrapper.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\parse.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\parser.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\regex_yaml.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\scanner.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\scanscalar.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\scantag.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\scantoken.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\simplekey.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\singledocparser.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\stream.cpp" />
+    <ClCompile Include="..\..\src\yaml-cpp\src\tag.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\anchor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\binary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\contrib\anchordict.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\contrib\graphbuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\dll.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emitfromevents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emitter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emitterdef.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emittermanip.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\emitterstyle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\eventhandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\exceptions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\mark.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\convert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\bool_type.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\impl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\iterator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\iterator_fwd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\memory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\node_data.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\node_iterator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\detail\node_ref.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\emit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\impl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\iterator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\parse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\ptr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\node\type.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\noncopyable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\null.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\ostream_wrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\parser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\stlemitter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\traits.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\include\yaml-cpp\yaml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\collectionstack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\directives.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitterstate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\emitterutils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\exp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\indentation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\nodebuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\nodeevents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\ptr_vector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\regex_yaml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\regeximpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scanner.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scanscalar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\scantag.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\setting.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\singledocparser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\stream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\streamcharsource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\stringsource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\tag.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\src\token.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="C:\Users\Konstantin\Documents\RenderMaster\src\yaml-cpp\CMakeLists.txt" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\anchor.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\binary.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\contrib\anchordict.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\contrib\graphbuilder.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\dll.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emitfromevents.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emitter.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emitterdef.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emittermanip.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\emitterstyle.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\eventhandler.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\exceptions.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\mark.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\convert.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\bool_type.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\impl.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\iterator.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\iterator_fwd.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\memory.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\node.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\node_data.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\node_iterator.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\detail\node_ref.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\emit.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\impl.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\iterator.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\node.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\parse.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\ptr.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\node\type.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\noncopyable.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\null.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\ostream_wrapper.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\parser.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\stlemitter.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\traits.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\include\yaml-cpp\yaml.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\collectionstack.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\directives.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\emitterstate.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\emitterutils.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\exp.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\indentation.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\nodebuilder.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\nodeevents.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\ptr_vector.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\regex_yaml.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\regeximpl.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\scanner.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\scanscalar.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\scantag.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\setting.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\singledocparser.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\stream.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\streamcharsource.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\stringsource.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\tag.h" />
+    <ClInclude Include="..\..\src\yaml-cpp\src\token.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
