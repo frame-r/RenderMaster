@@ -207,7 +207,8 @@
       <Path>..\bin\$(Platform)\$(Configuration)\$(ProjectName).log</Path>
     </BuildLog>
     <PostBuildEvent>
-      <Command>$(ProjectDir)install.bat debug</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -263,7 +264,8 @@
       <Path>..\bin\$(Platform)\$(Configuration)\$(ProjectName).log</Path>
     </BuildLog>
     <PostBuildEvent>
-      <Command>$(ProjectDir)install.bat release</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
