@@ -52,8 +52,14 @@ namespace RENDER_MASTER
 		OPENGL45				= 0x00000010,
 		DIRECTX11				= 0x00000020,
 		CREATE_CONSOLE_FLAG		= 0x00000F00,
-		NO_CREATE_CONSOLE		= 0x00000100,  // no need create console
-		CREATE_CONSOLE			= 0x00000200 // engine should create console		
+		NO_CREATE_CONSOLE		= 0x00000100, // no need create console
+		CREATE_CONSOLE			= 0x00000200, // engine should create console
+		MSAA_FLAG				= 0x0000F000,
+		MSAA_2X					= 0x00001000,
+		MSAA_4X					= 0x00002000,
+		MSAA_8X					= 0x00003000,
+		MSAA_16X				= 0x00004000,
+		MSAA_32X				= 0x00005000
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
@@ -333,7 +339,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		
-		virtual API Init(const WinHandle* handle) = 0;
+		virtual API Init(const WinHandle* handle, int MSAASamples) = 0;
 		virtual API Free() = 0;
 		virtual API MakeCurrent(const WinHandle* handle) = 0;
 		virtual API SwapBuffers() = 0;

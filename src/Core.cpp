@@ -82,9 +82,9 @@ API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externH
 		_pCoreRender = std::make_unique<GLCoreRender>();
 
 	if (createWindow)
-		_pCoreRender->Init(_pMainWindow->handle());
+		_pCoreRender->Init(_pMainWindow->handle(), get_msaa_samples(flags));
 	else
-		_pCoreRender->Init(externHandle);
+		_pCoreRender->Init(externHandle, get_msaa_samples(flags));
 
 	_pResMan->Init();
 

@@ -262,13 +262,23 @@ std::list<string> get_file_content(const string& filename)
 
 }
 
-//SerializableBase* Fabric::create(string className)
-//{
-//	if (className == "GameObject") return nullptr;
-//	if (className == "SceneManager") return new SceneManager;
-//	if (className == "Model") return new Model(vector<IResource*>());
-//	if (className == "Camera") return new Camera();
-//	return nullptr;
-//}
+// core render
+
+int get_msaa_samples(INIT_FLAGS flags)
+{
+	if ((flags & INIT_FLAGS::MSAA_FLAG) == INIT_FLAGS::MSAA_2X) return 2;
+	else if ((flags & INIT_FLAGS::MSAA_FLAG) == INIT_FLAGS::MSAA_4X) return 4;
+	else if ((flags & INIT_FLAGS::MSAA_FLAG) == INIT_FLAGS::MSAA_8X) return 8;
+	else if ((flags & INIT_FLAGS::MSAA_FLAG) == INIT_FLAGS::MSAA_16X) return 16;
+	else if ((flags & INIT_FLAGS::MSAA_FLAG) == INIT_FLAGS::MSAA_32X) return 32;
+	return 0;
+}
+
+string msaa_to_string(int samples)
+{
+	if (samples == 0)
+		return "no";
+	return std::to_string(samples) + "x";
+}
 
 

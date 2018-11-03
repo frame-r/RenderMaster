@@ -120,13 +120,12 @@ API GLCoreRender::GetName(OUT const char **pTxt)
 	return S_OK;
 }
 
-API GLCoreRender::Init(const WinHandle* handle)
+API GLCoreRender::Init(const WinHandle* handle, int MSAASamples)
 {
 	const int major_version = 4;
 	const int minor_version = 5;
 
-	const bool msaa = false; // set true to init with MSAA
-	const int msaa_samples = 16;
+	const bool msaa = MSAASamples == 2 || MSAASamples == 4 || MSAASamples == 8 || MSAASamples == 16 || MSAASamples == 32; // set true to init with MSAA
 
 	_hWnd = *handle;
 
@@ -141,13 +140,13 @@ API GLCoreRender::Init(const WinHandle* handle)
 		if (_pixel_format == 0)
 		{
 			LOG_FATAL("Wrong ChoosePixelFormat() result");
-			return S_FALSE;
+			return E_FAIL;
 		}
 
 		if (!SetPixelFormat(_hdc, _pixel_format, &pfd))
 		{
 			LOG_FATAL("Wrong SetPixelFormat() result");
-			return S_FALSE;
+			return E_FAIL;
 		}
 
 		HGLRC hrc_fake = wglCreateContext(_hdc);
@@ -158,7 +157,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 			LOG_FATAL("Couldn't initialize GLEW");
 			wglMakeCurrent(nullptr, nullptr);
 			wglDeleteContext(hrc_fake);
-			return S_FALSE;
+			return E_FAIL;
 		}
 
 		wglMakeCurrent(nullptr, nullptr);
@@ -180,13 +179,21 @@ API GLCoreRender::Init(const WinHandle* handle)
 			wglDeleteContext(hrc_fake);
 			ReleaseDC(hwnd_fake, hdc_fake);
 			DestroyWindow(hwnd_fake);
-			return S_FALSE;
+			return E_FAIL;
 		}
 
 		// New way create default framebuffer
-		if (WGLEW_ARB_pixel_format)
+		if (!WGLEW_ARB_pixel_format)
 		{
+			LOG_FATAL("Extension WGLEW_ARB_pixel_format didn't found in driver");
+			return E_FAIL;
+		}
 
+		// Select highest MSAA support
+		int samples = MSAASamples;
+
+		while (samples > 0)
+		{
 			const int iPixelFormatAttribList[] =
 			{
 				WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -197,22 +204,28 @@ API GLCoreRender::Init(const WinHandle* handle)
 				WGL_DEPTH_BITS_ARB, 24,
 				WGL_STENCIL_BITS_ARB, 8,
 				WGL_SAMPLE_BUFFERS_ARB, 1, //Number of buffers (must be 1 at time of writing)
-				WGL_SAMPLES_ARB, msaa_samples,
+				WGL_SAMPLES_ARB, samples,
 				0
 			};
 
 			int numFormats = 0;
 			int chosen = wglChoosePixelFormatARB(_hdc, iPixelFormatAttribList, NULL, 1, &_pixel_format, (UINT*)&numFormats);
-			if (!chosen || numFormats <= 0)
-			{
-				LOG_FATAL("Wrong wglChoosePixelFormatARB() result");
-				return S_FALSE;
-			}
+			if (chosen && numFormats > 0) break;
+
+			samples /= 2;
 		}
-		else
+
+		if (_pixel_format == 0)
 		{
-			LOG_FATAL("Extension WGLEW_ARB_pixel_format didn't found in driver");
-			return S_FALSE;
+			LOG_FATAL("Wrong wglChoosePixelFormatARB() result");
+			return E_FAIL;
+		}
+
+		if (samples != MSAASamples)
+		{
+			string need_msaa = msaa_to_string(MSAASamples);
+			string actially_msaa = msaa_to_string(samples);
+			LOG_WARNING_FORMATTED("GLCoreRender::Init() DirectX doesn't support %s MSAA. Now using %s MSAA", need_msaa.c_str(), actially_msaa.c_str());
 		}
 
 		wglMakeCurrent(nullptr, nullptr);
@@ -224,7 +237,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 	if (!SetPixelFormat(_hdc, _pixel_format, &pfd))
 	{
 		LOG_FATAL("Wrong SetPixelFormat() result");
-		return S_FALSE;
+		return E_FAIL;
 	}
 
 	if (WGLEW_ARB_create_context)
@@ -246,7 +259,7 @@ API GLCoreRender::Init(const WinHandle* handle)
 				wglDeleteContext(_hRC);
 				ReleaseDC(_hWnd, _hdc);
 				LOG_FATAL("Couldn't perform wglMakeCurrent(_hdc, _hRC);");
-				return S_FALSE;
+				return E_FAIL;
 			}
 
 			
@@ -262,13 +275,13 @@ API GLCoreRender::Init(const WinHandle* handle)
 		else
 		{
 			LOG_FATAL("Couldn't create OpenGL context with wglCreateContextAttribsARB()");
-			return S_FALSE;
+			return E_FAIL;
 		}
 	}
 	else
 	{
 		LOG_FATAL("Extension WGLEW_ARB_create_context didn't found in driver");
-		return S_FALSE;
+		return E_FAIL;
 	}
 
 	CHECK_GL_ERRORS();
