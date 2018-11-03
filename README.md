@@ -4,13 +4,14 @@ Graphic engine based on COM (Component Object Model).
 
 ## Features
 * [Editor](https://github.com/fra-zz-mer/RenderMasterEditor)
-* Multi render: DirectX 11, OpenGL 4.5
 * Stable ABI. i.e engine binaries stable across different compiler (that supports COM) and different release of one compiler. Also no need recompiler all engine plugins and applications that uses engine if you migrate to new compiler.
+* Multi render: DirectX 11, OpenGL 4.5
+* MSAA
 
 Planned:
 * Deferred Rendering
 * Physically Based Shading
-* TAA or MSAA
+* TAA
 * Voxel Cone Tracing
 * SSAO, SSR
 
