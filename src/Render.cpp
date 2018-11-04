@@ -50,7 +50,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			delete_char_pp(textOut);
 
 			list<string> lines_lang; 
-			if (isOpenGL())
+			if (is_opengl())
 				lines_lang = get_file_content("language_gl.h");
 			else
 				lines_lang = get_file_content("language_dx11.h");
@@ -58,7 +58,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			lines.insert(lines.begin(), lines_lang.begin(), lines_lang.end());
 
 			Preprocessor proc;
-			if (isOpenGL())
+			if (is_opengl())
 				proc.SetDefine("ENG_OPENGL");
 			else
 				proc.SetDefine("ENG_DIRECTX11");
@@ -103,7 +103,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 	return pShader;
 }
 
-bool Render::isOpenGL()
+bool Render::is_opengl()
 {
 	const char *gapi;
 	_pCoreRender->GetName(&gapi);

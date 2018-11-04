@@ -188,3 +188,7 @@ inline IResourceManager *getResourceManager(ICore *core)
 	return ret;
 }
 
+// core render
+int get_msaa_samples(INIT_FLAGS flags);
+string msaa_to_string(int samples);
+

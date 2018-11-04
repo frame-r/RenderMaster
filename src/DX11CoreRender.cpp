@@ -25,7 +25,7 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
 DX11CoreRender::DX11CoreRender(){}
 DX11CoreRender::~DX11CoreRender(){}
 
-API DX11CoreRender::Init(const WinHandle* handle)
+API DX11CoreRender::Init(const WinHandle* handle, int MSAASamples)
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
@@ -94,6 +94,29 @@ API DX11CoreRender::Init(const WinHandle* handle)
 	if (FAILED(hr))
 		return hr;
 
+	// MSAA
+	{
+		_MSAASamples = MSAASamples;
+
+		while (_MSAASamples > 0)
+		{
+			UINT quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
+			UINT quality_ds = msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
+
+			if (quality && quality_ds) break;			
+
+			_MSAASamples /= 2;
+		}
+
+		if (_MSAASamples != MSAASamples)
+		{
+			string need_msaa = msaa_to_string(MSAASamples);
+			string actially_msaa = msaa_to_string(_MSAASamples);
+			LOG_WARNING_FORMATTED("DX11CoreRender::Init() DirectX doesn't support %s MSAA. Now using %s MSAA", need_msaa.c_str(), actially_msaa.c_str());
+		}
+	}
+
+
 	// Create swap chain
 	ComPtr<IDXGIFactory2> dxgiFactory2;
 	hr = dxgiFactory.As(&dxgiFactory2);
@@ -111,8 +134,8 @@ API DX11CoreRender::Init(const WinHandle* handle)
 		sd.Width = width;
 		sd.Height = height;
 		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		sd.SampleDesc.Count = 1;
-		sd.SampleDesc.Quality = 0;
+		sd.SampleDesc.Count =_MSAASamples;
+		sd.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
@@ -136,8 +159,8 @@ API DX11CoreRender::Init(const WinHandle* handle)
 		sd.BufferDesc.RefreshRate.Denominator = 1;
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.OutputWindow = hwnd;
-		sd.SampleDesc.Count = 1;
-		sd.SampleDesc.Quality = 0;
+		sd.SampleDesc.Count = _MSAASamples;
+		sd.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 		sd.Windowed = TRUE;
 
 		hr = dxgiFactory->CreateSwapChain(_device.Get(), &sd, &_swapChain);
@@ -588,6 +611,15 @@ void DX11CoreRender::destroy_viewport_buffers()
 	_depthStencilView = nullptr;
 }
 
+UINT DX11CoreRender::msaa_quality(DXGI_FORMAT format, int MSAASamples)
+{
+	HRESULT hr;
+	UINT maxQuality;
+	hr = _device->CheckMultisampleQualityLevels(format, MSAASamples, &maxQuality);
+	if (maxQuality > 0) maxQuality--;
+	return maxQuality;
+}
+
 bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 {
 	if (FAILED(_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)_renderTargetTex.GetAddressOf())))
@@ -603,8 +635,8 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	descDepth.MipLevels = 1;
 	descDepth.ArraySize = 1;
 	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	descDepth.SampleDesc.Count = 1;
-	descDepth.SampleDesc.Quality = 0;
+	descDepth.SampleDesc.Count = _MSAASamples;
+	descDepth.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
@@ -616,7 +648,7 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
 	ZeroMemory(&descDSV, sizeof(descDSV));
 	descDSV.Format = descDepth.Format;
-	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.ViewDimension = _MSAASamples > 0 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
 
 	if (FAILED(_device->CreateDepthStencilView(_depthStencilTex.Get(), &descDSV, _depthStencilView.GetAddressOf())))

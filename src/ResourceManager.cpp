@@ -979,6 +979,56 @@ API ResourceManager::CreateUniformBuffer(OUT IResource ** pResource, uint size)
 	return S_OK;
 }
 
+API ResourceManager::CloneResource(OUT IResource *resourceIn, OUT IResource **resourceOut)
+{
+	RES_TYPE type;
+	resourceIn->GetType(&type);
+	CreateResource(resourceOut, type);
+
+	if (*resourceOut == nullptr)
+	{
+		*resourceOut = resourceIn;
+		return S_OK;
+	}
+
+
+	if (type == RES_TYPE::GAME_OBJECT)
+	{
+		IGameObject *originalPointer = nullptr;
+		IGameObject *copyPointer = nullptr;
+
+		resourceIn->GetPointer((void**)&originalPointer);		
+		(*resourceOut)->GetPointer((void**)&copyPointer);
+
+		originalPointer->Copy(copyPointer);
+	} else if (type == RES_TYPE::MODEL)
+	{
+		IModel *originalModel = nullptr;
+		IModel *copyModel = nullptr;
+
+		resourceIn->GetPointer((void**)&originalModel);		
+		(*resourceOut)->GetPointer((void**)&copyModel);
+
+		originalModel->Copy(copyModel);
+	} else if (type == RES_TYPE::CAMERA)
+	{
+		ICamera *originalCamera = nullptr;
+		ICamera *copyCamera = nullptr;
+
+		resourceIn->GetPointer((void**)&originalCamera);		
+		(*resourceOut)->GetPointer((void**)&copyCamera);
+
+		originalCamera->Copy(copyCamera);
+	}	
+
+	ISceneManager *pSceneManager;
+	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
+
+	pSceneManager->AddRootGameObject(*resourceOut);
+
+	return S_OK;
+}
+
 API ResourceManager::GetNumberOfResources(OUT uint *number)
 {
 	*number = (uint) _resources.size();

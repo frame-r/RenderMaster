@@ -60,8 +60,14 @@ namespace RENDER_MASTER
 		OPENGL45				= 0x00000010,
 		DIRECTX11				= 0x00000020,
 		CREATE_CONSOLE_FLAG		= 0x00000F00,
-		NO_CREATE_CONSOLE		= 0x00000100,  // no need create console
-		CREATE_CONSOLE			= 0x00000200 // engine should create console		
+		NO_CREATE_CONSOLE		= 0x00000100, // no need create console
+		CREATE_CONSOLE			= 0x00000200, // engine should create console
+		MSAA_FLAG				= 0x0000F000,
+		MSAA_2X					= 0x00001000,
+		MSAA_4X					= 0x00002000,
+		MSAA_8X					= 0x00003000,
+		MSAA_16X				= 0x00004000,
+		MSAA_32X				= 0x00005000
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
@@ -341,7 +347,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		
-		virtual API Init(const WinHandle* handle) = 0;
+		virtual API Init(const WinHandle* handle, int MSAASamples) = 0;
 		virtual API Free() = 0;
 		virtual API MakeCurrent(const WinHandle* handle) = 0;
 		virtual API SwapBuffers() = 0;
@@ -422,6 +428,7 @@ namespace RENDER_MASTER
 		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetAABB(OUT AABB *aabb) = 0;
+		virtual API Copy(IGameObject *copy) = 0;
 		virtual API Free() = 0;
 
 		// Events
@@ -435,6 +442,7 @@ namespace RENDER_MASTER
 	public:
 		virtual API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
 		virtual API GetFovAngle(OUT float *fovInDegrees) = 0;
+		virtual API Copy(ICamera *copy) = 0;
 	};
 
 	class IModel : public IGameObject
@@ -442,6 +450,7 @@ namespace RENDER_MASTER
 	public:
 		virtual API GetMesh(OUT ICoreMesh **pMesh, uint idx) = 0;
 		virtual API GetNumberOfMesh(OUT uint *number) = 0;
+		virtual API Copy(OUT IModel *copy) = 0;
 	};
 
 	//////////////////////
@@ -454,10 +463,10 @@ namespace RENDER_MASTER
 		virtual API SaveScene(const char *pRelativeScenePath) = 0;
 		virtual API LoadScene(const char *pRelativeScenePath) = 0;
 		virtual API CloseScene() = 0;
-		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 		virtual API AddRootGameObject(IResource* pGameObject) = 0;
 		virtual API GetNumberOfChilds(OUT uint *number, IResource *parent) = 0;
 		virtual API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) = 0;
+		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 
 		//events
 		virtual API GetGameObjectAddedEvent(OUT IResourceEvent **pEvent) = 0;
@@ -556,6 +565,13 @@ namespace RENDER_MASTER
 			resource->GetPointer(&p);
 			return reinterpret_cast<T*>(p);
 		}
+
+		inline ResourcePtr<T> Clone()
+		{
+			IResource *copy;
+			resource->Clone(&copy);
+			return ResourcePtr<T>(copy);
+		}
 	};
 
 	//////////////////////
@@ -573,6 +589,7 @@ namespace RENDER_MASTER
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
+		virtual API CloneResource(OUT IResource *resourceIn, OUT IResource **resourceOut) = 0;
 		virtual API DeleteResource(IResource *pResource) = 0;
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
 
@@ -622,6 +639,13 @@ namespace RENDER_MASTER
 			return ResourcePtr<ICoreMesh>(res);
 		}
 
+		template<typename T>
+		ResourcePtr<T> cloneResource(const ResourcePtr<T>& r)
+		{
+			IResource *resCloned;
+			CloneResource(r.getResource(), &resCloned);
+			return ResourcePtr<T>(resCloned);
+		}
 
 		virtual API Free() = 0;
 	};

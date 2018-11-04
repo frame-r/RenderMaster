@@ -15,17 +15,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		{
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-			IResource*i;
-			resMan->LoadMesh(&i, "hhhh\\path:mesh");
+			{ // Need to reset smart pointer pModel before ReleaseEngine(). Also you may reset it manually: pModel.reset()
 
-			ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
-			ResourcePtr<IModel> pModel1 = resMan->loadModel("box.fbx");
-			pModel1->SetPosition(&vec3(11.0f, 0.0, 0.0));
+				ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
 
-			pCore->Start(); // begin main loop
-
-			pModel.reset(); // reset this pointer in order to engine can release this resource
-			pModel1.reset(); // reset this pointer in order to engine can release this resource
+				pCore->Start(); // Begin main loop
+			} 
 
 			pCore->ReleaseEngine();
 		}

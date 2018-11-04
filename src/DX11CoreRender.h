@@ -252,8 +252,7 @@ class DX11CoreRender final : public ICoreRender
 
 			return ret;
 		}
-
-	}_rasterizerStatePool{*this};
+	};
 
 	class DepthStencilStatePool : public BaseStatePool<D3D11_DEPTH_STENCIL_DESC, ID3D11DepthStencilState, DepthStencilHash>
 	{
@@ -300,7 +299,7 @@ class DX11CoreRender final : public ICoreRender
 
 			return ret;
 		}
-	}_depthStencilStatePool{*this};
+	};
 
 	class BlendStatePool : public BaseStatePool<D3D11_BLEND_DESC, ID3D11BlendState, BlendHash>
 	{
@@ -340,30 +339,39 @@ class DX11CoreRender final : public ICoreRender
 
 			return ret;
 		}
-	}_blendStatePool{*this};
+	};
 
 	struct State
 	{
 		D3D11_RASTERIZER_DESC rasterState;
 		D3D11_DEPTH_STENCIL_DESC depthState;
 		D3D11_BLEND_DESC blendState;
+
+		// TODO: shader, textures, render target
 	};
+
+	RasterizerStatePool _rasterizerStatePool{*this};
+	DepthStencilStatePool _depthStencilStatePool{*this};
+	BlendStatePool _blendStatePool{*this};
 
 	State _currentState;
 	std::stack<State> _statesStack;
 
 	IResourceManager *_pResMan{nullptr};
 
+	int _MSAASamples = 0;
+
 	ID3D11DeviceChild* create_shader_by_src(int type, const char *src);
 	bool create_viewport_buffers(uint w, uint h);
-	void destroy_viewport_buffers();	
+	void destroy_viewport_buffers();
+	UINT msaa_quality(DXGI_FORMAT format, int MSAASamples);
 	
 public:
 
 	DX11CoreRender();
 	virtual ~DX11CoreRender();
 
-	API Init(const WinHandle* handle) override;
+	API Init(const WinHandle* handle, int MSAASamples = 0) override;
 	API Free() override;
 	API MakeCurrent(const WinHandle* handle) override;
 	API SwapBuffers() override;
