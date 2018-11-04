@@ -28,7 +28,7 @@ class File final : public IFile
 
 public:
 
-	File(const char *pName, std::ios_base::openmode& fileMode, const fs::path& fullPath);
+	File(std::ios_base::openmode& fileMode, const fs::path& fullPath);
 
 	API Read(OUT uint8 *pMem, uint bytes) override;
 	API ReadStr(OUT char *pStr, OUT uint *bytes) override;

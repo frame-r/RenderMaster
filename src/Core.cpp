@@ -19,14 +19,14 @@ DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
 
-Core::Core(const char *pWorkingDir, const char *pInstalledDir)
+Core::Core(const mchar *pWorkingDir, const mchar *pInstalledDir)
 {
 	_pCore = this;
 	
 	InitializeCriticalSection(&_cs);
 
-	_pWorkingDir = string(pWorkingDir);
-	_pInstalledDir = string(pInstalledDir);
+	_pWorkingDir = NativeToUTF8(pWorkingDir);
+	_pInstalledDir = NativeToUTF8(pInstalledDir);
 
 	_pfSystem = std::make_unique<FileSystem>();
 	_pConsole = std::make_unique<Console>();
@@ -37,34 +37,31 @@ Core::~Core()
 {
 }
 
-API Core::Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle)
+API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WinHandle* externHandle)
 {
-	const bool createWindow = (flags & INIT_FLAGS::WINDOW_FLAG) != INIT_FLAGS::EXTERN_WINDOW;
-	const bool createConsole = (flags & INIT_FLAGS::CREATE_CONSOLE_FLAG) == INIT_FLAGS::CREATE_CONSOLE;
+	_pDataDir = NativeToUTF8(pDataPath);
 
-	string absoluteDataPath = pDataPath;
-	if (is_relative(pDataPath))
-	{
-		absoluteDataPath = make_absolute(pDataPath, _pInstalledDir.c_str());
-	}
+	if (is_relative(_pDataDir.c_str()))
+		_pDataDir = make_absolute(_pDataDir.c_str(), _pInstalledDir.c_str());
 
 	int exist = 0;
-	_pfSystem->DirectoryExist(absoluteDataPath.c_str(), &exist);
+	_pfSystem->DirectoryExist(_pDataDir.c_str(), &exist);
+
 	if (!exist)
 	{
-		std::cout << "Core::Init(): directory" << absoluteDataPath.c_str() << " doesn't exist\n" << std::endl;
+		std::cout << "Core::Init(): directory" << _pDataDir.c_str() << " doesn't exist\n" << std::endl;
 		return E_ABORT;
 	}
 
-	_pDataDir = string(absoluteDataPath);
-	
+	const bool createConsole = (flags & INIT_FLAGS::CREATE_CONSOLE_FLAG) == INIT_FLAGS::CREATE_CONSOLE;
 	_pConsole->Init(createConsole);
 
 	Log("Start initialization engine...");
 	LogFormatted("Working directory:    %s", LOG_TYPE::NORMAL, _pWorkingDir.c_str());
 	LogFormatted("Installed directory:  %s", LOG_TYPE::NORMAL, _pInstalledDir.c_str());
-	LogFormatted("Data directory:       %s", LOG_TYPE::NORMAL, _pDataDir.c_str());	
+	LogFormatted("Data directory:       %s", LOG_TYPE::NORMAL, _pDataDir.c_str());
 
+	const bool createWindow = (flags & INIT_FLAGS::WINDOW_FLAG) != INIT_FLAGS::EXTERN_WINDOW;
 	if (createWindow)
 	{
 		_pMainWindow = std::make_unique<MainWindow>(_s_main_loop);
@@ -430,7 +427,7 @@ STDMETHODIMP CoreClassFactory::CreateInstance(LPUNKNOWN pUnk, REFIID riid, void 
 	
 	// Recieve working directory from Registry
 	
-	auto get_registry_value = [](TCHAR *key) -> string
+	auto get_registry_value = [](TCHAR *key) -> wstring
 	{
 		std::wstring BaseKey(TEXT("SOFTWARE\\Classes\\CLSID\\{A889F560-58E4-11d0-A68A-0000837E3100}\\InProcServer32\\"));
 
@@ -444,11 +441,11 @@ STDMETHODIMP CoreClassFactory::CreateInstance(LPUNKNOWN pUnk, REFIID riid, void 
 
 		RegGetValue(HKEY_LOCAL_MACHINE, BaseKey.c_str(), key, RRF_RT_REG_SZ, 0, text_buffer.get(), &buffer_size);
 
-		return ConvertFromUtf16ToUtf8(text_buffer.get());
+		return wstring(text_buffer.get());
 	};
 	
-	string workingDir = get_registry_value(TEXT("WorkingDir"));
-	string installedDir = get_registry_value(TEXT("InstalledDir"));
+	wstring workingDir = get_registry_value(TEXT("WorkingDir"));
+	wstring installedDir = get_registry_value(TEXT("InstalledDir"));
 
 	pCore = new Core(workingDir.c_str(), installedDir.c_str());
 

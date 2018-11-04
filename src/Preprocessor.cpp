@@ -57,7 +57,8 @@ void Preprocessor::do_include(list<string>& text, list<string>::iterator& replac
 string Preprocessor::get_next_str(strit& it, const strit& str_end)
 {
 	while (it != str_end && *it == ' ') it++; //skip whitespace
-	while (it != str_end && *it == '\n') it++; //skip EOL
+	while (it != str_end && *it == '\r') it++;
+	while (it != str_end && *it == '\n') it++; //skip LF
 
 	if (it == str_end) return string();
 

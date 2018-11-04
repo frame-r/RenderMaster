@@ -52,7 +52,7 @@ class Core : public ICore
 
 public:
 
-	Core(const char *workingDir, const char *installedDir);
+	Core(const mchar *workingDir, const mchar *installedDir);
 	virtual ~Core();
 
 	template <typename... Arguments>
@@ -69,7 +69,7 @@ public:
 	void Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL);
 	Console *getConsoole() { return _pConsole.get(); }
 
-	API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) override;
+	API Init(INIT_FLAGS flags, const mchar *pDataPath, const WinHandle* externHandle) override;
 	API Start() override;
 	API RenderFrame(const WinHandle* externHandle, const ICamera *pCamera) override;
 	API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) override;

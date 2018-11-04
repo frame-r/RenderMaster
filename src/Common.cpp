@@ -16,24 +16,18 @@ using std::list;
 
 int is_relative(const char *pPath)
 {
-	std::wstring wpPath = ConvertFromUtf8ToUtf16(pPath);
-
-	fs::path wfsPath(wpPath);
-
-	return wfsPath.is_relative();
+	fs::path fsPath = fs::u8path(pPath);
+	return fsPath.is_relative();
 }
 
 string make_absolute(const char *pRelDataPath, const char *pBasePath)
 {
-	std::wstring workingPath = ConvertFromUtf8ToUtf16(pBasePath);
-	std::wstring relPath = ConvertFromUtf8ToUtf16(pRelDataPath);
+	fs::path fsBase = fs::u8path(pBasePath);
+	fs::path fsRel = fs::u8path(pRelDataPath);
 
-	fs::path fbase(workingPath);
-	fs::path frel(relPath);
+	fs::path p = canonical(fsRel, fsBase);
 
-	fs::path p = canonical(frel, fbase);
-
-	return p.string();
+	return p.u8string();
 }
 
 void split_by_eol(const char **&textOut, int &numLinesOut, const string& textIn)
@@ -217,6 +211,28 @@ const char* make_char_p(const list<string>& lines)
 	return ret;
 }
 
+
+string ConvertFromUtf16ToUtf8(const std::wstring& wstr)
+{
+	if (wstr.empty()) return string();
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
+	string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
+	return strTo;
+}
+
+std::wstring ConvertFromUtf8ToUtf16(const string& str)
+{
+	std::wstring res;
+	int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
+	if (size > 0)
+	{
+		vector<wchar_t> buffer(size);
+		MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &buffer[0], size);
+		res.assign(buffer.begin(), buffer.end() - 1);
+	}
+	return res;
+}
 
 std::list<string> get_file_content(const string& filename)
 {

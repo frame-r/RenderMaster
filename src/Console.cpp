@@ -190,25 +190,7 @@ void Console::OutputTxt(const char* pStr)
 	int cur_l = GetWindowTextLength(_hMemo);
 
 	SendMessage(_hMemo, EM_SETSEL, cur_l, cur_l);
-	//if (!newline)
-	//	SendMessage(_hMemo, EM_REPLACESEL, false, (LPARAM)(/*std::wstring(L"\r\n") + */std::wstring(ConvertFromUtf8ToUtf16(pStr))).c_str());
-	//else
 	SendMessage(_hMemo, EM_REPLACESEL, false, (LPARAM)(std::wstring(ConvertFromUtf8ToUtf16(pStr)) + std::wstring(L"\r\n")).c_str());
-	SendMessage(_hMemo, EM_SCROLL, SB_BOTTOM, 0);
-
-	//else
-	//{
-	//	_bToPrevLineActive = bToPrevLine;
-
-	//	if (_hThreadHandle && _hMemo == NULL)
-	//		_strOnCreate += "\r\n"s + pcTxt;
-	//	else
-	//	{
-	//		SendMessage(_hMemo, EM_SETSEL, cur_l, cur_l);
-	//		SendMessage(_hMemo, EM_REPLACESEL, false, (LPARAM)("\r\n"s + pcTxt).c_str());
-	//		SendMessage(_hMemo, EM_SCROLL, SB_BOTTOM, 0);
-	//	}
-	//}
 
 	_prev_line_size = (int)strlen(pStr);
 }

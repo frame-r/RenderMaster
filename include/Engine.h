@@ -19,6 +19,14 @@ typedef unsigned char uint8;
 typedef int uint32;
 typedef HWND WinHandle;
 
+// native strings typedefs
+//
+#ifdef _WIN32
+typedef wchar_t mchar;
+#else
+typedef char mchar;
+#endif
+
 #define DEFINE_ENUM_OPERATORS(ENUM_NAME) \
 inline ENUM_NAME operator|(ENUM_NAME a, ENUM_NAME b) \
 { \
@@ -64,7 +72,7 @@ namespace RENDER_MASTER
 	class ICore : public IUnknown
 	{
 	public:
-		virtual API Init(INIT_FLAGS flags, const char *pDataPath, const WinHandle* externHandle) = 0;
+		virtual API Init(INIT_FLAGS flags, const mchar *pDataPath, const WinHandle* externHandle) = 0;
 		virtual API Start() = 0;
 		virtual API RenderFrame(const WinHandle *externHandle, const ICamera *pCamera) = 0;
 		virtual API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) = 0;

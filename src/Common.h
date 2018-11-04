@@ -103,27 +103,31 @@ std::basic_string<Char> ToLowerCase(std::basic_string<Char> str)
 	} \
 	}
 
-inline string ConvertFromUtf16ToUtf8(const std::wstring &wstr)
-{
-	if (wstr.empty()) return string();
-	int size_needed = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), NULL, 0, NULL, NULL);
-	string strTo(size_needed, 0);
-	WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)wstr.size(), &strTo[0], size_needed, NULL, NULL);
-	return strTo;
-}
+// encoding
 
-inline std::wstring ConvertFromUtf8ToUtf16(const string& str)
+#ifdef _WIN32
+	typedef std::wstring mstring;
+#else
+	typedef std::string mstring;
+#endif
+
+string ConvertFromUtf16ToUtf8(const std::wstring& wstr);
+std::wstring ConvertFromUtf8ToUtf16(const string& str);
+
+#ifdef _WIN32
+inline string NativeToUTF8(const std::wstring& wstr)
 {
-	std::wstring res;
-	int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
-	if (size > 0)
-	{
-		vector<wchar_t> buffer(size);
-		MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &buffer[0], size);
-		res.assign(buffer.begin(), buffer.end() - 1);
-	}
-	return res;
+	return ConvertFromUtf16ToUtf8(wstr);
 }
+inline mstring UTF8ToNative(const string& str)
+{
+	return ConvertFromUtf8ToUtf16(str);
+}
+#else
+#define NativeToUTF8(ARG) ARG
+#define UTF8ToNative(ARG) ARG
+#endif
+
 std::list<string> get_file_content(const string& filename);
 int is_relative(const char *pPath);
 string make_absolute(const char *pRelDataPath, const char *pWorkingPath);

@@ -21,19 +21,16 @@ API FileSystem::OpenFile(OUT IFile **pFile, const char* pPath, FILE_OPEN_MODE mo
 {
 	const bool read = (mode & FILE_OPEN_MODE::READ) == FILE_OPEN_MODE::READ;
 	const bool write = (mode & FILE_OPEN_MODE::WRITE) == FILE_OPEN_MODE::WRITE;
+	
+	fs::path fsPath = fs::u8path(pPath);
 
-	wstring wpPath = ConvertFromUtf8ToUtf16(pPath);
-
-	fs::path wfsPath(wpPath);
-	fs::path wfsFullPath(wpPath);
-
-	if (wfsPath.is_relative())
+	if (fsPath.is_relative())
 	{
-		wstring wdataPath = ConvertFromUtf8ToUtf16(_dataPath);
-		wfsFullPath = wstring(wdataPath + L'\\' + wpPath);
+		fs::path fsDataPath = fs::u8path(_dataPath);
+		fsPath = fsDataPath / fsPath;
 	}
 
-	if (!exists(wfsFullPath) && read)
+	if (!exists(fsPath) && read)
 	{
 		LOG_FATAL("file isn't exist");
 		pFile = nullptr;
@@ -59,7 +56,7 @@ API FileSystem::OpenFile(OUT IFile **pFile, const char* pPath, FILE_OPEN_MODE mo
 	if ((int)(mode & FILE_OPEN_MODE::BINARY))
 		cpp_mode |= ofstream::binary;
 
-	File *_pFile = new File(wfsFullPath.u8string().c_str(), cpp_mode, wfsFullPath);
+	File *_pFile = new File(cpp_mode, fsPath);
 	*pFile = _pFile;
 
 	return S_OK;
@@ -98,19 +95,11 @@ API FileSystem::GetName(OUT const char **pName)
 	return S_OK;
 }
 
-File::File(const char *pName, ios_base::openmode& cpp_mode, const fs::path& fullPath)
+File::File(ios_base::openmode& cpp_mode, const fs::path& fullPath)
 {
-	_fs_full_path = fullPath;
-
-	#if _WIN32 || _WIN64
-		// native for windows is UTF-16 => convert pName UTF-16 to UTF-8
-		wstring name = ConvertFromUtf8ToUtf16(pName);
-
-		_file.open(name, cpp_mode);
-	#else 
-		// native for linux is UTF-8 => no need conversion
-		_file.open(pName, cpp_mode);
-	#endif
+	_fs_full_path = fullPath;	
+	mstring mFUllPath = UTF8ToNative(fullPath.u8string());
+	_file.open(mFUllPath, cpp_mode);
 }
 
 API File::Read(OUT uint8 *pMem, uint bytes)
