@@ -39,17 +39,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	{
 		IResourceManager *resMan;
 
-		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::DIRECTX11, "resources", nullptr)))
+		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::DIRECTX11 | INIT_FLAGS::MSAA_8X, "resources", nullptr)))
 		{
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-			ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
+			{ // Need to reset smart pointer pModel before ReleaseEngine(). Also you may reset it manually: pModel.reset()
 
-			pCore->Start(); // begin main loop
+				ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
 
-			pModel.reset();
+				pCore->Start(); // Begin main loop
+			} 
 
-			pCore->CloseEngine();
+			pCore->ReleaseEngine();
 		}
 
 		FreeCore(pCore);
