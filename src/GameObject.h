@@ -33,6 +33,7 @@ public:
 	API GetRotation(OUT quat *rot) override			{ *rot = _rot; return S_OK; }
 	API GetScale(OUT vec3 *scale) override			{ *scale = _scale; return S_OK; }
 	API GetAABB(OUT AABB *aabb) override;
+	API Copy(IGameObject *copy) override;
 	API Free() override								{ return S_OK; }
 
 	//
@@ -105,6 +106,16 @@ inline API GameObjectBase<T>::GetAABB(OUT AABB* aabb)
 {
 	const static AABB _unitAABB = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f};
 	*aabb = _unitAABB;
+	return S_OK;
+}
+
+template<typename T>
+inline API GameObjectBase<T>::Copy(IGameObject *copy)
+{
+	copy->SetName(_name.c_str());
+	copy->SetPosition(&_pos);
+	copy->SetRotation(&_rot);
+	copy->SetScale(&_scale);
 	return S_OK;
 }
 

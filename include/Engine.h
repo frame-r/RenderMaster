@@ -420,6 +420,7 @@ namespace RENDER_MASTER
 		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetAABB(OUT AABB *aabb) = 0;
+		virtual API Copy(IGameObject *copy) = 0;
 		virtual API Free() = 0;
 
 		// Events
@@ -433,6 +434,7 @@ namespace RENDER_MASTER
 	public:
 		virtual API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
 		virtual API GetFovAngle(OUT float *fovInDegrees) = 0;
+		virtual API Copy(ICamera *copy) = 0;
 	};
 
 	class IModel : public IGameObject
@@ -440,6 +442,7 @@ namespace RENDER_MASTER
 	public:
 		virtual API GetMesh(OUT ICoreMesh **pMesh, uint idx) = 0;
 		virtual API GetNumberOfMesh(OUT uint *number) = 0;
+		virtual API Copy(OUT IModel *copy) = 0;
 	};
 
 	//////////////////////
@@ -554,6 +557,13 @@ namespace RENDER_MASTER
 			resource->GetPointer(&p);
 			return reinterpret_cast<T*>(p);
 		}
+
+		inline ResourcePtr<T> Clone()
+		{
+			IResource *copy;
+			resource->Clone(&copy);
+			return ResourcePtr<T>(copy);
+		}
 	};
 
 	//////////////////////
@@ -571,6 +581,7 @@ namespace RENDER_MASTER
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
+		virtual API CloneResource(OUT IResource *resourceIn, OUT IResource **resourceOut) = 0;
 		virtual API DeleteResource(IResource *pResource) = 0;
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
 
@@ -620,6 +631,13 @@ namespace RENDER_MASTER
 			return ResourcePtr<ICoreMesh>(res);
 		}
 
+		template<typename T>
+		ResourcePtr<T> cloneResource(const ResourcePtr<T>& r)
+		{
+			IResource *resCloned;
+			CloneResource(r.getResource(), &resCloned);
+			return ResourcePtr<T>(resCloned);
+		}
 
 		virtual API Free() = 0;
 	};

@@ -151,6 +151,19 @@ API Camera::GetFovAngle(OUT float *fovInDegrees)
 	return S_OK;
 }
 
+API Camera::Copy(OUT ICamera * copy)
+{
+	IGameObject *copyGO = copy;
+	GameObjectBase<ICamera>::Copy(copy);
+
+	Camera *copyCamera = static_cast<Camera*>(copy);
+	copyCamera->_zNear = _zNear;
+	copyCamera->_zFar = _zFar;
+	copyCamera->_fovAngle = _fovAngle;
+
+	return S_OK;
+}
+
 API Camera::Free()
 {
 	return S_OK;

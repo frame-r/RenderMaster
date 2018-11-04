@@ -48,6 +48,22 @@ API Model::GetAABB(OUT AABB *aabb)
 	return S_OK;
 }
 
+API Model::Copy(OUT IModel *copy)
+{
+	IGameObject *copyGO = copy;
+	GameObjectBase<IModel>::Copy(copy);
+
+	Model *copyModel = static_cast<Model*>(copy);
+
+	copyModel->_meshes = _meshes;
+	for(IResource * m: _meshes)
+		m->AddRef();
+
+	copyModel->_aabb = _aabb;
+
+	return S_OK;
+}
+
 API Model::Free()
 {
 	// free each mesh
