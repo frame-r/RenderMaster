@@ -159,9 +159,9 @@ void Render::Init()
 {
 	_standardShader = _pResMan->loadShaderText("mesh_vertex", nullptr, "mesh_fragment");
 
-	_pAxesMesh = _pResMan->createDefaultMesh(RES_TYPE::MESH_AXES);
-	_pAxesArrowMesh = _pResMan->createDefaultMesh(RES_TYPE::MESH_AXES_ARROWS);
-	_pGridMesh = _pResMan->createDefaultMesh(RES_TYPE::MESH_GRID);
+	_pAxesMesh = _pResMan->loadMesh("std#axes");
+	_pAxesArrowMesh = _pResMan->loadMesh("std#axes_arrows");
+	_pGridMesh = _pResMan->loadMesh("std#grid");
 
 	//dbg
 	//ICoreShader *s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
@@ -169,7 +169,6 @@ void Render::Init()
 	//s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
 	//_shaders_pool.emplace(s);
 
-	// TODO: do trough resources
 	everyFrameParameters = _pResMan->createUniformBuffer(sizeof(EveryFrameParameters));
 
 	LOG("Render initialized");

@@ -45,6 +45,7 @@ namespace RENDER_MASTER
 	class IUpdateCallback;
 	class ICamera;
 	class IGameObject;
+	class IResource;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
 
@@ -109,33 +110,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetName(OUT const char **pName) = 0;
-	};
-
-	enum class RES_TYPE
-	{
-		GAME_OBJECT,
-		CAMERA,
-		MODEL,
-		CORE_MESH,
-		MESH_PLANE,
-		MESH_AXES,
-		MESH_AXES_ARROWS,
-		MESH_GRID,
-		SHADER,
-		UNIFORM_BUFFER,
-		NUMBER
-	};
-
-	class IResource
-	{
-	public:
-		virtual API AddRef() = 0;
-		virtual API Release() = 0;
-		virtual API RefCount(OUT uint *refs) = 0;
-		virtual API GetType(OUT RES_TYPE *type) = 0;
-		virtual API GetFileID(OUT const char **file) = 0;
-		virtual API GetTitle(OUT const char **name) = 0;
-		virtual API GetPointer(OUT void **pointer) = 0;
 	};
 
 	class IInitCallback
@@ -476,6 +450,28 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
+	enum class RES_TYPE
+	{
+		GAME_OBJECT,
+		CAMERA,
+		MODEL,
+		CORE_MESH,
+		SHADER,
+		UNIFORM_BUFFER,
+		NUMBER
+	};
+
+	class IResource
+	{
+	public:
+		virtual API AddRef() = 0;
+		virtual API Release() = 0;
+		virtual API RefCount(OUT uint *refs) = 0;
+		virtual API GetType(OUT RES_TYPE *type) = 0;
+		virtual API GetFileID(OUT const char **file) = 0;
+		virtual API GetPointer(OUT void **pointer) = 0;
+	};
+
 	template<typename T>
 	class ResourcePtr
 	{
@@ -583,8 +579,8 @@ namespace RENDER_MASTER
 		// Manual resource operations (Not recommended)
 		// Using these functions you have to manually call functions IResource::AddRef() when get resource and IResource::Release() when you don't need it
 		//
-		virtual API LoadModel(OUT IResource **pMesh, const char *pFileName) = 0;
-		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshID) = 0;
+		virtual API LoadModel(OUT IResource **pMesh, const char *pModelPath) = 0;
+		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshPath) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
@@ -595,11 +591,18 @@ namespace RENDER_MASTER
 
 		// Hight-level resource operations (Recommended)
 		// 
-		ResourcePtr<IModel> loadModel(const char *pFileName)
+		ResourcePtr<IModel> loadModel(const char *pModelPath)
 		{
 			IResource *res;
-			LoadModel(&res, pFileName);
+			LoadModel(&res, pModelPath);
 			return ResourcePtr<IModel>(res);
+		}
+
+		ResourcePtr<ICoreMesh> loadMesh(const char *pMeshPath)
+		{
+			IResource *res;
+			LoadMesh(&res, pMeshPath);
+			return ResourcePtr<ICoreMesh>(res);
 		}
 
 		ResourcePtr<ShaderText> loadShaderText(const char *pVertName, const char *pGeomName, const char *pFragName)
@@ -628,14 +631,6 @@ namespace RENDER_MASTER
 			IResource *res;
 			CreateResource(&res, RES_TYPE::CAMERA);
 			return ResourcePtr<ICamera>(res);
-		}
-
-		ResourcePtr<ICoreMesh> createDefaultMesh(RES_TYPE type)
-		{
-			IResource *res;
-			if (type < RES_TYPE::MESH_AXES || type > RES_TYPE::MESH_GRID) return ResourcePtr<ICoreMesh>();
-			CreateResource(&res, type);
-			return ResourcePtr<ICoreMesh>(res);
 		}
 
 		template<typename T>

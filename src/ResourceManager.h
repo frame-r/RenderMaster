@@ -16,9 +16,6 @@ class TResource : public IResource
 
 	uint _refCount = 0;
 
-	// Human readable string
-	string _title;
-
 	// Unique string identificator
 	// Example:
 	// - box.fbx
@@ -44,7 +41,7 @@ private:
 		_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 		_pResMan->DeleteResource(this);
 
-		LOG_WARNING_FORMATTED("Deleting resource %s", _title.c_str());
+		LOG_WARNING_FORMATTED("Deleting resource %s", _resourceID.c_str());
 
 		_pointer->Free();
 
@@ -54,7 +51,7 @@ private:
 
 public:
 
-	TResource(T* pointerIn, RES_TYPE type, const string& name, const string& file) : _pointer(pointerIn), _type(type), _title(name), _resourceID(file) {}
+	TResource(T* pointerIn, RES_TYPE type, const string& file) : _pointer(pointerIn), _type(type), _resourceID(file) {}
 	virtual ~TResource() { _free(); }
 
 	T *get() { return _pointer; }
@@ -82,7 +79,6 @@ public:
 	API RefCount(OUT uint *refs) override { *refs = _refCount; return S_OK; }
 	API GetType(OUT RES_TYPE *typeOut) override { *typeOut = _type; return S_OK; }
 	API GetFileID(OUT const char **id) override { *id = _resourceID.c_str(); return S_OK; }
-	API GetTitle(OUT const char **name) override { *name = _title.c_str(); return S_OK; }
 	API GetPointer(OUT void **pointerOut) override { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
 };
 
@@ -112,7 +108,7 @@ class ResourceManager final : public IResourceManager
 	#endif
 
 	const char* _resourceToStr(IResource *pRes);
-	IResource *_createResource(void *pointer, RES_TYPE type, const string& name, const string& file);
+	IResource *_createResource(void *pointer, RES_TYPE type, const string& file);
 	API _resources_list(const char **args, uint argsNumber);
 	string constructFullPath(const string& file);
 	bool check_file_not_exist(const string& fullPath);
@@ -125,8 +121,8 @@ public:
 
 	void Init();
 	
-	API LoadModel(OUT IResource **pModel, const char *pRelativeModelPath) override;
-	API LoadMesh(OUT IResource **pModel, const char *pMeshID) override;
+	API LoadModel(OUT IResource **pModel, const char *pModelPath) override;
+	API LoadMesh(OUT IResource **pModel, const char *pMeshPath) override;
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	API CreateResource(OUT IResource **pResource, RES_TYPE type) override;
 	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;

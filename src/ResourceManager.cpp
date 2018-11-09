@@ -191,7 +191,7 @@ void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxN
 	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
 	string meshName = pMesh->GetName();
-	string decorativeName = string(pRelativePath) + ":" + string(pNode->GetName());
+	string decorativeName = string(pRelativePath) + "#" + string(pNode->GetName());
 
 	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
 	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
@@ -319,7 +319,7 @@ void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxN
 	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
-		meshes.push_back((TResource<ICoreMesh> *)_createResource(pCoreMesh, RES_TYPE::CORE_MESH, decorativeName, decorativeName));
+		meshes.push_back((TResource<ICoreMesh> *)_createResource(pCoreMesh, RES_TYPE::CORE_MESH, decorativeName));
 	else
 		LOG_FATAL("ResourceManager::_LoadMesh(): Can not create mesh");
 }
@@ -368,63 +368,47 @@ const char* ResourceManager::_resourceToStr(IResource *pRes)
 
 	switch (type)
 	{
-		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:
-			return "GAMEOBJECT";
-		case RENDER_MASTER::RES_TYPE::CAMERA:
-			return "CAMERA";
-		case RENDER_MASTER::RES_TYPE::MODEL:
-			return "MODEL";
-
-		case RENDER_MASTER::RES_TYPE::CORE_MESH:
-			return "CORE_MESH";
-		case RENDER_MASTER::RES_TYPE::MESH_AXES:
-			return "MESH_AXES";
-		case RENDER_MASTER::RES_TYPE::MESH_AXES_ARROWS:
-			return "MESH_AXES_ARROWS";
-		case RENDER_MASTER::RES_TYPE::MESH_GRID:
-			return "MESH_GRID";
-		case RENDER_MASTER::RES_TYPE::MESH_PLANE:
-			return "MESH_PLANE";
-
-		case RENDER_MASTER::RES_TYPE::SHADER:
-			return "SHADER";
-
-		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
-			return "UNIFORM_BUFFER";
-
-		default:
-			return "UNKNOWN";
+		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:		return "GAMEOBJECT";
+		case RENDER_MASTER::RES_TYPE::CAMERA:			return "CAMERA";
+		case RENDER_MASTER::RES_TYPE::MODEL:			return "MODEL";
+		case RENDER_MASTER::RES_TYPE::CORE_MESH:		return "CORE_MESH";
+		case RENDER_MASTER::RES_TYPE::SHADER:			return "SHADER";
+		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:	return "UNIFORM_BUFFER";
 	}
-	return nullptr;
+	return "UNKNOWN";
 }
 
-IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const string& name, const string& id)
+IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const string& resID)
 {
 	switch (type)
 	{
 		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:
-			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::GAME_OBJECT, name, id);
+		{
+			int id;
+			IGameObject *go = (IGameObject*)pointer;
+			go->GetID(&id);
+			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::GAME_OBJECT, resID + ' ' + std::to_string(id));
+		}
 		case RENDER_MASTER::RES_TYPE::CAMERA:
-			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::CAMERA, name, id);
+		{
+			int id;
+			ICamera *go = (ICamera*)pointer;
+			go->GetID(&id);
+			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::CAMERA, resID + ' ' + std::to_string(id));
+		}
 		case RENDER_MASTER::RES_TYPE::MODEL:
-			return new TResource<IModel>((IModel*)pointer, RES_TYPE::MODEL, name, id);
-
+		{
+			int id;
+			IModel *go = (IModel*)pointer;
+			go->GetID(&id);
+			return new TResource<IModel>((IModel*)pointer, RES_TYPE::MODEL, resID + ' ' + std::to_string(id));
+		}
 		case RENDER_MASTER::RES_TYPE::CORE_MESH:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, name, id);
-		case RENDER_MASTER::RES_TYPE::MESH_AXES:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_AXES, name, id);
-		case RENDER_MASTER::RES_TYPE::MESH_AXES_ARROWS:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_AXES_ARROWS, name, id);
-		case RENDER_MASTER::RES_TYPE::MESH_GRID:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_GRID, name, id);
-		case RENDER_MASTER::RES_TYPE::MESH_PLANE:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::MESH_PLANE, name, id);
-
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, resID);
 		case RENDER_MASTER::RES_TYPE::SHADER:
-			return new TResource<ShaderText>((ShaderText*)pointer, RES_TYPE::SHADER, name, id);
-
+			return new TResource<ShaderText>((ShaderText*)pointer, RES_TYPE::SHADER, resID);
 		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
-			return new TResource<IUniformBuffer>((IUniformBuffer*)pointer, RES_TYPE::UNIFORM_BUFFER, name, id);
+			return new TResource<IUniformBuffer>((IUniformBuffer*)pointer, RES_TYPE::UNIFORM_BUFFER, resID);
 
 		default:
 			return nullptr;
@@ -465,13 +449,10 @@ API ResourceManager::_resources_list(const char **args, uint argsNumber)
 		uint refs = 0;
 		res->RefCount(&refs);
 
-		const char *name;
-		res->GetTitle(&name);
-
 		const char *id;
 		res->GetFileID(&id);
 
-		LOG_FORMATTED("{refs = %i, type = %-25s, title = \"%-30s\", id = \"%s\"}", refs, _resourceToStr(res), name, id);
+		LOG_FORMATTED("{refs = %i, type = %-25s, id = \"%s\"}", refs, _resourceToStr(res), id);
 	}
 
 	return S_OK;
@@ -553,7 +534,7 @@ API ResourceManager::Free()
 
 void splitMeshID(const string& meshPath, string& relativeModelPath, string& meshID)
 {
-	vector<string> paths = split(string(meshPath), ':');
+	vector<string> paths = split(string(meshPath), '#');
 	if (paths.size() < 2)
 		relativeModelPath = meshPath;
 	else
@@ -632,7 +613,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pRela
 	ISceneManager *pSceneManager;
 	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
 
-	TResource<IModel> *res = (TResource<IModel> *)_createResource(model, RES_TYPE::MODEL, string(pRelativeModelPath), pRelativeModelPath);
+	TResource<IModel> *res = (TResource<IModel> *)_createResource(model, RES_TYPE::MODEL, pRelativeModelPath);
 	_resources.emplace(res);
 
 	pSceneManager->AddRootGameObject(res);
@@ -642,11 +623,11 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pRela
 	return S_OK;
 }
 
-API ResourceManager::LoadMesh(OUT IResource** pMesh, const char *pMeshID)
+API ResourceManager::LoadMesh(OUT IResource** pMeshResource, const char *pMeshPath)
 {
 	string relativeModelPath;
 	string meshID;
-	splitMeshID(pMeshID, relativeModelPath, meshID);
+	splitMeshID(pMeshPath, relativeModelPath, meshID);
 
 	vector<IResource*> loaded_meshes;
 
@@ -658,7 +639,7 @@ API ResourceManager::LoadMesh(OUT IResource** pMesh, const char *pMeshID)
 		_resources.insert(loaded_meshes[0]);
 		_cache_resources.erase(it);
 
-		*pMesh = loaded_meshes[0];
+		*pMeshResource = loaded_meshes[0];
 
 		return S_OK;
 	}
@@ -666,7 +647,151 @@ API ResourceManager::LoadMesh(OUT IResource** pMesh, const char *pMeshID)
 	collect_model_mesh(loaded_meshes, _resources, relativeModelPath.c_str(), meshID.c_str());
 	if (loaded_meshes.size())
 	{
-		*pMesh = loaded_meshes[0];
+		*pMeshResource = loaded_meshes[0];
+		return S_OK;
+	}
+
+	// check if standard mesh
+	// then create new one
+
+	ICoreMesh *stdCoreMesh = nullptr;
+
+	if (!strcmp(pMeshPath, "std#plane"))
+	{
+		float vertexPlane[16] =
+		{
+			-1.0f, 1.0f, 0.0f, 1.0f,
+			 1.0f,-1.0f, 0.0f, 1.0f,
+			 1.0f, 1.0f, 0.0f, 1.0f,
+			-1.0f, 1.0f, 0.0f, 1.0f
+		};
+
+		unsigned short indexPlane[6]
+		{
+			0, 1, 2,
+			0, 2, 3
+		};
+
+		MeshDataDesc desc;
+		desc.pData = reinterpret_cast<uint8*>(vertexPlane);
+		desc.numberOfVertex = 4;
+		desc.positionStride = 16;
+
+		MeshIndexDesc indexDesc;
+		indexDesc.pData = reinterpret_cast<uint8*>(indexPlane);
+		indexDesc.number = 6;
+		indexDesc.format = MESH_INDEX_FORMAT::INT16;
+
+		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES)))
+			return E_ABORT;
+
+	} else if (!strcmp(pMeshPath, "std#axes"))
+	{
+		float vertexAxes[] = {0.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,
+								0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,
+								0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f};
+
+		MeshIndexDesc indexEmpty;
+
+		MeshDataDesc descAxes;
+		descAxes.pData = reinterpret_cast<uint8*>(vertexAxes);
+		descAxes.numberOfVertex = 6;
+		descAxes.positionStride = 32;
+		descAxes.colorPresented = true;
+		descAxes.colorOffset = 16;
+		descAxes.colorStride = 32;
+
+		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
+			return E_ABORT;
+
+	} else if (!strcmp(pMeshPath, "std#axes_arrows"))
+	{
+		// Layout: position, color, position, color, ...
+		const float arrowRadius = 0.065f;
+		const float arrowLength = 0.3f;
+		const int segments = 12;
+		const int numberOfVeretex = 3 * 3 * segments;
+		const int floats = (4 + 4) * numberOfVeretex;
+
+		float vertexAxesArrows[floats];
+		void *M = vertexAxesArrows;
+		for (int i = 0; i < 3; i++) // 3 axes
+		{
+			vec4 color;
+			color.xyzw[i] = 1.0f;
+			color.w = 1.0f;
+			for (int j = 0; j < segments; j++)
+			{
+				constexpr float pi2 = 3.141592654f * 2.0f;
+				float alpha = pi2 * (float(j) / segments);
+				float dAlpha = pi2 * (1.0f / segments);
+
+				vec4 v1, v2, v3;
+
+				v1.xyzw[i] = 1.0f + arrowLength;
+				v1.w = 1.0f;
+
+				v2.xyzw[i] = 1.0f;
+				v2.xyzw[(i + 1) % 3] = cos(alpha) * arrowRadius;
+				v2.xyzw[(i + 2) % 3] = sin(alpha) * arrowRadius;
+				v2.w = 1.0f;
+
+				v3.xyzw[i] = 1.0f;
+				v3.xyzw[(i + 1) % 3] = cos(alpha + dAlpha) * arrowRadius;
+				v3.xyzw[(i + 2) % 3] = sin(alpha + dAlpha) * arrowRadius;
+				v3.w = 1.0f;
+
+				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 0, &v1.x, 16);
+				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 4, &color.x, 16);
+				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 8, &v2.x, 16);
+				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 12, &color.x, 16);
+				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 16, &v3.x, 16);
+				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 20, &color.x, 16);
+			}
+		}
+		MeshIndexDesc indexEmpty;
+
+		MeshDataDesc descArrows;
+		descArrows.pData = reinterpret_cast<uint8*>(vertexAxesArrows);
+		descArrows.numberOfVertex = numberOfVeretex;
+		descArrows.positionStride = 32;
+		descArrows.colorPresented = true;
+		descArrows.colorOffset = 16;
+		descArrows.colorStride = 32;
+
+		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
+			return E_ABORT;
+
+	} else if (!strcmp(pMeshPath, "std#grid"))
+	{
+		const float linesInterval = 5.0f;
+		const int linesNumber = 31;
+		const float startOffset = linesInterval * (linesNumber / 2);
+
+		vec4 vertexGrid[4 * linesNumber];
+		for (int i = 0; i < linesNumber; i++)
+		{
+			vertexGrid[i * 4] = vec4(-startOffset + i * linesInterval, -startOffset, 0.0f, 1.0f);
+			vertexGrid[i * 4 + 1] = vec4(-startOffset + i * linesInterval, startOffset, 0.0f, 1.0f);
+			vertexGrid[i * 4 + 2] = vec4(startOffset, -startOffset + i * linesInterval, 0.0f, 1.0f);
+			vertexGrid[i * 4 + 3] = vec4(-startOffset, -startOffset + i * linesInterval, 0.0f, 1.0f);
+		}
+
+		MeshIndexDesc indexEmpty;
+
+		MeshDataDesc descGrid;
+		descGrid.pData = reinterpret_cast<uint8*>(vertexGrid);
+		descGrid.numberOfVertex = 4 * linesNumber;
+		descGrid.positionStride = 16;
+
+		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
+			return E_ABORT;
+	}
+
+	if (stdCoreMesh)
+	{
+		*pMeshResource = (TResource<ICoreMesh> *)_createResource(stdCoreMesh, RES_TYPE::CORE_MESH, pMeshPath);
+		_resources.emplace(*pMeshResource);
 		return S_OK;
 	}
 
@@ -676,7 +801,7 @@ API ResourceManager::LoadMesh(OUT IResource** pMesh, const char *pMeshID)
 
 		if (!check_file_not_exist(fullPath))
 		{
-			*pMesh = nullptr;
+			*pMeshResource = nullptr;
 			return E_FAIL;
 		}
 
@@ -693,13 +818,13 @@ API ResourceManager::LoadMesh(OUT IResource** pMesh, const char *pMeshID)
 			collect_model_mesh(loaded_meshes, _cache_resources, relativeModelPath.c_str(), meshID.c_str());
 			if (loaded_meshes.size())
 			{
-				// _cache_resources -> _resources
+				// move from _cache_resources to _resources
 				auto it = _cache_resources.find(loaded_meshes[0]);
 				_resources.insert(loaded_meshes[0]);
 				_cache_resources.erase(it);
 
 
-				*pMesh = loaded_meshes[0];
+				*pMeshResource = loaded_meshes[0];
 
 				return S_OK;
 			}
@@ -758,7 +883,7 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 
 	ret &=		load_shader(paths, tex->pFragText, pFragName);
 
-	TResource<ShaderText> *res = (TResource<ShaderText> *) _createResource(tex, RES_TYPE::SHADER, pFragName, paths.c_str());
+	TResource<ShaderText> *res = (TResource<ShaderText> *) _createResource(tex, RES_TYPE::SHADER, paths.c_str());
 	_resources.emplace(res);
 	*pShader = res;
 
@@ -774,195 +899,20 @@ API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
 		return E_ABORT;
 	}
 
-	string name;
-
 	switch (type)
 	{
-	case RES_TYPE::MESH_PLANE:
-	case RES_TYPE::MESH_AXES:
-	case RES_TYPE::MESH_AXES_ARROWS:
-	case RES_TYPE::MESH_GRID:
-		{
-			IResource *res = nullptr;
-
-			auto it = std::find_if(_resources.begin(), _resources.end(), [type](IResource *res) -> bool
-			{
-				RES_TYPE next_type;
-
-				res->GetType(&next_type);
-
-				return next_type == type; 
-			});
-
-			if (it != _resources.end())
-			{
-				//(*it)->AddRef();
-				*pResource = *it;
-				return S_OK;
-			}
-
-			// else create new resource
-
-			ICoreMesh *ret = nullptr;
-
-			if (type == RES_TYPE::MESH_PLANE)
-			{
-				name = "CoreMesh MESH_PLANE";
-
-				float vertexPlane[16] =
-				{
-					-1.0f, 1.0f, 0.0f, 1.0f,
-					 1.0f,-1.0f, 0.0f, 1.0f,
-					 1.0f, 1.0f, 0.0f, 1.0f,
-					-1.0f, 1.0f, 0.0f, 1.0f
-				};
-
-				unsigned short indexPlane[6]
-				{
-					0, 1, 2,
-					0, 2, 3
-				};
-
-				MeshDataDesc desc;
-				desc.pData = reinterpret_cast<uint8*>(vertexPlane);
-				desc.numberOfVertex = 4;
-				desc.positionStride = 16;
-
-				MeshIndexDesc indexDesc;
-				indexDesc.pData = reinterpret_cast<uint8*>(indexPlane);
-				indexDesc.number = 6;
-				indexDesc.format = MESH_INDEX_FORMAT::INT16;
-
-				if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&ret, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES)))
-					return E_ABORT;
-
-			} else if (type == RES_TYPE::MESH_AXES)
-			{
-				name = "CoreMesh MESH_AXES";
-
-				float vertexAxes[] = {0.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,
-										0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f};
-
-				MeshIndexDesc indexEmpty;
-
-				MeshDataDesc descAxes;
-				descAxes.pData = reinterpret_cast<uint8*>(vertexAxes);
-				descAxes.numberOfVertex = 6;
-				descAxes.positionStride = 32;
-				descAxes.colorPresented = true;
-				descAxes.colorOffset = 16;
-				descAxes.colorStride = 32;
-
-				if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&ret, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-					return E_ABORT;
-
-			} else if (type == RES_TYPE::MESH_AXES_ARROWS)
-			{
-				name = "CoreMesh MESH_AXES_ARROWS";
-
-				// Layout: position, color, position, color, ...
-
-				const float arrowRadius = 0.065f;
-				const float arrowLength = 0.3f;
-				const int segments = 12;
-				const int numberOfVeretex = 3 * 3 * segments;
-				const int floats = (4 + 4) * numberOfVeretex;
-
-				float vertexAxesArrows[floats];
-				void *M = vertexAxesArrows;
-				for (int i = 0; i < 3; i++) // 3 axes
-				{
-					vec4 color;
-					color.xyzw[i] = 1.0f;
-					color.w = 1.0f;
-					for (int j = 0; j < segments; j++)
-					{
-						constexpr float pi2 = 3.141592654f * 2.0f;
-						float alpha = pi2 * (float(j) / segments);
-						float dAlpha = pi2 * (1.0f / segments);
-
-						vec4 v1, v2, v3;
-
-						v1.xyzw[i] = 1.0f + arrowLength;
-						v1.w = 1.0f;
-
-						v2.xyzw[i] = 1.0f;
-						v2.xyzw[(i + 1) % 3] = cos(alpha) * arrowRadius;
-						v2.xyzw[(i + 2) % 3] = sin(alpha) * arrowRadius;
-						v2.w = 1.0f;
-
-						v3.xyzw[i] = 1.0f;
-						v3.xyzw[(i + 1) % 3] = cos(alpha + dAlpha) * arrowRadius;
-						v3.xyzw[(i + 2) % 3] = sin(alpha + dAlpha) * arrowRadius;
-						v3.w = 1.0f;
-
-						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 0, &v1.x, 16);
-						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 4, &color.x, 16);
-						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 8, &v2.x, 16);
-						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 12, &color.x, 16);
-						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 16, &v3.x, 16);
-						memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 20, &color.x, 16);
-					}
-				}
-				MeshIndexDesc indexEmpty;
-
-				MeshDataDesc descArrows;
-				descArrows.pData = reinterpret_cast<uint8*>(vertexAxesArrows);
-				descArrows.numberOfVertex = numberOfVeretex;
-				descArrows.positionStride = 32;
-				descArrows.colorPresented = true;
-				descArrows.colorOffset = 16;
-				descArrows.colorStride = 32;
-
-				if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&ret, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
-					return E_ABORT;
-
-			} else if (type == RES_TYPE::MESH_GRID)
-			{
-				name = "CoreMesh MESH_GRID";
-
-				const float linesInterval = 5.0f;
-				const int linesNumber = 31;
-				const float startOffset = linesInterval * (linesNumber / 2);
-
-				vec4 vertexGrid[4 * linesNumber];
-				for (int i = 0; i < linesNumber; i++)
-				{
-					vertexGrid[i * 4] = vec4(-startOffset + i * linesInterval, -startOffset, 0.0f, 1.0f);
-					vertexGrid[i * 4 + 1] = vec4(-startOffset + i * linesInterval, startOffset, 0.0f, 1.0f);
-					vertexGrid[i * 4 + 2] = vec4(startOffset, -startOffset + i * linesInterval, 0.0f, 1.0f);
-					vertexGrid[i * 4 + 3] = vec4(-startOffset, -startOffset + i * linesInterval, 0.0f, 1.0f);
-				}
-
-				MeshIndexDesc indexEmpty;
-
-				MeshDataDesc descGrid;
-				descGrid.pData = reinterpret_cast<uint8*>(vertexGrid);
-				descGrid.numberOfVertex = 4 * linesNumber;
-				descGrid.positionStride = 16;
-
-				if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&ret, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-					return E_ABORT;
-			}
-
-			*pResource = _createResource(ret, type, name, "");
-			_resources.emplace(*pResource);
-		}
-		break;
-
 		case RES_TYPE::MODEL:
-			*pResource = _createResource(new Model, RES_TYPE::MODEL, "Model", "");
+			*pResource = _createResource(new Model, RES_TYPE::MODEL, "Model");
 			_resources.emplace(*pResource);
 			break;
 
 		case RES_TYPE::CAMERA:
-			*pResource = _createResource(new Camera, RES_TYPE::CAMERA, "Camera", "");
+			*pResource = _createResource(new Camera, RES_TYPE::CAMERA, "Camera");
 			_resources.emplace(*pResource);
 			break;
 
 		case RES_TYPE::GAME_OBJECT:
-			*pResource = _createResource(new GameObject, RES_TYPE::GAME_OBJECT, "GameObject", "");
+			*pResource = _createResource(new GameObject, RES_TYPE::GAME_OBJECT, "GameObject");
 			_resources.emplace(*pResource);
 			break;
 	}
@@ -974,7 +924,7 @@ API ResourceManager::CreateUniformBuffer(OUT IResource ** pResource, uint size)
 {
 	IUniformBuffer *buf = nullptr;
 	_pCoreRender->CreateUniformBuffer(&buf, size);
-	*pResource = _createResource(buf, RES_TYPE::UNIFORM_BUFFER, string("UniformBuffer: ") + to_string(size) + "b", "");
+	*pResource = _createResource(buf, RES_TYPE::UNIFORM_BUFFER, string("UniformBuffer: ") + to_string(size) + "b");
 	_resources.emplace(*pResource);
 	return S_OK;
 }
@@ -990,7 +940,6 @@ API ResourceManager::CloneResource(OUT IResource *resourceIn, OUT IResource **re
 		*resourceOut = resourceIn;
 		return S_OK;
 	}
-
 
 	if (type == RES_TYPE::GAME_OBJECT)
 	{
