@@ -481,6 +481,11 @@ API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	return hr;
 }
 
+API DX11CoreRender::CreateTexture(OUT ICoreTexture ** pTexture, uint8 * pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+{
+	return E_NOTIMPL;
+}
+
 API DX11CoreRender::SetShader(const ICoreShader* pShader)
 {
 	const DX11Shader *dxShader = static_cast<const DX11Shader*>(pShader);

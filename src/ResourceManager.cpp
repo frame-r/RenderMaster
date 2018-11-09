@@ -890,6 +890,11 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 	return ret;
 }
 
+API ResourceManager::LoadTexture(OUT IResource ** pTextureResource, const char * pMeshPath, TEXTURE_CREATE_FLAGS flags)
+{
+	return E_NOTIMPL;
+}
+
 API ResourceManager::CreateGameObject(OUT IResource **pResource, RES_TYPE type)
 {
 	if (type > RES_TYPE::MODEL)

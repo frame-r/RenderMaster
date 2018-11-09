@@ -121,9 +121,11 @@ public:
 
 	void Init();
 	
-	API LoadModel(OUT IResource **pModel, const char *pModelPath) override;
-	API LoadMesh(OUT IResource **pModel, const char *pMeshPath) override;
-	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
+	API LoadModel(OUT IResource **pModelResource, const char *pModelPath) override;
+	API LoadMesh(OUT IResource **pModelResource, const char *pMeshPath) override;
+	API LoadShaderText(OUT IResource **pShaderResource, const char *pVertName, const char *pGeomName, const char *pFragName) override;
+	API LoadTexture(OUT IResource **pTextureResource, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) override;
+	//API CreateTexture(OUT ICoreTexture **pTextureResource, uint width, uint height, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;
 	API CreateGameObject(OUT IResource **pResource, RES_TYPE type) override;
 	API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) override;

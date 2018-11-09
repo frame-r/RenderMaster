@@ -589,6 +589,11 @@ API GLCoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	return S_OK;
 }
 
+API GLCoreRender::CreateTexture(OUT ICoreTexture ** pTexture, uint8 * pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+{
+	return E_NOTIMPL;
+}
+
 API GLCoreRender::SetShader(const ICoreShader* pShader)
 {
 	CHECK_GL_ERRORS();

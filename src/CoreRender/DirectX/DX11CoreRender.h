@@ -382,6 +382,7 @@ public:
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc) override;
 	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
+	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API SetShader(const ICoreShader *pShader) override;
 	API SetMesh(const ICoreMesh* mesh) override;
 	API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) override;

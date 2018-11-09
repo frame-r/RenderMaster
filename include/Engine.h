@@ -303,10 +303,61 @@ namespace RENDER_MASTER
 		virtual ~ICoreShader(){}
 	};
 
+	enum class TEXTURE_TYPE
+	{
+		TYPE_2D					= 0x0000000F,
+		TYPE_3D					= 0x00000001,
+		TYPE_CUBE				= 0x00000002,
+		TYPE_2D_ARRAY			= 0x00000003,
+		TYPE_CUBE_ARRAY			= 0x00000004
+	};
+
+	enum class TEXTURE_CREATE_FLAGS
+	{
+		FILTER					= 0x000000F0,
+		FILTER_POINT			= 0x00000010,
+		FILTER_LINEAR			= 0x00000020,
+		FILTER_ANISOTROPY_2X	= 0x00000030,
+		FILTER_ANISOTROPY_4X	= 0x00000040,
+		FILTER_ANISOTROPY_8X	= 0x00000050,
+		FILTER_ANISOTROPY_16X	= 0x00000060,
+		// mipmaps filters...
+
+		COORDS					= 0x00000F00,
+		COORDS_WRAP				= 0x00000100,
+		COORDS_MIRROR			= 0x00000200,
+		COORDS_CLAMP			= 0x00000300,
+		COORDS_BORDER			= 0x00000400
+	};
+
+	enum class TEXTURE_FORMAT
+	{
+		// normalized
+		R8,
+		RG8,
+		RGB8,
+		RGBA8,
+
+		// float
+		R16F,
+		RG16F,
+		RGB16F,
+		RGBA16F,
+		R32F,
+		RG32F,
+		RGB32F,
+		RGBA32F,
+
+		// compressed
+		DXT1,
+		DXT3,
+		DXT5
+	};
+
 	class ICoreTexture
 	{
 	public:
-		virtual ~ICoreTexture() {}
+		virtual API Free() = 0;
 	};
 
 	class IUniformBuffer
@@ -330,6 +381,7 @@ namespace RENDER_MASTER
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(OUT ICoreShader **pShader, const ShaderText* shaderDesc) = 0;
 		virtual API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) = 0;
+		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
 		virtual API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) = 0;
@@ -584,6 +636,7 @@ namespace RENDER_MASTER
 		virtual API LoadModel(OUT IResource **pMesh, const char *pModelPath) = 0;
 		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshPath) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
+		virtual API LoadTexture(OUT IResource **pTextureResource, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
 		virtual API CreateGameObject(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) = 0;
