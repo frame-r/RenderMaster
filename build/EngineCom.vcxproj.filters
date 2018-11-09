@@ -4,16 +4,7 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
-    <ClInclude Include="..\src\DX11CoreRender.h">
-      <Filter>CoreRender</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GLShader.h">
-      <Filter>CoreRender</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Console.h" />
-    <ClInclude Include="..\src\GLMesh.h">
-      <Filter>CoreRender</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\Engine.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -39,43 +30,40 @@
     <ClInclude Include="..\src\shaders\language_dx11.h">
       <Filter>Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\DX11Shader.h">
-      <Filter>CoreRender</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\DX11Mesh.h">
-      <Filter>CoreRender</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\pch.h" />
     <ClInclude Include="..\include\VectorMath.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\src\GLEW\glew.h">
-      <Filter>CoreRender\GLEW</Filter>
+      <Filter>CoreRender\OpenGL\GLEW</Filter>
     </ClInclude>
     <ClInclude Include="..\src\GLEW\wglew.h">
-      <Filter>CoreRender\GLEW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GLCoreRender.h">
-      <Filter>CoreRender</Filter>
+      <Filter>CoreRender\OpenGL\GLEW</Filter>
     </ClInclude>
     <ClInclude Include="..\src\MainWindow.h" />
     <ClInclude Include="..\src\Serialization.h" />
+    <ClInclude Include="..\src\CoreRender\DirectX\DX11CoreRender.h">
+      <Filter>CoreRender\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CoreRender\DirectX\DX11Mesh.h">
+      <Filter>CoreRender\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CoreRender\DirectX\DX11Shader.h">
+      <Filter>CoreRender\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CoreRender\OpenGL\GLCoreRender.h">
+      <Filter>CoreRender\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CoreRender\OpenGL\GLMesh.h">
+      <Filter>CoreRender\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\CoreRender\OpenGL\GLShader.h">
+      <Filter>CoreRender\OpenGL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
-    <ClCompile Include="..\src\GLCoreRender.cpp">
-      <Filter>CoreRender</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\DX11CoreRender.cpp">
-      <Filter>CoreRender</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\GLMesh.cpp">
-      <Filter>CoreRender</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\GLShader.cpp">
-      <Filter>CoreRender</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Console.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
@@ -90,19 +78,31 @@
     </ClCompile>
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\Preprocessor.cpp" />
-    <ClCompile Include="..\src\DX11Shader.cpp">
-      <Filter>CoreRender</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\DX11Mesh.cpp">
-      <Filter>CoreRender</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\pch.cpp" />
     <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\GLEW\glew.c">
-      <Filter>CoreRender\GLEW</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
+    <ClCompile Include="..\src\CoreRender\DirectX\DX11CoreRender.cpp">
+      <Filter>CoreRender\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CoreRender\DirectX\DX11Mesh.cpp">
+      <Filter>CoreRender\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CoreRender\DirectX\DX11Shader.cpp">
+      <Filter>CoreRender\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CoreRender\OpenGL\GLCoreRender.cpp">
+      <Filter>CoreRender\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CoreRender\OpenGL\GLMesh.cpp">
+      <Filter>CoreRender\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CoreRender\OpenGL\GLShader.cpp">
+      <Filter>CoreRender\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GLEW\glew.c">
+      <Filter>CoreRender\OpenGL\GLEW</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_vertex.shader">
@@ -129,7 +129,13 @@
     <Filter Include="GameObjects">
       <UniqueIdentifier>{cca1a3d1-8ff4-415c-a451-87784ca5df02}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CoreRender\GLEW">
+    <Filter Include="CoreRender\OpenGL">
+      <UniqueIdentifier>{bb304820-a6b2-418d-b9e8-3fa83175b09a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CoreRender\DirectX">
+      <UniqueIdentifier>{eefc4c78-49b5-4fb9-9fe0-2b1c8eab1dd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CoreRender\OpenGL\GLEW">
       <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>

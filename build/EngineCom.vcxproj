@@ -25,17 +25,17 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Console.h" />
     <ClInclude Include="..\src\Core.h" />
-    <ClInclude Include="..\src\DX11CoreRender.h" />
-    <ClInclude Include="..\src\DX11Mesh.h" />
-    <ClInclude Include="..\src\DX11Shader.h" />
+    <ClInclude Include="..\src\CoreRender\DirectX\DX11CoreRender.h" />
+    <ClInclude Include="..\src\CoreRender\DirectX\DX11Mesh.h" />
+    <ClInclude Include="..\src\CoreRender\DirectX\DX11Shader.h" />
     <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\GameObject.h" />
-    <ClInclude Include="..\src\GLCoreRender.h" />
+    <ClInclude Include="..\src\CoreRender\OpenGL\GLCoreRender.h" />
     <ClInclude Include="..\src\GLEW\glew.h" />
     <ClInclude Include="..\src\GLEW\wglew.h" />
-    <ClInclude Include="..\src\GLMesh.h" />
-    <ClInclude Include="..\src\GLShader.h" />
+    <ClInclude Include="..\src\CoreRender\OpenGL\GLMesh.h" />
+    <ClInclude Include="..\src\CoreRender\OpenGL\GLShader.h" />
     <ClInclude Include="..\src\Input.h" />
     <ClInclude Include="..\src\Model.h" />
     <ClInclude Include="..\src\Pch.h" />
@@ -54,18 +54,18 @@
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\Console.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
-    <ClCompile Include="..\src\DX11CoreRender.cpp" />
-    <ClCompile Include="..\src\DX11Mesh.cpp" />
-    <ClCompile Include="..\src\DX11Shader.cpp" />
+    <ClCompile Include="..\src\CoreRender\DirectX\DX11CoreRender.cpp" />
+    <ClCompile Include="..\src\CoreRender\DirectX\DX11Mesh.cpp" />
+    <ClCompile Include="..\src\CoreRender\DirectX\DX11Shader.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
-    <ClCompile Include="..\src\GLCoreRender.cpp" />
+    <ClCompile Include="..\src\CoreRender\OpenGL\GLCoreRender.cpp" />
     <ClCompile Include="..\src\GLEW\glew.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\src\GLShader.cpp" />
-    <ClCompile Include="..\src\GLMesh.cpp" />
+    <ClCompile Include="..\src\CoreRender\OpenGL\GLShader.cpp" />
+    <ClCompile Include="..\src\CoreRender\OpenGL\GLMesh.cpp" />
     <ClCompile Include="..\src\Main.cpp" />
     <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\Pch.cpp">
@@ -168,7 +168,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\yaml-cpp\include;..\src\CoreRender\DirectX;..\src\CoreRender\OpenGL</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -186,7 +186,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir);C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\yaml-cpp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\yaml-cpp\include;..\src\CoreRender\DirectX;..\src\CoreRender\OpenGL</AdditionalIncludeDirectories>
       <ShowIncludes>false</ShowIncludes>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
@@ -219,7 +219,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\yaml-cpp\include;..\src\CoreRender\DirectX;..\src\CoreRender\OpenGL</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -241,7 +241,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\yaml-cpp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\yaml-cpp\include;..\src\CoreRender\DirectX;..\src\CoreRender\OpenGL</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
