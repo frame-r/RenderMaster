@@ -577,7 +577,9 @@ namespace RENDER_MASTER
 	public:
 
 		// Manual resource operations (Not recommended)
-		// Using these functions you have to manually call functions IResource::AddRef() when get resource and IResource::Release() when you don't need it
+		// Using these functions you have to manually call functions
+		// IResource::AddRef() when you get resource and
+		// IResource::Release() when you don't need it anymore
 		//
 		virtual API LoadModel(OUT IResource **pMesh, const char *pModelPath) = 0;
 		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshPath) = 0;
@@ -587,10 +589,14 @@ namespace RENDER_MASTER
 		virtual API CloneResource(OUT IResource *resourceIn, OUT IResource **resourceOut) = 0;
 		virtual API DeleteResource(IResource *pResource) = 0;
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
-
+		virtual API Free() = 0;
 
 		// Hight-level resource operations (Recommended)
-		// 
+		//
+
+		// Load model with all meshes and create it in scene
+		// Examples:
+		//		meshes/big_model.fbx
 		ResourcePtr<IModel> loadModel(const char *pModelPath)
 		{
 			IResource *res;
@@ -598,6 +604,18 @@ namespace RENDER_MASTER
 			return ResourcePtr<IModel>(res);
 		}
 
+		// Load specified mesh
+		//
+		// pMeshPath in folowing format: <path to model>#<mesh in model> or std#<some standard resource>
+		//
+		// Examples:
+		//		meshes/first_model.fbx#mesh001
+		//		second_model.fbx#mesh442
+		// Standard Resources:
+		//		std#axes
+		//		std#axes_arrows
+		//		std#grid
+		//		std#plane
 		ResourcePtr<ICoreMesh> loadMesh(const char *pMeshPath)
 		{
 			IResource *res;
@@ -640,8 +658,6 @@ namespace RENDER_MASTER
 			CloneResource(r.getResource(), &resCloned);
 			return ResourcePtr<T>(resCloned);
 		}
-
-		virtual API Free() = 0;
 	};
 
 	
