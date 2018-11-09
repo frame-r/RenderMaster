@@ -584,9 +584,9 @@ namespace RENDER_MASTER
 		virtual API LoadModel(OUT IResource **pMesh, const char *pModelPath) = 0;
 		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshPath) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
-		virtual API CreateResource(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
-		virtual API CloneResource(OUT IResource *resourceIn, OUT IResource **resourceOut) = 0;
+		virtual API CreateGameObject(OUT IResource **pResource, RES_TYPE type) = 0;
+		virtual API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) = 0;
 		virtual API DeleteResource(IResource *pResource) = 0;
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
 		virtual API Free() = 0;
@@ -640,22 +640,22 @@ namespace RENDER_MASTER
 		ResourcePtr<IGameObject> createGameObject()
 		{
 			IResource *res;
-			CreateResource(&res, RES_TYPE::GAME_OBJECT);
+			CreateGameObject(&res, RES_TYPE::GAME_OBJECT);
 			return ResourcePtr<IGameObject>(res);
 		}
 
 		ResourcePtr<ICamera> createCamera()
 		{
 			IResource *res;
-			CreateResource(&res, RES_TYPE::CAMERA);
+			CreateGameObject(&res, RES_TYPE::CAMERA);
 			return ResourcePtr<ICamera>(res);
 		}
 
 		template<typename T>
-		ResourcePtr<T> cloneResource(const ResourcePtr<T>& r)
+		ResourcePtr<T> cloneGameObject(const ResourcePtr<T>& r)
 		{
 			IResource *resCloned;
-			CloneResource(r.getResource(), &resCloned);
+			CloneGameObject(r.getResource(), &resCloned);
 			return ResourcePtr<T>(resCloned);
 		}
 	};

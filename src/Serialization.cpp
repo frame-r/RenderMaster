@@ -197,9 +197,9 @@ IResource *createSceneObject(const string& name)
 
 	IResource *ret;
 
-	if (name == "!GameObject") resMan->CreateResource(&ret, RES_TYPE::GAME_OBJECT);
-	else if (name == "!Model") resMan->CreateResource(&ret, RES_TYPE::MODEL);
-	else if (name == "!Camera") resMan->CreateResource(&ret, RES_TYPE::CAMERA);
+	if (name == "!GameObject") resMan->CreateGameObject(&ret, RES_TYPE::GAME_OBJECT);
+	else if (name == "!Model") resMan->CreateGameObject(&ret, RES_TYPE::MODEL);
+	else if (name == "!Camera") resMan->CreateGameObject(&ret, RES_TYPE::CAMERA);
 	//else if (name == "!Mesh") resMan->LoadModel()
 
 	return ret;

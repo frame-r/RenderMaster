@@ -124,9 +124,9 @@ public:
 	API LoadModel(OUT IResource **pModel, const char *pModelPath) override;
 	API LoadMesh(OUT IResource **pModel, const char *pMeshPath) override;
 	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
-	API CreateResource(OUT IResource **pResource, RES_TYPE type) override;
 	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;
-	API CloneResource(OUT IResource *resourceIn, OUT IResource **resourceOut) override;
+	API CreateGameObject(OUT IResource **pResource, RES_TYPE type) override;
+	API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) override;
 	API DeleteResource(IResource *pResource) override;
 	API GetNumberOfResources(OUT uint *number) override;
 	API GetName(OUT const char **pTxt) override;

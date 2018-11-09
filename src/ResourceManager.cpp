@@ -890,12 +890,12 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 	return ret;
 }
 
-API ResourceManager::CreateResource(OUT IResource **pResource, RES_TYPE type)
+API ResourceManager::CreateGameObject(OUT IResource **pResource, RES_TYPE type)
 {
-	if (type > RES_TYPE::NUMBER)
+	if (type > RES_TYPE::MODEL)
 	{
 		*pResource = nullptr;
-		LOG_WARNING("ResourceManager::GetDefaultResource(): unknown type of resource");
+		LOG_WARNING("ResourceManager::CreateGameObject(): unknown type of game object");
 		return E_ABORT;
 	}
 
@@ -929,11 +929,19 @@ API ResourceManager::CreateUniformBuffer(OUT IResource ** pResource, uint size)
 	return S_OK;
 }
 
-API ResourceManager::CloneResource(OUT IResource *resourceIn, OUT IResource **resourceOut)
+API ResourceManager::CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut)
 {
 	RES_TYPE type;
 	resourceIn->GetType(&type);
-	CreateResource(resourceOut, type);
+
+	if (type > RES_TYPE::MODEL)
+	{
+		*resourceOut = nullptr;
+		LOG_WARNING("ResourceManager::CloneGameObject(): unknown type of game object");
+		return E_ABORT;
+	}
+
+	CreateGameObject(resourceOut, type);
 
 	if (*resourceOut == nullptr)
 	{
