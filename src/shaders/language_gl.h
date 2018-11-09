@@ -46,7 +46,7 @@ out vec4 OUT_COLOR;
 #define IN_ATTRIBUTE(NAME) NAME
 
 // fragment 
-#define GET_ARRIBUTE(NAME) NAME
+#define GET_ATRRIBUTE(NAME) NAME
 
 #define FRAGMENT_OUT
 #define FRAGMENT_IN

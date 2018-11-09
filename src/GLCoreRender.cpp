@@ -120,7 +120,7 @@ API GLCoreRender::GetName(OUT const char **pTxt)
 	return S_OK;
 }
 
-API GLCoreRender::Init(const WinHandle* handle, int MSAASamples)
+API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples)
 {
 	const int major_version = 4;
 	const int minor_version = 5;
@@ -337,7 +337,7 @@ API GLCoreRender::Free()
 	return S_OK;
 }
 
-API GLCoreRender::MakeCurrent(const WinHandle* handle)
+API GLCoreRender::MakeCurrent(const WindowHandle* handle)
 {
 	HDC new_hdc = GetDC(*handle);
 

@@ -2,7 +2,7 @@
 // VERTEX SHADER
 ///////////////////////
 
-#include <mesh_common.shader>
+#include <mesh_common.h>
 
 
 // Input Attributes

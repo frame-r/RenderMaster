@@ -69,9 +69,9 @@ public:
 	void Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL);
 	Console *getConsoole() { return _pConsole.get(); }
 
-	API Init(INIT_FLAGS flags, const mchar *pDataPath, const WinHandle* externHandle) override;
+	API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) override;
 	API Start() override;
-	API RenderFrame(const WinHandle* externHandle, const ICamera *pCamera) override;
+	API RenderFrame(const WindowHandle* externHandle, const ICamera *pCamera) override;
 	API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) override;
 	API GetDataDir(OUT const char **pStr) override;
 	API GetWorkingDir(OUT const char **pStr) override;

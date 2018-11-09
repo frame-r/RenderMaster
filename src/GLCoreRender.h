@@ -78,9 +78,9 @@ public:
 	GLCoreRender();
 	virtual ~GLCoreRender();
 
-	API Init(const WinHandle* handle, int MSAASamples = 0) override;
+	API Init(const WindowHandle* handle, int MSAASamples = 0) override;
 	API Free() override;
-	API MakeCurrent(const WinHandle* handle) override;
+	API MakeCurrent(const WindowHandle* handle) override;
 	API SwapBuffers() override;
 
 	API PushStates() override;

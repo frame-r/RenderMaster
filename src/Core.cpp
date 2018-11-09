@@ -37,7 +37,7 @@ Core::~Core()
 {
 }
 
-API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WinHandle* externHandle)
+API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle)
 {
 	_pDataDir = NativeToUTF8(pDataPath);
 
@@ -119,7 +119,7 @@ API Core::Start()
 	return S_OK;
 }
 
-API Core::RenderFrame(const WinHandle* extern_handle, const ICamera *pCamera)
+API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera)
 {
 	_pCoreRender->MakeCurrent(extern_handle);
 

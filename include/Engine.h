@@ -17,7 +17,7 @@
 typedef unsigned int uint;
 typedef unsigned char uint8;
 typedef int uint32;
-typedef HWND WinHandle;
+typedef HWND WindowHandle;
 
 // native strings typedefs
 //
@@ -55,13 +55,15 @@ namespace RENDER_MASTER
 	enum class INIT_FLAGS
 	{
 		WINDOW_FLAG				= 0x0000000F, 
-		EXTERN_WINDOW			= 0x00000002, // engine uses client's created window	
+		EXTERN_WINDOW			= 0x00000001, // engine uses client's created window, i.e doesn't create it's own
+		
 		GRAPHIC_LIBRARY_FLAG	= 0x000000F0,
 		OPENGL45				= 0x00000010,
 		DIRECTX11				= 0x00000020,
+		
 		CREATE_CONSOLE_FLAG		= 0x00000F00,
-		NO_CREATE_CONSOLE		= 0x00000100, // no need create console
-		CREATE_CONSOLE			= 0x00000200, // engine should create console
+		CREATE_CONSOLE			= 0x00000200, // engine should create console window
+		
 		MSAA_FLAG				= 0x0000F000,
 		MSAA_2X					= 0x00001000,
 		MSAA_4X					= 0x00002000,
@@ -71,16 +73,13 @@ namespace RENDER_MASTER
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
-	// {A97B8EB3-93CE-4A45-800D-367084CFB4B1}
-	DEFINE_GUID(IID_Core,
-		0xa97b8eb3, 0x93ce, 0x4a45, 0x80, 0xd, 0x36, 0x70, 0x84, 0xcf, 0xb4, 0xb1);
-
+	DEFINE_GUID(IID_Core, 0xa97b8eb3, 0x93ce, 0x4a45, 0x80, 0xd, 0x36, 0x70, 0x84, 0xcf, 0xb4, 0xb1);
 	class ICore : public IUnknown
 	{
 	public:
-		virtual API Init(INIT_FLAGS flags, const mchar *pDataPath, const WinHandle* externHandle) = 0;
+		virtual API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) = 0;
 		virtual API Start() = 0;
-		virtual API RenderFrame(const WinHandle *externHandle, const ICamera *pCamera) = 0;
+		virtual API RenderFrame(const WindowHandle *externHandle, const ICamera *pCamera) = 0;
 		virtual API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API GetDataDir(OUT const char **pStr) = 0;
 		virtual API GetWorkingDir(OUT const char **pStr) = 0;
@@ -126,7 +125,6 @@ namespace RENDER_MASTER
 		UNIFORM_BUFFER,
 		NUMBER
 	};
-
 
 	class IResource
 	{
@@ -347,9 +345,9 @@ namespace RENDER_MASTER
 	{
 	public:
 		
-		virtual API Init(const WinHandle* handle, int MSAASamples) = 0;
+		virtual API Init(const WindowHandle* handle, int MSAASamples) = 0;
 		virtual API Free() = 0;
-		virtual API MakeCurrent(const WinHandle* handle) = 0;
+		virtual API MakeCurrent(const WindowHandle* handle) = 0;
 		virtual API SwapBuffers() = 0;
 
 		virtual API PushStates() = 0;
@@ -474,6 +472,10 @@ namespace RENDER_MASTER
 	};
 
 
+	//////////////////////
+	// Resource Manager
+	//////////////////////
+
 	template<typename T>
 	class ResourcePtr
 	{
@@ -574,15 +576,12 @@ namespace RENDER_MASTER
 		}
 	};
 
-	//////////////////////
-	// Resource Manager
-	//////////////////////
-
 	class IResourceManager : public ISubSystem
 	{
 	public:
 
-		// Manual resource operations
+		// Manual resource operations (Not recommended)
+		// Using these functions you have to manually call functions IResource::AddRef() when get resource and IResource::Release() when you don't need it
 		//
 		virtual API LoadModel(OUT IResource **pMesh, const char *pFileName) = 0;
 		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshID) = 0;
@@ -594,8 +593,8 @@ namespace RENDER_MASTER
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
 
 
-		// Hight-level resource operation
-		//
+		// Hight-level resource operations (Recommended)
+		// 
 		ResourcePtr<IModel> loadModel(const char *pFileName)
 		{
 			IResource *res;

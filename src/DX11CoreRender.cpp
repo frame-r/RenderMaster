@@ -25,7 +25,7 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
 DX11CoreRender::DX11CoreRender(){}
 DX11CoreRender::~DX11CoreRender(){}
 
-API DX11CoreRender::Init(const WinHandle* handle, int MSAASamples)
+API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
@@ -254,7 +254,7 @@ API DX11CoreRender::Free()
 	return S_OK;
 }
 
-API DX11CoreRender::MakeCurrent(const WinHandle* handle)
+API DX11CoreRender::MakeCurrent(const WindowHandle* handle)
 {
 	return E_NOTIMPL;
 }

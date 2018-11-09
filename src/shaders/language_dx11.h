@@ -54,7 +54,7 @@ SamplerState g_samLinear : register( s0 );
 #define IN_ATTRIBUTE(NAME) vs_input.NAME
 
 // fragment in
-#define GET_ARRIBUTE(NAME) fs_input.NAME
+#define GET_ATRRIBUTE(NAME) fs_input.NAME
 
 
 #define MAIN_VERTEX(VERTEX_IN, VERTEX_OUT) VERTEX_OUT mainVS(VERTEX_IN vs_input) { \
