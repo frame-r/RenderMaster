@@ -8,21 +8,24 @@
 template<typename T>
 class TResource : public IResource
 {
+	// Pointer to object
 	// Every type which supports Free() method
+	//
 	T *_pointer = nullptr;
 
-	// Type of _pointer to which you can safely cast
+	// Type of pointer to which you can safely cast
+	//
 	RES_TYPE _type;
-
-	uint _refCount = 0;
 
 	// Unique string identificator
 	// Example:
 	// - box.fbx
 	// - box.fbx:mesh01
 	// - picture.png
+	//
 	string _resourceID;
 
+	uint _refCount = 0;
 
 private:
 
