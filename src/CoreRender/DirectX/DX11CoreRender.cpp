@@ -98,7 +98,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
 	{
 		_MSAASamples = MSAASamples;
 
-		while (_MSAASamples > 0)
+		while (_MSAASamples > 1)
 		{
 			UINT quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 			UINT quality_ds = msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
@@ -135,7 +135,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
 		sd.Height = height;
 		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.SampleDesc.Count =_MSAASamples;
-		sd.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
+		sd.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
@@ -160,7 +160,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.OutputWindow = hwnd;
 		sd.SampleDesc.Count = _MSAASamples;
-		sd.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
+		sd.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 		sd.Windowed = TRUE;
 
 		hr = dxgiFactory->CreateSwapChain(_device.Get(), &sd, &_swapChain);
@@ -641,7 +641,7 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	descDepth.ArraySize = 1;
 	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	descDepth.SampleDesc.Count = _MSAASamples;
-	descDepth.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
+	descDepth.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
