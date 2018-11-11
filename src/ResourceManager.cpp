@@ -368,12 +368,8 @@ const char* ResourceManager::_resourceToStr(IResource *pRes)
 
 	switch (type)
 	{
-		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:		return "GAMEOBJECT";
-		case RENDER_MASTER::RES_TYPE::CAMERA:			return "CAMERA";
-		case RENDER_MASTER::RES_TYPE::MODEL:			return "MODEL";
 		case RENDER_MASTER::RES_TYPE::CORE_MESH:		return "CORE_MESH";
 		case RENDER_MASTER::RES_TYPE::SHADER:			return "SHADER";
-		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:	return "UNIFORM_BUFFER";
 	}
 	return "UNKNOWN";
 }
@@ -406,12 +402,7 @@ IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const 
 		case RENDER_MASTER::RES_TYPE::CORE_MESH:
 			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, resID);
 		case RENDER_MASTER::RES_TYPE::SHADER:
-			return new TResource<ShaderText>((ShaderText*)pointer, RES_TYPE::SHADER, resID);
-		case RENDER_MASTER::RES_TYPE::UNIFORM_BUFFER:
-			return new TResource<IUniformBuffer>((IUniformBuffer*)pointer, RES_TYPE::UNIFORM_BUFFER, resID);
-
-		default:
-			return nullptr;
+			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::SHADER, resID);
 	}
 
 	return nullptr;
@@ -569,24 +560,24 @@ void ResourceManager::collect_model_mesh(vector<IResource*>& res_out, std::unord
 	}
 }
 
-API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pRelativeModelPath)
+API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 {
-	assert(is_relative(pRelativeModelPath) && "ResourceManager::LoadModel(): fileName must be relative");
+	assert(is_relative(pModelPath) && "ResourceManager::LoadModel(): fileName must be relative");
 
-	auto fullPath = constructFullPath(pRelativeModelPath);
+	auto fullPath = constructFullPath(pModelPath);
 
 	if (!check_file_not_exist(fullPath))
 	{
-		*pModelResource = nullptr;
+		*pModel = nullptr;
 		return E_FAIL;
 	}
 
 	vector<IResource*> loaded_meshes;
-	collect_model_mesh(loaded_meshes, _resources, pRelativeModelPath, nullptr);
+	collect_model_mesh(loaded_meshes, _resources, pModelPath, nullptr);
 
 	IModel *model = nullptr;
 
-	const string file_ext = ToLowerCase(fs::path(pRelativeModelPath).extension().string().erase(0, 1));
+	const string file_ext = ToLowerCase(fs::path(pModelPath).extension().string().erase(0, 1));
 
 	if (loaded_meshes.size())
 	{
@@ -596,7 +587,7 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pRela
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), pRelativeModelPath);
+		loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), pModelPath);
 
 		for (IResource *m : loaded_meshes)
 			_resources.emplace(m);
@@ -613,12 +604,9 @@ API ResourceManager::LoadModel(OUT IResource **pModelResource, const char *pRela
 	ISceneManager *pSceneManager;
 	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
 
-	TResource<IModel> *res = (TResource<IModel> *)_createResource(model, RES_TYPE::MODEL, pRelativeModelPath);
-	_resources.emplace(res);
-
-	pSceneManager->AddRootGameObject(res);
+	pSceneManager->AddRootGameObject(res);..
 	
-	*pModelResource = res;
+	*pModel = model;
 
 	return S_OK;
 }
@@ -895,7 +883,7 @@ API ResourceManager::LoadTexture(OUT IResource ** pTextureResource, const char *
 	return E_NOTIMPL;
 }
 
-API ResourceManager::CreateGameObject(OUT IResource **pResource, RES_TYPE type)
+API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 {
 	if (type > RES_TYPE::MODEL)
 	{
@@ -925,6 +913,16 @@ API ResourceManager::CreateGameObject(OUT IResource **pResource, RES_TYPE type)
 	return S_OK;
 }
 
+API ResourceManager::CreateModel(OUT IModel ** pModel)
+{
+	return S_OK;
+}
+
+API ResourceManager::CreateCamera(OUT ICamera ** pCamera)
+{
+	return S_OK;
+}
+
 API ResourceManager::AddRuntimeResource(IRuntimeResourcePtr * res)
 {
 	_runtime_resources.emplace(res);
@@ -937,12 +935,14 @@ API ResourceManager::RemoveRuntimeResource(IRuntimeResourcePtr * res)
 	return S_OK;
 }
 
-API ResourceManager::CreateUniformBuffer(OUT IResource ** pResource, uint size)
+API ResourceManager::CreateCoreMesh(OUT ICoreMesh ** pMesh)
 {
-	IUniformBuffer *buf = nullptr;
-	_pCoreRender->CreateUniformBuffer(&buf, size);
-	*pResource = _createResource(buf, RES_TYPE::UNIFORM_BUFFER, string("UniformBuffer: ") + to_string(size) + "b");
-	_resources.emplace(*pResource);
+	return S_OK;
+}
+
+API ResourceManager::CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size)
+{
+	_pCoreRender->CreateUniformBuffer(pUniformBuffer, size);
 	return S_OK;
 }
 

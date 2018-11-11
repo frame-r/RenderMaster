@@ -7,17 +7,19 @@ class SceneManager : public ISceneManager
 {
 	bool _sceneLoaded = true;
 
-	std::unique_ptr<ResourceEvent> _gameObjectAddedEvent{new ResourceEvent};
-	std::unique_ptr<ResourceEvent> _gameObjectDeleteEvent{new ResourceEvent};
+	std::unique_ptr<GameObjectEvent> _gameObjectAddedEvent{new GameObjectEvent};
+	std::unique_ptr<GameObjectEvent> _gameObjectDeleteEvent{new GameObjectEvent};
 
-	tree<IResource*>::iterator gameobject_to_iterator(IResource *pGameObject);
+	tree<IGameObject*>::iterator gameobject_to_iterator(IGameObject *pGameObject);
+
+	RuntimeResourcePtr<ICamera> camera;
 
 	friend void loadSceneManager(YAML::Node& n, SceneManager &sm);
 	friend YAML::Emitter& operator<<(YAML::Emitter& out, const SceneManager& sm);
 
 public:
 
-	tree<IResource*> _gameobjects;
+	tree<IGameObject*> _gameobjects;
 
 public:
 
@@ -25,6 +27,7 @@ public:
 
 	void Init();
 	void Free();
+	void AddGameObjec(IGameObject *go);
 
 	// Scene
 	API SaveScene(const char *pRelativeScenePath) override;
@@ -32,16 +35,15 @@ public:
 	API CloseScene() override;
 
 	// GameObjects manipulations
-	API AddRootGameObject(IResource *pGameObject) override;
-	API GetNumberOfChilds(OUT uint *number, IResource *parent) override;
-	API GetChild(OUT IResource **pChildOut, IResource *parent, uint idx) override;
+	API GetNumberOfChilds(OUT uint *number, IGameObject *parent) override;
+	API GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) override;
 
 	// Misc
 	API GetDefaultCamera(OUT ICamera **pCamera) override;
 	
 	// Events
-	API GetGameObjectAddedEvent(IResourceEvent** pEvent) override;
-	API GetDeleteGameObjectEvent(IResourceEvent** pEvent) override;
+	API GetGameObjectAddedEvent(IGameObjectEvent** pEvent) override;
+	API GetDeleteGameObjectEvent(IGameObjectEvent** pEvent) override;
 
 	// ISubSystem
 	API GetName(OUT const char **pName) override;

@@ -494,8 +494,8 @@ namespace RENDER_MASTER
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 
 		//events
-		virtual API GetGameObjectAddedEvent(OUT IResourceEvent **pEvent) = 0;
-		virtual API GetDeleteGameObjectEvent(IResourceEvent** pEvent) = 0;
+		virtual API GetGameObjectAddedEvent(OUT IGameObjectEvent **pEvent) = 0;
+		virtual API GetDeleteGameObjectEvent(IGameObjectEvent** pEvent) = 0;
 	};
 
 
@@ -503,73 +503,52 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
-	enum class RES_TYPE
-	{
-		GAME_OBJECT,
-		CAMERA,
-		MODEL,
-		CORE_MESH,
-		SHADER,
-		UNIFORM_BUFFER,
-		NUMBER
-	};
-
 	class IRuntimeResourcePtr
 	{
 	//public:
 	//	virtual API GetReferencesCount(OUT uint* refs) = 0;
 	};
 
+	// Unique ptr to resource
+
 	template<typename T>
 	class RuntimeResourcePtr : public IRuntimeResourcePtr
 	{
-		T *_pointer = nullptr;
-		int *_refCount = nullptr;
+		T *_px = nullptr;
 		IResourceManager *_creator = nullptr;
 
-		void _grab()
+		void _destroy()
 		{
-			if (!_refCount)
-				_refCount = new int(1);
-			else
-				++(*_refCount);
-		}
-
-		void _release()
-		{
-			--(*_refCount);
-			if (*_refCount < 1)
-			{
-				_creator->RemoveRuntimeResource(_pointer);
-				_pointer->Free();
-				delete _pointer;
-			}
+			_creator->RemoveRuntimeResource(this);
+			_px->Free();
+			delete _px;
+			_px = nullptr;
 		}
 
 	public:
 		RuntimeResourcePtr() = default;
-		RuntimeResourcePtr(T *pointerIn, IResourceManager creatorIn) : _pointer(pointerIn)
-		{
-			_grab();
+		RuntimeResourcePtr(T *pointerIn, IResourceManager *creatorIn) : _px(pointerIn), _creator(creatorIn) {}
+		RuntimeResourcePtr(const RuntimeResourcePtr<T>& ptr) : _px(ptr._px) {}
+		RuntimeResourcePtr<T> &operator=(const RuntimeResourcePtr<T>& ptr) = delete;
+		RuntimeResourcePtr<T> (RuntimeResourcePtr<T>&& other)
+		{..
+		}
+		RuntimeResourcePtr<T>& operator=(RuntimeResourcePtr<T>&& other)
+		{..
 		}
 		~RuntimeResourcePtr()
 		{
-			_release();
+			_destroy();
 		}
-		RuntimeResourcePtr<T> &operator=(const RuntimeResourcePtr<T>& ptr)
-		{
-			if (this == &ptr)
-				return *this;
-			if (_pointer == ptr._pointer)
-				return *this;
-			_release();
-			resource = ptr.resource;
-			_refCount = ptr._refCount;
-			_grab();
+		
+	};
 
-			return *this;
-		}
-
+	enum class RES_TYPE
+	{
+		TEXTURE,
+		CORE_MESH,
+		SHADER,
+		NUMBER
 	};
 
 	class IResource
@@ -692,17 +671,23 @@ namespace RENDER_MASTER
 		// IResource::AddRef() when you get resource and
 		// IResource::Release() when you don't need it anymore
 		//
-		virtual API LoadModel(OUT IResource **pMesh, const char *pModelPath) = 0;
 		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshPath) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API LoadTexture(OUT IResource **pTextureResource, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
-		virtual API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) = 0;
+		//virtual API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) = 0;
 		virtual API DeleteResource(IResource *pResource) = 0;
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
-		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
-		virtual API CreateGameObject(OUT IResource **pResource, RES_TYPE type) = 0;
+
+		virtual API CreateCoreMesh(OUT ICoreMesh **pMesh) = 0;
+		virtual API CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size) = 0;
+		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
+		virtual API CreateModel(OUT IModel **pModel) = 0;
+		virtual API CreateCamera(OUT ICamera **pCamera) = 0;
+		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
+
 		virtual API AddRuntimeResource(IRuntimeResourcePtr *res) = 0;
 		virtual API RemoveRuntimeResource(IRuntimeResourcePtr *res) = 0;
+
 		virtual API Free() = 0;
 
 		// Hight-level resource operations (Recommended)
@@ -711,12 +696,12 @@ namespace RENDER_MASTER
 		// Load model with all meshes and create it in scene
 		// Examples:
 		//		meshes/big_model.fbx
-		ResourcePtr<IModel> loadModel(const char *pModelPath)
-		{
-			IResource *res;
-			LoadModel(&res, pModelPath);
-			return ResourcePtr<IModel>(res);
-		}
+		//ResourcePtr<IModel> loadModel(const char *pModelPath)
+		//{
+		//	IResource *res;
+		//	LoadModel(&res, pModelPath);
+		//	return ResourcePtr<IModel>(res);
+		//}
 
 		// Load specified mesh
 		//
@@ -745,37 +730,86 @@ namespace RENDER_MASTER
 		}
 
 
+		// Create runtime resources
+		//
+
+		RuntimeResourcePtr<IUniformBuffer> createUniformBuffer(uint size)
+		{
+			IUniformBuffer *buffer;
+			CreateUniformBuffer(&buffer, size);
+			RuntimeResourcePtr<IUniformBuffer> ret(buffer, this);
+			AddRuntimeResource(&ret);
+			return ret;
+		}
+
+		RuntimeResourcePtr<IGameObject> createGameObject()
+		{
+			IGameObject *go;
+			CreateGameObject(&go);
+			RuntimeResourcePtr<IGameObject> ret(go, this);
+			AddRuntimeResource(&ret);
+			return ret;
+		}
+
+		RuntimeResourcePtr<ICamera> createCamera()
+		{
+			ICamera *go;
+			CreateCamera(&go);
+			RuntimeResourcePtr<ICamera> ret(go, this);
+			AddRuntimeResource(&ret);
+			return ret;
+		}
+
+		RuntimeResourcePtr<IModel> createModel()
+		{
+			IModel *go;
+			CreateModel(&go);
+			RuntimeResourcePtr<IModel> ret(go, this);
+			AddRuntimeResource(&ret);
+			return ret;
+		}
+
+		RuntimeResourcePtr<IModel> loadModel(const char *pModelPath)
+		{
+			IModel *mdl;
+			LoadModel(&mdl, pModelPath);
+			RuntimeResourcePtr<IModel> ret(mdl, this);
+			AddRuntimeResource(&ret);
+			return ret;
+		}
+
+
 		//
 		// DEPRECATED
 		//
-		ResourcePtr<IUniformBuffer> createUniformBuffer(uint size)
-		{
-			IResource *res;
-			CreateUniformBuffer(&res, size);
-			return ResourcePtr<IUniformBuffer>(res);
-		}
+		//ResourcePtr<IUniformBuffer> createUniformBuffer(uint size)
+		//{
+		//	IResource *res;
+		//	CreateUniformBuffer(&res, size);
+		//	return ResourcePtr<IUniformBuffer>(res);
+		//}
 
-		ResourcePtr<IGameObject> createGameObject()
-		{
-			IResource *res;
-			CreateGameObject(&res, RES_TYPE::GAME_OBJECT);
-			return ResourcePtr<IGameObject>(res);
-		}
+		//ResourcePtr<IGameObject> createGameObject()
+		//{
+		//	IResource *res;
+		//	CreateGameObject(&res, RES_TYPE::GAME_OBJECT);
+		//	return ResourcePtr<IGameObject>(res);
+		//}
 
-		ResourcePtr<ICamera> createCamera()
-		{
-			IResource *res;
-			CreateGameObject(&res, RES_TYPE::CAMERA);
-			return ResourcePtr<ICamera>(res);
-		}
+		//ResourcePtr<ICamera> createCamera()
+		//{
+		//	IResource *res;
+		//	CreateGameObject(&res, RES_TYPE::CAMERA);
+		//	return ResourcePtr<ICamera>(res);
+		//}
 
-		template<typename T>
-		ResourcePtr<T> cloneGameObject(const ResourcePtr<T>& r)
-		{
-			IResource *resCloned;
-			CloneGameObject(r.getResource(), &resCloned);
-			return ResourcePtr<T>(resCloned);
-		}
+		//template<typename T>
+		//ResourcePtr<T> cloneGameObject(const ResourcePtr<T>& r)
+		//{
+		//	IResource *resCloned;
+		//	CloneGameObject(r.getResource(), &resCloned);
+		//	return ResourcePtr<T>(resCloned);
+		//}
 	};
 
 	
