@@ -90,6 +90,8 @@ class ResourceManager final : public IResourceManager
 {
 	std::unordered_set<IResource*> _resources;
 	std::unordered_set<IResource*> _cache_resources;
+
+	std::unordered_set<IRuntimeResourcePtr*> _runtime_resources;
 		
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
@@ -123,18 +125,27 @@ public:
 	virtual ~ResourceManager();
 
 	void Init();
-	
+
+	// Shared resources
+	// That idintifies by file or standard resources
+	//
 	API LoadModel(OUT IResource **pModelResource, const char *pModelPath) override;
 	API LoadMesh(OUT IResource **pModelResource, const char *pMeshPath) override;
 	API LoadShaderText(OUT IResource **pShaderResource, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	API LoadTexture(OUT IResource **pTextureResource, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) override;
-	//API CreateTexture(OUT ICoreTexture **pTextureResource, uint width, uint height, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
-	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;
-	API CreateGameObject(OUT IResource **pResource, RES_TYPE type) override;
 	API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) override;
 	API DeleteResource(IResource *pResource) override;
 	API GetNumberOfResources(OUT uint *number) override;
-	API GetName(OUT const char **pTxt) override;
+
+	// Runtime resources
+	//
+	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;
+	API CreateGameObject(OUT IResource **pResource, RES_TYPE type) override;
+	//API CreateTexture(OUT ICoreTexture **pTextureResource, uint width, uint height, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
+	API AddRuntimeResource(IRuntimeResourcePtr *res) override;
+	API RemoveRuntimeResource(IRuntimeResourcePtr *res) override;
+
 	API Free() override;
+	API GetName(OUT const char **pTxt) override;
 };
 

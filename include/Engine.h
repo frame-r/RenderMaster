@@ -46,6 +46,7 @@ namespace RENDER_MASTER
 	class ICamera;
 	class IGameObject;
 	class IResource;
+	class IResourceManager;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
 
@@ -513,6 +514,64 @@ namespace RENDER_MASTER
 		NUMBER
 	};
 
+	class IRuntimeResourcePtr
+	{
+	//public:
+	//	virtual API GetReferencesCount(OUT uint* refs) = 0;
+	};
+
+	template<typename T>
+	class RuntimeResourcePtr : public IRuntimeResourcePtr
+	{
+		T *_pointer = nullptr;
+		int *_refCount = nullptr;
+		IResourceManager *_creator = nullptr;
+
+		void _grab()
+		{
+			if (!_refCount)
+				_refCount = new int(1);
+			else
+				++(*_refCount);
+		}
+
+		void _release()
+		{
+			--(*_refCount);
+			if (*_refCount < 1)
+			{
+				_creator->RemoveRuntimeResource(_pointer);
+				_pointer->Free();
+				delete _pointer;
+			}
+		}
+
+	public:
+		RuntimeResourcePtr() = default;
+		RuntimeResourcePtr(T *pointerIn, IResourceManager creatorIn) : _pointer(pointerIn)
+		{
+			_grab();
+		}
+		~RuntimeResourcePtr()
+		{
+			_release();
+		}
+		RuntimeResourcePtr<T> &operator=(const RuntimeResourcePtr<T>& ptr)
+		{
+			if (this == &ptr)
+				return *this;
+			if (_pointer == ptr._pointer)
+				return *this;
+			_release();
+			resource = ptr.resource;
+			_refCount = ptr._refCount;
+			_grab();
+
+			return *this;
+		}
+
+	};
+
 	class IResource
 	{
 	public:
@@ -637,11 +696,13 @@ namespace RENDER_MASTER
 		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshPath) = 0;
 		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API LoadTexture(OUT IResource **pTextureResource, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
-		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
-		virtual API CreateGameObject(OUT IResource **pResource, RES_TYPE type) = 0;
 		virtual API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) = 0;
 		virtual API DeleteResource(IResource *pResource) = 0;
 		virtual API GetNumberOfResources(OUT uint *number) = 0;
+		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
+		virtual API CreateGameObject(OUT IResource **pResource, RES_TYPE type) = 0;
+		virtual API AddRuntimeResource(IRuntimeResourcePtr *res) = 0;
+		virtual API RemoveRuntimeResource(IRuntimeResourcePtr *res) = 0;
 		virtual API Free() = 0;
 
 		// Hight-level resource operations (Recommended)
@@ -683,6 +744,10 @@ namespace RENDER_MASTER
 			return ResourcePtr<ShaderText>(res);
 		}
 
+
+		//
+		// DEPRECATED
+		//
 		ResourcePtr<IUniformBuffer> createUniformBuffer(uint size)
 		{
 			IResource *res;

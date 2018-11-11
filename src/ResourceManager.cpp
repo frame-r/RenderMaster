@@ -925,6 +925,18 @@ API ResourceManager::CreateGameObject(OUT IResource **pResource, RES_TYPE type)
 	return S_OK;
 }
 
+API ResourceManager::AddRuntimeResource(IRuntimeResourcePtr * res)
+{
+	_runtime_resources.emplace(res);
+	return S_OK;
+}
+
+API ResourceManager::RemoveRuntimeResource(IRuntimeResourcePtr * res)
+{
+	_runtime_resources.erase(res);
+	return S_OK;
+}
+
 API ResourceManager::CreateUniformBuffer(OUT IResource ** pResource, uint size)
 {
 	IUniformBuffer *buf = nullptr;
