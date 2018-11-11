@@ -12,7 +12,7 @@ public:
 	DX11ConstantBuffer(ID3D11Buffer *bufferIn) : buffer(bufferIn) {}
 	virtual ~DX11ConstantBuffer() { Free(); }
 
-	API Free() { buffer = nullptr; return S_OK; }
+	API Free();
 
 	ID3D11Buffer *nativeBuffer() const { return buffer.Get(); }
 };

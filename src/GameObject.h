@@ -34,7 +34,12 @@ public:
 	API GetScale(OUT vec3 *scale) override			{ *scale = _scale; return S_OK; }
 	API GetAABB(OUT AABB *aabb) override;
 	API Copy(IGameObject *copy) override;
-	API Free() override								{ return S_OK; }
+	API Free() override
+	{
+		IResourceManager *rm = getResourceManager(_pCore);
+		rm->RemoveGameObject(this);
+		return S_OK;
+	}
 
 	//
 	// Model Matrix

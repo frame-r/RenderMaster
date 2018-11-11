@@ -70,5 +70,8 @@ API Model::Free()
 	for (IResource *m : _meshes)
 		m->Release();
 
+	IResourceManager *rm = getResourceManager(_pCore);
+	rm->RemoveModel(this);
+
 	return S_OK;
 }

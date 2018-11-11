@@ -166,5 +166,8 @@ API Camera::Copy(OUT ICamera * copy)
 
 API Camera::Free()
 {
+	IResourceManager *rm = getResourceManager(_pCore);
+	rm->RemoveCamera(this);
+
 	return S_OK;
 }

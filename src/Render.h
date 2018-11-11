@@ -28,7 +28,7 @@ class Render : public IRender
 	} params;
 	#pragma pack(pop)
 
-	ResourcePtr<IUniformBuffer> everyFrameParameters;
+	RuntimeResourcePtr<IUniformBuffer> everyFrameParameters;
 
 	float _aspect{1.0f};	
 

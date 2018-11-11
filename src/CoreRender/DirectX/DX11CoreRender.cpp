@@ -759,3 +759,13 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 	}
 }
 
+API DX11ConstantBuffer::Free()
+{
+	IResourceManager *rm = getResourceManager(_pCore);
+	rm->RemoveUniformBuffer(this);
+	buffer = nullptr;
+
+	return S_OK;
+}
+
+

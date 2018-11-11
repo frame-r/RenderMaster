@@ -488,9 +488,8 @@ namespace RENDER_MASTER
 		virtual API SaveScene(const char *pRelativeScenePath) = 0;
 		virtual API LoadScene(const char *pRelativeScenePath) = 0;
 		virtual API CloseScene() = 0;
-		virtual API AddRootGameObject(IResource* pGameObject) = 0;
-		virtual API GetNumberOfChilds(OUT uint *number, IResource *parent) = 0;
-		virtual API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) = 0;
+		virtual API GetNumberOfChilds(OUT uint *number, IGameObject *parent) = 0;
+		virtual API GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 
 		//events
@@ -503,49 +502,54 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
-	class IRuntimeResourcePtr
-	{
-	//public:
-	//	virtual API GetReferencesCount(OUT uint* refs) = 0;
-	};
 
 	// Unique ptr to resource
 
 	template<typename T>
-	class RuntimeResourcePtr : public IRuntimeResourcePtr
+	class RuntimeResourcePtr
 	{
 		T *_px = nullptr;
-		IResourceManager *_creator = nullptr;
 
 		void _destroy()
 		{
-			_creator->RemoveRuntimeResource(this);
-			_px->Free();
-			delete _px;
-			_px = nullptr;
+			if (_px)
+			{
+				_px->Free();
+				delete _px;
+				_px = nullptr;
+			}
 		}
 
 	public:
 		RuntimeResourcePtr() = default;
-		RuntimeResourcePtr(T *pointerIn, IResourceManager *creatorIn) : _px(pointerIn), _creator(creatorIn) {}
+		RuntimeResourcePtr(T *pointerIn) : _px(pointerIn) {}
 		RuntimeResourcePtr(const RuntimeResourcePtr<T>& ptr) : _px(ptr._px) {}
 		RuntimeResourcePtr<T> &operator=(const RuntimeResourcePtr<T>& ptr) = delete;
 		RuntimeResourcePtr<T> (RuntimeResourcePtr<T>&& other)
-		{..
+		{
+			_px = other._px;
+			other._px = nullptr;
 		}
 		RuntimeResourcePtr<T>& operator=(RuntimeResourcePtr<T>&& other)
-		{..
+		{
+			_px = other._px;
+			other._px = nullptr;
+			return *this;
 		}
 		~RuntimeResourcePtr()
 		{
 			_destroy();
 		}
-		
+		void reset()
+		{
+			_destroy();
+		}
+		inline T *get() const { return _px; }
 	};
 
 	enum class RES_TYPE
 	{
-		TEXTURE,
+		CORE_TEXTURE,
 		CORE_MESH,
 		SHADER,
 		NUMBER
@@ -685,8 +689,11 @@ namespace RENDER_MASTER
 		virtual API CreateCamera(OUT ICamera **pCamera) = 0;
 		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
 
-		virtual API AddRuntimeResource(IRuntimeResourcePtr *res) = 0;
-		virtual API RemoveRuntimeResource(IRuntimeResourcePtr *res) = 0;
+		virtual API RemoveCoreMesh(ICoreMesh *res) = 0;
+		virtual API RemoveUniformBuffer(IUniformBuffer *res) = 0;
+		virtual API RemoveGameObject(IGameObject *res) = 0;
+		virtual API RemoveModel(IModel *res) = 0;
+		virtual API RemoveCamera(ICamera *res) = 0;
 
 		virtual API Free() = 0;
 
@@ -737,8 +744,7 @@ namespace RENDER_MASTER
 		{
 			IUniformBuffer *buffer;
 			CreateUniformBuffer(&buffer, size);
-			RuntimeResourcePtr<IUniformBuffer> ret(buffer, this);
-			AddRuntimeResource(&ret);
+			RuntimeResourcePtr<IUniformBuffer> ret(buffer);
 			return ret;
 		}
 
@@ -746,8 +752,7 @@ namespace RENDER_MASTER
 		{
 			IGameObject *go;
 			CreateGameObject(&go);
-			RuntimeResourcePtr<IGameObject> ret(go, this);
-			AddRuntimeResource(&ret);
+			RuntimeResourcePtr<IGameObject> ret(go);
 			return ret;
 		}
 
@@ -755,8 +760,7 @@ namespace RENDER_MASTER
 		{
 			ICamera *go;
 			CreateCamera(&go);
-			RuntimeResourcePtr<ICamera> ret(go, this);
-			AddRuntimeResource(&ret);
+			RuntimeResourcePtr<ICamera> ret(go);
 			return ret;
 		}
 
@@ -764,8 +768,7 @@ namespace RENDER_MASTER
 		{
 			IModel *go;
 			CreateModel(&go);
-			RuntimeResourcePtr<IModel> ret(go, this);
-			AddRuntimeResource(&ret);
+			RuntimeResourcePtr<IModel> ret(go);
 			return ret;
 		}
 
@@ -773,8 +776,7 @@ namespace RENDER_MASTER
 		{
 			IModel *mdl;
 			LoadModel(&mdl, pModelPath);
-			RuntimeResourcePtr<IModel> ret(mdl, this);
-			AddRuntimeResource(&ret);
+			RuntimeResourcePtr<IModel> ret(mdl);
 			return ret;
 		}
 

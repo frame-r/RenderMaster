@@ -108,15 +108,6 @@ API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 	return S_OK;
 }
 
-API SceneManager::AddRootGameObject(IGameObject* pGameObject)
-{
-	tree<IGameObject*>::iterator top = _gameobjects.begin();
-	pGameObject->AddRef();
-	auto it = _gameobjects.insert(top, pGameObject);
-	_gameObjectAddedEvent->Fire(pGameObject);
-	return S_OK;
-}
-
 API SceneManager::GetNumberOfChilds(OUT uint *number, IGameObject *parent)
 {
 	if (parent)
@@ -189,8 +180,11 @@ void SceneManager::Free()
 	#endif
 }
 
-void SceneManager::AddGameObjec(IGameObject * go)
+void SceneManager::AddGameObjec(IGameObject *go)
 {
+	tree<IGameObject*>::iterator top = _gameobjects.begin();
+	auto it = _gameobjects.insert(top, go);
+	_gameObjectAddedEvent->Fire(go);
 }
 
 API SceneManager::GetName(OUT const char **pName)

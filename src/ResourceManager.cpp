@@ -5,6 +5,7 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Console.h"
+#include "SceneManager.h"
 
 
 using namespace std;
@@ -378,29 +379,10 @@ IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const 
 {
 	switch (type)
 	{
-		case RENDER_MASTER::RES_TYPE::GAME_OBJECT:
-		{
-			int id;
-			IGameObject *go = (IGameObject*)pointer;
-			go->GetID(&id);
-			return new TResource<IGameObject>((IGameObject*)pointer, RES_TYPE::GAME_OBJECT, resID + ' ' + std::to_string(id));
-		}
-		case RENDER_MASTER::RES_TYPE::CAMERA:
-		{
-			int id;
-			ICamera *go = (ICamera*)pointer;
-			go->GetID(&id);
-			return new TResource<ICamera>((ICamera*)pointer, RES_TYPE::CAMERA, resID + ' ' + std::to_string(id));
-		}
-		case RENDER_MASTER::RES_TYPE::MODEL:
-		{
-			int id;
-			IModel *go = (IModel*)pointer;
-			go->GetID(&id);
-			return new TResource<IModel>((IModel*)pointer, RES_TYPE::MODEL, resID + ' ' + std::to_string(id));
-		}
 		case RENDER_MASTER::RES_TYPE::CORE_MESH:
 			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, resID);
+		case RENDER_MASTER::RES_TYPE::CORE_TEXTURE:
+			return new TResource<ICoreTexture>((ICoreTexture*)pointer, RES_TYPE::CORE_TEXTURE, resID);
 		case RENDER_MASTER::RES_TYPE::SHADER:
 			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::SHADER, resID);
 	}
@@ -600,14 +582,44 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 		LOG_FATAL_FORMATTED("ResourceManager::LoadModel unsupported format \"%s\"", file_ext.c_str());
 		return E_FAIL;
 	}
-		
-	ISceneManager *pSceneManager;
-	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
 
-	pSceneManager->AddRootGameObject(res);..
-	
-	*pModel = model;
+	// TODO: Add object to scene
+	//ISceneManager *pSceneManager;
+	//_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
+	//pSceneManager->AddRootGameObject(res);..
 
+	TRuntimeResource<IModel> *res = new TRuntimeResource<IModel>(model);
+	_runtime_resources.emplace(res);
+	*pModel = res->get();
+	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
+	sm->AddGameObjec(static_cast<IModel*>(model));
+
+	return S_OK;
+}
+
+API ResourceManager::RemoveCoreMesh(ICoreMesh * res)
+{
+	return S_OK;
+}
+
+API ResourceManager::RemoveUniformBuffer(IUniformBuffer * res)
+{
+	return S_OK;
+}
+
+API ResourceManager::RemoveGameObject(IGameObject *res)
+{
+
+	return S_OK;
+}
+
+API ResourceManager::RemoveModel(IModel * res)
+{
+	return S_OK;
+}
+
+API ResourceManager::RemoveCamera(ICamera * res)
+{
 	return S_OK;
 }
 
@@ -885,57 +897,38 @@ API ResourceManager::LoadTexture(OUT IResource ** pTextureResource, const char *
 
 API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 {
-	if (type > RES_TYPE::MODEL)
-	{
-		*pResource = nullptr;
-		LOG_WARNING("ResourceManager::CreateGameObject(): unknown type of game object");
-		return E_ABORT;
-	}
-
-	switch (type)
-	{
-		case RES_TYPE::MODEL:
-			*pResource = _createResource(new Model, RES_TYPE::MODEL, "Model");
-			_resources.emplace(*pResource);
-			break;
-
-		case RES_TYPE::CAMERA:
-			*pResource = _createResource(new Camera, RES_TYPE::CAMERA, "Camera");
-			_resources.emplace(*pResource);
-			break;
-
-		case RES_TYPE::GAME_OBJECT:
-			*pResource = _createResource(new GameObject, RES_TYPE::GAME_OBJECT, "GameObject");
-			_resources.emplace(*pResource);
-			break;
-	}
-
-	return S_OK;
-}
-
-API ResourceManager::CreateModel(OUT IModel ** pModel)
-{
-	return S_OK;
-}
-
-API ResourceManager::CreateCamera(OUT ICamera ** pCamera)
-{
-	return S_OK;
-}
-
-API ResourceManager::AddRuntimeResource(IRuntimeResourcePtr * res)
-{
+	TRuntimeResource<IGameObject> *res = new TRuntimeResource<IGameObject>(new GameObject);
 	_runtime_resources.emplace(res);
+	*pGameObject = res->get();
+	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
+	sm->AddGameObjec(static_cast<IGameObject*>(*pGameObject));
+
 	return S_OK;
 }
 
-API ResourceManager::RemoveRuntimeResource(IRuntimeResourcePtr * res)
+API ResourceManager::CreateModel(OUT IModel **pModel)
 {
-	_runtime_resources.erase(res);
+	TRuntimeResource<IModel> *res = new TRuntimeResource<IModel>(new Model);
+	_runtime_resources.emplace(res);
+	*pModel = res->get();
+	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
+	sm->AddGameObjec(static_cast<IModel*>(*pModel));
+
 	return S_OK;
 }
 
-API ResourceManager::CreateCoreMesh(OUT ICoreMesh ** pMesh)
+API ResourceManager::CreateCamera(OUT ICamera **pCamera)
+{
+	TRuntimeResource<ICamera> *res = new TRuntimeResource<ICamera>(new Camera);
+	_runtime_resources.emplace(res);
+	*pCamera = res->get();
+	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
+	sm->AddGameObjec(static_cast<IGameObject*>(*pCamera));
+
+	return S_OK;
+}
+
+API ResourceManager::CreateCoreMesh(OUT ICoreMesh **pMesh)
 {
 	return S_OK;
 }
@@ -943,63 +936,6 @@ API ResourceManager::CreateCoreMesh(OUT ICoreMesh ** pMesh)
 API ResourceManager::CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size)
 {
 	_pCoreRender->CreateUniformBuffer(pUniformBuffer, size);
-	return S_OK;
-}
-
-API ResourceManager::CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut)
-{
-	RES_TYPE type;
-	resourceIn->GetType(&type);
-
-	if (type > RES_TYPE::MODEL)
-	{
-		*resourceOut = nullptr;
-		LOG_WARNING("ResourceManager::CloneGameObject(): unknown type of game object");
-		return E_ABORT;
-	}
-
-	CreateGameObject(resourceOut, type);
-
-	if (*resourceOut == nullptr)
-	{
-		*resourceOut = resourceIn;
-		return S_OK;
-	}
-
-	if (type == RES_TYPE::GAME_OBJECT)
-	{
-		IGameObject *originalPointer = nullptr;
-		IGameObject *copyPointer = nullptr;
-
-		resourceIn->GetPointer((void**)&originalPointer);		
-		(*resourceOut)->GetPointer((void**)&copyPointer);
-
-		originalPointer->Copy(copyPointer);
-	} else if (type == RES_TYPE::MODEL)
-	{
-		IModel *originalModel = nullptr;
-		IModel *copyModel = nullptr;
-
-		resourceIn->GetPointer((void**)&originalModel);		
-		(*resourceOut)->GetPointer((void**)&copyModel);
-
-		originalModel->Copy(copyModel);
-	} else if (type == RES_TYPE::CAMERA)
-	{
-		ICamera *originalCamera = nullptr;
-		ICamera *copyCamera = nullptr;
-
-		resourceIn->GetPointer((void**)&originalCamera);		
-		(*resourceOut)->GetPointer((void**)&copyCamera);
-
-		originalCamera->Copy(copyCamera);
-	}	
-
-	ISceneManager *pSceneManager;
-	_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
-
-	pSceneManager->AddRootGameObject(*resourceOut);
-
 	return S_OK;
 }
 

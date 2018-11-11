@@ -85,13 +85,32 @@ public:
 	API GetPointer(OUT void **pointerOut) override { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
 };
 
+class IRuntimeResource{};
+
+template<typename T>
+class TRuntimeResource : public IRuntimeResource
+{
+	T *_pointer = nullptr;
+
+public:
+	TRuntimeResource(T* pointerIn) : _pointer(pointerIn){}
+	virtual ~TRuntimeResource()
+	{
+		_pointer->Free();
+		delete _pointer;
+		_pointer = nullptr;
+	}
+
+	T *get() { return _pointer; }
+};
+
 
 class ResourceManager final : public IResourceManager
 {
 	std::unordered_set<IResource*> _resources;
 	std::unordered_set<IResource*> _cache_resources;
 
-	std::unordered_set<IRuntimeResourcePtr*> _runtime_resources;
+	std::unordered_set<IRuntimeResource*> _runtime_resources;
 		
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
@@ -146,8 +165,11 @@ public:
 	API LoadModel(OUT IModel **pModel, const char *pModelPath) override;
 
 	//API CreateTexture(OUT ICoreTexture **pTextureResource, uint width, uint height, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
-	API AddRuntimeResource(IRuntimeResourcePtr *res) override;
-	API RemoveRuntimeResource(IRuntimeResourcePtr *res) override;
+	API RemoveCoreMesh(ICoreMesh *res) override;
+	API RemoveUniformBuffer(IUniformBuffer *res) override;
+	API RemoveGameObject(IGameObject *res) override;
+	API RemoveModel(IModel *res) override;
+	API RemoveCamera(ICamera *res) override;
 
 	API Free() override;
 	API GetName(OUT const char **pTxt) override;

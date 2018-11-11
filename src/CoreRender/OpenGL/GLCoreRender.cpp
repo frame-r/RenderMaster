@@ -755,4 +755,12 @@ API GLCoreRender::Clear()
 	return S_OK;
 }
 
+API GLUniformBuffer::Free()
+{
+	if (_UBO) glDeleteBuffers(1, &_UBO);
+	_UBO = 0;
+	IResourceManager *rm = getResourceManager(_pCore);
+	rm->RemoveUniformBuffer(this);
 
+	return S_OK;
+}
