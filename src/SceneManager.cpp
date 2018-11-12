@@ -22,16 +22,18 @@ API SceneManager::SaveScene(const char *pRelativeScenePath)
 {
 	IFileSystem *fs;
 	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-	
-	YAML::Emitter out;
-	out << YAML::Block << *this;
-	
-	IFile *f = nullptr;
-	fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
-	
-	f->WriteStr(out.c_str());
-	
-	f->CloseAndFree();
+
+	// TODO
+
+	//YAML::Emitter out;
+	//out << YAML::Block << *this;
+	//
+	//IFile *f = nullptr;
+	//fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
+	//
+	//f->WriteStr(out.c_str());
+	//
+	//f->CloseAndFree();
 	
 	LOG_FORMATTED("Scene saved to: %s\n", pRelativeScenePath);
 
@@ -40,37 +42,39 @@ API SceneManager::SaveScene(const char *pRelativeScenePath)
 
 API SceneManager::LoadScene(const char *pRelativeScenePath)
 {
-	if (_sceneLoaded)
-	{
-		LOG_WARNING("Closing scene...");
-		CloseScene();
-	}
-	IFileSystem *fs;
-	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-	
-	YAML::Emitter out;
-	out << YAML::Block << *this;
-	
-	IFile *f = nullptr;
-	fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+	// TODO
 
-	uint fileSize;
-	f->FileSize(&fileSize);
-
-	char *tmp = new char[fileSize + 1];
-	tmp[fileSize] = '\0';
-
-	f->Read((uint8 *)tmp, fileSize);
-	f->CloseAndFree();
-	
-	YAML::Node model_yaml = YAML::Load(tmp);
-	auto t = model_yaml.Type();	
-
-	loadSceneManager(model_yaml, *this);
-
-	_sceneLoaded = true;
-
-	delete tmp;
+	//if (_sceneLoaded)
+	//{
+	//	LOG_WARNING("Closing scene...");
+	//	CloseScene();
+	//}
+	//IFileSystem *fs;
+	//_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+	//
+	//YAML::Emitter out;
+	//out << YAML::Block << *this;
+	//
+	//IFile *f = nullptr;
+	//fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+	//
+	//uint fileSize;
+	//f->FileSize(&fileSize);
+	//
+	//char *tmp = new char[fileSize + 1];
+	//tmp[fileSize] = '\0';
+	//
+	//f->Read((uint8 *)tmp, fileSize);
+	//f->CloseAndFree();
+	//
+	//YAML::Node model_yaml = YAML::Load(tmp);
+	//auto t = model_yaml.Type();	
+	//
+	//loadSceneManager(model_yaml, *this);
+	//
+	//_sceneLoaded = true;
+	//
+	//delete tmp;
 
 	return S_OK;
 }

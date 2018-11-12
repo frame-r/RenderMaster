@@ -257,7 +257,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 	}
 }
 
-API Render::GetShader(IShader** pShader, const ShaderRequirement* shaderReq)
+API Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
 {
 	*pShader = _get_shader(*shaderReq);
 	return S_OK;

@@ -11,7 +11,7 @@ DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
 using namespace YAML;
-
+/*
 Emitter& operator<<(Emitter& out, const vec3& v)
 {
 	out << Flow;
@@ -348,3 +348,4 @@ void loadResource(Node& n, IGameObject *go)
 	}
 }
 
+*/

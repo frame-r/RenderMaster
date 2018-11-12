@@ -45,6 +45,7 @@ namespace RENDER_MASTER
 	class IUpdateCallback;
 	class ICamera;
 	class IGameObject;
+	class IShader;
 	class IResourceManager;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
@@ -398,7 +399,7 @@ namespace RENDER_MASTER
 	class IRender : public ISubSystem
 	{
 	public:
-		virtual API GetShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
+		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
 	};
 
 
@@ -480,11 +481,10 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetReferences(int *refsOut) = 0;
-		virtual API GetFile(OUT const char **file) = 0;
-		virtual API GetVert(OUT const char **text) = 0;
-		virtual API GetGeom(OUT const char **text) = 0;
-		virtual API GetFrag(OUT const char **text) = 0;
-
+		virtual API GetFile(OUT const char **filePath) = 0;
+		virtual API GetVert(OUT const char **textOut) = 0;
+		virtual API GetGeom(OUT const char **textOut) = 0;
+		virtual API GetFrag(OUT const char **textOut) = 0;
 	};
 
 	//////////////////////
