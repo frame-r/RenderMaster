@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "Camera.h"
 #include "Core.h"
+#include "ResourceManager.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)

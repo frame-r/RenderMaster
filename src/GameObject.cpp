@@ -1,6 +1,7 @@
 #include "Pch.h"
 #include "Core.h"
 #include "GameObject.h"
+#include "ResourceManager.h"
 
 extern Core *_pCore;
 

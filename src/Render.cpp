@@ -175,14 +175,13 @@ void Render::Free()
 	_pAxesMesh.Reset();
 	_pAxesArrowMesh.Reset();
 	_pGridMesh.Reset();
+	everyFrameParameters.Reset();
 
 	for (auto& s: _shaders_pool)
 	{
 		ICoreShader *ss = s.second;
 		delete ss;
-	}
-
-	everyFrameParameters.Reset();
+	}	
 }
 
 void Render::RenderFrame(const ICamera *pCamera)
