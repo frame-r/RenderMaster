@@ -37,6 +37,7 @@
     <ClInclude Include="..\src\CoreRender\OpenGL\GLMesh.h" />
     <ClInclude Include="..\src\CoreRender\OpenGL\GLShader.h" />
     <ClInclude Include="..\src\Input.h" />
+    <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\Model.h" />
     <ClInclude Include="..\src\Pch.h" />
     <ClInclude Include="..\src\Preprocessor.h" />
@@ -60,6 +61,7 @@
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\CoreRender\OpenGL\GLCoreRender.cpp" />
+    <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GLEW\glew.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -67,6 +69,7 @@
     <ClCompile Include="..\src\CoreRender\OpenGL\GLShader.cpp" />
     <ClCompile Include="..\src\CoreRender\OpenGL\GLMesh.cpp" />
     <ClCompile Include="..\src\Main.cpp" />
+    <ClCompile Include="..\src\Mesh.cpp" />
     <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -84,7 +87,6 @@
     <None Include="..\src\shaders\mesh_common.shader" />
     <None Include="..\src\shaders\mesh_fragment.shader" />
     <None Include="..\src\shaders\mesh_vertex.shader" />
-    <None Include="cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A2F95159-CE4F-44B5-B6EC-96C5D392D34D}</ProjectGuid>

@@ -6,31 +6,20 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-Model::Model(const vector<IResource*>& meshes) : _meshes(meshes)
-{
-	for (IResource *m : _meshes)
-		m->AddRef();
+RUNTIME_COM_CPP_IMPLEMENTATION(Model, _pCore, RemoveRuntimeGameObject)
 
-	_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
+Model::Model(const vector<IMesh*>& meshes) 
+{
+	for (IMesh *m : meshes)
+		_meshes.push_back(WRL::ComPtr<IMesh>(m));
+	//_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
 }
 
-Model::~Model()
+API Model::GetCoreMesh(OUT ICoreMesh  **pMesh, uint idx)
 {
-}
-
-void Model::_update()
-{
-}
-
-void Model::_recalculate_aabb()
-{
-}
-
-API Model::GetMesh(OUT ICoreMesh  **pMesh, uint idx)
-{
-	IResource * res = _meshes[idx];
+	WRL::ComPtr<IMesh>& m = _meshes[idx];
 	ICoreMesh *mesh;
-	res->GetPointer((void**)&mesh);
+	m->GetCoreMesh(&mesh);
 	*pMesh = mesh;
 	return S_OK;
 }
@@ -50,28 +39,11 @@ API Model::GetAABB(OUT AABB *aabb)
 
 API Model::Copy(OUT IModel *copy)
 {
-	IGameObject *copyGO = copy;
 	GameObjectBase<IModel>::Copy(copy);
 
 	Model *copyModel = static_cast<Model*>(copy);
-
 	copyModel->_meshes = _meshes;
-	for(IResource * m: _meshes)
-		m->AddRef();
-
 	copyModel->_aabb = _aabb;
-
-	return S_OK;
-}
-
-API Model::Free()
-{
-	// free each mesh
-	for (IResource *m : _meshes)
-		m->Release();
-
-	IResourceManager *rm = getResourceManager(_pCore);
-	rm->RemoveModel(this);
 
 	return S_OK;
 }

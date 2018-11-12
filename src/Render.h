@@ -14,9 +14,11 @@ class Render : public IRender
 
 	ResourcePtr<ShaderText> _standardShader;
 
-	ResourcePtr<ICoreMesh> _pAxesMesh;
-	ResourcePtr<ICoreMesh> _pAxesArrowMesh;
-	ResourcePtr<ICoreMesh> _pGridMesh;
+	WRL::ComPtr<IMesh> _pAxesMesh;
+	WRL::ComPtr<IMesh> _pAxesArrowMesh;
+	WRL::ComPtr<IMesh> _pGridMesh;
+
+	WRL::ComPtr<IUniformBuffer> everyFrameParameters;
 
 	#pragma pack(push, 4)
 	struct EveryFrameParameters
@@ -27,8 +29,6 @@ class Render : public IRender
 		mat4 MVP;
 	} params;
 	#pragma pack(pop)
-
-	RuntimeResourcePtr<IUniformBuffer> everyFrameParameters;
 
 	float _aspect{1.0f};	
 
@@ -55,7 +55,7 @@ public:
 	void Free();
 	void RenderFrame(const ICamera *pCamera);
 
-	API GetShader(OUT ICoreShader **pShader, const ShaderRequirement *shaderReq) override;
+	API GetShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
 	API GetName(OUT const char **pName) override;
 };
 

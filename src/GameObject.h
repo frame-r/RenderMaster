@@ -34,12 +34,6 @@ public:
 	API GetScale(OUT vec3 *scale) override			{ *scale = _scale; return S_OK; }
 	API GetAABB(OUT AABB *aabb) override;
 	API Copy(IGameObject *copy) override;
-	API Free() override
-	{
-		IResourceManager *rm = getResourceManager(_pCore);
-		rm->RemoveGameObject(this);
-		return S_OK;
-	}
 
 	//
 	// Model Matrix
@@ -66,9 +60,13 @@ public:
 	API GetRotationEv(OUT IRotationEvent **pEvent) override		{ *pEvent = _rotationEvent.get(); return S_OK; }
 };
 
-class GameObject : public GameObjectBase<IGameObject> {};
+class GameObject : public GameObjectBase<IGameObject>
+{
+public:
+	virtual ~GameObject() {}
 
-
+	RUNTIME_COM_HEADER_IMPLEMENTATION
+};
 
 // implementation
 

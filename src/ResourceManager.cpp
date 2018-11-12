@@ -3,6 +3,7 @@
 #include "Filesystem.h"
 #include "Core.h"
 #include "Model.h"
+#include "Mesh.h"
 #include "Camera.h"
 #include "Console.h"
 #include "SceneManager.h"
@@ -134,7 +135,7 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	return lStatus;
 }
 
-void ResourceManager::_LoadSceneHierarchy(vector<IResource*>& meshes, FbxScene * pScene, const char *pFullPath, const char *pRelativePath)
+void ResourceManager::_LoadSceneHierarchy(vector<IMesh*>& meshes, FbxScene * pScene, const char *pFullPath, const char *pRelativePath)
 {
 	FbxString lString;
 
@@ -147,7 +148,7 @@ void ResourceManager::_LoadSceneHierarchy(vector<IResource*>& meshes, FbxScene *
 		LOG_WARNING("No meshes loaded");
 }
 
-void ResourceManager::_LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int depth, const char *fullPath, const char *pRelativePath)
+void ResourceManager::_LoadNode(vector<IMesh*>& meshes, FbxNode* pNode, int depth, const char *fullPath, const char *pRelativePath)
 {
 	FbxString lString;
 	FbxNodeAttribute* node = pNode->GetNodeAttribute();
@@ -182,7 +183,7 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const char *pRelativePath)
+void ResourceManager::_LoadMesh(vector<IMesh*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const char *pRelativePath)
 {
 	int control_points_count = pMesh->GetControlPointsCount();
 	int polygon_count = pMesh->GetPolygonCount();
@@ -191,8 +192,7 @@ void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxN
 	int tangent_layers_count = pMesh->GetElementTangentCount();
 	int binormal_layers_count = pMesh->GetElementBinormalCount();
 
-	string meshName = pMesh->GetName();
-	string decorativeName = string(pRelativePath) + "#" + string(pNode->GetName());
+	string path = string(pRelativePath) + "#" + string(pNode->GetName());
 
 	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
 	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
@@ -302,7 +302,7 @@ void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxN
 		vertex_counter += polygon_size;
 	}
 
-	ICoreMesh *pCoreMesh = nullptr;
+	
 	
 	MeshDataDesc vertDesc;
 	vertDesc.pData = reinterpret_cast<uint8*>(&vertecies[0]);
@@ -317,10 +317,11 @@ void ResourceManager::_LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxN
 	indexDesc.pData = nullptr;
 	indexDesc.number = 0;
 
+	ICoreMesh *pCoreMesh = nullptr;
 	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
-		meshes.push_back((TResource<ICoreMesh> *)_createResource(pCoreMesh, RES_TYPE::CORE_MESH, decorativeName));
+		meshes.push_back(new Mesh(pCoreMesh, 1, path));
 	else
 		LOG_FATAL("ResourceManager::_LoadMesh(): Can not create mesh");
 }
@@ -334,11 +335,11 @@ void ResourceManager::_LoadNodeTransform(FbxNode* pNode, const char *str)
 	if (fbxDebug)
 		DEBUG_LOG_FORMATTED("%s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", str, tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2]);
 }
-vector<IResource*> ResourceManager::_FBXLoadMeshes(const char *pFullPath, const char *pRelativePath)
+vector<IMesh*> ResourceManager::_FBXLoadMeshes(const char *pFullPath, const char *pRelativePath)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
-	vector<IResource*> meshes;
+	vector<IMesh*> meshes;
 
 	if (fbxDebug) LOG("Initializing FBX SDK...");
 
@@ -362,33 +363,6 @@ vector<IResource*> ResourceManager::_FBXLoadMeshes(const char *pFullPath, const 
 }
 #endif
 
-const char* ResourceManager::_resourceToStr(IResource *pRes)
-{
-	RES_TYPE type;
-	pRes->GetType(&type);
-
-	switch (type)
-	{
-		case RENDER_MASTER::RES_TYPE::CORE_MESH:		return "CORE_MESH";
-		case RENDER_MASTER::RES_TYPE::SHADER:			return "SHADER";
-	}
-	return "UNKNOWN";
-}
-
-IResource* ResourceManager::_createResource(void *pointer, RES_TYPE type, const string& resID)
-{
-	switch (type)
-	{
-		case RENDER_MASTER::RES_TYPE::CORE_MESH:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::CORE_MESH, resID);
-		case RENDER_MASTER::RES_TYPE::CORE_TEXTURE:
-			return new TResource<ICoreTexture>((ICoreTexture*)pointer, RES_TYPE::CORE_TEXTURE, resID);
-		case RENDER_MASTER::RES_TYPE::SHADER:
-			return new TResource<ICoreMesh>((ICoreMesh*)pointer, RES_TYPE::SHADER, resID);
-	}
-
-	return nullptr;
-}
 
 ResourceManager::ResourceManager()
 {
@@ -413,20 +387,32 @@ void ResourceManager::Init()
 
 API ResourceManager::_resources_list(const char **args, uint argsNumber)
 {
-	LOG_FORMATTED("resources: %i", _resources.size());
+	LOG_FORMATTED("========= Runtime resources: %i =============", _runtime_textures.size() + _runtime_meshes.size() + _runtime_gameobjects.size());
 
-	for (auto it = _resources.begin(); it != _resources.end(); it++)
+	LOG_FORMATTED("Runtime Meshes: %i", _runtime_meshes.size());
+	for (auto it = _runtime_meshes.begin(); it != _runtime_meshes.end(); it++)
 	{
-		IResource *res = *it;
-
-		uint refs = 0;
-		res->RefCount(&refs);
-
-		const char *id;
-		res->GetFileID(&id);
-
-		LOG_FORMATTED("{refs = %i, type = %-25s, id = \"%s\"}", refs, _resourceToStr(res), id);
+		int refs;
+		(*it)->GetReferences(&refs);
+		LOG_FORMATTED("{refs = %i, type = %-25s, id = \"%s\"}", refs);
 	}
+	// TODO: other objects
+
+	LOG_FORMATTED("========= Shared resources: %i =============", _shared_meshes.size() + _shared_textures.size());
+	LOG_FORMATTED("Shared Meshes: %i", _shared_meshes.size());
+	for (auto it = _shared_meshes.begin(); it != _shared_meshes.end(); it++)
+	{
+		IMesh *m = it->second;
+
+		int refs;
+		m->GetReferences(&refs);
+
+		const char *path;
+		m->GetFile(&path);
+
+		LOG_FORMATTED("{refs = %i, file = \"%s\"}", refs, path);
+	}
+	// TODO: other objects
 
 	return S_OK;
 }
@@ -439,7 +425,7 @@ string ResourceManager::constructFullPath(const string& file)
 	return dataPath + '\\' + file;
 }
 
-bool ResourceManager::check_file_not_exist(const string& fullPath)
+bool ResourceManager::error_if_path_not_exist(const string& fullPath)
 {
 	int exist;
 	_pFilesystem->FileExist(fullPath.c_str(), &exist);
@@ -458,49 +444,11 @@ API ResourceManager::GetName(OUT const char **pName)
 
 API ResourceManager::Free()
 {
-	DEBUG_LOG("ResourceManager::FreeAllResources(): resources total=%i", LOG_TYPE::NORMAL, _resources.size());
-
-	// first free all resources that have refCount = 1
-	// and so on...
-	while (!_resources.empty())
-	{
-		vector<IResource*> one_ref_res;
-
-		for (auto& res : _resources)
-		{
-			uint refs = 0;
-			res->RefCount(&refs);
-			if (refs <= 1)
-				one_ref_res.push_back(res);
-		}
-
-#ifdef _DEBUG
-		static int i = 0;
-		i++;
-		if (i > 20)
-			return S_FALSE; // occured some error. maybe circular references => in debug limit number of iterations
-		auto res_before = _resources.size();
-#endif
-
-		// free resources
-		for (auto* pRes : one_ref_res)
-		{
-			auto it = _resources.find(pRes);
-			if (it != _resources.end())
-			{
-				pRes->Release();
-				_resources.erase(pRes);
-			}
-		}
-
-#ifdef _DEBUG
-		auto res_deleted = res_before - _resources.size();
-		int res_deleted_percent = (int)(100 * ((float)res_deleted / res_before));
-		DEBUG_LOG("ResourceManager::FreeAllResources(): (iteration=%i) : to delete=%i  deleted=%i (%i%%) resources left=%i", LOG_TYPE::NORMAL, i, one_ref_res.size(), res_deleted, res_deleted_percent, _resources.size());
-#endif
-	}
-
-	_resources.clear();
+	assert(_shared_meshes.size() == 0 && "ResourceManager::Free: _shared_meshes.size() != 0. You should release all meshes before free resource manager");
+	assert(_runtime_meshes.size() == 0 && "ResourceManager::Free: _runtime_meshes.size() != 0. You should release all meshes before free resource manager");
+	assert(_shared_textures.size() == 0 && "ResourceManager::Free: _shared_textures.size() != 0. You should release all textures before free resource manager");
+	assert(_runtime_textures.size() == 0 && "ResourceManager::Free: _runtime_textures.size() != 0. You should release all textures before free resource manager");
+	assert(_runtime_gameobjects.size() == 0 && "ResourceManager::Free: _runtime_gameobjects.size() != 0. You should release all gameobjects before free resource manager");
 
 	return S_OK;
 }
@@ -517,29 +465,29 @@ void splitMeshID(const string& meshPath, string& relativeModelPath, string& mesh
 	}
 }
 
-void ResourceManager::collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* pRelativeModelPath, const char *pMeshID)
+vector<IMesh*> ResourceManager::find_loaded_meshes(const char* pRelativeModelPath, const char *pMeshID)
 {
-	for (auto it = res_vec.begin(); it != res_vec.end(); it++)
+	vector<IMesh*> out;
+
+	for (auto it = _shared_meshes.begin(); it != _shared_meshes.end(); it++)
 	{
-		RES_TYPE type;
-		(*it)->GetType(&type);
-
-		if (type != RES_TYPE::CORE_MESH)
-			continue;
-
-		const char *path;
-		(*it)->GetFileID(&path);
-
+		string path = it->first;
 		string relativeModelPath;
 		string meshID;
 		splitMeshID(path, relativeModelPath, meshID);
 
-		if ((pMeshID && relativeModelPath == pRelativeModelPath && meshID == pMeshID)||
-			(!pMeshID && relativeModelPath == pRelativeModelPath))
+		if (pMeshID == nullptr)
 		{
-			res_out.push_back(*it);
-		}
+			if (relativeModelPath == pRelativeModelPath)
+				out.push_back(it->second);
+		}else
+		{
+			if (relativeModelPath == pRelativeModelPath && meshID == pMeshID)
+				out.push_back(it->second);
+		}			
 	}
+
+	return std::move(out);
 }
 
 API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
@@ -548,14 +496,13 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 
 	auto fullPath = constructFullPath(pModelPath);
 
-	if (!check_file_not_exist(fullPath))
+	if (!error_if_path_not_exist(fullPath))
 	{
 		*pModel = nullptr;
 		return E_FAIL;
 	}
 
-	vector<IResource*> loaded_meshes;
-	collect_model_mesh(loaded_meshes, _resources, pModelPath, nullptr);
+	vector<IMesh*> loaded_meshes = find_loaded_meshes(pModelPath, nullptr);
 
 	IModel *model = nullptr;
 
@@ -570,11 +517,15 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 	if (file_ext == "fbx")
 	{
 		loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), pModelPath);
+		for (IMesh *m : loaded_meshes)
+		{
+			const char *meshName;
+			m->GetFile(&meshName);
 
-		for (IResource *m : loaded_meshes)
-			_resources.emplace(m);
-
+			_shared_meshes.emplace(meshName, m);
+		}
 		model = new Model(loaded_meshes);
+		*pModel = model;
 	}
 	else
 #endif
@@ -584,98 +535,27 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 	}
 
 	// TODO: Add object to scene
-	//ISceneManager *pSceneManager;
-	//_pCore->GetSubSystem((ISubSystem**)&pSceneManager, SUBSYSTEM_TYPE::SCENE_MANAGER);
-	//pSceneManager->AddRootGameObject(res);..
 
-	TRuntimeResource<IModel> *res = new TRuntimeResource<IModel>(model);
-	_runtime_resources.emplace(res);
-	*pModel = res->get();
-	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
-	sm->AddGameObjec(static_cast<IModel*>(model));
+	//TRuntimeResource<IModel> *res = new TRuntimeResource<IModel>(model);
+	//_runtime_resources.emplace(res);
+	//*pModel = res->get();
+	//SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
+	//sm->AddGameObjec(static_cast<IModel*>(model));
 
 	return S_OK;
 }
 
-template<class T>
-void remove_rr(std::unordered_set<IRuntimeResource*>& set_, T *res)
-{
-	auto ShouldDelete = [&](IRuntimeResource* r) -> bool
-	{
-		return res == r->getPointer();
-	};
-
-	auto it = find_if(set_.begin(), set_.end(), ShouldDelete);
-
-	if (it != set_.end())
-	{
-		IRuntimeResource* r_to_delete = *it;
-		delete r_to_delete;
-
-		set_.erase(it);
-	}
-}
-
-API ResourceManager::RemoveCoreMesh(ICoreMesh *res)
-{
-	remove_rr<ICoreMesh>(_runtime_resources, res);
-
-	return S_OK;
-}
-
-API ResourceManager::RemoveUniformBuffer(IUniformBuffer *res)
-{
-	remove_rr<IUniformBuffer>(_runtime_resources, res);
-
-	return S_OK;
-}
-
-API ResourceManager::RemoveGameObject(IGameObject *res)
-{
-	remove_rr<IGameObject>(_runtime_resources, res);
-
-	return S_OK;
-}
-
-API ResourceManager::RemoveModel(IModel *res)
-{
-	remove_rr<IModel>(_runtime_resources, res);
-
-	return S_OK;
-}
-
-API ResourceManager::RemoveCamera(ICamera *res)
-{
-	remove_rr<ICamera>(_runtime_resources, res);
-
-	return S_OK;
-}
-
-API ResourceManager::LoadMesh(OUT IResource** pMeshResource, const char *pMeshPath)
+API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 {
 	string relativeModelPath;
 	string meshID;
 	splitMeshID(pMeshPath, relativeModelPath, meshID);
 
-	vector<IResource*> loaded_meshes;
+	vector<IMesh*> loaded_meshes = find_loaded_meshes(relativeModelPath.c_str(), meshID.c_str());
 
-	collect_model_mesh(loaded_meshes, _cache_resources, relativeModelPath.c_str(), meshID.c_str());
 	if (loaded_meshes.size())
 	{
-		// _cache_resources -> _resources
-		auto it = _cache_resources.find(loaded_meshes[0]);
-		_resources.insert(loaded_meshes[0]);
-		_cache_resources.erase(it);
-
-		*pMeshResource = loaded_meshes[0];
-
-		return S_OK;
-	}
-
-	collect_model_mesh(loaded_meshes, _resources, relativeModelPath.c_str(), meshID.c_str());
-	if (loaded_meshes.size())
-	{
-		*pMeshResource = loaded_meshes[0];
+		*pMesh = loaded_meshes[0];
 		return S_OK;
 	}
 
@@ -818,52 +698,55 @@ API ResourceManager::LoadMesh(OUT IResource** pMeshResource, const char *pMeshPa
 
 	if (stdCoreMesh)
 	{
-		*pMeshResource = (TResource<ICoreMesh> *)_createResource(stdCoreMesh, RES_TYPE::CORE_MESH, pMeshPath);
-		_resources.emplace(*pMeshResource);
+		Mesh *m = new Mesh(stdCoreMesh, 1, pMeshPath);
+		*pMesh = m;
+		_resources.emplace(pMeshPath, m);
 		return S_OK;
 	}
 
 	#ifdef USE_FBX
 
-		auto fullPath = constructFullPath(relativeModelPath);
+		assert(false); // not impl
 
-		if (!check_file_not_exist(fullPath))
-		{
-			*pMeshResource = nullptr;
-			return E_FAIL;
-		}
+		//auto fullPath = constructFullPath(relativeModelPath);
 
-		const string file_ext = ToLowerCase(fs::path(relativeModelPath).extension().string().erase(0, 1));
-		if (file_ext == "fbx")
-		{
-			loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), relativeModelPath.c_str());
+		//if (!error_if_path_not_exist(fullPath))
+		//{
+		//	*pMesh = nullptr;
+		//	return E_FAIL;
+		//}
 
-			for (IResource *m : loaded_meshes)
-				_cache_resources.emplace(m);
+		//const string file_ext = ToLowerCase(fs::path(relativeModelPath).extension().string().erase(0, 1));
+		//if (file_ext == "fbx")
+		//{
+		//	loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), relativeModelPath.c_str());
 
-			loaded_meshes.clear();
+		//	for (IResource *m : loaded_meshes)
+		//		_cache_resources.emplace(m);
 
-			collect_model_mesh(loaded_meshes, _cache_resources, relativeModelPath.c_str(), meshID.c_str());
-			if (loaded_meshes.size())
-			{
-				// move from _cache_resources to _resources
-				auto it = _cache_resources.find(loaded_meshes[0]);
-				_resources.insert(loaded_meshes[0]);
-				_cache_resources.erase(it);
+		//	loaded_meshes.clear();
+
+		//	collect_model_mesh(loaded_meshes, _cache_resources, relativeModelPath.c_str(), meshID.c_str());
+		//	if (loaded_meshes.size())
+		//	{
+		//		// move from _cache_resources to _resources
+		//		auto it = _cache_resources.find(loaded_meshes[0]);
+		//		_resources.insert(loaded_meshes[0]);
+		//		_cache_resources.erase(it);
 
 
-				*pMeshResource = loaded_meshes[0];
+		//		*pMeshResource = loaded_meshes[0];
 
-				return S_OK;
-			}
-		}
-		else
+		//		return S_OK;
+		//	}
+		//}
+		//else
 
 	#endif
-		{
-			LOG_FATAL_FORMATTED("ResourceManager::LoadMesh unsupported format \"%s\"", file_ext.c_str());
-			return E_FAIL;
-		}
+		//{
+		//	LOG_FATAL_FORMATTED("ResourceManager::LoadMesh unsupported format \"%s\"", file_ext.c_str());
+		//	return E_FAIL;
+		//}
 
 	return S_OK;
 }
@@ -881,7 +764,7 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 
 		string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pName + ".shader";
 
-		if (!check_file_not_exist(shader_path))
+		if (!error_if_path_not_exist(shader_path))
 			return S_FALSE;
 
 		paths += shader_path + ";";
@@ -918,8 +801,9 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 	return ret;
 }
 
-API ResourceManager::LoadTexture(OUT IResource ** pTextureResource, const char * pMeshPath, TEXTURE_CREATE_FLAGS flags)
+API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags)
 {
+	*pTexture = nullptr;
 	return E_NOTIMPL;
 }
 

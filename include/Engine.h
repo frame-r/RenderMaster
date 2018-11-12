@@ -45,7 +45,6 @@ namespace RENDER_MASTER
 	class IUpdateCallback;
 	class ICamera;
 	class IGameObject;
-	class IResource;
 	class IResourceManager;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
@@ -179,7 +178,6 @@ namespace RENDER_MASTER
 	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pos)
 	DEFINE_EVENT1(IRotationEvent, OUT quat *rot)
 	DEFINE_EVENT1(IGameObjectEvent, OUT IGameObject *pGameObject)
-	DEFINE_EVENT1(IResourceEvent, OUT IResource *pGameObject)
 	DEFINE_EVENT1(IStringEvent, const char *pString)
 	DEFINE_EVENT2(ILogEvent, const char *pMessage, LOG_TYPE type)
 
@@ -278,7 +276,6 @@ namespace RENDER_MASTER
 		virtual API GetNumberOfVertex(OUT uint *number) = 0;
 		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
 		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
-		virtual API Free() = 0;
 	};
 
 	struct ShaderText
@@ -417,7 +414,7 @@ namespace RENDER_MASTER
 	class IRender : public ISubSystem
 	{
 	public:
-		virtual API GetShader(OUT ICoreShader **pShader, const ShaderRequirement *shaderReq) = 0;
+		virtual API GetShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
 	};
 
 
@@ -437,9 +434,11 @@ namespace RENDER_MASTER
 	// Game Objects
 	//////////////////////
 	
-	class IGameObject
+	class IGameObject : public IUnknown
 	{
 	public:
+		virtual API GetReferences(int *refsOut) = 0;
+
 		virtual API GetID(OUT int *id) = 0;
 		virtual API SetID(int *id) = 0;
 		virtual API GetName(OUT const char **pName) = 0;
@@ -454,7 +453,6 @@ namespace RENDER_MASTER
 		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetAABB(OUT AABB *aabb) = 0;
 		virtual API Copy(IGameObject *copy) = 0;
-		virtual API Free() = 0;
 
 		// Events
 		virtual API GetNameEv(OUT IStringEvent **pEvent) = 0;
@@ -473,9 +471,31 @@ namespace RENDER_MASTER
 	class IModel : public IGameObject
 	{
 	public:
-		virtual API GetMesh(OUT ICoreMesh **pMesh, uint idx) = 0;
+		virtual API GetCoreMesh(OUT ICoreMesh **pMesh, uint idx) = 0;
 		virtual API GetNumberOfMesh(OUT uint *number) = 0;
 		virtual API Copy(OUT IModel *copy) = 0;
+	};
+
+	class IMesh : public IUnknown
+	{
+	public:
+		virtual API GetReferences(int *refsOut) = 0;
+		virtual API IsShared(int *isShared) = 0;
+		virtual API GetFile(OUT const char **file) = 0;
+
+		virtual API GetCoreMesh(OUT ICoreMesh **meshOut) = 0;
+	};
+
+	class ITexture : public IUnknown
+	{
+	public:
+		virtual API GetReferences(int *refsOut) = 0;
+	};
+
+	class IShader : public IUnknown
+	{
+	public:
+		virtual API GetReferences(int *refsOut) = 0;
 	};
 
 	//////////////////////
@@ -503,315 +523,21 @@ namespace RENDER_MASTER
 	//////////////////////
 
 
-	// Unique ptr to resource
-
-	template<typename T>
-	class RuntimeResourcePtr
-	{
-		T *_px = nullptr;
-
-		void _destroy()
-		{
-			if (_px)
-			{
-				_px->Free();
-				delete _px;
-				_px = nullptr;
-			}
-		}
-
-	public:
-		RuntimeResourcePtr() = default;
-		RuntimeResourcePtr(T *pointerIn) : _px(pointerIn) {}
-		RuntimeResourcePtr(const RuntimeResourcePtr<T>& ptr) : _px(ptr._px) {}
-		RuntimeResourcePtr<T> &operator=(const RuntimeResourcePtr<T>& ptr) = delete;
-		RuntimeResourcePtr<T> (RuntimeResourcePtr<T>&& other)
-		{
-			_px = other._px;
-			other._px = nullptr;
-		}
-		RuntimeResourcePtr<T>& operator=(RuntimeResourcePtr<T>&& other)
-		{
-			_px = other._px;
-			other._px = nullptr;
-			return *this;
-		}
-		~RuntimeResourcePtr()
-		{
-			_destroy();
-		}
-		void reset()
-		{
-			_destroy();
-		}
-		inline T *get() const { return _px; }
-	};
-
-	enum class RES_TYPE
-	{
-		CORE_TEXTURE,
-		CORE_MESH,
-		SHADER,
-		NUMBER
-	};
-
-	class IResource
-	{
-	public:
-		virtual API AddRef() = 0;
-		virtual API Release() = 0;
-		virtual API RefCount(OUT uint *refs) = 0;
-		virtual API GetType(OUT RES_TYPE *type) = 0;
-		virtual API GetFileID(OUT const char **file) = 0;
-		virtual API GetPointer(OUT void **pointer) = 0;
-	};
-
-	template<typename T>
-	class ResourcePtr
-	{
-		IResource *resource = nullptr;
-
-	public:
-		ResourcePtr() = default;
-		ResourcePtr(IResource *res) : resource(res)
-		{
-			if (resource)
-				resource->AddRef();
-		}
-		~ResourcePtr()
-		{
-			if (resource)
-			{
-				resource->Release();
-				resource = nullptr;
-			}
-		}
-		ResourcePtr(const ResourcePtr<T> &ptr)
-		{
-			if (this == &ptr)
-				return;
-			if (resource == ptr.resource)
-				return;
-			resource = ptr.resource;
-			if (resource)
-				resource->AddRef();
-		}
-		ResourcePtr(ResourcePtr<T> &&ptr)
-		{
-			resource = ptr.resource;
-			ptr.resource = nullptr;
-		}
-		ResourcePtr<T> &operator=(const ResourcePtr<T> &ptr)
-		{
-			if (this == &ptr)
-				return *this;
-			if (resource == ptr.resource)
-				return *this;
-			resource = ptr.resource;
-			if (resource)
-				resource->AddRef();
-
-			return *this;
-		}
-		ResourcePtr<T> &operator=(ResourcePtr<T> &&ptr)
-		{
-			resource = ptr.resource;
-			ptr.resource = nullptr;
-			return *this;
-		}
-
-		void reset()
-		{
-			if (resource)
-			{
-				resource->Release();
-				resource = nullptr;
-			}
-		}
-
-		inline T *get() const
-		{
-			if (resource)
-			{
-				void *p;
-				resource->GetPointer(&p);
-				return reinterpret_cast<T*>(p);
-			}
-
-			return nullptr;
-		}
-		inline IResource *getResource() const
-		{
-			return resource;
-		}
-
-		inline T &operator*() const
-		{
-			T *ptr = get();
-			return *ptr;
-		}
-
-		inline T *operator->()
-		{
-			void *p;
-			resource->GetPointer(&p);
-			return reinterpret_cast<T*>(p);
-		}
-
-		inline ResourcePtr<T> Clone()
-		{
-			IResource *copy;
-			resource->Clone(&copy);
-			return ResourcePtr<T>(copy);
-		}
-	};
-
 	class IResourceManager : public ISubSystem
 	{
 	public:
 
-		// Manual resource operations (Not recommended)
-		// Using these functions you have to manually call functions
-		// IResource::AddRef() when you get resource and
-		// IResource::Release() when you don't need it anymore
-		//
-		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshPath) = 0;
-		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
-		virtual API LoadTexture(OUT IResource **pTextureResource, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
-		//virtual API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) = 0;
-		virtual API DeleteResource(IResource *pResource) = 0;
-		virtual API GetNumberOfResources(OUT uint *number) = 0;
+		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
+		virtual API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) = 0;
+		virtual API LoadShader(OUT IShader **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
+		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
 
-		virtual API CreateCoreMesh(OUT ICoreMesh **pMesh) = 0;
 		virtual API CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
 		virtual API CreateModel(OUT IModel **pModel) = 0;
 		virtual API CreateCamera(OUT ICamera **pCamera) = 0;
-		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
-
-		virtual API RemoveCoreMesh(ICoreMesh *res) = 0;
-		virtual API RemoveUniformBuffer(IUniformBuffer *res) = 0;
-		virtual API RemoveGameObject(IGameObject *res) = 0;
-		virtual API RemoveModel(IModel *res) = 0;
-		virtual API RemoveCamera(ICamera *res) = 0;
 
 		virtual API Free() = 0;
-
-		// Hight-level resource operations (Recommended)
-		//
-
-		// Load model with all meshes and create it in scene
-		// Examples:
-		//		meshes/big_model.fbx
-		//ResourcePtr<IModel> loadModel(const char *pModelPath)
-		//{
-		//	IResource *res;
-		//	LoadModel(&res, pModelPath);
-		//	return ResourcePtr<IModel>(res);
-		//}
-
-		// Load specified mesh
-		//
-		// pMeshPath in folowing format: <path to model>#<mesh in model> or std#<some standard resource>
-		//
-		// Examples:
-		//		meshes/first_model.fbx#mesh001
-		//		second_model.fbx#mesh442
-		// Standard Resources:
-		//		std#axes
-		//		std#axes_arrows
-		//		std#grid
-		//		std#plane
-		ResourcePtr<ICoreMesh> loadMesh(const char *pMeshPath)
-		{
-			IResource *res;
-			LoadMesh(&res, pMeshPath);
-			return ResourcePtr<ICoreMesh>(res);
-		}
-
-		ResourcePtr<ShaderText> loadShaderText(const char *pVertName, const char *pGeomName, const char *pFragName)
-		{
-			IResource *res;
-			LoadShaderText(&res, pVertName, pGeomName, pFragName);
-			return ResourcePtr<ShaderText>(res);
-		}
-
-
-		// Create runtime resources
-		//
-
-		RuntimeResourcePtr<IUniformBuffer> createUniformBuffer(uint size)
-		{
-			IUniformBuffer *buffer;
-			CreateUniformBuffer(&buffer, size);
-			RuntimeResourcePtr<IUniformBuffer> ret(buffer);
-			return ret;
-		}
-
-		RuntimeResourcePtr<IGameObject> createGameObject()
-		{
-			IGameObject *go;
-			CreateGameObject(&go);
-			RuntimeResourcePtr<IGameObject> ret(go);
-			return ret;
-		}
-
-		RuntimeResourcePtr<ICamera> createCamera()
-		{
-			ICamera *go;
-			CreateCamera(&go);
-			RuntimeResourcePtr<ICamera> ret(go);
-			return ret;
-		}
-
-		RuntimeResourcePtr<IModel> createModel()
-		{
-			IModel *go;
-			CreateModel(&go);
-			RuntimeResourcePtr<IModel> ret(go);
-			return ret;
-		}
-
-		RuntimeResourcePtr<IModel> loadModel(const char *pModelPath)
-		{
-			IModel *mdl;
-			LoadModel(&mdl, pModelPath);
-			RuntimeResourcePtr<IModel> ret(mdl);
-			return ret;
-		}
-
-
-		//
-		// DEPRECATED
-		//
-		//ResourcePtr<IUniformBuffer> createUniformBuffer(uint size)
-		//{
-		//	IResource *res;
-		//	CreateUniformBuffer(&res, size);
-		//	return ResourcePtr<IUniformBuffer>(res);
-		//}
-
-		//ResourcePtr<IGameObject> createGameObject()
-		//{
-		//	IResource *res;
-		//	CreateGameObject(&res, RES_TYPE::GAME_OBJECT);
-		//	return ResourcePtr<IGameObject>(res);
-		//}
-
-		//ResourcePtr<ICamera> createCamera()
-		//{
-		//	IResource *res;
-		//	CreateGameObject(&res, RES_TYPE::CAMERA);
-		//	return ResourcePtr<ICamera>(res);
-		//}
-
-		//template<typename T>
-		//ResourcePtr<T> cloneGameObject(const ResourcePtr<T>& r)
-		//{
-		//	IResource *resCloned;
-		//	CloneGameObject(r.getResource(), &resCloned);
-		//	return ResourcePtr<T>(resCloned);
-		//}
 	};
 
 	

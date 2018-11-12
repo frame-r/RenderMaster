@@ -60,6 +60,7 @@
     <ClInclude Include="..\src\CoreRender\OpenGL\GLShader.h">
       <Filter>CoreRender\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Mesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -103,6 +104,10 @@
     <ClCompile Include="..\src\GLEW\glew.c">
       <Filter>CoreRender\OpenGL\GLEW</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Mesh.cpp" />
+    <ClCompile Include="..\src\GameObject.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_vertex.shader">
@@ -114,7 +119,6 @@
     <None Include="..\src\shaders\mesh_fragment.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CoreRender">

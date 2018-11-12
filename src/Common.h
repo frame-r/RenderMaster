@@ -5,6 +5,7 @@
 #include "Engine.h"
 
 using namespace RENDER_MASTER;
+namespace WRL = Microsoft::WRL;
 
 using std::unique_ptr;
 using std::vector;
@@ -199,3 +200,104 @@ inline ISceneManager *getSceneManager(ICore *core)
 int get_msaa_samples(INIT_FLAGS flags);
 string msaa_to_string(int samples);
 
+#define BASE_COM_HEADER_IMPLEMENTATION \
+private: \
+	int _isShared = 0; \
+	string _file; \
+	int _refs = 0; \
+public: \
+	API GetReferences(int *refsOut) override; \
+	API IsShared(int *isShared) override; \
+	API GetFile(OUT const char **file) override; \
+	STDMETHODIMP_(ULONG) AddRef() override; \
+	STDMETHODIMP_(ULONG) Release() override; \
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
+
+
+#define BASE_COM_CPP_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD, REMOVE_SHARED_METHOD) \
+ \
+	API CLASS::GetReferences(int *refsOut) \
+	{ \
+		*refsOut = _refs; \
+		return S_OK; \
+	} \
+	API CLASS::IsShared(int *isShared) \
+	{ \
+		*isShared = _isShared; \
+		return S_OK; \
+	} \
+	API CLASS::GetFile(OUT const char **file) \
+	{ \
+		*file = _file.c_str(); \
+		return S_OK; \
+	} \
+	\
+	STDMETHODIMP_(ULONG) CLASS::AddRef() \
+	{ \
+		_refs++; \
+		return S_OK; \
+	} \
+	\
+	STDMETHODIMP_(ULONG) CLASS::Release() \
+	{ \
+		_refs--; \
+		if (_refs < 1) \
+		{ \
+			IResourceManager *irm = getResourceManager(CORE); \
+			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
+			if (_isShared) \
+				rm->REMOVE_SHARED_METHOD(_file); \
+			else \
+				rm->REMOVE_RUNTIME_METHOD(this); \
+			delete this; \
+		} \
+		return S_OK;  \
+	} \
+ \
+	STDMETHODIMP CLASS::QueryInterface(REFIID riid, void** ppv) \
+	{  \
+		*ppv = nullptr;  \
+		return S_OK;  \
+	}
+
+#define RUNTIME_COM_HEADER_IMPLEMENTATION \
+private: \
+	int _refs = 0; \
+public: \
+	HRESULT GetReferences(int *refsOut) override; \
+	STDMETHODIMP_(ULONG) AddRef() override; \
+	STDMETHODIMP_(ULONG) Release() override; \
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
+
+#define RUNTIME_COM_CPP_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD) \
+ \
+	HRESULT CLASS::GetReferences(int *refsOut) \
+	{ \
+		*refsOut = _refs; \
+		return S_OK; \
+	} \
+\
+	STDMETHODIMP_(ULONG) CLASS::AddRef() \
+	{ \
+		_refs++; \
+		return S_OK; \
+	} \
+\
+	STDMETHODIMP_(ULONG) CLASS::Release() \
+	{ \
+		_refs--; \
+		if (_refs < 1) \
+		{ \
+			IResourceManager *irm = getResourceManager(CORE); \
+			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
+			rm->REMOVE_RUNTIME_METHOD(dynamic_cast<IGameObject*>(this)); \
+			delete this; \
+		} \
+		return S_OK;  \
+	} \
+ \
+	STDMETHODIMP CLASS::QueryInterface(REFIID riid, void** ppv) \
+	{  \
+		*ppv = nullptr;  \
+		return S_OK;  \
+	}

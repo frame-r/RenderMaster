@@ -4,13 +4,9 @@
 #include "SceneManager.h"
 #include "Preprocessor.h"
 
-using std::list;
-
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
-
-
 
 /////////////////////////
 // Render
@@ -126,7 +122,7 @@ void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 			for (auto j = 0u; j < meshes; j++)
 			{
 				ICoreMesh *mesh{ nullptr };
-				model->GetMesh(&mesh, j);
+				model->GetCoreMesh(&mesh, j);
 
 				mat4 mat;
 				model->GetModelMatrix(&mat);
@@ -157,15 +153,16 @@ void Render::Init()
 {
 	_standardShader = _pResMan->loadShaderText("mesh_vertex", nullptr, "mesh_fragment");
 
-	_pAxesMesh = _pResMan->loadMesh("std#axes");
-	_pAxesArrowMesh = _pResMan->loadMesh("std#axes_arrows");
-	_pGridMesh = _pResMan->loadMesh("std#grid");
+	IMesh *mesh;
 
-	//dbg
-	//ICoreShader *s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
-	//_shaders_pool.emplace(s);
-	//s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
-	//_shaders_pool.emplace(s);
+	_pResMan->LoadMesh(&mesh, "std#axes");
+	_pAxesMesh = WRL::ComPtr<IMesh>(mesh);
+
+	_pResMan->LoadMesh(&mesh, "std#axes_arrows");
+	_pAxesArrowMesh = WRL::ComPtr<IMesh>(mesh);
+
+	_pResMan->LoadMesh(&mesh, "std#grid");
+	_pGridMesh = WRL::ComPtr<IMesh>(mesh);
 
 	everyFrameParameters = _pResMan->createUniformBuffer(sizeof(EveryFrameParameters));
 
@@ -174,10 +171,10 @@ void Render::Init()
 
 void Render::Free()
 {
-	_standardShader.reset();
-	_pAxesMesh.reset();
-	_pAxesArrowMesh.reset();
-	_pGridMesh.reset();
+	_standardShader.Reset();
+	_pAxesMesh.Reset();
+	_pAxesArrowMesh.Reset();
+	_pGridMesh.Reset();
 
 	for (auto& s: _shaders_pool)
 	{
@@ -185,7 +182,7 @@ void Render::Free()
 		delete ss;
 	}
 
-	everyFrameParameters.reset();
+	everyFrameParameters.Reset();
 }
 
 void Render::RenderFrame(const ICamera *pCamera)
@@ -257,7 +254,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 	}
 }
 
-API Render::GetShader(ICoreShader** pShader, const ShaderRequirement* shaderReq)
+API Render::GetShader(IShader** pShader, const ShaderRequirement* shaderReq)
 {
 	*pShader = _get_shader(*shaderReq);
 	return S_OK;

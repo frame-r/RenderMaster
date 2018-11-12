@@ -7,6 +7,8 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+RUNTIME_COM_CPP_IMPLEMENTATION(Camera, _pCore, RemoveRuntimeGameObject)
+
 void Camera::_update()
 {
 	int left_pressd{};
@@ -164,10 +166,3 @@ API Camera::Copy(OUT ICamera * copy)
 	return S_OK;
 }
 
-API Camera::Free()
-{
-	IResourceManager *rm = getResourceManager(_pCore);
-	rm->RemoveCamera(this);
-
-	return S_OK;
-}
