@@ -154,9 +154,8 @@ API Camera::GetFovAngle(OUT float *fovInDegrees)
 	return S_OK;
 }
 
-API Camera::Copy(OUT ICamera * copy)
+API Camera::Copy(OUT ICamera *copy)
 {
-	IGameObject *copyGO = copy;
 	GameObjectBase<ICamera>::Copy(copy);
 
 	Camera *copyCamera = static_cast<Camera*>(copy);

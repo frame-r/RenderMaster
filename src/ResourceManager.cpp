@@ -454,7 +454,7 @@ API ResourceManager::Free()
 	return S_OK;
 }
 
-void splitMeshID(const string& meshPath, string& relativeModelPath, string& meshID)
+void split_mesh_path(const string& meshPath, string& relativeModelPath, string& meshID)
 {
 	vector<string> paths = split(string(meshPath), '#');
 	if (paths.size() < 2)
@@ -475,7 +475,7 @@ vector<IMesh*> ResourceManager::find_loaded_meshes(const char* pRelativeModelPat
 		string path = it->first;
 		string relativeModelPath;
 		string meshID;
-		splitMeshID(path, relativeModelPath, meshID);
+		split_mesh_path(path, relativeModelPath, meshID);
 
 		if (pMeshID == nullptr)
 		{
@@ -545,7 +545,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 {
 	string relativeModelPath;
 	string meshID;
-	splitMeshID(pMeshPath, relativeModelPath, meshID);
+	split_mesh_path(pMeshPath, relativeModelPath, meshID);
 
 	vector<IMesh*> loaded_meshes = find_loaded_meshes(relativeModelPath.c_str(), meshID.c_str());
 
