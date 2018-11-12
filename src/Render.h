@@ -18,7 +18,7 @@ class Render : public IRender
 	WRL::ComPtr<IMesh> _pAxesArrowMesh;
 	WRL::ComPtr<IMesh> _pGridMesh;
 
-	WRL::ComPtr<IUniformBuffer> everyFrameParameters;
+	WRL::ComPtr<IConstantBuffer> everyFrameParameters;
 
 	#pragma pack(push, 4)
 	struct EveryFrameParameters

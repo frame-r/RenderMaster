@@ -87,7 +87,7 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 		process_shader(vertOut, vert, "out_v.shader", 0);
 		process_shader(fragOut, frag, "out_f.shader", 1);
 
-		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, &tmp)) && pShader != nullptr;
+		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, vertOut, fragOut, nullptr)) && pShader != nullptr;
 
 		if (!compiled)
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");

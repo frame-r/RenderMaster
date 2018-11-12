@@ -341,7 +341,7 @@ namespace RENDER_MASTER
 		virtual API Free() = 0;
 	};
 
-	class IUniformBuffer
+	class IConstantBuffer
 	{
 	public:
 		virtual API Free() = 0;
@@ -361,12 +361,13 @@ namespace RENDER_MASTER
 
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
-		virtual API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) = 0;
+		virtual API CreateConstantBuffer(OUT IConstantBuffer **pBuffer, uint size) = 0;
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
+
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
-		virtual API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) = 0;
-		virtual API SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData) = 0;
+		virtual API SetUniformBuffer(const IConstantBuffer *pBuffer, uint slot) = 0;
+		virtual API SetUniformBufferData(IConstantBuffer *pBuffer, const void *pData) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
@@ -520,7 +521,7 @@ namespace RENDER_MASTER
 		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 
-		virtual API CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size) = 0;
+		virtual API CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
 		virtual API CreateModel(OUT IModel **pModel) = 0;
 		virtual API CreateCamera(OUT ICamera **pCamera) = 0;

@@ -4,6 +4,7 @@
 #include "Core.h"
 #include "Model.h"
 #include "Mesh.h"
+#include "ShaderText.h"
 #include "Camera.h"
 #include "Console.h"
 #include "SceneManager.h"
@@ -533,14 +534,9 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 		LOG_FATAL_FORMATTED("ResourceManager::LoadModel unsupported format \"%s\"", file_ext.c_str());
 		return E_FAIL;
 	}
-
-	// TODO: Add object to scene
-
-	//TRuntimeResource<IModel> *res = new TRuntimeResource<IModel>(model);
-	//_runtime_resources.emplace(res);
-	//*pModel = res->get();
-	//SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
-	//sm->AddGameObjec(static_cast<IModel*>(model));
+	
+	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
+	sm->addGameObject(static_cast<IModel*>(model));
 
 	return S_OK;
 }
@@ -700,7 +696,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	{
 		Mesh *m = new Mesh(stdCoreMesh, 1, pMeshPath);
 		*pMesh = m;
-		_resources.emplace(pMeshPath, m);
+		_shared_meshes.emplace(pMeshPath, m);
 		return S_OK;
 	}
 
@@ -784,19 +780,23 @@ API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pVert
 		return S_OK;
 	};
 
-	auto *tex = new ShaderText;
 	string paths;
+	const char *v, *g, *f;
 
-	auto ret =	load_shader(paths, tex->pVertText, pVertName);
+	auto ret =	load_shader(paths, v, pVertName);
 
 	if (pGeomName)
-		ret &=	load_shader(paths, tex->pGeomText, pGeomName);
+		ret &=	load_shader(paths, g, pGeomName);
 
-	ret &=		load_shader(paths, tex->pFragText, pFragName);
+	ret &=		load_shader(paths, f, pFragName);
 
+	ShaderText *text = new ShaderText(v, g, f, paths);
+	_shared_shadertexts.emplace(paths, text);
+	*pShader = text;
 
-	_shared_shadertexts.emplace(paths, res);
-	*pShader = res;
+	delete[] v;
+	delete[] g;
+	delete[] f;
 
 	return ret;
 }
@@ -809,77 +809,46 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pMeshPath,
 
 API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 {
-	TRuntimeResource<IGameObject> *res = new TRuntimeResource<IGameObject>(new GameObject);
-	_runtime_resources.emplace(res);
-	*pGameObject = res->get();
+	IGameObject *g = new GameObject;
+	_runtime_gameobjects.emplace(g);
+	*pGameObject = g;
+
 	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
-	sm->AddGameObjec(static_cast<IGameObject*>(*pGameObject));
+	sm->addGameObject(static_cast<IGameObject*>(g));
 
 	return S_OK;
 }
 
 API ResourceManager::CreateModel(OUT IModel **pModel)
 {
-	TRuntimeResource<IModel> *res = new TRuntimeResource<IModel>(new Model);
-	_runtime_resources.emplace(res);
-	*pModel = res->get();
+	IModel *g = new Model;
+	_runtime_gameobjects.emplace(g);
+	*pModel = g;
+
 	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
-	sm->AddGameObjec(static_cast<IModel*>(*pModel));
+	sm->addGameObject(static_cast<IModel*>(g));
 
 	return S_OK;
 }
 
 API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 {
-	TRuntimeResource<ICamera> *res = new TRuntimeResource<ICamera>(new Camera);
-	_runtime_resources.emplace(res);
-	*pCamera = res->get();
+	ICamera *g = new Camera;
+	_runtime_gameobjects.emplace(g);
+	*pCamera = g;
+
 	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
-	sm->AddGameObjec(static_cast<IGameObject*>(*pCamera));
+	sm->addGameObject(static_cast<ICamera*>(g));
 
 	return S_OK;
 }
 
-API ResourceManager::CreateCoreMesh(OUT ICoreMesh **pMesh)
+API ResourceManager::CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size)
 {
-	return S_OK;
-}
-
-API ResourceManager::CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size)
-{
-	_pCoreRender->CreateUniformBuffer(pUniformBuffer, size);
-	TRuntimeResource<IUniformBuffer> *res = new TRuntimeResource<IUniformBuffer>(*pUniformBuffer);
+	_pCoreRender->CreateConstantBuffer(pUniformBuffer, size);
+	TRuntimeResource<IConstantBuffer> *res = new TRuntimeResource<IConstantBuffer>(*pUniformBuffer);
 	_runtime_resources.emplace(res);
 
 	return S_OK;
 }
 
-API ResourceManager::GetNumberOfResources(OUT uint *number)
-{
-	*number = (uint) _resources.size();
-	return S_OK;
-}
-
-API ResourceManager::DeleteResource(IResource *pResource)
-{
-	auto it = _resources.find(pResource);
-	
-	if (it == _resources.end())
-	{
-		LOG_WARNING("ResourceManager::DeleteResource() Resource not found\n");
-		return E_ABORT;
-	}
-
-	uint refs = 0;
-	(*it)->RefCount(&refs);
-
-	if (refs != 0)
-	{
-		LOG_WARNING_FORMATTED("ResourceManager::DeleteResource() Unable delete resource: refs = %i\n", refs);
-		return E_ABORT;
-	}
-
-	_resources.erase(pResource);
-
-	return S_OK;
-}

@@ -463,7 +463,7 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, co
 	return S_OK;
 }
 
-API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
+API DX11CoreRender::CreateConstantBuffer(OUT IConstantBuffer **pBuffer, uint size)
 {
 	ComPtr<ID3D11Buffer> ret;
 
@@ -517,7 +517,7 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 	return S_OK;
 }
 
-API DX11CoreRender::SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot)
+API DX11CoreRender::SetUniformBuffer(const IConstantBuffer *pBuffer, uint slot)
 {
 	ID3D11Buffer *buf = static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer();
 
@@ -528,7 +528,7 @@ API DX11CoreRender::SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot)
 	return S_OK;
 }
 
-API DX11CoreRender::SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData)
+API DX11CoreRender::SetUniformBufferData(IConstantBuffer *pBuffer, const void *pData)
 {
 	_context->UpdateSubresource(static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer(), 0, nullptr, pData, 0, 0);
 

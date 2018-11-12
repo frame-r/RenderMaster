@@ -12,7 +12,7 @@ class SceneManager : public ISceneManager
 
 	tree<IGameObject*>::iterator gameobject_to_iterator(IGameObject *pGameObject);
 
-	RuntimeResourcePtr<ICamera> camera;
+	WRL::ComPtr<ICamera> camera;
 
 	friend void loadSceneManager(YAML::Node& n, SceneManager &sm);
 	friend YAML::Emitter& operator<<(YAML::Emitter& out, const SceneManager& sm);
@@ -23,11 +23,9 @@ public:
 
 public:
 
-	SceneManager();
-
 	void Init();
 	void Free();
-	void AddGameObjec(IGameObject *go);
+	void addGameObject(IGameObject *go);
 
 	// Scene
 	API SaveScene(const char *pRelativeScenePath) override;

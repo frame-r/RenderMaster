@@ -5,6 +5,7 @@
 #include <fbxsdk.h>
 #endif
 
+
 class ResourceManager final : public IResourceManager
 {
 	std::unordered_set<ITexture*> _runtime_textures;
@@ -62,7 +63,7 @@ public:
 	API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) override;
 	API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	
-	API CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size) override;
+	API CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size) override;
 	API CreateGameObject(OUT IGameObject **pGameObject) override;
 	API CreateModel(OUT IModel **pModel) override;
 	API CreateCamera(OUT ICamera **pCamera) override;

@@ -18,10 +18,6 @@ tree<IGameObject*>::iterator SceneManager::gameobject_to_iterator(IGameObject *p
 	return _gameobjects.end();
 }
 
-SceneManager::SceneManager()
-{
-}
-
 API SceneManager::SaveScene(const char *pRelativeScenePath)
 {
 	IFileSystem *fs;
@@ -156,34 +152,28 @@ API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, u
 
 void SceneManager::Init()
 {
-	IResourceManager *_pResMan = getResourceManager(_pCore);
-	camera = RuntimeResourcePtr<ICamera>(_pResMan->createCamera());
+	IResourceManager *rm = getResourceManager(_pCore);
+	ICamera *cam;
+	rm->CreateCamera(&cam);
+	camera = WRL::ComPtr<ICamera>(cam);
 	LOG("Scene Manager initialized");
 }
 
 void SceneManager::Free()
 {
-	camera.reset();
+	camera.Reset();
 
-	IResourceManager *_pResMan = getResourceManager(_pCore);
-
-	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _gameobjects.size());
-	#ifdef _DEBUG
-		uint res_before = 0;
-		_pResMan->GetNumberOfResources(&res_before);
-	#endif
-
-	CloseScene();
-
-	#ifdef _DEBUG
-		uint res_after = 0;
-		_pResMan->GetNumberOfResources(&res_after);
-		DEBUG_LOG("SceneManager::Free(): objects deleted=%i", LOG_TYPE::NORMAL, res_before - res_after);
-	#endif
+	for (auto it = _gameobjects.begin(); it != _gameobjects.end(); ++it)
+	{
+		IGameObject* res = *it;
+		res->Release();
+	}
+	_gameobjects.clear();
 }
 
-void SceneManager::AddGameObjec(IGameObject *go)
+void SceneManager::addGameObject(IGameObject *go)
 {
+	go->AddRef();
 	tree<IGameObject*>::iterator top = _gameobjects.begin();
 	auto it = _gameobjects.insert(top, go);
 	_gameObjectAddedEvent->Fire(go);

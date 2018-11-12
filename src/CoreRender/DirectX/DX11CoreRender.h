@@ -3,7 +3,7 @@
 
 namespace WRL = Microsoft::WRL;
 
-class DX11ConstantBuffer final: public IUniformBuffer
+class DX11ConstantBuffer final: public IConstantBuffer
 {
 	WRL::ComPtr<ID3D11Buffer> buffer;
 
@@ -381,12 +381,13 @@ public:
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) override;
-	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
+	API CreateConstantBuffer(OUT IConstantBuffer **pBuffer, uint size) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
+
 	API SetShader(const ICoreShader *pShader) override;
 	API SetMesh(const ICoreMesh* mesh) override;
-	API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) override;
-	API SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData) override;
+	API SetUniformBuffer(const IConstantBuffer *pBuffer, uint slot) override;
+	API SetUniformBufferData(IConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint w, uint h) override;
