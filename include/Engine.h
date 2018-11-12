@@ -278,23 +278,6 @@ namespace RENDER_MASTER
 		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
 	};
 
-	struct ShaderText
-	{
-		const char* pVertText{nullptr};
-		const char* pGeomText{nullptr};
-		const char* pFragText{nullptr};
-	public:
-		ShaderText() = default;
-		virtual ~ShaderText(){}
-
-		void Free()
-		{
-			delete pVertText;
-			delete pFragText;
-			delete pGeomText;
-		}
-	};
-
 	class ICoreShader
 	{
 	public:
@@ -377,7 +360,7 @@ namespace RENDER_MASTER
 		virtual API PopStates() = 0;
 
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
-		virtual API CreateShader(OUT ICoreShader **pShader, const ShaderText* shaderDesc) = 0;
+		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
 		virtual API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) = 0;
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 		virtual API SetShader(const ICoreShader *pShader) = 0;
@@ -492,10 +475,15 @@ namespace RENDER_MASTER
 		virtual API GetReferences(int *refsOut) = 0;
 	};
 
-	class IShader : public IUnknown
+	class IShaderText : public IUnknown
 	{
 	public:
 		virtual API GetReferences(int *refsOut) = 0;
+		virtual API GetFile(OUT const char **file) = 0;
+		virtual API GetVert(OUT const char **text) = 0;
+		virtual API GetGeom(OUT const char **text) = 0;
+		virtual API GetFrag(OUT const char **text) = 0;
+
 	};
 
 	//////////////////////
@@ -529,8 +517,8 @@ namespace RENDER_MASTER
 
 		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
 		virtual API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) = 0;
-		virtual API LoadShader(OUT IShader **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
+		virtual API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 
 		virtual API CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;

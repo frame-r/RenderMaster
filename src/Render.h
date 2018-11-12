@@ -12,7 +12,7 @@ class Render : public IRender
 	ISceneManager *_pSceneMan{nullptr};
 	IFileSystem *_fsystem{nullptr};
 
-	ResourcePtr<ShaderText> _standardShader;
+	WRL::ComPtr<IShaderText> _standardShader;
 
 	WRL::ComPtr<IMesh> _pAxesMesh;
 	WRL::ComPtr<IMesh> _pAxesArrowMesh;

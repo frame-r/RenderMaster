@@ -369,7 +369,7 @@ ResourceManager::ResourceManager()
 	const char *pString = nullptr;
 	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
 
-	_pCore->getConsoole()->addCommand("resources_list", std::bind(&ResourceManager::_resources_list, this, std::placeholders::_1, std::placeholders::_2));
+	_pCore->getConsoole()->addCommand("resources_list", std::bind(&ResourceManager::resources_list, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 ResourceManager::~ResourceManager()
@@ -385,7 +385,7 @@ void ResourceManager::Init()
 	LOG("Resource Manager initalized");
 }
 
-API ResourceManager::_resources_list(const char **args, uint argsNumber)
+API ResourceManager::resources_list(const char **args, uint argsNumber)
 {
 	LOG_FORMATTED("========= Runtime resources: %i =============", _runtime_textures.size() + _runtime_meshes.size() + _runtime_gameobjects.size());
 
@@ -398,7 +398,7 @@ API ResourceManager::_resources_list(const char **args, uint argsNumber)
 	}
 	// TODO: other objects
 
-	LOG_FORMATTED("========= Shared resources: %i =============", _shared_meshes.size() + _shared_textures.size());
+	LOG_FORMATTED("========= Shared resources: %i =============", _shared_meshes.size() + _shared_textures.size() + _shared_shadertexts.size());
 	LOG_FORMATTED("Shared Meshes: %i", _shared_meshes.size());
 	for (auto it = _shared_meshes.begin(); it != _shared_meshes.end(); it++)
 	{
@@ -417,7 +417,7 @@ API ResourceManager::_resources_list(const char **args, uint argsNumber)
 	return S_OK;
 }
 
-string ResourceManager::constructFullPath(const string& file)
+string ResourceManager::construct_full_path(const string& file)
 {
 	const char *pDataPath;
 	_pCore->GetDataDir(&pDataPath);
@@ -494,7 +494,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 {
 	assert(is_relative(pModelPath) && "ResourceManager::LoadModel(): fileName must be relative");
 
-	auto fullPath = constructFullPath(pModelPath);
+	auto fullPath = construct_full_path(pModelPath);
 
 	if (!error_if_path_not_exist(fullPath))
 	{
@@ -751,7 +751,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	return S_OK;
 }
 
-API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
+API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
 {
 	auto load_shader = [=](string &paths, const char *&textOut, const char *pName) -> APIRESULT
 	{
@@ -794,8 +794,8 @@ API ResourceManager::LoadShaderText(OUT IResource **pShader, const char *pVertNa
 
 	ret &=		load_shader(paths, tex->pFragText, pFragName);
 
-	TResource<ShaderText> *res = (TResource<ShaderText> *) _createResource(tex, RES_TYPE::SHADER, paths.c_str());
-	_resources.emplace(res);
+
+	_shared_shadertexts.emplace(paths, res);
 	*pShader = res;
 
 	return ret;

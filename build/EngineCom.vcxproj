@@ -47,6 +47,7 @@
     <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\shaders\language_dx11.h" />
     <ClInclude Include="..\src\shaders\language_gl.h" />
+    <ClInclude Include="..\src\ShaderText.h" />
     <ClInclude Include="..\src\Tree.h" />
     <ClInclude Include="..\src\MainWindow.h" />
   </ItemGroup>
@@ -82,6 +83,7 @@
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
+    <ClCompile Include="..\src\ShaderText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_common.shader" />

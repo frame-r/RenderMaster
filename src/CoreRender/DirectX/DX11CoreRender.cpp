@@ -452,11 +452,11 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	return S_OK;
 }
 
-API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc)
+API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom)
 {
-	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, shaderDesc->pVertText);
-	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, shaderDesc->pFragText);
-	ID3D11GeometryShader *gs = shaderDesc->pGeomText ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, shaderDesc->pGeomText) : nullptr;
+	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, vert);
+	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, frag);
+	ID3D11GeometryShader *gs = geom ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geom) : nullptr;
 
 	*pShader = new DX11Shader(vs, gs, fs);
 

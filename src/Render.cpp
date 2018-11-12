@@ -78,22 +78,24 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			ppTextOut = make_char_p(lines);
 		};
 
-		ShaderText tmp;
+		const char *vert, *frag;
+		const char *vertOut, *fragOut; 
 
-		process_shader(tmp.pVertText, _standardShader->pVertText, "out_v.shader", 0);
-		process_shader(tmp.pFragText, _standardShader->pFragText, "out_f.shader", 1);
+		_standardShader->GetVert(&vert);
+		_standardShader->GetFrag(&frag);
+
+		process_shader(vertOut, vert, "out_v.shader", 0);
+		process_shader(fragOut, frag, "out_f.shader", 1);
 
 		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, &tmp)) && pShader != nullptr;
 
 		if (!compiled)
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
 		else
-		{
 			_shaders_pool.emplace(req, pShader);
-		}
 
-		delete[] tmp.pVertText;
-		delete[] tmp.pFragText;
+		delete[] vertOut;
+		delete[] fragOut;
 	}
 
 	return pShader;
@@ -151,7 +153,9 @@ Render::~Render()
 
 void Render::Init()
 {
-	_standardShader = _pResMan->loadShaderText("mesh_vertex", nullptr, "mesh_fragment");
+	IShaderText *st;
+	_pResMan->LoadShaderText(&st, "mesh_vertex", nullptr, "mesh_fragment");
+	_standardShader =  WRL::ComPtr<IShaderText>(st);
 
 	IMesh *mesh;
 

@@ -380,7 +380,7 @@ public:
 	API PopStates() override;
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
-	API CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc) override;
+	API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) override;
 	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API SetShader(const ICoreShader *pShader) override;

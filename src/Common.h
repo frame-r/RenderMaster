@@ -301,3 +301,47 @@ public: \
 		*ppv = nullptr;  \
 		return S_OK;  \
 	}
+
+#define SHARED_COM_HEADER_IMPLEMENTATION \
+private: \
+	string _file; \
+	int _refs = 0; \
+public: \
+	API GetReferences(int *refsOut) override; \
+	API GetFile(OUT const char **file) override; \
+	STDMETHODIMP_(ULONG) AddRef() override; \
+	STDMETHODIMP_(ULONG) Release() override; \
+	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
+
+#define SHARED_COM_CPP_IMPLEMENTATION(CLASS, CORE, REMOVE_SHARED_METHOD) \
+ \
+	HRESULT CLASS::GetReferences(int *refsOut) \
+	{ \
+		*refsOut = _refs; \
+		return S_OK; \
+	} \
+\
+	STDMETHODIMP_(ULONG) CLASS::AddRef() \
+	{ \
+		_refs++; \
+		return S_OK; \
+	} \
+\
+	STDMETHODIMP_(ULONG) CLASS::Release() \
+	{ \
+		_refs--; \
+		if (_refs < 1) \
+		{ \
+			IResourceManager *irm = getResourceManager(CORE); \
+			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
+			rm->REMOVE_SHARED_METHOD(_file); \
+			delete this; \
+		} \
+		return S_OK;  \
+	} \
+ \
+	STDMETHODIMP CLASS::QueryInterface(REFIID riid, void** ppv) \
+	{  \
+		*ppv = nullptr;  \
+		return S_OK;  \
+	}
