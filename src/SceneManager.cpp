@@ -163,6 +163,8 @@ void SceneManager::Init()
 
 void SceneManager::Free()
 {
+	camera.reset();
+
 	IResourceManager *_pResMan = getResourceManager(_pCore);
 
 	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _gameobjects.size());

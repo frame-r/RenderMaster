@@ -85,7 +85,11 @@ public:
 	API GetPointer(OUT void **pointerOut) override { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
 };
 
-class IRuntimeResource{};
+class IRuntimeResource
+{
+public:
+	virtual void *getPointer() = 0;
+};
 
 template<typename T>
 class TRuntimeResource : public IRuntimeResource
@@ -102,6 +106,7 @@ public:
 	}
 
 	T *get() { return _pointer; }
+	void *getPointer() override { return _pointer; }
 };
 
 

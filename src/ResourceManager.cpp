@@ -597,29 +597,57 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 	return S_OK;
 }
 
-API ResourceManager::RemoveCoreMesh(ICoreMesh * res)
+template<class T>
+void remove_rr(std::unordered_set<IRuntimeResource*>& set_, T *res)
 {
+	auto ShouldDelete = [&](IRuntimeResource* r) -> bool
+	{
+		return res == r->getPointer();
+	};
+
+	auto it = find_if(set_.begin(), set_.end(), ShouldDelete);
+
+	if (it != set_.end())
+	{
+		IRuntimeResource* r_to_delete = *it;
+		delete r_to_delete;
+
+		set_.erase(it);
+	}
+}
+
+API ResourceManager::RemoveCoreMesh(ICoreMesh *res)
+{
+	remove_rr<ICoreMesh>(_runtime_resources, res);
+
 	return S_OK;
 }
 
-API ResourceManager::RemoveUniformBuffer(IUniformBuffer * res)
+API ResourceManager::RemoveUniformBuffer(IUniformBuffer *res)
 {
+	remove_rr<IUniformBuffer>(_runtime_resources, res);
+
 	return S_OK;
 }
 
 API ResourceManager::RemoveGameObject(IGameObject *res)
 {
+	remove_rr<IGameObject>(_runtime_resources, res);
 
 	return S_OK;
 }
 
-API ResourceManager::RemoveModel(IModel * res)
+API ResourceManager::RemoveModel(IModel *res)
 {
+	remove_rr<IModel>(_runtime_resources, res);
+
 	return S_OK;
 }
 
-API ResourceManager::RemoveCamera(ICamera * res)
+API ResourceManager::RemoveCamera(ICamera *res)
 {
+	remove_rr<ICamera>(_runtime_resources, res);
+
 	return S_OK;
 }
 
@@ -936,6 +964,9 @@ API ResourceManager::CreateCoreMesh(OUT ICoreMesh **pMesh)
 API ResourceManager::CreateUniformBuffer(OUT IUniformBuffer **pUniformBuffer, uint size)
 {
 	_pCoreRender->CreateUniformBuffer(pUniformBuffer, size);
+	TRuntimeResource<IUniformBuffer> *res = new TRuntimeResource<IUniformBuffer>(*pUniformBuffer);
+	_runtime_resources.emplace(res);
+
 	return S_OK;
 }
 
