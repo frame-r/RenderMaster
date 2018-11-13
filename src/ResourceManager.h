@@ -18,6 +18,7 @@ class ResourceManager final : public IResourceManager
 
 	std::unordered_map<string, IShaderText*> _shared_shadertexts;
 
+	std::unordered_set<IConstantBuffer*> _runtime_constntbuffer;
 		
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
@@ -55,6 +56,7 @@ public:
 	void RemoveSharedTexture(const string& file) { _shared_textures.erase(file); }
 	void RemoveRuntimeGameObject(IGameObject *g) { _runtime_gameobjects.erase(g); }
 	void RemoveSharedShaderText(const string& file) { _shared_shadertexts.erase(file); }
+	void RemoveRuntimeConstantBuffer(IConstantBuffer *cb) { _runtime_constntbuffer.erase(cb); }
 
 	void Init();
 
@@ -63,7 +65,7 @@ public:
 	API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) override;
 	API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	
-	API CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size) override;
+	API CreateConstantBuffer(OUT IConstantBuffer **pConstntBuffer, uint size) override;
 	API CreateGameObject(OUT IGameObject **pGameObject) override;
 	API CreateModel(OUT IModel **pModel) override;
 	API CreateCamera(OUT ICamera **pCamera) override;

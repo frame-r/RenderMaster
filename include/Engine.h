@@ -342,10 +342,8 @@ namespace RENDER_MASTER
 		virtual API Free() = 0;
 	};
 
-	class IConstantBuffer
+	class ICoreConstantBuffer
 	{
-	public:
-		virtual API Free() = 0;
 	};
 
 	class ICoreRender : public ISubSystem
@@ -362,13 +360,13 @@ namespace RENDER_MASTER
 
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
 		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
-		virtual API CreateConstantBuffer(OUT IConstantBuffer **pBuffer, uint size) = 0;
+		virtual API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) = 0;
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
-		virtual API SetUniformBuffer(const IConstantBuffer *pBuffer, uint slot) = 0;
-		virtual API SetUniformBufferData(IConstantBuffer *pBuffer, const void *pData) = 0;
+		virtual API SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot) = 0;
+		virtual API SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
@@ -475,6 +473,13 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetReferences(int *refsOut) = 0;
+	};
+
+	class IConstantBuffer : public IUnknown
+	{
+	public:
+		virtual API GetReferences(int *refsOut) = 0;
+		virtual API GetCoreBuffer(OUT ICoreConstantBuffer **bufferOut) = 0;
 	};
 
 	class IShaderText : public IUnknown

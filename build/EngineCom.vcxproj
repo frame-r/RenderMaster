@@ -24,6 +24,7 @@
     <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Console.h" />
+    <ClInclude Include="..\src\ConstantBuffer.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\CoreRender\DirectX\DX11CoreRender.h" />
     <ClInclude Include="..\src\CoreRender\DirectX\DX11Mesh.h" />
@@ -55,6 +56,7 @@
     <ClCompile Include="..\src\Camera.cpp" />
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\Console.cpp" />
+    <ClCompile Include="..\src\ConstantBuffer.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\CoreRender\DirectX\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\CoreRender\DirectX\DX11Mesh.cpp" />

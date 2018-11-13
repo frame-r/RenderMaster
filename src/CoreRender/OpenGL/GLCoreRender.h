@@ -2,7 +2,7 @@
 #include "Common.h"
 
 
-class GLUniformBuffer final : public IConstantBuffer
+class GLUniformBuffer final : public ICoreConstantBuffer
 {
 	GLuint _UBO;
 	uint _size{0};
@@ -10,9 +10,7 @@ class GLUniformBuffer final : public IConstantBuffer
 public:
 
 	GLUniformBuffer(GLuint ID, uint size) : _UBO(ID), _size(size) {}
-	~GLUniformBuffer() { Free(); }
-
-	API Free();
+	virtual ~GLUniformBuffer() { if (_UBO) glDeleteBuffers(1, &_UBO); _UBO = 0; }
 
 	inline GLuint ID() const { return _UBO; }
 	inline uint size() const { return _size; }
@@ -88,13 +86,13 @@ public:
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) override;
-	API CreateConstantBuffer(OUT IConstantBuffer **pBuffer, uint size) override;
+	API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 
 	API SetShader(const ICoreShader *pShader) override;
 	API SetMesh(const ICoreMesh* mesh) override;
-	API SetUniformBuffer(const IConstantBuffer *pBuffer, uint slot) override;
-	API SetUniformBufferData(IConstantBuffer *pBuffer, const void *pData) override;
+	API SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot) override;
+	API SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint wIn, uint hIn) override;

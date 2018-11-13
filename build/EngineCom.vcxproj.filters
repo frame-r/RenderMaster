@@ -62,6 +62,7 @@
     </ClInclude>
     <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\ShaderText.h" />
+    <ClInclude Include="..\src\ConstantBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -110,6 +111,7 @@
       <Filter>GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ShaderText.cpp" />
+    <ClCompile Include="..\src\ConstantBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_vertex.shader">

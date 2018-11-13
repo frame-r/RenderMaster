@@ -168,7 +168,9 @@ void Render::Init()
 	_pResMan->LoadMesh(&mesh, "std#grid");
 	_gridMesh = WRL::ComPtr<IMesh>(mesh);
 
-	_everyFrameParameters = _pResMan->createUniformBuffer(sizeof(EveryFrameParameters));
+	IConstantBuffer *cb;
+	_pResMan->CreateConstantBuffer(&cb, sizeof(EveryFrameParameters));
+	_everyFrameParameters = WRL::ComPtr<IConstantBuffer>(cb);
 
 	LOG("Render initialized");
 }
@@ -225,8 +227,12 @@ void Render::RenderFrame(const ICamera *pCamera)
 			params.NM = mat4();
 			params.nL = vec3(1.0f, -2.0f, 3.0f).Normalized();
 		}
-		_pCoreRender->SetUniformBufferData(_everyFrameParameters.get(), &params.main_color);
-		_pCoreRender->SetUniformBuffer(_everyFrameParameters.get(), 0);
+
+		ICoreConstantBuffer *coreCB;
+		_everyFrameParameters->GetCoreBuffer(&coreCB);
+
+		_pCoreRender->SetUniformBufferData(coreCB, &params.main_color);
+		_pCoreRender->SetUniformBuffer(coreCB, 0);
 
 		_pCoreRender->Draw(renderMesh.mesh);
 

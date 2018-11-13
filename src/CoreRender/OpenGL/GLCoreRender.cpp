@@ -575,7 +575,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, cons
 	return S_OK;
 }
 
-API GLCoreRender::CreateConstantBuffer(OUT IConstantBuffer **pBuffer, uint size)
+API GLCoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size)
 {
 	GLuint ubo = 0;
 	glGenBuffers(1, &ubo);
@@ -584,7 +584,7 @@ API GLCoreRender::CreateConstantBuffer(OUT IConstantBuffer **pBuffer, uint size)
 	glBufferData(GL_UNIFORM_BUFFER, size, &data[0], GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	*pBuffer = static_cast<IConstantBuffer*>(new GLUniformBuffer(ubo, size));
+	*pBuffer = static_cast<ICoreConstantBuffer*>(new GLUniformBuffer(ubo, size));
 
 	return S_OK;
 }
@@ -638,7 +638,7 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 	return S_OK;
 }
 
-API GLCoreRender::SetUniformBuffer(const IConstantBuffer *pBuffer, uint slot)
+API GLCoreRender::SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot)
 {
 	assert(_currentState.shader_program_id != 0 && "GLCoreRender::SetUniformBuffer(): shader not set");
 
@@ -658,7 +658,7 @@ API GLCoreRender::SetUniformBuffer(const IConstantBuffer *pBuffer, uint slot)
 	return S_OK;
 }
 
-API GLCoreRender::SetUniformBufferData(IConstantBuffer *pBuffer, const void *pData)
+API GLCoreRender::SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData)
 {
 	CHECK_GL_ERRORS();
 
@@ -755,12 +755,3 @@ API GLCoreRender::Clear()
 	return S_OK;
 }
 
-API GLUniformBuffer::Free()
-{
-	if (_UBO) glDeleteBuffers(1, &_UBO);
-	_UBO = 0;
-	IResourceManager *rm = getResourceManager(_pCore);
-	rm->RemoveUniformBuffer(this);
-
-	return S_OK;
-}

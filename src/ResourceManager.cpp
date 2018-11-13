@@ -845,9 +845,9 @@ API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 
 API ResourceManager::CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size)
 {
-	_pCoreRender->CreateConstantBuffer(pUniformBuffer, size);
-	TRuntimeResource<IConstantBuffer> *res = new TRuntimeResource<IConstantBuffer>(*pUniformBuffer);
-	_runtime_resources.emplace(res);
+	//_pCoreRender->CreateConstantBuffer(pUniformBuffer, size);
+	//TRuntimeResource<IConstantBuffer> *res = new TRuntimeResource<IConstantBuffer>(*pUniformBuffer);
+	//_runtime_resources.emplace(res);
 
 	return S_OK;
 }

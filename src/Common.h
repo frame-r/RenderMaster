@@ -290,7 +290,7 @@ public: \
 		{ \
 			IResourceManager *irm = getResourceManager(CORE); \
 			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
-			rm->REMOVE_RUNTIME_METHOD(dynamic_cast<IGameObject*>(this)); \
+			rm->REMOVE_RUNTIME_METHOD(this); \
 			delete this; \
 		} \
 		return S_OK;  \
