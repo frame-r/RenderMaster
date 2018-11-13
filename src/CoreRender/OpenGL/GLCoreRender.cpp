@@ -584,7 +584,10 @@ API GLCoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint s
 	glBufferData(GL_UNIFORM_BUFFER, size, &data[0], GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	*pBuffer = static_cast<ICoreConstantBuffer*>(new GLUniformBuffer(ubo, size));
+	GLUniformBuffer *gl = new GLUniformBuffer(ubo, size);
+	DEBUG_LOG_FORMATTED("GLCoreRender::CreateConstantBuffer new GLUniformBuffer %#010x", gl);
+
+	*pBuffer = static_cast<ICoreConstantBuffer*>(gl);
 
 	return S_OK;
 }
@@ -598,7 +601,7 @@ API GLCoreRender::SetShader(const ICoreShader* pShader)
 {
 	CHECK_GL_ERRORS();
 
-	const GLShader *pGLShader = dynamic_cast<const GLShader*>(pShader);
+	const GLShader *pGLShader = static_cast<const GLShader*>(pShader);
 	
 	if (pShader == nullptr)
 	{
@@ -629,7 +632,7 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 		glBindVertexArray(0);
 	else
 	{
-		const GLMesh *glMesh = reinterpret_cast<const GLMesh*>(mesh);
+		const GLMesh *glMesh = static_cast<const GLMesh*>(mesh);
 		glBindVertexArray(glMesh->VAO_ID());
 	}
 
@@ -645,7 +648,7 @@ API GLCoreRender::SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot
 	CHECK_GL_ERRORS();
 
 	// uniform buffer -> UBO slot
-	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
+	const GLUniformBuffer *glBuf = static_cast<const GLUniformBuffer*>(pBuffer);
 	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
 
 	// shader -> UBO slot
@@ -662,7 +665,7 @@ API GLCoreRender::SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void 
 {
 	CHECK_GL_ERRORS();
 
-	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
+	const GLUniformBuffer *glBuf = static_cast<const GLUniformBuffer*>(pBuffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, glBuf->ID());
 	GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
 	memcpy(p, pData, glBuf->size());
@@ -684,7 +687,7 @@ API GLCoreRender::Draw(ICoreMesh *mesh)
 		glBindVertexArray(0);
 	else
 	{
-		GLMesh *pGLMesh = reinterpret_cast<GLMesh*>(mesh);
+		GLMesh *pGLMesh = static_cast<GLMesh*>(mesh);
 		glBindVertexArray(pGLMesh->VAO_ID());
 
 		uint vertecies;
@@ -755,3 +758,8 @@ API GLCoreRender::Clear()
 	return S_OK;
 }
 
+GLUniformBuffer::~GLUniformBuffer()
+{
+	if (_UBO) glDeleteBuffers(1, &_UBO);
+	_UBO = 0;
+}

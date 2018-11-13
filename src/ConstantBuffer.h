@@ -7,7 +7,7 @@ class ConstantBuffer : public IConstantBuffer
 
 public:
 	ConstantBuffer(ICoreConstantBuffer *cb) : _coreConstantBuffer(cb) {}
-	virtual ~ConstantBuffer() { delete _coreConstantBuffer; _coreConstantBuffer = nullptr; }
+	virtual ~ConstantBuffer();
 
 	API GetCoreBuffer(OUT ICoreConstantBuffer **bufferOut) override;
 

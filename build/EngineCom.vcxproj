@@ -46,6 +46,7 @@
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Serialization.h" />
+    <ClInclude Include="..\src\Shader.h" />
     <ClInclude Include="..\src\shaders\language_dx11.h" />
     <ClInclude Include="..\src\shaders\language_gl.h" />
     <ClInclude Include="..\src\ShaderText.h" />
@@ -85,12 +86,14 @@
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
+    <ClCompile Include="..\src\Shader.cpp" />
     <ClCompile Include="..\src\ShaderText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_common.shader" />
     <None Include="..\src\shaders\mesh_fragment.shader" />
     <None Include="..\src\shaders\mesh_vertex.shader" />
+    <None Include="cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A2F95159-CE4F-44B5-B6EC-96C5D392D34D}</ProjectGuid>

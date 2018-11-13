@@ -26,14 +26,16 @@ void Render::_export_shader_to_file(list<string>& text, const string&& file)
 	pFile->CloseAndFree();
 }
 
-ICoreShader* Render::_get_shader(const ShaderRequirement &req)
+IShader* Render::_get_shader(const ShaderRequirement &req)
 {
-	ICoreShader *pShader = nullptr;
+	IShader *pShader = nullptr;
+
 	auto it = _shaders_pool.find(req);
 
 	if (it != _shaders_pool.end())
 	{
-		pShader = it->second;
+		WRL::ComPtr<IShader>& shaderPtr = it->second;
+		return shaderPtr.Get();
 	}
 	else
 	{
@@ -87,15 +89,12 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 		process_shader(vertOut, vert, "out_v.shader", 0);
 		process_shader(fragOut, frag, "out_f.shader", 1);
 
-		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, vertOut, fragOut, nullptr)) && pShader != nullptr;
+		bool compiled = SUCCEEDED(_pResMan->CreateShader(&pShader, vertOut, nullptr, fragOut)) && pShader != nullptr;
 
 		if (!compiled)
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
 		else
-			_shaders_pool.emplace(req, pShader);
-
-		delete[] vertOut;
-		delete[] fragOut;
+			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(pShader));
 	}
 
 	return pShader;
@@ -183,11 +182,7 @@ void Render::Free()
 	_gridMesh.Reset();
 	_everyFrameParameters.Reset();
 
-	for (auto& s: _shaders_pool)
-	{
-		ICoreShader *ss = s.second;
-		delete ss;
-	}	
+	_shaders_pool.clear();	
 }
 
 void Render::RenderFrame(const ICamera *pCamera)
@@ -211,12 +206,15 @@ void Render::RenderFrame(const ICamera *pCamera)
 	{
 		INPUT_ATTRUBUTE a;
 		renderMesh.mesh->GetAttributes(&a);		
-		ICoreShader *shader = _get_shader({a, false});
+		IShader *shader = _get_shader({a, false});
+		ICoreShader *coreShader;
+		shader->GetCoreShader(&coreShader);
+
 		if (!shader)
 			continue;
 
 		_pCoreRender->SetMesh(renderMesh.mesh);
-		_pCoreRender->SetShader(shader);
+		_pCoreRender->SetShader(coreShader);
 
 		//
 		// parameters
@@ -263,11 +261,11 @@ void Render::RenderFrame(const ICamera *pCamera)
 	}
 }
 
-API Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
-{
-	*pShader = _get_shader(*shaderReq);
-	return S_OK;
-}
+//API Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
+//{
+//	*pShader = _get_shader(*shaderReq);
+//	return S_OK;
+//}
 
 API Render::GetName(const char** pName)
 {

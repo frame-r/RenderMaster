@@ -344,6 +344,8 @@ namespace RENDER_MASTER
 
 	class ICoreConstantBuffer
 	{
+	public:
+		virtual ~ICoreConstantBuffer(){};
 	};
 
 	class ICoreRender : public ISubSystem
@@ -396,8 +398,8 @@ namespace RENDER_MASTER
 
 	class IRender : public ISubSystem
 	{
-	public:
-		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
+	//public:
+	//	virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
 	};
 
 
@@ -492,6 +494,16 @@ namespace RENDER_MASTER
 		virtual API GetFrag(OUT const char **textOut) = 0;
 	};
 
+	class IShader : public IUnknown
+	{
+	public:
+		virtual API GetReferences(int *refsOut) = 0;
+		virtual API GetCoreShader(ICoreShader **shaderOut) = 0;
+		virtual API GetVert(OUT const char **textOut) = 0;
+		virtual API GetGeom(OUT const char **textOut) = 0;
+		virtual API GetFrag(OUT const char **textOut) = 0;
+	};
+
 	//////////////////////
 	// Scene Manager
 	//////////////////////
@@ -526,6 +538,7 @@ namespace RENDER_MASTER
 		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 
+		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
 		virtual API CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
 		virtual API CreateModel(OUT IModel **pModel) = 0;

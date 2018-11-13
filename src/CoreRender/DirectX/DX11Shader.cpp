@@ -8,11 +8,6 @@ DEFINE_LOG_HELPERS(_pCore)
 
 DX11Shader::~DX11Shader()
 {
-	Free();
-}
-
-void DX11Shader::Free()
-{
 	if (pVertex) { pVertex->Release(); pVertex = nullptr;	}
 	if (pFragment) { pFragment->Release(); pFragment = nullptr; }
 	if (pGeometry) { pGeometry->Release(); pGeometry = nullptr; }

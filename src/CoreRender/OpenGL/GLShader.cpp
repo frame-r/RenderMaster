@@ -13,13 +13,9 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 
 GLShader::~GLShader()
 {
-	Free();
-}
-
-void GLShader::Free()
-{
 	if (_vertID != 0) {	glDeleteShader(_vertID); _vertID = 0; }
 	if (_fragID != 0) {	glDeleteShader(_fragID); _fragID = 0; }
 	if (_geomID != 0) { glDeleteShader(_geomID); _geomID = 0; }
 	if (_programID != 0) { glDeleteProgram(_programID); _programID = 0; }
 }
+

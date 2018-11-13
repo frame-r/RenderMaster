@@ -60,9 +60,18 @@
     <ClInclude Include="..\src\CoreRender\OpenGL\GLShader.h">
       <Filter>CoreRender\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Mesh.h" />
-    <ClInclude Include="..\src\ShaderText.h" />
-    <ClInclude Include="..\src\ConstantBuffer.h" />
+    <ClInclude Include="..\src\Mesh.h">
+      <Filter>Graphis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ConstantBuffer.h">
+      <Filter>Graphis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ShaderText.h">
+      <Filter>Graphis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shader.h">
+      <Filter>Graphis</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -106,12 +115,21 @@
     <ClCompile Include="..\src\GLEW\glew.c">
       <Filter>CoreRender\OpenGL\GLEW</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Mesh.cpp" />
     <ClCompile Include="..\src\GameObject.cpp">
       <Filter>GameObjects</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ShaderText.cpp" />
-    <ClCompile Include="..\src\ConstantBuffer.cpp" />
+    <ClCompile Include="..\src\Mesh.cpp">
+      <Filter>Graphis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ConstantBuffer.cpp">
+      <Filter>Graphis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ShaderText.cpp">
+      <Filter>Graphis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Shader.cpp">
+      <Filter>Graphis</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_vertex.shader">
@@ -123,6 +141,7 @@
     <None Include="..\src\shaders\mesh_fragment.shader">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CoreRender">
@@ -145,6 +164,9 @@
     </Filter>
     <Filter Include="CoreRender\OpenGL\GLEW">
       <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphis">
+      <UniqueIdentifier>{ad4bb86c-756a-4863-9fad-8e69735a71af}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -249,6 +249,7 @@ public: \
 				rm->REMOVE_SHARED_METHOD(_file); \
 			else \
 				rm->REMOVE_RUNTIME_METHOD(this); \
+			DEBUG_LOG_FORMATTED("delete %#010x", this); \
 			delete this; \
 		} \
 		return S_OK;  \
@@ -270,19 +271,19 @@ public: \
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
 #define RUNTIME_COM_CPP_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD) \
- \
+	\
 	HRESULT CLASS::GetReferences(int *refsOut) \
 	{ \
 		*refsOut = _refs; \
 		return S_OK; \
 	} \
-\
+	\
 	STDMETHODIMP_(ULONG) CLASS::AddRef() \
 	{ \
 		_refs++; \
 		return S_OK; \
 	} \
-\
+	\
 	STDMETHODIMP_(ULONG) CLASS::Release() \
 	{ \
 		_refs--; \
@@ -291,11 +292,12 @@ public: \
 			IResourceManager *irm = getResourceManager(CORE); \
 			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
 			rm->REMOVE_RUNTIME_METHOD(this); \
+			DEBUG_LOG_FORMATTED("delete %#010x", this); \
 			delete this; \
 		} \
 		return S_OK;  \
 	} \
- \
+	\
 	STDMETHODIMP CLASS::QueryInterface(REFIID riid, void** ppv) \
 	{  \
 		*ppv = nullptr;  \
@@ -314,19 +316,24 @@ public: \
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
 #define SHARED_COM_CPP_IMPLEMENTATION(CLASS, CORE, REMOVE_SHARED_METHOD) \
- \
+	\
 	HRESULT CLASS::GetReferences(int *refsOut) \
 	{ \
 		*refsOut = _refs; \
 		return S_OK; \
 	} \
-\
+	\
+	API CLASS::GetFile(OUT const char **file) \
+	{ \
+		*file = _file.c_str(); \
+		return S_OK; \
+	} \
 	STDMETHODIMP_(ULONG) CLASS::AddRef() \
 	{ \
 		_refs++; \
 		return S_OK; \
 	} \
-\
+	\
 	STDMETHODIMP_(ULONG) CLASS::Release() \
 	{ \
 		_refs--; \
@@ -335,11 +342,12 @@ public: \
 			IResourceManager *irm = getResourceManager(CORE); \
 			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
 			rm->REMOVE_SHARED_METHOD(_file); \
+			DEBUG_LOG_FORMATTED("delete %#010x", this); \
 			delete this; \
 		} \
 		return S_OK;  \
 	} \
- \
+	\
 	STDMETHODIMP CLASS::QueryInterface(REFIID riid, void** ppv) \
 	{  \
 		*ppv = nullptr;  \

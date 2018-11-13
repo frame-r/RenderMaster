@@ -5,6 +5,8 @@
 #include "ResourceManager.h"
 
 extern Core *_pCore;
+DEFINE_DEBUG_LOG_HELPERS(_pCore)
+DEFINE_LOG_HELPERS(_pCore)
 
 BASE_COM_CPP_IMPLEMENTATION(Mesh, _pCore, RemoveRuntimeMesh, RemoveSharedMesh)
 

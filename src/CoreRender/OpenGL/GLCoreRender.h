@@ -10,7 +10,7 @@ class GLUniformBuffer final : public ICoreConstantBuffer
 public:
 
 	GLUniformBuffer(GLuint ID, uint size) : _UBO(ID), _size(size) {}
-	virtual ~GLUniformBuffer() { if (_UBO) glDeleteBuffers(1, &_UBO); _UBO = 0; }
+	virtual ~GLUniformBuffer(); 
 
 	inline GLuint ID() const { return _UBO; }
 	inline uint size() const { return _size; }

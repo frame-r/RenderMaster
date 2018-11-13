@@ -3,8 +3,8 @@
 
 class SceneManager;
 
-void loadSceneManager(YAML::Node& n, SceneManager &sm);
-YAML::Emitter& operator<<(YAML::Emitter& out, const SceneManager& sm);
+//void loadSceneManager(YAML::Node& n, SceneManager &sm);
+//YAML::Emitter& operator<<(YAML::Emitter& out, const SceneManager& sm);
 
-YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);
-void loadResource(YAML::Node& n, IGameObject *go);
+//YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);
+//void loadResource(YAML::Node& n, IGameObject *go);

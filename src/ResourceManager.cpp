@@ -4,7 +4,9 @@
 #include "Core.h"
 #include "Model.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include "ShaderText.h"
+#include "ConstantBuffer.h"
 #include "Camera.h"
 #include "Console.h"
 #include "SceneManager.h"
@@ -394,6 +396,7 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	LOG_FORMATTED("Runtime Textures: %i", _runtime_textures.size());
 	LOG_FORMATTED("Runtime Game Objects: %i", _runtime_gameobjects.size());
 	LOG_FORMATTED("Runtime Constnt Buffers: %i", _runtime_constntbuffer.size());
+	LOG_FORMATTED("Runtime Shaders: %i", _runtime_shaders.size());
 
 	LOG("Meshes:");
 	for (auto it = _runtime_meshes.begin(); it != _runtime_meshes.end(); it++)
@@ -521,6 +524,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 	if (loaded_meshes.size())
 	{
 		model = new Model(loaded_meshes);
+		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x", model);
 	} else	
 
 #ifdef USE_FBX
@@ -535,6 +539,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 			_shared_meshes.emplace(meshName, m);
 		}
 		model = new Model(loaded_meshes);
+		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x", model);
 		*pModel = model;
 	}
 	else
@@ -704,6 +709,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	if (stdCoreMesh)
 	{
 		Mesh *m = new Mesh(stdCoreMesh, 1, pMeshPath);
+		DEBUG_LOG_FORMATTED("ResourceManager::LoadMesh() new Mesh %#010x", m);
 		*pMesh = m;
 		_shared_meshes.emplace(pMeshPath, m);
 		return S_OK;
@@ -790,7 +796,9 @@ API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pVert
 	};
 
 	string paths;
-	const char *v, *g, *f;
+	const char *v = nullptr;
+	const char *g = nullptr;
+	const char *f = nullptr;
 
 	auto ret =	load_shader(paths, v, pVertName);
 
@@ -799,13 +807,11 @@ API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pVert
 
 	ret &=		load_shader(paths, f, pFragName);
 
+	DEBUG_LOG_FORMATTED("ResourceManager::LoadShaderText() new ShaderText");
+
 	ShaderText *text = new ShaderText(v, g, f, paths);
 	_shared_shadertexts.emplace(paths, text);
 	*pShader = text;
-
-	delete[] v;
-	delete[] g;
-	delete[] f;
 
 	return ret;
 }
@@ -818,7 +824,10 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pMeshPath,
 
 API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 {
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateGameObject() new GameObject");
+
 	IGameObject *g = new GameObject;
+
 	_runtime_gameobjects.emplace(g);
 	*pGameObject = g;
 
@@ -830,7 +839,10 @@ API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 
 API ResourceManager::CreateModel(OUT IModel **pModel)
 {
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateModel() new Model");
+
 	IModel *g = new Model;
+
 	_runtime_gameobjects.emplace(g);
 	*pModel = g;
 
@@ -842,7 +854,10 @@ API ResourceManager::CreateModel(OUT IModel **pModel)
 
 API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 {
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateCamera() new Camera");
+
 	ICamera *g = new Camera;
+
 	_runtime_gameobjects.emplace(g);
 	*pCamera = g;
 
@@ -852,11 +867,49 @@ API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 	return S_OK;
 }
 
-API ResourceManager::CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size)
+API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag)
 {
-	//_pCoreRender->CreateConstantBuffer(pUniformBuffer, size);
-	//TRuntimeResource<IConstantBuffer> *res = new TRuntimeResource<IConstantBuffer>(*pUniformBuffer);
-	//_runtime_resources.emplace(res);
+	ICoreShader *coreShader = nullptr;
+
+	bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&coreShader, vert, frag, geom)) && coreShader != nullptr;
+
+	if (!compiled)
+	{
+		*pShaderOut = nullptr;
+		LOG_WARNING("ResourceManager::CreateShader(): failed to create shader");
+		return E_FAIL;
+	}
+
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateShader() new Shader");
+
+	IShader *s = new Shader(coreShader, vert, geom, frag);
+
+	_runtime_shaders.emplace(s);
+
+	*pShaderOut = s;
+
+	return S_OK;
+}
+
+API ResourceManager::CreateConstantBuffer(OUT IConstantBuffer **pConstantBuffer, uint size)
+{
+	ICoreConstantBuffer *coreConstntBuffer = nullptr;
+
+	bool created = SUCCEEDED(_pCoreRender->CreateConstantBuffer(&coreConstntBuffer, size)) && coreConstntBuffer != nullptr;
+
+	if (!created)
+	{
+		*pConstantBuffer = nullptr;
+		LOG_WARNING("ResourceManager::CreateConstantBuffer(): failed to create constnt buffer");
+		return E_FAIL;
+	}
+
+	IConstantBuffer *cb = new ConstantBuffer(coreConstntBuffer);
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateConstantBuffer() new ConstantBuffer %#010x", cb);
+
+	_runtime_constntbuffer.emplace(cb);
+
+	*pConstantBuffer = cb;
 
 	return S_OK;
 }
