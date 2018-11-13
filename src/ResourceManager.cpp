@@ -388,9 +388,14 @@ void ResourceManager::Init()
 
 API ResourceManager::resources_list(const char **args, uint argsNumber)
 {
-	LOG_FORMATTED("========= Runtime resources: %i =============", _runtime_textures.size() + _runtime_meshes.size() + _runtime_gameobjects.size());
+	LOG_FORMATTED("========= Runtime resources: %i =============", _runtime_textures.size() + _runtime_meshes.size() + _runtime_gameobjects.size() + _runtime_constntbuffer.size());
 
 	LOG_FORMATTED("Runtime Meshes: %i", _runtime_meshes.size());
+	LOG_FORMATTED("Runtime Textures: %i", _runtime_textures.size());
+	LOG_FORMATTED("Runtime Game Objects: %i", _runtime_gameobjects.size());
+	LOG_FORMATTED("Runtime Constnt Buffers: %i", _runtime_constntbuffer.size());
+
+	LOG("Meshes:");
 	for (auto it = _runtime_meshes.begin(); it != _runtime_meshes.end(); it++)
 	{
 		int refs;
@@ -401,6 +406,10 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 
 	LOG_FORMATTED("========= Shared resources: %i =============", _shared_meshes.size() + _shared_textures.size() + _shared_shadertexts.size());
 	LOG_FORMATTED("Shared Meshes: %i", _shared_meshes.size());
+	LOG_FORMATTED("Shared Textures: %i", _shared_textures.size());
+	LOG_FORMATTED("Shared Shader Texts: %i", _shared_shadertexts.size());
+
+	LOG("Shared Meshes:");
 	for (auto it = _shared_meshes.begin(); it != _shared_meshes.end(); it++)
 	{
 		IMesh *m = it->second;
