@@ -14,11 +14,11 @@ class Render : public IRender
 
 	WRL::ComPtr<IShaderText> _standardShader;
 
-	WRL::ComPtr<IMesh> _pAxesMesh;
-	WRL::ComPtr<IMesh> _pAxesArrowMesh;
-	WRL::ComPtr<IMesh> _pGridMesh;
+	WRL::ComPtr<IMesh> _axesMesh;
+	WRL::ComPtr<IMesh> _axesArrowMesh;
+	WRL::ComPtr<IMesh> _gridMesh;
 
-	WRL::ComPtr<IConstantBuffer> everyFrameParameters;
+	WRL::ComPtr<IConstantBuffer> _everyFrameParameters;
 
 	#pragma pack(push, 4)
 	struct EveryFrameParameters

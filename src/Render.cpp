@@ -160,15 +160,15 @@ void Render::Init()
 	IMesh *mesh;
 
 	_pResMan->LoadMesh(&mesh, "std#axes");
-	_pAxesMesh = WRL::ComPtr<IMesh>(mesh);
+	_axesMesh = WRL::ComPtr<IMesh>(mesh);
 
 	_pResMan->LoadMesh(&mesh, "std#axes_arrows");
-	_pAxesArrowMesh = WRL::ComPtr<IMesh>(mesh);
+	_axesArrowMesh = WRL::ComPtr<IMesh>(mesh);
 
 	_pResMan->LoadMesh(&mesh, "std#grid");
-	_pGridMesh = WRL::ComPtr<IMesh>(mesh);
+	_gridMesh = WRL::ComPtr<IMesh>(mesh);
 
-	everyFrameParameters = _pResMan->createUniformBuffer(sizeof(EveryFrameParameters));
+	_everyFrameParameters = _pResMan->createUniformBuffer(sizeof(EveryFrameParameters));
 
 	LOG("Render initialized");
 }
@@ -176,10 +176,10 @@ void Render::Init()
 void Render::Free()
 {
 	_standardShader.Reset();
-	_pAxesMesh.Reset();
-	_pAxesArrowMesh.Reset();
-	_pGridMesh.Reset();
-	everyFrameParameters.Reset();
+	_axesMesh.Reset();
+	_axesArrowMesh.Reset();
+	_gridMesh.Reset();
+	_everyFrameParameters.Reset();
 
 	for (auto& s: _shaders_pool)
 	{
@@ -225,8 +225,8 @@ void Render::RenderFrame(const ICamera *pCamera)
 			params.NM = mat4();
 			params.nL = vec3(1.0f, -2.0f, 3.0f).Normalized();
 		}
-		_pCoreRender->SetUniformBufferData(everyFrameParameters.get(), &params.main_color);
-		_pCoreRender->SetUniformBuffer(everyFrameParameters.get(), 0);
+		_pCoreRender->SetUniformBufferData(_everyFrameParameters.get(), &params.main_color);
+		_pCoreRender->SetUniformBuffer(_everyFrameParameters.get(), 0);
 
 		_pCoreRender->Draw(renderMesh.mesh);
 
