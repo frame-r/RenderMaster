@@ -524,6 +524,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 	if (loaded_meshes.size())
 	{
 		model = new Model(loaded_meshes);
+		_runtime_gameobjects.emplace(model);
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x", model);
 	} else	
 
@@ -539,6 +540,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 			_shared_meshes.emplace(meshName, m);
 		}
 		model = new Model(loaded_meshes);
+		_runtime_gameobjects.emplace(model);
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x", model);
 		*pModel = model;
 	}

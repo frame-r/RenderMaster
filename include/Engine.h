@@ -398,8 +398,8 @@ namespace RENDER_MASTER
 
 	class IRender : public ISubSystem
 	{
-	//public:
-	//	virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
+	public:
+		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
 	};
 
 

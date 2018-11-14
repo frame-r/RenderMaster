@@ -55,7 +55,7 @@ public:
 	void Free();
 	void RenderFrame(const ICamera *pCamera);
 
-	//API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
+	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
 	API GetName(OUT const char **pName) override;
 };
 
