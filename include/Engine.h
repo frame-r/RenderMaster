@@ -475,6 +475,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API GetReferences(int *refsOut) = 0;
+		virtual API GetFile(OUT const char **file) = 0;
 	};
 
 	class IConstantBuffer : public IUnknown

@@ -398,34 +398,41 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	LOG_FORMATTED("Runtime Constnt Buffers: %i", _runtime_constntbuffer.size());
 	LOG_FORMATTED("Runtime Shaders: %i", _runtime_shaders.size());
 
-	LOG("Meshes:");
-	for (auto it = _runtime_meshes.begin(); it != _runtime_meshes.end(); it++)
-	{
-		int refs;
-		(*it)->GetReferences(&refs);
-		LOG_FORMATTED("{refs = %i, type = %-25s, id = \"%s\"}", refs);
+	#define PRINT_RUNTIME_RESOURCES(TITLE, SET) \
+	LOG(TITLE); \
+	for (auto it = SET.begin(); it != SET.end(); it++) \
+	{ \
+		int refs; \
+		(*it)->GetReferences(&refs); \
+		LOG_FORMATTED("{refs = %i}", refs); \
 	}
-	// TODO: other objects
+
+	PRINT_RUNTIME_RESOURCES("Meshes:", _runtime_meshes);
+	PRINT_RUNTIME_RESOURCES("Textures:", _runtime_textures);
+	PRINT_RUNTIME_RESOURCES("GameObjects:", _runtime_gameobjects);
+	PRINT_RUNTIME_RESOURCES("ConstantBuffers:", _runtime_constntbuffer);
+	PRINT_RUNTIME_RESOURCES("Shaders:", _runtime_shaders);
 
 	LOG_FORMATTED("========= Shared resources: %i =============", _shared_meshes.size() + _shared_textures.size() + _shared_shadertexts.size());
 	LOG_FORMATTED("Shared Meshes: %i", _shared_meshes.size());
 	LOG_FORMATTED("Shared Textures: %i", _shared_textures.size());
 	LOG_FORMATTED("Shared Shader Texts: %i", _shared_shadertexts.size());
 
-	LOG("Shared Meshes:");
-	for (auto it = _shared_meshes.begin(); it != _shared_meshes.end(); it++)
-	{
-		IMesh *m = it->second;
-
-		int refs;
-		m->GetReferences(&refs);
-
-		const char *path;
-		m->GetFile(&path);
-
-		LOG_FORMATTED("{refs = %i, file = \"%s\"}", refs, path);
+	#define PRINT_SHARED_RESOURCES(TITLE, MAP, INTERFACE) \
+	LOG(TITLE); \
+	for (auto it = MAP.begin(); it != MAP.end(); it++) \
+	{ \
+		INTERFACE *m = it->second; \
+		int refs; \
+		m->GetReferences(&refs); \
+		const char *path; \
+		m->GetFile(&path); \
+		LOG_FORMATTED("{refs = %i, file = \"%s\"}", refs, path); \
 	}
-	// TODO: other objects
+	
+	PRINT_SHARED_RESOURCES("Shared Meshes:", _shared_meshes, IMesh);
+	PRINT_SHARED_RESOURCES("Shared Textures:", _shared_textures, ITexture);
+	PRINT_SHARED_RESOURCES("Shared ShaderTexts:", _shared_shadertexts, IShaderText);
 
 	return S_OK;
 }
