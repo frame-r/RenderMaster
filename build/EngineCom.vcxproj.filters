@@ -61,16 +61,16 @@
       <Filter>CoreRender\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Mesh.h">
-      <Filter>Graphis</Filter>
+      <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ConstantBuffer.h">
-      <Filter>Graphis</Filter>
+      <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\src\ShaderText.h">
-      <Filter>Graphis</Filter>
+      <Filter>Graphics</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Shader.h">
-      <Filter>Graphis</Filter>
+      <Filter>Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -119,16 +119,16 @@
       <Filter>GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Mesh.cpp">
-      <Filter>Graphis</Filter>
+      <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ConstantBuffer.cpp">
-      <Filter>Graphis</Filter>
+      <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ShaderText.cpp">
-      <Filter>Graphis</Filter>
+      <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Shader.cpp">
-      <Filter>Graphis</Filter>
+      <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -165,7 +165,7 @@
     <Filter Include="CoreRender\OpenGL\GLEW">
       <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graphis">
+    <Filter Include="Graphics">
       <UniqueIdentifier>{ad4bb86c-756a-4863-9fad-8e69735a71af}</UniqueIdentifier>
     </Filter>
   </ItemGroup>

@@ -271,20 +271,6 @@ namespace RENDER_MASTER
 		MESH_INDEX_FORMAT format{MESH_INDEX_FORMAT::NOTHING};
 	};
 
-	class ICoreMesh
-	{
-	public:
-		virtual API GetNumberOfVertex(OUT uint *number) = 0;
-		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
-		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
-	};
-
-	class ICoreShader
-	{
-	public:
-		virtual ~ICoreShader(){}
-	};
-
 	enum class TEXTURE_TYPE
 	{
 		TYPE_2D					= 0x0000000F,
@@ -339,13 +325,27 @@ namespace RENDER_MASTER
 	class ICoreTexture
 	{
 	public:
-		virtual API Free() = 0;
+		virtual ~ICoreTexture(){};
 	};
 
 	class ICoreConstantBuffer
 	{
 	public:
 		virtual ~ICoreConstantBuffer(){};
+	};
+
+	class ICoreMesh
+	{
+	public:
+		virtual API GetNumberOfVertex(OUT uint *number) = 0;
+		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
+		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
+	};
+
+	class ICoreShader
+	{
+	public:
+		virtual ~ICoreShader(){}
 	};
 
 	class ICoreRender : public ISubSystem
