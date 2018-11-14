@@ -348,7 +348,8 @@ void MainWindow::CreateAndShow()
 	wcex.lpszClassName = L"simple class name";
 	wcex.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
 
-	assert(RegisterClassExW(&wcex) != FALSE);
+	auto registered = RegisterClassExW(&wcex);
+	assert(registered != FALSE);
 
 	hwnd = CreateWindow(TEXT("Simple class name"), TEXT("Test"), WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);

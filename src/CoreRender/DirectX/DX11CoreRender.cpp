@@ -21,7 +21,6 @@ const char *get_shader_profile(int type);
 const char *get_main_function(int type);
 const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
 
-
 DX11CoreRender::DX11CoreRender(){}
 DX11CoreRender::~DX11CoreRender(){}
 
@@ -759,4 +758,7 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 	}
 }
 
-
+DX11ConstantBuffer::~DX11ConstantBuffer()
+{
+	buffer = nullptr;
+}

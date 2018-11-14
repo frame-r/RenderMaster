@@ -421,7 +421,7 @@ STDMETHODIMP_(ULONG) CoreClassFactory::Release()
 
 STDMETHODIMP CoreClassFactory::CreateInstance(LPUNKNOWN pUnk, REFIID riid, void ** ppvObj)
 {
-	Core* pCore;
+	ICore* pCore;
 	HRESULT hr;
 	*ppvObj = 0;
 	

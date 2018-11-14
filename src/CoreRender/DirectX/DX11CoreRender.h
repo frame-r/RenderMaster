@@ -10,7 +10,7 @@ class DX11ConstantBuffer final: public ICoreConstantBuffer
 public:
 
 	DX11ConstantBuffer(ID3D11Buffer *bufferIn) : buffer(bufferIn) {}
-	virtual ~DX11ConstantBuffer() { buffer = nullptr; }
+	virtual ~DX11ConstantBuffer(); 
 
 	ID3D11Buffer *nativeBuffer() const { return buffer.Get(); }
 };

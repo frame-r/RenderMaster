@@ -79,6 +79,8 @@ namespace RENDER_MASTER
 	class ICore : public IUnknown
 	{
 	public:
+		virtual ~ICore() = default;
+
 		virtual API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) = 0;
 		virtual API Start() = 0;
 		virtual API RenderFrame(const WindowHandle *externHandle, const ICamera *pCamera) = 0;
@@ -110,6 +112,7 @@ namespace RENDER_MASTER
 	class ISubSystem
 	{
 	public:
+		virtual ~ISubSystem() = default;
 		virtual API GetName(OUT const char **pName) = 0;
 	};
 
@@ -134,13 +137,14 @@ namespace RENDER_MASTER
 	class NAME ## Subscriber \
 	{ \
 	public: \
+		virtual ~NAME ## Subscriber() = default; \
 		virtual API Call() = 0; \
 	}; \
 	\
 	class NAME \
 	{ \
 	public: \
-		\
+		virtual ~NAME() = default; \
 		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
 		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
@@ -149,6 +153,7 @@ namespace RENDER_MASTER
 	class NAME ## Subscriber \
 	{ \
 	public: \
+		virtual ~NAME ## Subscriber() = default; \
 		virtual API Call(ARG) = 0; \
 	}; \
 	\
@@ -156,6 +161,7 @@ namespace RENDER_MASTER
 	{ \
 	public: \
 		\
+		virtual ~NAME() = default; \
 		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
 		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
@@ -164,6 +170,7 @@ namespace RENDER_MASTER
 	class NAME ## Subscriber \
 	{ \
 	public: \
+		virtual ~NAME ## Subscriber() = default; \
 		virtual API Call(ARG1, ARG2) = 0; \
 	}; \
 	 \
@@ -171,6 +178,7 @@ namespace RENDER_MASTER
 	{ \
 	public: \
 	 \
+		virtual ~NAME() = default; \
 		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
 		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
@@ -325,18 +333,20 @@ namespace RENDER_MASTER
 	class ICoreTexture
 	{
 	public:
-		virtual ~ICoreTexture(){};
+		virtual ~ICoreTexture() = default;
 	};
 
 	class ICoreConstantBuffer
 	{
 	public:
-		virtual ~ICoreConstantBuffer(){};
+		virtual ~ICoreConstantBuffer() = default;
 	};
 
 	class ICoreMesh
 	{
 	public:
+		virtual ~ICoreMesh() = default;
+
 		virtual API GetNumberOfVertex(OUT uint *number) = 0;
 		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
 		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
@@ -351,7 +361,8 @@ namespace RENDER_MASTER
 	class ICoreRender : public ISubSystem
 	{
 	public:
-		
+		virtual ~ICoreRender() = default;
+
 		virtual API Init(const WindowHandle* handle, int MSAASamples) = 0;
 		virtual API Free() = 0;
 		virtual API MakeCurrent(const WindowHandle* handle) = 0;
@@ -422,6 +433,8 @@ namespace RENDER_MASTER
 	class IGameObject : public IUnknown
 	{
 	public:
+		virtual ~IGameObject() = default;
+
 		virtual API GetReferences(int *refsOut) = 0;
 
 		virtual API GetID(OUT int *id) = 0;
@@ -464,6 +477,8 @@ namespace RENDER_MASTER
 	class IMesh : public IUnknown
 	{
 	public:
+		virtual ~IMesh() = default;
+
 		virtual API GetReferences(int *refsOut) = 0;
 		virtual API IsShared(int *isShared) = 0;
 		virtual API GetFile(OUT const char **file) = 0;
@@ -474,6 +489,8 @@ namespace RENDER_MASTER
 	class ITexture : public IUnknown
 	{
 	public:
+		virtual ~ITexture() = default;
+
 		virtual API GetReferences(int *refsOut) = 0;
 		virtual API GetFile(OUT const char **file) = 0;
 	};
@@ -481,6 +498,8 @@ namespace RENDER_MASTER
 	class IConstantBuffer : public IUnknown
 	{
 	public:
+		virtual ~IConstantBuffer() = default;
+
 		virtual API GetReferences(int *refsOut) = 0;
 		virtual API GetCoreBuffer(OUT ICoreConstantBuffer **bufferOut) = 0;
 	};
@@ -488,6 +507,8 @@ namespace RENDER_MASTER
 	class IShaderText : public IUnknown
 	{
 	public:
+		virtual ~IShaderText() = default;
+
 		virtual API GetReferences(int *refsOut) = 0;
 		virtual API GetFile(OUT const char **filePath) = 0;
 		virtual API GetVert(OUT const char **textOut) = 0;
@@ -498,6 +519,8 @@ namespace RENDER_MASTER
 	class IShader : public IUnknown
 	{
 	public:
+		virtual ~IShader() = default;
+
 		virtual API GetReferences(int *refsOut) = 0;
 		virtual API GetCoreShader(ICoreShader **shaderOut) = 0;
 		virtual API GetVert(OUT const char **textOut) = 0;
@@ -533,7 +556,6 @@ namespace RENDER_MASTER
 	class IResourceManager : public ISubSystem
 	{
 	public:
-
 		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
 		virtual API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) = 0;
 		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
@@ -565,6 +587,7 @@ namespace RENDER_MASTER
 	class IFile
 	{
 	public:
+		virtual ~IFile() = default;
 
 		virtual API Read(OUT uint8 *pMem, uint bytes) = 0;
 		virtual API ReadStr(OUT char *pStr, OUT uint *str_bytes) = 0;
@@ -578,7 +601,6 @@ namespace RENDER_MASTER
 	class IFileSystem : public ISubSystem
 	{
 	public:
-
 		virtual API OpenFile(OUT IFile **pFile, const char *fullPath, FILE_OPEN_MODE mode) = 0;
 		virtual API FileExist(const char *fullPath, OUT int *exist) = 0;
 		virtual API DirectoryExist(const char *fullPath, OUT int *exist) = 0;
@@ -739,6 +761,8 @@ namespace RENDER_MASTER
 	class IConsoleCommand
 	{
 	public:
+		virtual ~IConsoleCommand() = default;
+
 		virtual API GetName(OUT const char **pName) = 0;
 		virtual API Execute(const char **arguments, uint argumentsNum) = 0;
 	};
@@ -751,6 +775,7 @@ namespace RENDER_MASTER
 		virtual API ExecuteCommand(const char *name, const char** arguments, uint argumentsNum) = 0;
 		virtual API GetCommands(OUT uint *number) = 0;
 		virtual API GetCommand(OUT const char **name, uint idx) = 0;
+
 		// Events
 		virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
 	};
