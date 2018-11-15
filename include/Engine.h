@@ -71,7 +71,11 @@ namespace RENDER_MASTER
 		MSAA_4X					= 0x00002000,
 		MSAA_8X					= 0x00003000,
 		MSAA_16X				= 0x00004000,
-		MSAA_32X				= 0x00005000
+		MSAA_32X				= 0x00005000,
+
+		VSYNC_FLAG				= 0x000F0000,
+		VSYNC_ON				= 0x00010000, // by default
+		VSYNC_OFF				= 0x00020000,
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
@@ -363,7 +367,7 @@ namespace RENDER_MASTER
 	public:
 		virtual ~ICoreRender() = default;
 
-		virtual API Init(const WindowHandle* handle, int MSAASamples) = 0;
+		virtual API Init(const WindowHandle* handle, int MSAASamples, int VSyncOn) = 0;
 		virtual API Free() = 0;
 		virtual API MakeCurrent(const WindowHandle* handle) = 0;
 		virtual API SwapBuffers() = 0;

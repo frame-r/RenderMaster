@@ -120,7 +120,7 @@ API GLCoreRender::GetName(OUT const char **pTxt)
 	return S_OK;
 }
 
-API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples)
+API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 {
 	const int major_version = 4;
 	const int minor_version = 5;
@@ -285,6 +285,12 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples)
 	}
 
 	CHECK_GL_ERRORS();
+
+	//vsync
+	if (VSyncOn)
+		wglSwapIntervalEXT(1);
+	else
+		wglSwapIntervalEXT(0);
 
 	glEnable(GL_DEPTH_TEST);
 	glClearDepth(1.0f);

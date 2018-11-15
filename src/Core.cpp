@@ -78,10 +78,14 @@ API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* ext
 	else
 		_pCoreRender = std::make_unique<GLCoreRender>();
 
+	int VSync = 1;
+	if (int(flags & INIT_FLAGS::VSYNC_FLAG))
+		VSync = (flags & INIT_FLAGS::VSYNC_FLAG) == INIT_FLAGS::VSYNC_ON;
+
 	if (createWindow)
-		_pCoreRender->Init(_pMainWindow->handle(), get_msaa_samples(flags));
+		_pCoreRender->Init(_pMainWindow->handle(), get_msaa_samples(flags), VSync);
 	else
-		_pCoreRender->Init(externHandle, get_msaa_samples(flags));
+		_pCoreRender->Init(externHandle, get_msaa_samples(flags), VSync);
 
 	_pResMan->Init();
 

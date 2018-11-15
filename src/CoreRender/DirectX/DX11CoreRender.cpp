@@ -24,7 +24,7 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
 DX11CoreRender::DX11CoreRender(){}
 DX11CoreRender::~DX11CoreRender(){}
 
-API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
+API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
@@ -92,6 +92,8 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
 	}
 	if (FAILED(hr))
 		return hr;
+
+	_VSyncOn = VSyncOn;
 
 	// MSAA
 	{
@@ -260,7 +262,7 @@ API DX11CoreRender::MakeCurrent(const WindowHandle* handle)
 
 API DX11CoreRender::SwapBuffers()
 {
-	_swapChain->Present(1, 0);
+	_swapChain->Present(_VSyncOn, 0);
 	return S_OK;
 }
 

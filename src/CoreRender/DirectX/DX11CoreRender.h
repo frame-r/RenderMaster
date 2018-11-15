@@ -358,6 +358,7 @@ class DX11CoreRender final : public ICoreRender
 	IResourceManager *_pResMan{nullptr};
 
 	int _MSAASamples = 0;
+	int _VSyncOn = 1;
 
 	ID3D11DeviceChild* create_shader_by_src(int type, const char *src);
 	bool create_viewport_buffers(uint w, uint h);
@@ -369,7 +370,7 @@ public:
 	DX11CoreRender();
 	virtual ~DX11CoreRender();
 
-	API Init(const WindowHandle* handle, int MSAASamples = 0) override;
+	API Init(const WindowHandle* handle, int MSAASamples, int VSyncOn) override;
 	API Free() override;
 	API MakeCurrent(const WindowHandle* handle) override;
 	API SwapBuffers() override;
