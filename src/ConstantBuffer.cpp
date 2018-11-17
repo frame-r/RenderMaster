@@ -8,7 +8,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-RUNTIME_COM_CPP_IMPLEMENTATION(ConstantBuffer, _pCore, RemoveRuntimeConstantBuffer)
+RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(ConstantBuffer, _pCore, RemoveRuntimeConstantBuffer)
 
 API ConstantBuffer::GetCoreBuffer(OUT ICoreConstantBuffer **bufferOut)
 {

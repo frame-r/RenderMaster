@@ -3,6 +3,7 @@
 #include "Core.h"
 #include "DX11Shader.h"
 #include "DX11Mesh.h"
+#include "DX11Texture.h"
 
 using WRL::ComPtr;
 
@@ -491,9 +492,109 @@ API DX11CoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint
 	return hr;
 }
 
-API DX11CoreRender::CreateTexture(OUT ICoreTexture ** pTexture, uint8 * pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+DXGI_FORMAT eng_to_d3d_format(TEXTURE_FORMAT format)
 {
-	return E_NOTIMPL;
+	switch (format)
+	{
+	case TEXTURE_FORMAT::R8:		return DXGI_FORMAT_R8_UNORM;
+	case TEXTURE_FORMAT::RG8:		return DXGI_FORMAT_R8G8_UNORM;
+	case TEXTURE_FORMAT::RGB8:
+	case TEXTURE_FORMAT::RGBA8:		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	case TEXTURE_FORMAT::R16F:		return DXGI_FORMAT_R16_FLOAT;
+	case TEXTURE_FORMAT::RG16F:		return DXGI_FORMAT_R16G16_FLOAT;
+	case TEXTURE_FORMAT::RGB16F:
+	case TEXTURE_FORMAT::RGBA16F:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
+	case TEXTURE_FORMAT::R32F:		return DXGI_FORMAT_R32_FLOAT;
+	case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
+	case TEXTURE_FORMAT::RGB32F:
+	case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
+	case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
+	case TEXTURE_FORMAT::DXT3:		return DXGI_FORMAT_BC2_UNORM;
+	case TEXTURE_FORMAT::DXT5:		return DXGI_FORMAT_BC3_UNORM;
+	}
+
+	LOG_FATAL("eng_to_d3d_format(): unknown format\n");
+	return DXGI_FORMAT_UNKNOWN;
+}
+UINT bind_flags(TEXTURE_CREATE_FLAGS flags, bool isColorFormat)
+{
+	UINT bind_flags = 0;
+
+	bind_flags |= D3D11_BIND_SHADER_RESOURCE;
+
+	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
+	{
+		if (isColorFormat)
+			bind_flags |= D3D11_BIND_RENDER_TARGET;
+		else
+			bind_flags |= D3D11_BIND_DEPTH_STENCIL;
+	}
+
+	return bind_flags;
+}
+
+API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+{
+	D3D11_TEXTURE2D_DESC texture_desc;
+	texture_desc.Width = width;
+	texture_desc.Height = height;
+	texture_desc.MipLevels = 1;
+	texture_desc.ArraySize = 1;
+	texture_desc.Format = eng_to_d3d_format(format);
+	texture_desc.SampleDesc.Count = 1; // TODO: MSAA textures
+	texture_desc.SampleDesc.Quality = 0;
+	texture_desc.Usage = D3D11_USAGE_DEFAULT;
+	texture_desc.BindFlags = bind_flags(flags, true);
+	texture_desc.CPUAccessFlags = 0;
+	texture_desc.MiscFlags = 0;
+
+	ID3D11Texture2D *tex = nullptr;
+	if (FAILED(_device->CreateTexture2D(&texture_desc, NULL, &tex)))
+	{
+		LOG_FATAL("DX11CoreRender::CreateTexture(): can't create texture\n");
+		*pTexture = nullptr;
+		return E_FAIL;
+	}
+
+	// create shader resource view
+	D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc;
+	shader_resource_view_desc.Format = texture_desc.Format;
+	shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shader_resource_view_desc.TextureCube.MostDetailedMip = 0;
+	shader_resource_view_desc.TextureCube.MipLevels = texture_desc.MipLevels;
+
+	ID3D11ShaderResourceView *srv = nullptr;
+	if (FAILED(_device->CreateShaderResourceView(tex, &shader_resource_view_desc, &srv)))
+	{
+		tex->Release();
+		LOG_FATAL("DX11CoreRender::CreateTexture(): can't create shader resource view\n");
+		*pTexture = nullptr;
+		return E_FAIL;
+	}
+
+	// create render target view
+	ID3D11RenderTargetView *rtv = nullptr;
+	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
+	{
+		D3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc;
+		render_target_view_desc.Format = texture_desc.Format;
+		render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+		render_target_view_desc.Texture2D.MipSlice = 0;
+
+		if (FAILED(_device->CreateRenderTargetView(tex, &render_target_view_desc, &rtv)))
+		{
+			tex->Release();
+			srv->Release();
+			LOG_FATAL("DX11CoreRender::CreateTexture(): can't create render target view\n");
+			*pTexture = nullptr;
+			return E_FAIL;
+		}
+	}
+
+	DX11Texture *dxTex = new DX11Texture(tex, srv, rtv);
+	*pTexture = dxTex;
+
+	return S_OK;
 }
 
 API DX11CoreRender::SetShader(const ICoreShader* pShader)

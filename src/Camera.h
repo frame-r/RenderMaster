@@ -25,5 +25,5 @@ public:
 	API GetFovAngle(OUT float *fovInDegrees) override;
 	API Copy(OUT ICamera *copy) override;
 
-	RUNTIME_COM_HEADER_IMPLEMENTATION
+	RUNTIME_ONLY_RESOURCE_HEADER
 };

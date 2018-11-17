@@ -8,7 +8,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-SHARED_COM_CPP_IMPLEMENTATION(ShaderText, _pCore, RemoveSharedShaderText)
+SHARED_ONLY_RESOURCE_IMPLEMENTATION(ShaderText, _pCore, RemoveSharedShaderText)
 
 ShaderText::~ShaderText()
 {

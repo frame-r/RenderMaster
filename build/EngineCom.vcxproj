@@ -29,6 +29,7 @@
     <ClInclude Include="..\src\CoreRender\DirectX\DX11CoreRender.h" />
     <ClInclude Include="..\src\CoreRender\DirectX\DX11Mesh.h" />
     <ClInclude Include="..\src\CoreRender\DirectX\DX11Shader.h" />
+    <ClInclude Include="..\src\CoreRender\DirectX\DX11Texture.h" />
     <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\GameObject.h" />
@@ -50,6 +51,7 @@
     <ClInclude Include="..\src\shaders\language_dx11.h" />
     <ClInclude Include="..\src\shaders\language_gl.h" />
     <ClInclude Include="..\src\ShaderText.h" />
+    <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\Tree.h" />
     <ClInclude Include="..\src\MainWindow.h" />
   </ItemGroup>
@@ -62,6 +64,7 @@
     <ClCompile Include="..\src\CoreRender\DirectX\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\CoreRender\DirectX\DX11Mesh.cpp" />
     <ClCompile Include="..\src\CoreRender\DirectX\DX11Shader.cpp" />
+    <ClCompile Include="..\src\CoreRender\DirectX\DX11Texture.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\CoreRender\OpenGL\GLCoreRender.cpp" />
@@ -88,6 +91,7 @@
     <ClCompile Include="..\src\Serialization.cpp" />
     <ClCompile Include="..\src\Shader.cpp" />
     <ClCompile Include="..\src\ShaderText.cpp" />
+    <ClCompile Include="..\src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_common.shader" />

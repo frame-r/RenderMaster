@@ -17,5 +17,5 @@ public:
 	API GetGeom(OUT const char **text) override { *text = geom; return S_OK; }
 	API GetFrag(OUT const char **text) override { *text = frag; return S_OK; }
 
-	SHARED_COM_HEADER_IMPLEMENTATION
+	SHARED_ONLY_RESOURCE_HEADER
 };

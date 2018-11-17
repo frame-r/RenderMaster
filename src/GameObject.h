@@ -65,7 +65,7 @@ class GameObject : public GameObjectBase<IGameObject>
 public:
 	virtual ~GameObject() {}
 
-	RUNTIME_COM_HEADER_IMPLEMENTATION
+	RUNTIME_ONLY_RESOURCE_HEADER
 };
 
 // implementation

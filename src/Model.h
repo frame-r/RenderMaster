@@ -23,5 +23,5 @@ public:
 	API GetAABB(OUT AABB *aabb) override;
 	API Copy(OUT IModel *copy) override;
 
-	RUNTIME_COM_HEADER_IMPLEMENTATION
+	RUNTIME_ONLY_RESOURCE_HEADER
 };

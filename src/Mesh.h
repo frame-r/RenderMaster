@@ -12,5 +12,5 @@ public:
 
 	API GetCoreMesh(OUT ICoreMesh **meshOut) override;
 
-	BASE_COM_HEADER_IMPLEMENTATION
+	BASE_RESOURCE_HEADER
 };

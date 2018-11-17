@@ -261,6 +261,13 @@ void Render::RenderFrame(const ICamera *pCamera)
 	}
 }
 
+API Render::ShadersReload()
+{
+	LOG("Shaders reloading...");
+	_shaders_pool.clear();
+	return S_OK;
+}
+
 API Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
 {
 	*pShader = _get_shader(*shaderReq);

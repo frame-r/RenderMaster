@@ -72,6 +72,12 @@
     <ClInclude Include="..\src\Shader.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\CoreRender\DirectX\DX11Texture.h">
+      <Filter>CoreRender\DirectX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Texture.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -128,6 +134,12 @@
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Shader.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\CoreRender\DirectX\DX11Texture.cpp">
+      <Filter>CoreRender\DirectX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Texture.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
   </ItemGroup>

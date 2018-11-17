@@ -60,13 +60,16 @@ public:
 	void RemoveRuntimeConstantBuffer(IConstantBuffer *cb) { _runtime_constntbuffer.erase(cb); }
 	void RemoveRuntimeShader(IShader *s) { _runtime_shaders.erase(s); }
 
+	void ReloadShaderText(IShaderText *shaderText);
+
 	void Init();
 
 	API LoadModel(OUT IModel **pModel, const char *pModelPath) override;
 	API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) override;
 	API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) override;
 	API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
-	
+
+	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
 	API CreateConstantBuffer(OUT IConstantBuffer **pConstntBuffer, uint size) override;
 	API CreateGameObject(OUT IGameObject **pGameObject) override;

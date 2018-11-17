@@ -200,7 +200,7 @@ inline ISceneManager *getSceneManager(ICore *core)
 int get_msaa_samples(INIT_FLAGS flags);
 string msaa_to_string(int samples);
 
-#define BASE_COM_HEADER_IMPLEMENTATION \
+#define BASE_RESOURCE_HEADER \
 private: \
 	int _isShared = 0; \
 	string _file; \
@@ -214,7 +214,7 @@ public: \
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
 
-#define BASE_COM_CPP_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD, REMOVE_SHARED_METHOD) \
+#define BASE_RESOURCE_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD, REMOVE_SHARED_METHOD) \
  \
 	API CLASS::GetReferences(int *refsOut) \
 	{ \
@@ -261,7 +261,7 @@ public: \
 		return S_OK;  \
 	}
 
-#define RUNTIME_COM_HEADER_IMPLEMENTATION \
+#define RUNTIME_ONLY_RESOURCE_HEADER \
 private: \
 	int _refs = 0; \
 public: \
@@ -270,7 +270,7 @@ public: \
 	STDMETHODIMP_(ULONG) Release() override; \
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
-#define RUNTIME_COM_CPP_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD) \
+#define RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD) \
 	\
 	HRESULT CLASS::GetReferences(int *refsOut) \
 	{ \
@@ -304,7 +304,7 @@ public: \
 		return S_OK;  \
 	}
 
-#define SHARED_COM_HEADER_IMPLEMENTATION \
+#define SHARED_ONLY_RESOURCE_HEADER \
 private: \
 	string _file; \
 	int _refs = 0; \
@@ -315,7 +315,7 @@ public: \
 	STDMETHODIMP_(ULONG) Release() override; \
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
-#define SHARED_COM_CPP_IMPLEMENTATION(CLASS, CORE, REMOVE_SHARED_METHOD) \
+#define SHARED_ONLY_RESOURCE_IMPLEMENTATION(CLASS, CORE, REMOVE_SHARED_METHOD) \
 	\
 	HRESULT CLASS::GetReferences(int *refsOut) \
 	{ \

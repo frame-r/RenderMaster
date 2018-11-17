@@ -19,5 +19,5 @@ public:
 	API GetGeom(OUT const char **textOut) override;
 	API GetFrag(OUT const char **textOut) override;
 
-	RUNTIME_COM_HEADER_IMPLEMENTATION
+	RUNTIME_ONLY_RESOURCE_HEADER
 };

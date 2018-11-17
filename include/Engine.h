@@ -37,6 +37,19 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 	return static_cast<ENUM_NAME>(static_cast<int>(a) & static_cast<int>(b)); \
 }
 
+#define RUNTIME_ONLY_RESOURCE_INTERFACE \
+	virtual API GetReferences(int *refsOut) = 0;
+
+#define SHARED_ONLY_RESOURCE_INTERFACE \
+	virtual API GetReferences(int *refsOut) = 0; \
+	virtual API GetFile(OUT const char **file) = 0;
+
+// shared and runtime
+#define BASE_RESOURCE_INTERFACE \
+	virtual API GetReferences(int *refsOut) = 0; \
+	virtual API IsShared(int *isShared) = 0; \
+	virtual API GetFile(OUT const char **file) = 0;
+
 namespace RENDER_MASTER 
 {
 	class ISubSystem;
@@ -285,11 +298,11 @@ namespace RENDER_MASTER
 
 	enum class TEXTURE_TYPE
 	{
-		TYPE_2D					= 0x0000000F,
-		TYPE_3D					= 0x00000001,
-		TYPE_CUBE				= 0x00000002,
-		TYPE_2D_ARRAY			= 0x00000003,
-		TYPE_CUBE_ARRAY			= 0x00000004
+		TYPE_2D					= 0x00000001,
+		//TYPE_3D					= 0x00000001,
+		//TYPE_CUBE				= 0x00000002,
+		//TYPE_2D_ARRAY			= 0x00000003,
+		//TYPE_CUBE_ARRAY			= 0x00000004
 	};
 
 	enum class TEXTURE_CREATE_FLAGS
@@ -301,14 +314,18 @@ namespace RENDER_MASTER
 		FILTER_ANISOTROPY_4X	= 0x00000040,
 		FILTER_ANISOTROPY_8X	= 0x00000050,
 		FILTER_ANISOTROPY_16X	= 0x00000060,
-		// mipmaps filters...
+		// TODO: mipmaps filters
 
 		COORDS					= 0x00000F00,
 		COORDS_WRAP				= 0x00000100,
 		COORDS_MIRROR			= 0x00000200,
 		COORDS_CLAMP			= 0x00000300,
-		COORDS_BORDER			= 0x00000400
+		COORDS_BORDER			= 0x00000400,
+
+		USAGE					= 0x0000F000,
+		USAGE_RENDER_TARGET		= 0x00001000
 	};
+	DEFINE_ENUM_OPERATORS(TEXTURE_CREATE_FLAGS)
 
 	enum class TEXTURE_FORMAT
 	{
@@ -415,6 +432,7 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
+		virtual API ShadersReload() = 0;
 	};
 
 
@@ -439,8 +457,6 @@ namespace RENDER_MASTER
 	public:
 		virtual ~IGameObject() = default;
 
-		virtual API GetReferences(int *refsOut) = 0;
-
 		virtual API GetID(OUT int *id) = 0;
 		virtual API SetID(int *id) = 0;
 		virtual API GetName(OUT const char **pName) = 0;
@@ -460,6 +476,8 @@ namespace RENDER_MASTER
 		virtual API GetNameEv(OUT IStringEvent **pEvent) = 0;
 		virtual API GetPositionEv(OUT IPositionEvent **pEvent) = 0;
 		virtual API GetRotationEv(OUT IRotationEvent **pEvent) = 0;
+
+		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
 	class ICamera : public IGameObject
@@ -482,21 +500,18 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IMesh() = default;
-
-		virtual API GetReferences(int *refsOut) = 0;
-		virtual API IsShared(int *isShared) = 0;
-		virtual API GetFile(OUT const char **file) = 0;
-
 		virtual API GetCoreMesh(OUT ICoreMesh **meshOut) = 0;
+
+		BASE_RESOURCE_INTERFACE
 	};
 
 	class ITexture : public IUnknown
 	{
 	public:
 		virtual ~ITexture() = default;
+		virtual API GetCoreTexture(OUT ICoreTexture **textureOut) = 0;
 
-		virtual API GetReferences(int *refsOut) = 0;
-		virtual API GetFile(OUT const char **file) = 0;
+		BASE_RESOURCE_INTERFACE
 	};
 
 	class IConstantBuffer : public IUnknown
@@ -504,8 +519,9 @@ namespace RENDER_MASTER
 	public:
 		virtual ~IConstantBuffer() = default;
 
-		virtual API GetReferences(int *refsOut) = 0;
 		virtual API GetCoreBuffer(OUT ICoreConstantBuffer **bufferOut) = 0;
+
+		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
 	class IShaderText : public IUnknown
@@ -513,11 +529,11 @@ namespace RENDER_MASTER
 	public:
 		virtual ~IShaderText() = default;
 
-		virtual API GetReferences(int *refsOut) = 0;
-		virtual API GetFile(OUT const char **filePath) = 0;
 		virtual API GetVert(OUT const char **textOut) = 0;
 		virtual API GetGeom(OUT const char **textOut) = 0;
 		virtual API GetFrag(OUT const char **textOut) = 0;
+
+		SHARED_ONLY_RESOURCE_INTERFACE
 	};
 
 	class IShader : public IUnknown
@@ -525,11 +541,12 @@ namespace RENDER_MASTER
 	public:
 		virtual ~IShader() = default;
 
-		virtual API GetReferences(int *refsOut) = 0;
 		virtual API GetCoreShader(ICoreShader **shaderOut) = 0;
 		virtual API GetVert(OUT const char **textOut) = 0;
 		virtual API GetGeom(OUT const char **textOut) = 0;
 		virtual API GetFrag(OUT const char **textOut) = 0;
+
+		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
 	//////////////////////
@@ -565,6 +582,7 @@ namespace RENDER_MASTER
 		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 
+		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
 		virtual API CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;

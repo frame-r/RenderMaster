@@ -5,6 +5,7 @@
 #include "Model.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "ShaderText.h"
 #include "ConstantBuffer.h"
 #include "Camera.h"
@@ -376,6 +377,10 @@ ResourceManager::ResourceManager()
 }
 
 ResourceManager::~ResourceManager()
+{
+}
+
+void ResourceManager::ReloadShaderText(IShaderText * shaderText)
 {
 }
 
@@ -876,6 +881,27 @@ API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 	return S_OK;
 }
 
+API ResourceManager::CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags)
+{
+	ICoreTexture *pCoreTex;
+
+	if (FAILED(_pCoreRender->CreateTexture(&pCoreTex, nullptr, width, height, type, format, flags, false)))
+	{
+		*pTextureOut = nullptr;
+		LOG_WARNING("ResourceManager::CreateTexture(): failed to create texture");
+		return E_FAIL;
+	}
+
+	Texture *tex = new Texture(pCoreTex, 0, "");
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
+
+	_runtime_textures.emplace(tex);
+
+	*pTextureOut = tex;
+
+	return S_OK;
+}
+
 API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag)
 {
 	ICoreShader *coreShader = nullptr;
@@ -889,9 +915,8 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 		return E_FAIL;
 	}
 
-	DEBUG_LOG_FORMATTED("ResourceManager::CreateShader() new Shader");
-
 	IShader *s = new Shader(coreShader, vert, geom, frag);
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateShader() new Shader %#010x", s);
 
 	_runtime_shaders.emplace(s);
 

@@ -56,6 +56,7 @@ public:
 	void RenderFrame(const ICamera *pCamera);
 
 	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
+	API ShadersReload() override;
 	API GetName(OUT const char **pName) override;
 };
 

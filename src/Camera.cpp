@@ -8,7 +8,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-RUNTIME_COM_CPP_IMPLEMENTATION(Camera, _pCore, RemoveRuntimeGameObject)
+RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(Camera, _pCore, RemoveRuntimeGameObject)
 
 void Camera::_update()
 {
