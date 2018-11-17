@@ -12,11 +12,13 @@ class Render : public IRender
 	ISceneManager *_pSceneMan{nullptr};
 	IFileSystem *_fsystem{nullptr};
 
-	ResourcePtr<ShaderText> _standardShader;
+	WRL::ComPtr<IShaderText> _standardShader;
 
-	ResourcePtr<ICoreMesh> _pAxesMesh;
-	ResourcePtr<ICoreMesh> _pAxesArrowMesh;
-	ResourcePtr<ICoreMesh> _pGridMesh;
+	WRL::ComPtr<IMesh> _axesMesh;
+	WRL::ComPtr<IMesh> _axesArrowMesh;
+	WRL::ComPtr<IMesh> _gridMesh;
+
+	WRL::ComPtr<IConstantBuffer> _everyFrameParameters;
 
 	#pragma pack(push, 4)
 	struct EveryFrameParameters
@@ -28,11 +30,9 @@ class Render : public IRender
 	} params;
 	#pragma pack(pop)
 
-	ResourcePtr<IUniformBuffer> everyFrameParameters;
-
 	float _aspect{1.0f};	
 
-	std::unordered_map<ShaderRequirement, ICoreShader*, ShaderRequirement> _shaders_pool;
+	std::unordered_map<ShaderRequirement, WRL::ComPtr<IShader>, ShaderRequirement> _shaders_pool;
 	
 	struct TRenderMesh
 	{
@@ -40,7 +40,7 @@ class Render : public IRender
 		mat4 modelMat;
 	};
 
-	ICoreShader* _get_shader(const ShaderRequirement &req);
+	IShader* _get_shader(const ShaderRequirement &req);
 	bool is_opengl();
 	void _export_shader_to_file(std::list<string>& text, const string&& file);	
 	void _create_render_mesh_vec(vector<TRenderMesh>& meshes);
@@ -55,7 +55,7 @@ public:
 	void Free();
 	void RenderFrame(const ICamera *pCamera);
 
-	API GetShader(OUT ICoreShader **pShader, const ShaderRequirement *shaderReq) override;
+	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
 	API GetName(OUT const char **pName) override;
 };
 

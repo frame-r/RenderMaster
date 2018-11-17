@@ -13,8 +13,8 @@ class Camera : public GameObjectBase<ICamera>
 
 	void _update();
 
-	friend YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);
-	friend void loadResource(YAML::Node& n, IResource *go);
+	//friend YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);
+	//friend void loadResource(YAML::Node& n, IGameObject *go);
 
 public:
 
@@ -24,5 +24,6 @@ public:
 	API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) override;
 	API GetFovAngle(OUT float *fovInDegrees) override;
 	API Copy(OUT ICamera *copy) override;
-	API Free() override;
+
+	RUNTIME_COM_HEADER_IMPLEMENTATION
 };

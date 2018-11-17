@@ -21,11 +21,10 @@ const char *get_shader_profile(int type);
 const char *get_main_function(int type);
 const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
 
-
 DX11CoreRender::DX11CoreRender(){}
 DX11CoreRender::~DX11CoreRender(){}
 
-API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
+API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
@@ -94,11 +93,13 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
 	if (FAILED(hr))
 		return hr;
 
+	_VSyncOn = VSyncOn;
+
 	// MSAA
 	{
 		_MSAASamples = MSAASamples;
 
-		while (_MSAASamples > 0)
+		while (_MSAASamples > 1)
 		{
 			UINT quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 			UINT quality_ds = msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
@@ -135,7 +136,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
 		sd.Height = height;
 		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.SampleDesc.Count =_MSAASamples;
-		sd.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
+		sd.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
@@ -160,7 +161,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples)
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.OutputWindow = hwnd;
 		sd.SampleDesc.Count = _MSAASamples;
-		sd.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
+		sd.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 		sd.Windowed = TRUE;
 
 		hr = dxgiFactory->CreateSwapChain(_device.Get(), &sd, &_swapChain);
@@ -261,7 +262,7 @@ API DX11CoreRender::MakeCurrent(const WindowHandle* handle)
 
 API DX11CoreRender::SwapBuffers()
 {
-	_swapChain->Present(1, 0);
+	_swapChain->Present(_VSyncOn, 0);
 	return S_OK;
 }
 
@@ -452,18 +453,18 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	return S_OK;
 }
 
-API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc)
+API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom)
 {
-	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, shaderDesc->pVertText);
-	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, shaderDesc->pFragText);
-	ID3D11GeometryShader *gs = shaderDesc->pGeomText ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, shaderDesc->pGeomText) : nullptr;
+	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, vert);
+	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, frag);
+	ID3D11GeometryShader *gs = geom ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geom) : nullptr;
 
 	*pShader = new DX11Shader(vs, gs, fs);
 
 	return S_OK;
 }
 
-API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
+API DX11CoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size)
 {
 	ComPtr<ID3D11Buffer> ret;
 
@@ -479,6 +480,11 @@ API DX11CoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	*pBuffer = new DX11ConstantBuffer(ret.Get());
 
 	return hr;
+}
+
+API DX11CoreRender::CreateTexture(OUT ICoreTexture ** pTexture, uint8 * pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+{
+	return E_NOTIMPL;
 }
 
 API DX11CoreRender::SetShader(const ICoreShader* pShader)
@@ -512,7 +518,7 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 	return S_OK;
 }
 
-API DX11CoreRender::SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot)
+API DX11CoreRender::SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot)
 {
 	ID3D11Buffer *buf = static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer();
 
@@ -523,7 +529,7 @@ API DX11CoreRender::SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot)
 	return S_OK;
 }
 
-API DX11CoreRender::SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData)
+API DX11CoreRender::SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData)
 {
 	_context->UpdateSubresource(static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer(), 0, nullptr, pData, 0, 0);
 
@@ -636,7 +642,7 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	descDepth.ArraySize = 1;
 	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	descDepth.SampleDesc.Count = _MSAASamples;
-	descDepth.SampleDesc.Quality = msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
+	descDepth.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
@@ -754,3 +760,7 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 	}
 }
 
+DX11ConstantBuffer::~DX11ConstantBuffer()
+{
+	buffer = nullptr;
+}

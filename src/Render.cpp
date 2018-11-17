@@ -4,13 +4,9 @@
 #include "SceneManager.h"
 #include "Preprocessor.h"
 
-using std::list;
-
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
-
-
 
 /////////////////////////
 // Render
@@ -30,14 +26,16 @@ void Render::_export_shader_to_file(list<string>& text, const string&& file)
 	pFile->CloseAndFree();
 }
 
-ICoreShader* Render::_get_shader(const ShaderRequirement &req)
+IShader* Render::_get_shader(const ShaderRequirement &req)
 {
-	ICoreShader *pShader = nullptr;
+	IShader *pShader = nullptr;
+
 	auto it = _shaders_pool.find(req);
 
 	if (it != _shaders_pool.end())
 	{
-		pShader = it->second;
+		WRL::ComPtr<IShader>& shaderPtr = it->second;
+		return shaderPtr.Get();
 	}
 	else
 	{
@@ -82,22 +80,21 @@ ICoreShader* Render::_get_shader(const ShaderRequirement &req)
 			ppTextOut = make_char_p(lines);
 		};
 
-		ShaderText tmp;
+		const char *vert, *frag;
+		const char *vertOut, *fragOut; 
 
-		process_shader(tmp.pVertText, _standardShader->pVertText, "out_v.shader", 0);
-		process_shader(tmp.pFragText, _standardShader->pFragText, "out_f.shader", 1);
+		_standardShader->GetVert(&vert);
+		_standardShader->GetFrag(&frag);
 
-		bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&pShader, &tmp)) && pShader != nullptr;
+		process_shader(vertOut, vert, "out_v.shader", 0);
+		process_shader(fragOut, frag, "out_f.shader", 1);
+
+		bool compiled = SUCCEEDED(_pResMan->CreateShader(&pShader, vertOut, nullptr, fragOut)) && pShader != nullptr;
 
 		if (!compiled)
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
 		else
-		{
-			_shaders_pool.emplace(req, pShader);
-		}
-
-		delete[] tmp.pVertText;
-		delete[] tmp.pFragText;
+			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(pShader));
 	}
 
 	return pShader;
@@ -114,11 +111,9 @@ void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 {
 	SceneManager *sm = (SceneManager*)_pSceneMan;	
 
-	for (tree<IResource*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
+	for (tree<IGameObject*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
 	{
-		IGameObject *go;
-		(*it)->GetPointer((void**)&go);
-		
+		IGameObject *go = *it;		
 		IModel *model = dynamic_cast<IModel*>(go);
 		if (model)
 		{
@@ -128,7 +123,7 @@ void Render::_create_render_mesh_vec(vector<TRenderMesh>& meshes_vec)
 			for (auto j = 0u; j < meshes; j++)
 			{
 				ICoreMesh *mesh{ nullptr };
-				model->GetMesh(&mesh, j);
+				model->GetCoreMesh(&mesh, j);
 
 				mat4 mat;
 				model->GetModelMatrix(&mat);
@@ -157,37 +152,37 @@ Render::~Render()
 
 void Render::Init()
 {
-	_standardShader = _pResMan->loadShaderText("mesh_vertex", nullptr, "mesh_fragment");
+	IShaderText *st;
+	_pResMan->LoadShaderText(&st, "mesh_vertex", nullptr, "mesh_fragment");
+	_standardShader =  WRL::ComPtr<IShaderText>(st);
 
-	_pAxesMesh = _pResMan->loadMesh("std#axes");
-	_pAxesArrowMesh = _pResMan->loadMesh("std#axes_arrows");
-	_pGridMesh = _pResMan->loadMesh("std#grid");
+	IMesh *mesh;
 
-	//dbg
-	//ICoreShader *s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, false});
-	//_shaders_pool.emplace(s);
-	//s = _get_shader({INPUT_ATTRUBUTE::TEX_COORD | INPUT_ATTRUBUTE::NORMAL, true});
-	//_shaders_pool.emplace(s);
+	_pResMan->LoadMesh(&mesh, "std#axes");
+	_axesMesh = WRL::ComPtr<IMesh>(mesh);
 
-	everyFrameParameters = _pResMan->createUniformBuffer(sizeof(EveryFrameParameters));
+	_pResMan->LoadMesh(&mesh, "std#axes_arrows");
+	_axesArrowMesh = WRL::ComPtr<IMesh>(mesh);
+
+	_pResMan->LoadMesh(&mesh, "std#grid");
+	_gridMesh = WRL::ComPtr<IMesh>(mesh);
+
+	IConstantBuffer *cb;
+	_pResMan->CreateConstantBuffer(&cb, sizeof(EveryFrameParameters));
+	_everyFrameParameters = WRL::ComPtr<IConstantBuffer>(cb);
 
 	LOG("Render initialized");
 }
 
 void Render::Free()
 {
-	_standardShader.reset();
-	_pAxesMesh.reset();
-	_pAxesArrowMesh.reset();
-	_pGridMesh.reset();
+	_standardShader.Reset();
+	_axesMesh.Reset();
+	_axesArrowMesh.Reset();
+	_gridMesh.Reset();
+	_everyFrameParameters.Reset();
 
-	for (auto& s: _shaders_pool)
-	{
-		ICoreShader *ss = s.second;
-		delete ss;
-	}
-
-	everyFrameParameters.reset();
+	_shaders_pool.clear();	
 }
 
 void Render::RenderFrame(const ICamera *pCamera)
@@ -211,12 +206,15 @@ void Render::RenderFrame(const ICamera *pCamera)
 	{
 		INPUT_ATTRUBUTE a;
 		renderMesh.mesh->GetAttributes(&a);		
-		ICoreShader *shader = _get_shader({a, false});
+		IShader *shader = _get_shader({a, false});
+		ICoreShader *coreShader;
+		shader->GetCoreShader(&coreShader);
+
 		if (!shader)
 			continue;
 
 		_pCoreRender->SetMesh(renderMesh.mesh);
-		_pCoreRender->SetShader(shader);
+		_pCoreRender->SetShader(coreShader);
 
 		//
 		// parameters
@@ -227,8 +225,12 @@ void Render::RenderFrame(const ICamera *pCamera)
 			params.NM = mat4();
 			params.nL = vec3(1.0f, -2.0f, 3.0f).Normalized();
 		}
-		_pCoreRender->SetUniformBufferData(everyFrameParameters.get(), &params.main_color);
-		_pCoreRender->SetUniformBuffer(everyFrameParameters.get(), 0);
+
+		ICoreConstantBuffer *coreCB;
+		_everyFrameParameters->GetCoreBuffer(&coreCB);
+
+		_pCoreRender->SetUniformBufferData(coreCB, &params.main_color);
+		_pCoreRender->SetUniformBuffer(coreCB, 0);
 
 		_pCoreRender->Draw(renderMesh.mesh);
 
@@ -259,7 +261,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 	}
 }
 
-API Render::GetShader(ICoreShader** pShader, const ShaderRequirement* shaderReq)
+API Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
 {
 	*pShader = _get_shader(*shaderReq);
 	return S_OK;

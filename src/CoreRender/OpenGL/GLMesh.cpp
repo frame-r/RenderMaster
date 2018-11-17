@@ -12,6 +12,13 @@ GLMesh::GLMesh(GLuint VAO, GLuint VBO, GLuint IBO, uint vertexNumber, uint index
 {
 }
 
+GLMesh::~GLMesh()
+{
+	if (_index_presented) {	glDeleteBuffers(1, &_IBO); _IBO = 0; }
+	if (_VBO) {	glDeleteBuffers(1, &_VBO); _VBO = 0; }
+	if (_VAO) {	glDeleteVertexArrays(1, &_VAO); _VAO = 0; }
+}
+
 API GLMesh::GetNumberOfVertex(OUT uint *vertex)
 {
 	*vertex = _number_of_vertices;
@@ -27,14 +34,6 @@ API GLMesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
 API GLMesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 {
 	*topology = _topology;
-	return S_OK;
-}
-
-API GLMesh::Free()
-{
-	if (_index_presented) {	glDeleteBuffers(1, &_IBO); _IBO = 0; }
-	if (_VBO) {	glDeleteBuffers(1, &_VBO); _VBO = 0; }
-	if (_VAO) {	glDeleteVertexArrays(1, &_VAO); _VAO = 0; }
 	return S_OK;
 }
 

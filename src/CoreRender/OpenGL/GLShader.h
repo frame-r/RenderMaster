@@ -13,8 +13,6 @@ public:
 	GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID);
 	virtual ~GLShader();
 
-	void Free();
-
 	GLuint programID() const { return _programID; }
 };
 

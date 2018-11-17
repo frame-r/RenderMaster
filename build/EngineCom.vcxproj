@@ -24,6 +24,7 @@
     <ClInclude Include="..\src\Camera.h" />
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Console.h" />
+    <ClInclude Include="..\src\ConstantBuffer.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\CoreRender\DirectX\DX11CoreRender.h" />
     <ClInclude Include="..\src\CoreRender\DirectX\DX11Mesh.h" />
@@ -37,6 +38,7 @@
     <ClInclude Include="..\src\CoreRender\OpenGL\GLMesh.h" />
     <ClInclude Include="..\src\CoreRender\OpenGL\GLShader.h" />
     <ClInclude Include="..\src\Input.h" />
+    <ClInclude Include="..\src\Mesh.h" />
     <ClInclude Include="..\src\Model.h" />
     <ClInclude Include="..\src\Pch.h" />
     <ClInclude Include="..\src\Preprocessor.h" />
@@ -44,8 +46,10 @@
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Serialization.h" />
+    <ClInclude Include="..\src\Shader.h" />
     <ClInclude Include="..\src\shaders\language_dx11.h" />
     <ClInclude Include="..\src\shaders\language_gl.h" />
+    <ClInclude Include="..\src\ShaderText.h" />
     <ClInclude Include="..\src\Tree.h" />
     <ClInclude Include="..\src\MainWindow.h" />
   </ItemGroup>
@@ -53,6 +57,7 @@
     <ClCompile Include="..\src\Camera.cpp" />
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\Console.cpp" />
+    <ClCompile Include="..\src\ConstantBuffer.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\CoreRender\DirectX\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\CoreRender\DirectX\DX11Mesh.cpp" />
@@ -60,6 +65,7 @@
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\CoreRender\OpenGL\GLCoreRender.cpp" />
+    <ClCompile Include="..\src\GameObject.cpp" />
     <ClCompile Include="..\src\GLEW\glew.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -67,6 +73,7 @@
     <ClCompile Include="..\src\CoreRender\OpenGL\GLShader.cpp" />
     <ClCompile Include="..\src\CoreRender\OpenGL\GLMesh.cpp" />
     <ClCompile Include="..\src\Main.cpp" />
+    <ClCompile Include="..\src\Mesh.cpp" />
     <ClCompile Include="..\src\Model.cpp" />
     <ClCompile Include="..\src\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -79,6 +86,8 @@
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
+    <ClCompile Include="..\src\Shader.cpp" />
+    <ClCompile Include="..\src\ShaderText.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_common.shader" />

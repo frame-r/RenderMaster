@@ -16,12 +16,11 @@ class GLMesh : public ICoreMesh
 public:
 	
 	GLMesh(GLuint VAO, GLuint VBO, GLuint IBO, uint vertexNumber, uint indexNumber, MESH_INDEX_FORMAT indexFormat, VERTEX_TOPOLOGY mode, INPUT_ATTRUBUTE a);
-	virtual ~GLMesh(){}
+	virtual ~GLMesh();
 
 	GLuint VAO_ID() const { return _VAO; }
 
 	API GetNumberOfVertex(OUT uint *number) override;
 	API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) override;
 	API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) override;
-	API Free() override;
 };

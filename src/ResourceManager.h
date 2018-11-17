@@ -5,88 +5,21 @@
 #include <fbxsdk.h>
 #endif
 
-template<typename T>
-class TResource : public IResource
-{
-	// Every type which supports Free() method
-	T *_pointer = nullptr;
-
-	// Type of _pointer to which you can safely cast
-	RES_TYPE _type;
-
-	uint _refCount = 0;
-
-	// Unique string identificator
-	// Example:
-	// - box.fbx
-	// - box.fbx:mesh01
-	// - picture.png
-	string _resourceID;
-
-
-private:
-
-	void _free()
-	{
-		if (_pointer == nullptr)
-			return;
-
-		if (_refCount != 0)
-		{
-			LOG_WARNING_FORMATTED("TResource::Free(): unable delete resource because refs = %i!\n", _refCount);
-			return;
-		}
-
-		IResourceManager *_pResMan;
-		_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-		_pResMan->DeleteResource(this);
-
-		LOG_WARNING_FORMATTED("Deleting resource %s", _resourceID.c_str());
-
-		_pointer->Free();
-
-		delete _pointer;
-		_pointer = nullptr;
-	}
-
-public:
-
-	TResource(T* pointerIn, RES_TYPE type, const string& file) : _pointer(pointerIn), _type(type), _resourceID(file) {}
-	virtual ~TResource() { _free(); }
-
-	T *get() { return _pointer; }
-	inline T *operator->() { return _pointer; }
-
-	API AddRef() override { _refCount++; return S_OK; }
-	API Release() override
-	{
-		if (_refCount == 0)
-		{
-			_free();
-			delete this;
-			return S_OK;
-		}
-
-		_refCount--;
-
-		if (_refCount > 0)
-			return S_OK;
-
-		_free();
-		delete this;
-		return S_OK;
-	}
-	API RefCount(OUT uint *refs) override { *refs = _refCount; return S_OK; }
-	API GetType(OUT RES_TYPE *typeOut) override { *typeOut = _type; return S_OK; }
-	API GetFileID(OUT const char **id) override { *id = _resourceID.c_str(); return S_OK; }
-	API GetPointer(OUT void **pointerOut) override { *pointerOut = dynamic_cast<T*>(_pointer); return S_OK; }
-};
-
 
 class ResourceManager final : public IResourceManager
 {
-	std::unordered_set<IResource*> _resources;
-	std::unordered_set<IResource*> _cache_resources;
+	std::unordered_set<ITexture*> _runtime_textures;
+	std::unordered_map<string, ITexture*> _shared_textures;
+
+	std::unordered_set<IMesh*> _runtime_meshes;
+	std::unordered_map<string, IMesh*> _shared_meshes;
+
+	std::unordered_set<IGameObject*> _runtime_gameobjects;
+
+	std::unordered_map<string, IShaderText*> _shared_shadertexts;
+
+	std::unordered_set<IConstantBuffer*> _runtime_constntbuffer;
+	std::unordered_set<IShader*> _runtime_shaders;
 		
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
@@ -99,37 +32,48 @@ class ResourceManager final : public IResourceManager
 	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
 	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
 
-	vector<IResource*> _FBXLoadMeshes(const char *pFullPath, const char *pRelativePath);
+	vector<IMesh*> _FBXLoadMeshes(const char *pFullPath, const char *pRelativePath);
 	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
-	void _LoadSceneHierarchy(vector<IResource*>& meshes, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
-	void _LoadNode(vector<IResource*>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
-	void _LoadMesh(vector<IResource*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
+	void _LoadSceneHierarchy(vector<IMesh*>& meshes, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
+	void _LoadNode(vector<IMesh*>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
+	void _LoadMesh(vector<IMesh*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
 	void _LoadNodeTransform(FbxNode* pNode, const char *str);
 	#endif
 
-	const char* _resourceToStr(IResource *pRes);
-	IResource *_createResource(void *pointer, RES_TYPE type, const string& file);
-	API _resources_list(const char **args, uint argsNumber);
-	string constructFullPath(const string& file);
-	bool check_file_not_exist(const string& fullPath);
-	void collect_model_mesh(vector<IResource*>& res_out, std::unordered_set<IResource*> res_vec, const char* pRelativeModelPath, const char *pMeshID);
+	API resources_list(const char **args, uint argsNumber);
+
+	string construct_full_path(const string& file);
+	bool error_if_path_not_exist(const string& fullPath);
+	vector<IMesh*> find_loaded_meshes(const char* pRelativeModelPath, const char *pMeshID);
 
 public:
 
 	ResourceManager();
 	virtual ~ResourceManager();
 
+	void RemoveRuntimeMesh(IMesh *mesh) { _runtime_meshes.erase(mesh); }
+	void RemoveSharedMesh(const string& file) { _shared_meshes.erase(file); }
+	void RemoveRuntimeTexture(ITexture *tex) { _runtime_textures.erase(tex); }
+	void RemoveSharedTexture(const string& file) { _shared_textures.erase(file); }
+	void RemoveRuntimeGameObject(IGameObject *g) { _runtime_gameobjects.erase(g); }
+	void RemoveSharedShaderText(const string& file) { _shared_shadertexts.erase(file); }
+	void RemoveRuntimeConstantBuffer(IConstantBuffer *cb) { _runtime_constntbuffer.erase(cb); }
+	void RemoveRuntimeShader(IShader *s) { _runtime_shaders.erase(s); }
+
 	void Init();
+
+	API LoadModel(OUT IModel **pModel, const char *pModelPath) override;
+	API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) override;
+	API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) override;
+	API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
 	
-	API LoadModel(OUT IResource **pModel, const char *pModelPath) override;
-	API LoadMesh(OUT IResource **pModel, const char *pMeshPath) override;
-	API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) override;
-	API CreateUniformBuffer(OUT IResource **pResource, uint size) override;
-	API CreateGameObject(OUT IResource **pResource, RES_TYPE type) override;
-	API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) override;
-	API DeleteResource(IResource *pResource) override;
-	API GetNumberOfResources(OUT uint *number) override;
-	API GetName(OUT const char **pTxt) override;
+	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
+	API CreateConstantBuffer(OUT IConstantBuffer **pConstntBuffer, uint size) override;
+	API CreateGameObject(OUT IGameObject **pGameObject) override;
+	API CreateModel(OUT IModel **pModel) override;
+	API CreateCamera(OUT ICamera **pCamera) override;
+
 	API Free() override;
+	API GetName(OUT const char **pTxt) override;
 };
 

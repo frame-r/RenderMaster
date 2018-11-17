@@ -12,6 +12,13 @@ DX11Mesh::DX11Mesh(ID3D11Buffer* vb, ID3D11Buffer *ib, ID3D11InputLayout* il, ui
 {
 }
 
+DX11Mesh::~DX11Mesh()
+{
+	if (_pVertexBuffer) _pVertexBuffer->Release();
+	if (_pIndexBuffer) _pIndexBuffer->Release();
+	if (_pInputLayoyt) _pInputLayoyt->Release();
+}
+
 API DX11Mesh::GetNumberOfVertex(OUT uint *vertex)
 {
 	*vertex = _number_of_vertices;
@@ -30,10 +37,3 @@ API DX11Mesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 	return S_OK;
 }
 
-API DX11Mesh::Free()
-{
-	if (_pVertexBuffer) _pVertexBuffer->Release();
-	if (_pIndexBuffer) _pIndexBuffer->Release();
-	if (_pInputLayoyt) _pInputLayoyt->Release();
-	return S_OK;
-}

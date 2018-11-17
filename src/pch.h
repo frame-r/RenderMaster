@@ -32,6 +32,6 @@
 
 #include <d3d11_2.h>
 #include <d3dcompiler.h>
-#include <wrl/module.h>
+#include <wrl/client.h>
 
 #include "Tree.h"

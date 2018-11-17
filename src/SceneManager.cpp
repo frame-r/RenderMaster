@@ -7,37 +7,33 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-tree<IResource*>::iterator SceneManager::gameobject_to_iterator(IResource * pGameObject)
+tree<IGameObject*>::iterator SceneManager::gameobject_to_iterator(IGameObject *pGameObject)
 {
 	for (auto it = _gameobjects.begin(); it != _gameobjects.end(); ++it)
 	{
-		IResource* res = *it;
+		IGameObject* res = *it;
 		if (res == pGameObject)
-		{
 			return it;
-		}
 	}
 	return _gameobjects.end();
-}
-
-SceneManager::SceneManager()
-{
 }
 
 API SceneManager::SaveScene(const char *pRelativeScenePath)
 {
 	IFileSystem *fs;
 	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-	
-	YAML::Emitter out;
-	out << YAML::Block << *this;
-	
-	IFile *f = nullptr;
-	fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
-	
-	f->WriteStr(out.c_str());
-	
-	f->CloseAndFree();
+
+	// TODO
+
+	//YAML::Emitter out;
+	//out << YAML::Block << *this;
+	//
+	//IFile *f = nullptr;
+	//fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
+	//
+	//f->WriteStr(out.c_str());
+	//
+	//f->CloseAndFree();
 	
 	LOG_FORMATTED("Scene saved to: %s\n", pRelativeScenePath);
 
@@ -46,48 +42,47 @@ API SceneManager::SaveScene(const char *pRelativeScenePath)
 
 API SceneManager::LoadScene(const char *pRelativeScenePath)
 {
-	if (_sceneLoaded)
-	{
-		LOG_WARNING("Closing scene...");
-		CloseScene();
-	}
-	IFileSystem *fs;
-	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
-	
-	YAML::Emitter out;
-	out << YAML::Block << *this;
-	
-	IFile *f = nullptr;
-	fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+	// TODO
 
-	uint fileSize;
-	f->FileSize(&fileSize);
-
-	char *tmp = new char[fileSize + 1];
-	tmp[fileSize] = '\0';
-
-	f->Read((uint8 *)tmp, fileSize);
-	f->CloseAndFree();
-	
-	YAML::Node model_yaml = YAML::Load(tmp);
-	auto t = model_yaml.Type();	
-
-	loadSceneManager(model_yaml, *this);
-
-	_sceneLoaded = true;
-
-	delete tmp;
+	//if (_sceneLoaded)
+	//{
+	//	LOG_WARNING("Closing scene...");
+	//	CloseScene();
+	//}
+	//IFileSystem *fs;
+	//_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
+	//
+	//YAML::Emitter out;
+	//out << YAML::Block << *this;
+	//
+	//IFile *f = nullptr;
+	//fs->OpenFile(&f, pRelativeScenePath, FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+	//
+	//uint fileSize;
+	//f->FileSize(&fileSize);
+	//
+	//char *tmp = new char[fileSize + 1];
+	//tmp[fileSize] = '\0';
+	//
+	//f->Read((uint8 *)tmp, fileSize);
+	//f->CloseAndFree();
+	//
+	//YAML::Node model_yaml = YAML::Load(tmp);
+	//auto t = model_yaml.Type();	
+	//
+	//loadSceneManager(model_yaml, *this);
+	//
+	//_sceneLoaded = true;
+	//
+	//delete tmp;
 
 	return S_OK;
 }
 
 API SceneManager::CloseScene()
 {
-	for (IResource *obj : _gameobjects)
-	{
+	for (IGameObject *obj : _gameobjects)
 		_gameObjectDeleteEvent->Fire(obj);
-		obj->Release();
-	}
 
 	_gameobjects.clear();
 
@@ -100,13 +95,12 @@ API SceneManager::CloseScene()
 
 API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 {
-	for (IResource *obj : _gameobjects)
+	for (IGameObject *obj : _gameobjects)
 	{
-		RES_TYPE type;
-		obj->GetType(&type);
-		if (type == RES_TYPE::CAMERA)
+		ICamera *cam = dynamic_cast<ICamera*>(obj);
+		if (cam)
 		{
-			obj->GetPointer((void**)pCamera);
+			*pCamera = cam;
 			return S_OK;
 		}
 	}
@@ -114,16 +108,7 @@ API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 	return S_OK;
 }
 
-API SceneManager::AddRootGameObject(IResource* pGameObject)
-{
-	tree<IResource*>::iterator top = _gameobjects.begin();
-	pGameObject->AddRef();
-	auto it = _gameobjects.insert(top, pGameObject);
-	_gameObjectAddedEvent->Fire(pGameObject);
-	return S_OK;
-}
-
-API SceneManager::GetNumberOfChilds(OUT uint *number, IResource *parent)
+API SceneManager::GetNumberOfChilds(OUT uint *number, IGameObject *parent)
 {
 	if (parent)
 	{
@@ -144,7 +129,7 @@ API SceneManager::GetNumberOfChilds(OUT uint *number, IResource *parent)
 	return S_OK;
 }
 
-API SceneManager::GetChild(OUT IResource **pGameObject, IResource *parent, uint idx)
+API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx)
 {
 	uint number;
 	GetNumberOfChilds(&number, parent);
@@ -171,29 +156,31 @@ API SceneManager::GetChild(OUT IResource **pGameObject, IResource *parent, uint 
 
 void SceneManager::Init()
 {
-	IResourceManager *_pResMan = getResourceManager(_pCore);
-	ResourcePtr<ICamera> camera = _pResMan->createCamera();
-	AddRootGameObject(camera.getResource());
+	IResourceManager *rm = getResourceManager(_pCore);
+	ICamera *cam;
+	rm->CreateCamera(&cam);
+	camera = WRL::ComPtr<ICamera>(cam);
 	LOG("Scene Manager initialized");
 }
 
 void SceneManager::Free()
 {
-	IResourceManager *_pResMan = getResourceManager(_pCore);
+	camera.Reset();
 
-	DEBUG_LOG("SceneManager::Free(): objects to delete=%i", LOG_TYPE::NORMAL, _gameobjects.size());
-	#ifdef _DEBUG
-		uint res_before = 0;
-		_pResMan->GetNumberOfResources(&res_before);
-	#endif
+	for (auto it = _gameobjects.begin(); it != _gameobjects.end(); ++it)
+	{
+		IGameObject* res = *it;
+		res->Release();
+	}
+	_gameobjects.clear();
+}
 
-	CloseScene();
-
-	#ifdef _DEBUG
-		uint res_after = 0;
-		_pResMan->GetNumberOfResources(&res_after);
-		DEBUG_LOG("SceneManager::Free(): objects deleted=%i", LOG_TYPE::NORMAL, res_before - res_after);
-	#endif
+void SceneManager::addGameObject(IGameObject *go)
+{
+	go->AddRef();
+	tree<IGameObject*>::iterator top = _gameobjects.begin();
+	auto it = _gameobjects.insert(top, go);
+	_gameObjectAddedEvent->Fire(go);
 }
 
 API SceneManager::GetName(OUT const char **pName)
@@ -202,13 +189,13 @@ API SceneManager::GetName(OUT const char **pName)
 	return S_OK;
 }
 
-API SceneManager::GetGameObjectAddedEvent(IResourceEvent** pEvent)
+API SceneManager::GetGameObjectAddedEvent(IGameObjectEvent** pEvent)
 {
 	*pEvent = _gameObjectAddedEvent.get();
 	return S_OK;
 }
 
-API SceneManager::GetDeleteGameObjectEvent(IResourceEvent ** pEvent)
+API SceneManager::GetDeleteGameObjectEvent(IGameObjectEvent ** pEvent)
 {
 	*pEvent = _gameObjectDeleteEvent.get();
 	return S_OK;

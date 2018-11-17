@@ -2,7 +2,7 @@
 #include "Common.h"
 
 
-class GLUniformBuffer final : public IUniformBuffer
+class GLUniformBuffer final : public ICoreConstantBuffer
 {
 	GLuint _UBO;
 	uint _size{0};
@@ -10,9 +10,7 @@ class GLUniformBuffer final : public IUniformBuffer
 public:
 
 	GLUniformBuffer(GLuint ID, uint size) : _UBO(ID), _size(size) {}
-	~GLUniformBuffer() { Free(); }
-
-	API Free() { if (_UBO) glDeleteBuffers(1, &_UBO); _UBO = 0; return S_OK; }
+	virtual ~GLUniformBuffer(); 
 
 	inline GLuint ID() const { return _UBO; }
 	inline uint size() const { return _size; }
@@ -78,7 +76,7 @@ public:
 	GLCoreRender();
 	virtual ~GLCoreRender();
 
-	API Init(const WindowHandle* handle, int MSAASamples = 0) override;
+	API Init(const WindowHandle* handle, int MSAASamples = 0, int VSyncOn = 1) override;
 	API Free() override;
 	API MakeCurrent(const WindowHandle* handle) override;
 	API SwapBuffers() override;
@@ -87,12 +85,14 @@ public:
 	API PopStates() override;
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
-	API CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc) override;
-	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
+	API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) override;
+	API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) override;
+	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
+
 	API SetShader(const ICoreShader *pShader) override;
 	API SetMesh(const ICoreMesh* mesh) override;
-	API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) override;
-	API SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData) override;
+	API SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot) override;
+	API SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint wIn, uint hIn) override;

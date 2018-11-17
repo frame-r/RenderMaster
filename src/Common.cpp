@@ -292,7 +292,7 @@ int get_msaa_samples(INIT_FLAGS flags)
 
 string msaa_to_string(int samples)
 {
-	if (samples == 0)
+	if (samples <= 1)
 		return "no";
 	return std::to_string(samples) + "x";
 }

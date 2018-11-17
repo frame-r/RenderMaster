@@ -120,7 +120,7 @@ API GLCoreRender::GetName(OUT const char **pTxt)
 	return S_OK;
 }
 
-API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples)
+API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 {
 	const int major_version = 4;
 	const int minor_version = 5;
@@ -285,6 +285,12 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples)
 	}
 
 	CHECK_GL_ERRORS();
+
+	//vsync
+	if (VSyncOn)
+		wglSwapIntervalEXT(1);
+	else
+		wglSwapIntervalEXT(0);
 
 	glEnable(GL_DEPTH_TEST);
 	glClearDepth(1.0f);
@@ -532,7 +538,7 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 	return S_OK;
 }
 
-API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc)
+API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom)
 {
 	GLuint vertID = 0;
 	GLuint geomID = 0;
@@ -542,15 +548,15 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 
 	GLuint programID = glCreateProgram();
 	
-	if (!create_shader(vertID, GL_VERTEX_SHADER, shaderDesc->pVertText, programID))
+	if (!create_shader(vertID, GL_VERTEX_SHADER, vert, programID))
 	{
 		glDeleteProgram(programID);
 		return S_FALSE;
 	}
 	
-	if (shaderDesc->pGeomText != nullptr)
+	if (geom != nullptr)
 	{
-		if (!create_shader(geomID, GL_GEOMETRY_SHADER, shaderDesc->pGeomText, programID))
+		if (!create_shader(geomID, GL_GEOMETRY_SHADER, geom, programID))
 		{
 			glDeleteProgram(programID);
 			glDeleteShader(vertID);
@@ -558,7 +564,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 		}
 	}
 	
-	if (!create_shader(fragID, GL_FRAGMENT_SHADER, shaderDesc->pFragText, programID))
+	if (!create_shader(fragID, GL_FRAGMENT_SHADER, frag, programID))
 	{
 		glDeleteProgram(programID);
 		glDeleteShader(vertID);
@@ -575,7 +581,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const ShaderText *shad
 	return S_OK;
 }
 
-API GLCoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
+API GLCoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size)
 {
 	GLuint ubo = 0;
 	glGenBuffers(1, &ubo);
@@ -584,16 +590,24 @@ API GLCoreRender::CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size)
 	glBufferData(GL_UNIFORM_BUFFER, size, &data[0], GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	*pBuffer = static_cast<IUniformBuffer*>(new GLUniformBuffer(ubo, size));
+	GLUniformBuffer *gl = new GLUniformBuffer(ubo, size);
+	DEBUG_LOG_FORMATTED("GLCoreRender::CreateConstantBuffer new GLUniformBuffer %#010x", gl);
+
+	*pBuffer = static_cast<ICoreConstantBuffer*>(gl);
 
 	return S_OK;
+}
+
+API GLCoreRender::CreateTexture(OUT ICoreTexture ** pTexture, uint8 * pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+{
+	return E_NOTIMPL;
 }
 
 API GLCoreRender::SetShader(const ICoreShader* pShader)
 {
 	CHECK_GL_ERRORS();
 
-	const GLShader *pGLShader = dynamic_cast<const GLShader*>(pShader);
+	const GLShader *pGLShader = static_cast<const GLShader*>(pShader);
 	
 	if (pShader == nullptr)
 	{
@@ -624,7 +638,7 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 		glBindVertexArray(0);
 	else
 	{
-		const GLMesh *glMesh = reinterpret_cast<const GLMesh*>(mesh);
+		const GLMesh *glMesh = static_cast<const GLMesh*>(mesh);
 		glBindVertexArray(glMesh->VAO_ID());
 	}
 
@@ -633,14 +647,14 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 	return S_OK;
 }
 
-API GLCoreRender::SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot)
+API GLCoreRender::SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot)
 {
 	assert(_currentState.shader_program_id != 0 && "GLCoreRender::SetUniformBuffer(): shader not set");
 
 	CHECK_GL_ERRORS();
 
 	// uniform buffer -> UBO slot
-	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
+	const GLUniformBuffer *glBuf = static_cast<const GLUniformBuffer*>(pBuffer);
 	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
 
 	// shader -> UBO slot
@@ -653,11 +667,11 @@ API GLCoreRender::SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot)
 	return S_OK;
 }
 
-API GLCoreRender::SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData)
+API GLCoreRender::SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData)
 {
 	CHECK_GL_ERRORS();
 
-	const GLUniformBuffer *glBuf = reinterpret_cast<const GLUniformBuffer*>(pBuffer);
+	const GLUniformBuffer *glBuf = static_cast<const GLUniformBuffer*>(pBuffer);
 	glBindBuffer(GL_UNIFORM_BUFFER, glBuf->ID());
 	GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
 	memcpy(p, pData, glBuf->size());
@@ -679,7 +693,7 @@ API GLCoreRender::Draw(ICoreMesh *mesh)
 		glBindVertexArray(0);
 	else
 	{
-		GLMesh *pGLMesh = reinterpret_cast<GLMesh*>(mesh);
+		GLMesh *pGLMesh = static_cast<GLMesh*>(mesh);
 		glBindVertexArray(pGLMesh->VAO_ID());
 
 		uint vertecies;
@@ -750,4 +764,8 @@ API GLCoreRender::Clear()
 	return S_OK;
 }
 
-
+GLUniformBuffer::~GLUniformBuffer()
+{
+	if (_UBO) glDeleteBuffers(1, &_UBO);
+	_UBO = 0;
+}

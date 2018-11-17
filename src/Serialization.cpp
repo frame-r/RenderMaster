@@ -11,7 +11,7 @@ DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
 using namespace YAML;
-
+/*
 Emitter& operator<<(Emitter& out, const vec3& v)
 {
 	out << Flow;
@@ -80,20 +80,6 @@ Emitter& operator<<(Emitter& out, IResource* res)
 		out << EndMap;
 		return out;
 
-	} else if (type == RES_TYPE::GAME_OBJECT)
-	{
-		out << LocalTag("GameObject");
-		res->GetPointer((void**)&go);
-	}
-	else if (type == RES_TYPE::MODEL)
-	{
-		out << LocalTag("Model");
-		res->GetPointer((void**)&m);
-	}
-	else if (type == RES_TYPE::CAMERA)
-	{
-		out << LocalTag("Camera");
-		res->GetPointer((void**)&c);
 	}
 
 	if (go)
@@ -122,7 +108,7 @@ Emitter& operator<<(Emitter& out, IResource* res)
 	return out;
 }
 
-Emitter& operator<<(Emitter& out, const tree<IResource*>& _tree) 
+Emitter& operator<<(Emitter& out, const tree<IGameObject*>& _tree) 
 {
 	out << LocalTag("Tree");
 	out << BeginMap;
@@ -132,20 +118,13 @@ Emitter& operator<<(Emitter& out, const tree<IResource*>& _tree)
 	out << Block;
 	out << BeginSeq;
 	
-	for (tree<IResource*>::pre_order_iterator it = _tree.begin(); it != _tree.end(); ++it)
+	for (tree<IGameObject*>::pre_order_iterator it = _tree.begin(); it != _tree.end(); ++it)
 		{
 			out << Flow;
 			out << BeginMap;
 
-			IResource *res = *it;
-			IGameObject *go;
+			IGameObject *go= *it;
 
-			RES_TYPE type;
-			res->GetType(&type);
-			if (type != RES_TYPE::GAME_OBJECT && type != RES_TYPE::MODEL && type != RES_TYPE::CAMERA)
-				continue;
-
-			res->GetPointer((void**)&go);
 			int id;
 			go->GetID(&id);
 			out << Key << "child" << Value << id;
@@ -155,8 +134,7 @@ Emitter& operator<<(Emitter& out, const tree<IResource*>& _tree)
 			else
 			{
 				int parent_id;
-				GameObject *parent_go;
-				(*_tree.parent(it))->GetPointer((void**)&parent_go);
+				IGameObject *parent_go = *_tree.parent(it);
 				parent_go->GetID(&parent_id);
 				out << Key << "parent" << Value << parent_id;
 			}
@@ -190,48 +168,47 @@ Emitter& operator<<(Emitter& out, const SceneManager& sm)
 	return out;
 }
 
-IResource *createSceneObject(const string& name)
+IGameObject *createSceneObject(const string& name)
 {
 	IResourceManager *resMan;
 	_pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-	IResource *ret;
+	IGameObject *ret = nullptr;
 
-	if (name == "!GameObject") resMan->CreateGameObject(&ret, RES_TYPE::GAME_OBJECT);
-	else if (name == "!Model") resMan->CreateGameObject(&ret, RES_TYPE::MODEL);
-	else if (name == "!Camera") resMan->CreateGameObject(&ret, RES_TYPE::CAMERA);
-	//else if (name == "!Mesh") resMan->LoadModel()
+	if (name == "!GameObject") resMan->CreateGameObject(&ret);
+	else if (name == "!Model") resMan->CreateGameObject(&ret);
+	else if (name == "!Camera") resMan->CreateGameObject(&ret);
 
 	return ret;
 }
 
-tree<IResource*>::iterator find(tree<IResource*>& tree, int idIn)
+tree<IGameObject*>::iterator find(tree<IGameObject*>& tree, int idIn)
 {
 	for (auto it = tree.begin(); it != tree.end(); ++it)
 	{
 		int id;
-		IGameObject *g;
-		(*it)->GetPointer((void**)&g);
+		IGameObject *g = *it;
 		g->GetID(&id);
-		if (id == idIn) return it;
+		if (id == idIn)
+			return it;
 	}
 	return tree.end();
 }
 
-void insertResourceToTree(SceneManager& sm, int parent_id, IResource *res)
-{
-	auto it = find(sm._gameobjects, parent_id);
-	if (it == sm._gameobjects.end()) // root
-	{
-		sm.AddRootGameObject(res);
-	}
-	else
-	{
-		// TODO: do through SceneManager API!!! else child object won't shown in tree hierarchy
-		sm._gameobjects.append_child(it, res);
-		res->AddRef();
-	}
-}
+//void insertResourceToTree(SceneManager& sm, int parent_id, IGameObject *res)
+//{
+//	auto it = find(sm._gameobjects, parent_id);
+//	if (it == sm._gameobjects.end()) // root
+//	{
+//		sm.AddRootGameObject(res);
+//	}
+//	else
+//	{
+//		// TODO: do through SceneManager API!!! else child object won't shown in tree hierarchy
+//		sm._gameobjects.append_child(it, res);
+//		res->AddRef();
+//	}
+//}
 
 void loadSceneManager(Node& n, SceneManager &sm)
 {
@@ -241,7 +218,7 @@ void loadSceneManager(Node& n, SceneManager &sm)
 	Node gameobjects_yaml = n["gameobjects"];
 	auto t1 = gameobjects_yaml.Type();
 
-	std::map<int, IResource*> pool;
+	std::map<int, IGameObject*> pool;
 
 	{
 		if (!gameobjects_yaml["tree_items"])
@@ -257,14 +234,14 @@ void loadSceneManager(Node& n, SceneManager &sm)
 				Node n = tree_items_yaml[i];
 				auto t4 = n.Tag();
 
-				IResource *go_res = createSceneObject(t4);
-				loadResource(n, go_res);
+				IGameObject *go = createSceneObject(t4);
 
-				IGameObject *go;
-				go_res->GetPointer((void**)&go);
+				loadResource(n, go);
+
 				int id;
 				go->GetID(&id);
-				pool.emplace(id, go_res);
+
+				pool.emplace(id, go);
 			}
 		}
 	}
@@ -285,9 +262,9 @@ void loadSceneManager(Node& n, SceneManager &sm)
 				int parent_id = n["parent"].as<int>();
 				int childs_id = n["child"].as<int>();
 
-				IResource *res = pool[childs_id];
+				IGameObject *res = pool[childs_id];
 
-				insertResourceToTree(sm, parent_id, res);
+				//insertResourceToTree(sm, parent_id, res);
 			}
 		}
 	}
@@ -331,25 +308,15 @@ void loadGameObjectBase(Node& n, IGameObject *go)
 	}
 }
 
-void loadResource(Node& n, IResource *go)
+void loadResource(Node& n, IGameObject *go)
 {
-	RES_TYPE type;
-	go->GetType(&type);
-	
-	if (type == RES_TYPE::GAME_OBJECT)
-	{
-		IGameObject *g;
-		go->GetPointer((void**)&g);
-		loadGameObjectBase(n, g);
-	} else if (type == RES_TYPE::MODEL)
+	loadGameObjectBase(n, go);
+
+	Model *ml = dynamic_cast<Model*>(go);
+	if (ml)
 	{
 		if (n["meshes"])
 		{
-			Model* ml;
-			go->GetPointer((void**)&ml);
-
-			loadGameObjectBase(n, ml);
-
 			IResourceManager *resMan;
 			_pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
@@ -367,13 +334,11 @@ void loadResource(Node& n, IResource *go)
 				ml->_meshes.push_back(mesh);
 			}
 		}
-	} else if (type == RES_TYPE::CAMERA)
+	}
+
+	Camera *cm = dynamic_cast<Camera*>(go);
+	if (cm)
 	{
-		Camera *cm;
-		go->GetPointer((void**)&cm);
-
-		loadGameObjectBase(n, cm);
-
 		if (n["zNear"])
 			cm->_zNear = n["zNear"].as<float>();
 		if (n["zFar"])
@@ -383,3 +348,4 @@ void loadResource(Node& n, IResource *go)
 	}
 }
 
+*/

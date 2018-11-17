@@ -45,7 +45,8 @@ namespace RENDER_MASTER
 	class IUpdateCallback;
 	class ICamera;
 	class IGameObject;
-	class IResource;
+	class IShader;
+	class IResourceManager;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
 
@@ -70,7 +71,11 @@ namespace RENDER_MASTER
 		MSAA_4X					= 0x00002000,
 		MSAA_8X					= 0x00003000,
 		MSAA_16X				= 0x00004000,
-		MSAA_32X				= 0x00005000
+		MSAA_32X				= 0x00005000,
+
+		VSYNC_FLAG				= 0x000F0000,
+		VSYNC_ON				= 0x00010000, // by default
+		VSYNC_OFF				= 0x00020000,
 	};
 	DEFINE_ENUM_OPERATORS(INIT_FLAGS)
 
@@ -78,6 +83,8 @@ namespace RENDER_MASTER
 	class ICore : public IUnknown
 	{
 	public:
+		virtual ~ICore() = default;
+
 		virtual API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) = 0;
 		virtual API Start() = 0;
 		virtual API RenderFrame(const WindowHandle *externHandle, const ICamera *pCamera) = 0;
@@ -109,6 +116,7 @@ namespace RENDER_MASTER
 	class ISubSystem
 	{
 	public:
+		virtual ~ISubSystem() = default;
 		virtual API GetName(OUT const char **pName) = 0;
 	};
 
@@ -133,13 +141,14 @@ namespace RENDER_MASTER
 	class NAME ## Subscriber \
 	{ \
 	public: \
+		virtual ~NAME ## Subscriber() = default; \
 		virtual API Call() = 0; \
 	}; \
 	\
 	class NAME \
 	{ \
 	public: \
-		\
+		virtual ~NAME() = default; \
 		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
 		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
@@ -148,6 +157,7 @@ namespace RENDER_MASTER
 	class NAME ## Subscriber \
 	{ \
 	public: \
+		virtual ~NAME ## Subscriber() = default; \
 		virtual API Call(ARG) = 0; \
 	}; \
 	\
@@ -155,6 +165,7 @@ namespace RENDER_MASTER
 	{ \
 	public: \
 		\
+		virtual ~NAME() = default; \
 		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
 		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
@@ -163,6 +174,7 @@ namespace RENDER_MASTER
 	class NAME ## Subscriber \
 	{ \
 	public: \
+		virtual ~NAME ## Subscriber() = default; \
 		virtual API Call(ARG1, ARG2) = 0; \
 	}; \
 	 \
@@ -170,6 +182,7 @@ namespace RENDER_MASTER
 	{ \
 	public: \
 	 \
+		virtual ~NAME() = default; \
 		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
 		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
@@ -178,7 +191,6 @@ namespace RENDER_MASTER
 	DEFINE_EVENT1(IPositionEvent, OUT vec3 *pos)
 	DEFINE_EVENT1(IRotationEvent, OUT quat *rot)
 	DEFINE_EVENT1(IGameObjectEvent, OUT IGameObject *pGameObject)
-	DEFINE_EVENT1(IResourceEvent, OUT IResource *pGameObject)
 	DEFINE_EVENT1(IStringEvent, const char *pString)
 	DEFINE_EVENT2(ILogEvent, const char *pMessage, LOG_TYPE type)
 
@@ -271,30 +283,77 @@ namespace RENDER_MASTER
 		MESH_INDEX_FORMAT format{MESH_INDEX_FORMAT::NOTHING};
 	};
 
+	enum class TEXTURE_TYPE
+	{
+		TYPE_2D					= 0x0000000F,
+		TYPE_3D					= 0x00000001,
+		TYPE_CUBE				= 0x00000002,
+		TYPE_2D_ARRAY			= 0x00000003,
+		TYPE_CUBE_ARRAY			= 0x00000004
+	};
+
+	enum class TEXTURE_CREATE_FLAGS
+	{
+		FILTER					= 0x000000F0,
+		FILTER_POINT			= 0x00000010,
+		FILTER_LINEAR			= 0x00000020,
+		FILTER_ANISOTROPY_2X	= 0x00000030,
+		FILTER_ANISOTROPY_4X	= 0x00000040,
+		FILTER_ANISOTROPY_8X	= 0x00000050,
+		FILTER_ANISOTROPY_16X	= 0x00000060,
+		// mipmaps filters...
+
+		COORDS					= 0x00000F00,
+		COORDS_WRAP				= 0x00000100,
+		COORDS_MIRROR			= 0x00000200,
+		COORDS_CLAMP			= 0x00000300,
+		COORDS_BORDER			= 0x00000400
+	};
+
+	enum class TEXTURE_FORMAT
+	{
+		// normalized
+		R8,
+		RG8,
+		RGB8,
+		RGBA8,
+
+		// float
+		R16F,
+		RG16F,
+		RGB16F,
+		RGBA16F,
+		R32F,
+		RG32F,
+		RGB32F,
+		RGBA32F,
+
+		// compressed
+		DXT1,
+		DXT3,
+		DXT5
+	};
+
+	class ICoreTexture
+	{
+	public:
+		virtual ~ICoreTexture() = default;
+	};
+
+	class ICoreConstantBuffer
+	{
+	public:
+		virtual ~ICoreConstantBuffer() = default;
+	};
+
 	class ICoreMesh
 	{
 	public:
+		virtual ~ICoreMesh() = default;
+
 		virtual API GetNumberOfVertex(OUT uint *number) = 0;
 		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
 		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
-		virtual API Free() = 0;
-	};
-
-	struct ShaderText
-	{
-		const char* pVertText{nullptr};
-		const char* pGeomText{nullptr};
-		const char* pFragText{nullptr};
-	public:
-		ShaderText() = default;
-		virtual ~ShaderText(){}
-
-		void Free()
-		{
-			delete pVertText;
-			delete pFragText;
-			delete pGeomText;
-		}
 	};
 
 	class ICoreShader
@@ -303,23 +362,12 @@ namespace RENDER_MASTER
 		virtual ~ICoreShader(){}
 	};
 
-	class ICoreTexture
-	{
-	public:
-		virtual ~ICoreTexture() {}
-	};
-
-	class IUniformBuffer
-	{
-	public:
-		virtual API Free() = 0;
-	};
-
 	class ICoreRender : public ISubSystem
 	{
 	public:
-		
-		virtual API Init(const WindowHandle* handle, int MSAASamples) = 0;
+		virtual ~ICoreRender() = default;
+
+		virtual API Init(const WindowHandle* handle, int MSAASamples, int VSyncOn) = 0;
 		virtual API Free() = 0;
 		virtual API MakeCurrent(const WindowHandle* handle) = 0;
 		virtual API SwapBuffers() = 0;
@@ -328,12 +376,14 @@ namespace RENDER_MASTER
 		virtual API PopStates() = 0;
 
 		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
-		virtual API CreateShader(OUT ICoreShader **pShader, const ShaderText* shaderDesc) = 0;
-		virtual API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) = 0;
+		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
+		virtual API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) = 0;
+		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
+
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
-		virtual API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) = 0;
-		virtual API SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData) = 0;
+		virtual API SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot) = 0;
+		virtual API SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
@@ -364,7 +414,7 @@ namespace RENDER_MASTER
 	class IRender : public ISubSystem
 	{
 	public:
-		virtual API GetShader(OUT ICoreShader **pShader, const ShaderRequirement *shaderReq) = 0;
+		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
 	};
 
 
@@ -384,9 +434,13 @@ namespace RENDER_MASTER
 	// Game Objects
 	//////////////////////
 	
-	class IGameObject
+	class IGameObject : public IUnknown
 	{
 	public:
+		virtual ~IGameObject() = default;
+
+		virtual API GetReferences(int *refsOut) = 0;
+
 		virtual API GetID(OUT int *id) = 0;
 		virtual API SetID(int *id) = 0;
 		virtual API GetName(OUT const char **pName) = 0;
@@ -401,7 +455,6 @@ namespace RENDER_MASTER
 		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
 		virtual API GetAABB(OUT AABB *aabb) = 0;
 		virtual API Copy(IGameObject *copy) = 0;
-		virtual API Free() = 0;
 
 		// Events
 		virtual API GetNameEv(OUT IStringEvent **pEvent) = 0;
@@ -420,9 +473,63 @@ namespace RENDER_MASTER
 	class IModel : public IGameObject
 	{
 	public:
-		virtual API GetMesh(OUT ICoreMesh **pMesh, uint idx) = 0;
+		virtual API GetCoreMesh(OUT ICoreMesh **pMesh, uint idx) = 0;
 		virtual API GetNumberOfMesh(OUT uint *number) = 0;
 		virtual API Copy(OUT IModel *copy) = 0;
+	};
+
+	class IMesh : public IUnknown
+	{
+	public:
+		virtual ~IMesh() = default;
+
+		virtual API GetReferences(int *refsOut) = 0;
+		virtual API IsShared(int *isShared) = 0;
+		virtual API GetFile(OUT const char **file) = 0;
+
+		virtual API GetCoreMesh(OUT ICoreMesh **meshOut) = 0;
+	};
+
+	class ITexture : public IUnknown
+	{
+	public:
+		virtual ~ITexture() = default;
+
+		virtual API GetReferences(int *refsOut) = 0;
+		virtual API GetFile(OUT const char **file) = 0;
+	};
+
+	class IConstantBuffer : public IUnknown
+	{
+	public:
+		virtual ~IConstantBuffer() = default;
+
+		virtual API GetReferences(int *refsOut) = 0;
+		virtual API GetCoreBuffer(OUT ICoreConstantBuffer **bufferOut) = 0;
+	};
+
+	class IShaderText : public IUnknown
+	{
+	public:
+		virtual ~IShaderText() = default;
+
+		virtual API GetReferences(int *refsOut) = 0;
+		virtual API GetFile(OUT const char **filePath) = 0;
+		virtual API GetVert(OUT const char **textOut) = 0;
+		virtual API GetGeom(OUT const char **textOut) = 0;
+		virtual API GetFrag(OUT const char **textOut) = 0;
+	};
+
+	class IShader : public IUnknown
+	{
+	public:
+		virtual ~IShader() = default;
+
+		virtual API GetReferences(int *refsOut) = 0;
+		virtual API GetCoreShader(ICoreShader **shaderOut) = 0;
+		virtual API GetVert(OUT const char **textOut) = 0;
+		virtual API GetGeom(OUT const char **textOut) = 0;
+		virtual API GetFrag(OUT const char **textOut) = 0;
 	};
 
 	//////////////////////
@@ -435,14 +542,13 @@ namespace RENDER_MASTER
 		virtual API SaveScene(const char *pRelativeScenePath) = 0;
 		virtual API LoadScene(const char *pRelativeScenePath) = 0;
 		virtual API CloseScene() = 0;
-		virtual API AddRootGameObject(IResource* pGameObject) = 0;
-		virtual API GetNumberOfChilds(OUT uint *number, IResource *parent) = 0;
-		virtual API GetChild(OUT IResource **pGameObject, IResource *parent, uint idx) = 0;
+		virtual API GetNumberOfChilds(OUT uint *number, IGameObject *parent) = 0;
+		virtual API GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 
 		//events
-		virtual API GetGameObjectAddedEvent(OUT IResourceEvent **pEvent) = 0;
-		virtual API GetDeleteGameObjectEvent(IResourceEvent** pEvent) = 0;
+		virtual API GetGameObjectAddedEvent(OUT IGameObjectEvent **pEvent) = 0;
+		virtual API GetDeleteGameObjectEvent(IGameObjectEvent** pEvent) = 0;
 	};
 
 
@@ -450,214 +556,22 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
-	enum class RES_TYPE
-	{
-		GAME_OBJECT,
-		CAMERA,
-		MODEL,
-		CORE_MESH,
-		SHADER,
-		UNIFORM_BUFFER,
-		NUMBER
-	};
-
-	class IResource
-	{
-	public:
-		virtual API AddRef() = 0;
-		virtual API Release() = 0;
-		virtual API RefCount(OUT uint *refs) = 0;
-		virtual API GetType(OUT RES_TYPE *type) = 0;
-		virtual API GetFileID(OUT const char **file) = 0;
-		virtual API GetPointer(OUT void **pointer) = 0;
-	};
-
-	template<typename T>
-	class ResourcePtr
-	{
-		IResource *resource = nullptr;
-
-	public:
-		ResourcePtr() = default;
-		ResourcePtr(IResource *res) : resource(res)
-		{
-			if (resource)
-				resource->AddRef();
-		}
-		~ResourcePtr()
-		{
-			if (resource)
-			{
-				resource->Release();
-				resource = nullptr;
-			}
-		}
-		ResourcePtr(const ResourcePtr<T> &ptr)
-		{
-			if (this == &ptr)
-				return;
-			if (resource == ptr.resource)
-				return;
-			resource = ptr.resource;
-			if (resource)
-				resource->AddRef();
-		}
-		ResourcePtr(ResourcePtr<T> &&ptr)
-		{
-			resource = ptr.resource;
-			ptr.resource = nullptr;
-		}
-		ResourcePtr<T> &operator=(const ResourcePtr<T> &ptr)
-		{
-			if (this == &ptr)
-				return *this;
-			if (resource == ptr.resource)
-				return *this;
-			resource = ptr.resource;
-			if (resource)
-				resource->AddRef();
-
-			return *this;
-		}
-		ResourcePtr<T> &operator=(ResourcePtr<T> &&ptr)
-		{
-			resource = ptr.resource;
-			ptr.resource = nullptr;
-			return *this;
-		}
-
-		void reset()
-		{
-			if (resource)
-			{
-				resource->Release();
-				resource = nullptr;
-			}
-		}
-
-		inline T *get() const
-		{
-			if (resource)
-			{
-				void *p;
-				resource->GetPointer(&p);
-				return reinterpret_cast<T*>(p);
-			}
-
-			return nullptr;
-		}
-		inline IResource *getResource() const
-		{
-			return resource;
-		}
-
-		inline T &operator*() const
-		{
-			T *ptr = get();
-			return *ptr;
-		}
-
-		inline T *operator->()
-		{
-			void *p;
-			resource->GetPointer(&p);
-			return reinterpret_cast<T*>(p);
-		}
-
-		inline ResourcePtr<T> Clone()
-		{
-			IResource *copy;
-			resource->Clone(&copy);
-			return ResourcePtr<T>(copy);
-		}
-	};
 
 	class IResourceManager : public ISubSystem
 	{
 	public:
+		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
+		virtual API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) = 0;
+		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
+		virtual API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
 
-		// Manual resource operations (Not recommended)
-		// Using these functions you have to manually call functions
-		// IResource::AddRef() when you get resource and
-		// IResource::Release() when you don't need it anymore
-		//
-		virtual API LoadModel(OUT IResource **pMesh, const char *pModelPath) = 0;
-		virtual API LoadMesh(OUT IResource **pMesh, const char *pMeshPath) = 0;
-		virtual API LoadShaderText(OUT IResource **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
-		virtual API CreateUniformBuffer(OUT IResource **pResource, uint size) = 0;
-		virtual API CreateGameObject(OUT IResource **pResource, RES_TYPE type) = 0;
-		virtual API CloneGameObject(IResource *resourceIn, OUT IResource **resourceOut) = 0;
-		virtual API DeleteResource(IResource *pResource) = 0;
-		virtual API GetNumberOfResources(OUT uint *number) = 0;
+		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
+		virtual API CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size) = 0;
+		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
+		virtual API CreateModel(OUT IModel **pModel) = 0;
+		virtual API CreateCamera(OUT ICamera **pCamera) = 0;
+
 		virtual API Free() = 0;
-
-		// Hight-level resource operations (Recommended)
-		//
-
-		// Load model with all meshes and create it in scene
-		// Examples:
-		//		meshes/big_model.fbx
-		ResourcePtr<IModel> loadModel(const char *pModelPath)
-		{
-			IResource *res;
-			LoadModel(&res, pModelPath);
-			return ResourcePtr<IModel>(res);
-		}
-
-		// Load specified mesh
-		//
-		// pMeshPath in folowing format: <path to model>#<mesh in model> or std#<some standard resource>
-		//
-		// Examples:
-		//		meshes/first_model.fbx#mesh001
-		//		second_model.fbx#mesh442
-		// Standard Resources:
-		//		std#axes
-		//		std#axes_arrows
-		//		std#grid
-		//		std#plane
-		ResourcePtr<ICoreMesh> loadMesh(const char *pMeshPath)
-		{
-			IResource *res;
-			LoadMesh(&res, pMeshPath);
-			return ResourcePtr<ICoreMesh>(res);
-		}
-
-		ResourcePtr<ShaderText> loadShaderText(const char *pVertName, const char *pGeomName, const char *pFragName)
-		{
-			IResource *res;
-			LoadShaderText(&res, pVertName, pGeomName, pFragName);
-			return ResourcePtr<ShaderText>(res);
-		}
-
-		ResourcePtr<IUniformBuffer> createUniformBuffer(uint size)
-		{
-			IResource *res;
-			CreateUniformBuffer(&res, size);
-			return ResourcePtr<IUniformBuffer>(res);
-		}
-
-		ResourcePtr<IGameObject> createGameObject()
-		{
-			IResource *res;
-			CreateGameObject(&res, RES_TYPE::GAME_OBJECT);
-			return ResourcePtr<IGameObject>(res);
-		}
-
-		ResourcePtr<ICamera> createCamera()
-		{
-			IResource *res;
-			CreateGameObject(&res, RES_TYPE::CAMERA);
-			return ResourcePtr<ICamera>(res);
-		}
-
-		template<typename T>
-		ResourcePtr<T> cloneGameObject(const ResourcePtr<T>& r)
-		{
-			IResource *resCloned;
-			CloneGameObject(r.getResource(), &resCloned);
-			return ResourcePtr<T>(resCloned);
-		}
 	};
 
 	
@@ -677,6 +591,7 @@ namespace RENDER_MASTER
 	class IFile
 	{
 	public:
+		virtual ~IFile() = default;
 
 		virtual API Read(OUT uint8 *pMem, uint bytes) = 0;
 		virtual API ReadStr(OUT char *pStr, OUT uint *str_bytes) = 0;
@@ -690,7 +605,6 @@ namespace RENDER_MASTER
 	class IFileSystem : public ISubSystem
 	{
 	public:
-
 		virtual API OpenFile(OUT IFile **pFile, const char *fullPath, FILE_OPEN_MODE mode) = 0;
 		virtual API FileExist(const char *fullPath, OUT int *exist) = 0;
 		virtual API DirectoryExist(const char *fullPath, OUT int *exist) = 0;
@@ -851,6 +765,8 @@ namespace RENDER_MASTER
 	class IConsoleCommand
 	{
 	public:
+		virtual ~IConsoleCommand() = default;
+
 		virtual API GetName(OUT const char **pName) = 0;
 		virtual API Execute(const char **arguments, uint argumentsNum) = 0;
 	};
@@ -863,6 +779,7 @@ namespace RENDER_MASTER
 		virtual API ExecuteCommand(const char *name, const char** arguments, uint argumentsNum) = 0;
 		virtual API GetCommands(OUT uint *number) = 0;
 		virtual API GetCommand(OUT const char **name, uint idx) = 0;
+
 		// Events
 		virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
 	};

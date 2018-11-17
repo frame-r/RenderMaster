@@ -58,4 +58,3 @@ typedef EventTemplate<IPositionEvent, IPositionEventSubscriber, OUT vec3*> Posit
 typedef EventTemplate<IRotationEvent, IRotationEventSubscriber, OUT quat*> RotationEvent;
 typedef EventTemplate<IStringEvent, IStringEventSubscriber, const char *> StringEvent;
 typedef EventTemplate<IGameObjectEvent, IGameObjectEventSubscriber, OUT IGameObject*> GameObjectEvent;
-typedef EventTemplate<IResourceEvent, IResourceEventSubscriber, OUT IResource*> ResourceEvent;

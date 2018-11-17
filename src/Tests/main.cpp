@@ -15,11 +15,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 		{
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-			{ // Need to reset smart pointer pModel before ReleaseEngine(). Also you may reset it manually: pModel.reset()
-
-				ResourcePtr<IModel> pModel = resMan->loadModel("box.fbx");
+			{
+				IModel *pModel;
+				resMan->LoadModel(&pModel, "box.fbx");
+				pModel->AddRef();
 
 				pCore->Start(); // Begin main loop
+
+				pModel->Release();
 			} 
 
 			pCore->ReleaseEngine();

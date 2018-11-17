@@ -2,10 +2,13 @@
 #include "Common.h"
 #include "Camera.h"
 #include "Core.h"
+#include "ResourceManager.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
+
+RUNTIME_COM_CPP_IMPLEMENTATION(Camera, _pCore, RemoveRuntimeGameObject)
 
 void Camera::_update()
 {
@@ -151,9 +154,8 @@ API Camera::GetFovAngle(OUT float *fovInDegrees)
 	return S_OK;
 }
 
-API Camera::Copy(OUT ICamera * copy)
+API Camera::Copy(OUT ICamera *copy)
 {
-	IGameObject *copyGO = copy;
 	GameObjectBase<ICamera>::Copy(copy);
 
 	Camera *copyCamera = static_cast<Camera*>(copy);
@@ -164,7 +166,3 @@ API Camera::Copy(OUT ICamera * copy)
 	return S_OK;
 }
 
-API Camera::Free()
-{
-	return S_OK;
-}

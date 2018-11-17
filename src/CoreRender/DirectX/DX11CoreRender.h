@@ -3,16 +3,14 @@
 
 namespace WRL = Microsoft::WRL;
 
-class DX11ConstantBuffer final: public IUniformBuffer
+class DX11ConstantBuffer final: public ICoreConstantBuffer
 {
 	WRL::ComPtr<ID3D11Buffer> buffer;
 
 public:
 
 	DX11ConstantBuffer(ID3D11Buffer *bufferIn) : buffer(bufferIn) {}
-	virtual ~DX11ConstantBuffer() { Free(); }
-
-	API Free() { buffer = nullptr; return S_OK; }
+	virtual ~DX11ConstantBuffer(); 
 
 	ID3D11Buffer *nativeBuffer() const { return buffer.Get(); }
 };
@@ -360,6 +358,7 @@ class DX11CoreRender final : public ICoreRender
 	IResourceManager *_pResMan{nullptr};
 
 	int _MSAASamples = 0;
+	int _VSyncOn = 1;
 
 	ID3D11DeviceChild* create_shader_by_src(int type, const char *src);
 	bool create_viewport_buffers(uint w, uint h);
@@ -371,7 +370,7 @@ public:
 	DX11CoreRender();
 	virtual ~DX11CoreRender();
 
-	API Init(const WindowHandle* handle, int MSAASamples = 0) override;
+	API Init(const WindowHandle* handle, int MSAASamples, int VSyncOn) override;
 	API Free() override;
 	API MakeCurrent(const WindowHandle* handle) override;
 	API SwapBuffers() override;
@@ -380,12 +379,14 @@ public:
 	API PopStates() override;
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
-	API CreateShader(OUT ICoreShader **pShader, const ShaderText *shaderDesc) override;
-	API CreateUniformBuffer(OUT IUniformBuffer **pBuffer, uint size) override;
+	API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) override;
+	API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) override;
+	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
+
 	API SetShader(const ICoreShader *pShader) override;
 	API SetMesh(const ICoreMesh* mesh) override;
-	API SetUniformBuffer(const IUniformBuffer *pBuffer, uint slot) override;
-	API SetUniformBufferData(IUniformBuffer *pBuffer, const void *pData) override;
+	API SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot) override;
+	API SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint w, uint h) override;

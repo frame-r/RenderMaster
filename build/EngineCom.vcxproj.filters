@@ -60,6 +60,18 @@
     <ClInclude Include="..\src\CoreRender\OpenGL\GLShader.h">
       <Filter>CoreRender\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Mesh.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ConstantBuffer.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ShaderText.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shader.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -103,6 +115,21 @@
     <ClCompile Include="..\src\GLEW\glew.c">
       <Filter>CoreRender\OpenGL\GLEW</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\GameObject.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Mesh.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ConstantBuffer.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ShaderText.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Shader.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\shaders\mesh_vertex.shader">
@@ -137,6 +164,9 @@
     </Filter>
     <Filter Include="CoreRender\OpenGL\GLEW">
       <UniqueIdentifier>{682258f4-e0a2-474c-8514-431479bf6e8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{ad4bb86c-756a-4863-9fad-8e69735a71af}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
