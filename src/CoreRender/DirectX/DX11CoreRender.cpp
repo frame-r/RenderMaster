@@ -10,6 +10,12 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+#ifndef NDEBUG
+	#define SHADER_COMPILE_FLAGS (D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG)
+#else
+	#define SHADER_COMPILE_FLAGS (D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_OPTIMIZATION_LEVEL3)
+#endif
+
 enum
 {
 	SHADER_VERTEX,
@@ -371,7 +377,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	ComPtr<ID3DBlob> errorBuffer;
 	ComPtr<ID3DBlob> shaderBuffer;
 
-	auto hr = D3DCompile(src.c_str(), src.size(), "", NULL, NULL, "mainVS", get_shader_profile(0), (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS), 0, &shaderBuffer, &errorBuffer);
+	auto hr = D3DCompile(src.c_str(), src.size(), "", NULL, NULL, "mainVS", get_shader_profile(0), SHADER_COMPILE_FLAGS, 0, &shaderBuffer, &errorBuffer);
 
 	if (FAILED(hr))
 	{
@@ -677,13 +683,7 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* sr
 	ComPtr<ID3DBlob> error_buffer;
 	ComPtr<ID3DBlob> shader_buffer;
 
-#ifndef NDEBUG
-	constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG);
-#else
-	constexpr UINT flags = (D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3);
-#endif
-
-	auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, get_main_function(type), get_shader_profile(type), flags, 0, shader_buffer.GetAddressOf(), error_buffer.GetAddressOf());
+	auto hr = D3DCompile(src, strlen(src), "", NULL, NULL, get_main_function(type), get_shader_profile(type), SHADER_COMPILE_FLAGS, 0, shader_buffer.GetAddressOf(), error_buffer.GetAddressOf());
 
 	if (FAILED(hr))
 	{

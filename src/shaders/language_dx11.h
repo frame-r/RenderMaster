@@ -11,8 +11,6 @@
 // ENG_INPUT_COLOR
 // ENG_ALPHA_TEST
 
-#pragma pack_matrix( row_major )
-
 #define iint2 vec2
 #define iint3 vec3
 #define iint4 ivec4
