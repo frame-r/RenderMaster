@@ -24,6 +24,12 @@
 #define mat3 float3x3
 #define mat4 float4x4
 
+//
+// We don't use this option beacuse we already specify flag
+// for compilation "D3DCOMPILE_PACK_MATRIX_ROW_MAJOR"
+//
+//#pragma pack_matrix(row_major)
+
 
 #define STRUCT(NAME) struct NAME {
 #define END_STRUCT };

@@ -10,6 +10,9 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+// By default in DirectX (and OpenGL) CPU-GPU transfer implemented in column-major style.
+// We change this behaviour only here globally for all shaders by flag "D3DCOMPILE_PACK_MATRIX_ROW_MAJOR"
+// to match C++ math lib wich keeps matrix in rom_major style.
 #ifndef NDEBUG
 	#define SHADER_COMPILE_FLAGS (D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_DEBUG)
 #else

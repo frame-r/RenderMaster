@@ -141,7 +141,6 @@
     <None Include="..\src\shaders\mesh_fragment.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CoreRender">
