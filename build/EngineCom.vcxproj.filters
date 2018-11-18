@@ -23,7 +23,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Input.h" />
     <ClInclude Include="..\src\tree.h" />
-    <ClInclude Include="..\src\Preprocessor.h" />
     <ClInclude Include="..\src\shaders\language_gl.h">
       <Filter>Shaders</Filter>
     </ClInclude>
@@ -99,7 +98,6 @@
       <Filter>GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Input.cpp" />
-    <ClCompile Include="..\src\Preprocessor.cpp" />
     <ClCompile Include="..\src\pch.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\MainWindow.cpp" />

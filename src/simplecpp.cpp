@@ -133,7 +133,7 @@ const std::string simplecpp::Location::emptyFileName;
 void simplecpp::Location::adjust(const std::string &str)
 {
     if (str.find_first_of("\r\n") == std::string::npos) {
-        col += str.size();
+        col += (int)str.size();
         return;
     }
 
@@ -566,9 +566,9 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 }
                 location.adjust(currentToken);
                 if (currentToken.find_first_of("\r\n") == std::string::npos)
-                    location.col += 2 + 2 * delim.size();
+                    location.col += 2 + 2 * (int)delim.size();
                 else
-                    location.col += 1 + delim.size();
+                    location.col += 1 + (int)delim.size();
                 continue;
             }
 
@@ -609,7 +609,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         push_back(new Token(currentToken, location));
 
         if (multiline)
-            location.col += currentToken.size();
+            location.col += (int)currentToken.size();
         else
             location.adjust(currentToken);
     }
@@ -1104,7 +1104,7 @@ unsigned int simplecpp::TokenList::fileIndex(const std::string &filename)
             return i;
     }
     files.push_back(filename);
-    return files.size() - 1U;
+    return (int)files.size() - 1;
 }
 
 
