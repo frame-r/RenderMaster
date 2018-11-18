@@ -14,3 +14,19 @@ ShaderText::~ShaderText()
 {
 	delete[] text;
 }
+
+API ShaderText::SetText(const char * textIn)
+{
+	if (text) delete[] text;
+	text = textIn;
+	return S_OK;
+}
+
+API ShaderText::Reload()
+{
+	IResourceManager *irm = getResourceManager(_pCore);
+	ResourceManager *rm = static_cast<ResourceManager*>(irm);
+	rm->ReloadShaderText(this);
+
+	return S_OK;
+}

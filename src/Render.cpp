@@ -13,20 +13,6 @@ DEFINE_LOG_HELPERS(_pCore)
 // Render
 /////////////////////////
 
-//void Render::_export_shader_to_file(list<string>& text, const string&& file)
-//{
-//	IFile *pFile;
-//	
-//	_fsystem->OpenFile(&pFile, file.c_str(), FILE_OPEN_MODE::WRITE);
-//
-//	for (auto& ll : text)
-//	{
-//		pFile->Write((uint8 *)ll.c_str(), (uint)ll.size());
-//	}
-//
-//	pFile->CloseAndFree();
-//}
-
 IShader* Render::_get_shader(const ShaderRequirement &req)
 {
 	IShader *pShader = nullptr;
@@ -42,44 +28,6 @@ IShader* Render::_get_shader(const ShaderRequirement &req)
 	{
 		const auto process_shader = [&](const char *&ppTextOut, const char *ppTextIn, const string& fileNameIn, const string&& fileNameOut, int type) -> void
 		{
-			//const char **textOut;
-			//int numLinesOut;
-			//split_by_eol(textOut, numLinesOut, ppTextIn);
-			//list<string> lines = make_lines_list(textOut);
-			//delete_char_pp(textOut);
-			//
-			//list<string> lines_lang; 
-			//if (is_opengl())
-			//	lines_lang = get_file_content("language_gl.h");
-			//else
-			//	lines_lang = get_file_content("language_dx11.h");
-			//
-			//lines.insert(lines.begin(), lines_lang.begin(), lines_lang.end());
-			//
-			//Preprocessor proc;
-			//if (is_opengl())
-			//	proc.SetDefine("ENG_OPENGL");
-			//else
-			//	proc.SetDefine("ENG_DIRECTX11");
-			//if (type == 0)
-			//	proc.SetDefine("ENG_SHADER_VERTEX");
-			//else if (type == 1)
-			//	proc.SetDefine("ENG_SHADER_PIXEL");
-			//else if (type == 2)
-			//	proc.SetDefine("ENG_SHADER_GEOMETRY");
-			//if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) proc.SetDefine("ENG_INPUT_NORMAL");
-			//if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) proc.SetDefine("ENG_INPUT_TEXCOORD");
-			//if ((int)(req.attributes & INPUT_ATTRUBUTE::COLOR)) proc.SetDefine("ENG_INPUT_COLOR");
-			//if (req.alphaTest) proc.SetDefine("ENG_ALPHA_TEST");
-			//
-			//proc.Run(lines);
-
-			// save to file
-			//_export_shader_to_file(lines, std::forward<const string>(fileName));
-			//LOG_FORMATTED("Render::_get_shader(): shader exported to \"%s\"", fileName.c_str());
-
-			//ppTextOut = make_char_p(lines);
-
 			simplecpp::DUI dui;
 
 			if (is_opengl())
@@ -119,6 +67,7 @@ IShader* Render::_get_shader(const ShaderRequirement &req)
 			const string out = outputTokens.stringify();
 			auto size = out.size();
 
+			// Workaround for opengl because C preprocessor eats up #version 420
 			if (is_opengl())
 				size += 13;
 
@@ -323,6 +272,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 API Render::ShadersReload()
 {
 	LOG("Shaders reloading...");
+	_standardShader->Reload();
 	_shaders_pool.clear();
 	return S_OK;
 }

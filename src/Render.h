@@ -41,8 +41,7 @@ class Render : public IRender
 	};
 
 	IShader* _get_shader(const ShaderRequirement &req);
-	bool is_opengl();
-	//void _export_shader_to_file(std::list<string>& text, const string&& file);	
+	bool is_opengl();	
 	void _create_render_mesh_vec(vector<TRenderMesh>& meshes);
 	void _sort_meshes(vector<TRenderMesh>& meshes);
 

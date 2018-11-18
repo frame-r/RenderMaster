@@ -42,7 +42,8 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 
 #define SHARED_ONLY_RESOURCE_INTERFACE \
 	virtual API GetReferences(int *refsOut) = 0; \
-	virtual API GetFile(OUT const char **file) = 0;
+	virtual API GetFile(OUT const char **file) = 0; \
+	virtual API Reload() = 0;
 
 // shared and runtime
 #define BASE_RESOURCE_INTERFACE \
@@ -530,6 +531,7 @@ namespace RENDER_MASTER
 		virtual ~IShaderText() = default;
 
 		virtual API GetText(OUT const char **textOut) = 0;
+		virtual API SetText(const char *textIn) = 0;
 
 		SHARED_ONLY_RESOURCE_INTERFACE
 	};

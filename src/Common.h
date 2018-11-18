@@ -311,6 +311,7 @@ private: \
 public: \
 	API GetReferences(int *refsOut) override; \
 	API GetFile(OUT const char **file) override; \
+	API Reload() override; \
 	STDMETHODIMP_(ULONG) AddRef() override; \
 	STDMETHODIMP_(ULONG) Release() override; \
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;

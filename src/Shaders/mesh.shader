@@ -99,7 +99,9 @@ END_STRUCT
 		#endif
 
 		OUT_COLOR = diffuse + ambient;
-	
+		
+		//OUT_COLOR = pow(OUT_COLOR, vec4(2.2f, 2.2f, 2.2f, 2.2f));
+		
 	MAIN_FRAG_END
 
 #endif

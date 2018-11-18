@@ -380,8 +380,15 @@ ResourceManager::~ResourceManager()
 {
 }
 
-void ResourceManager::ReloadShaderText(IShaderText * shaderText)
+void ResourceManager::ReloadShaderText(IShaderText *shaderText)
 {
+	const char *pShaderName;
+	shaderText->GetFile(&pShaderName);
+
+	DEBUG_LOG_FORMATTED("Reloading shader %s ...", pShaderName);
+	const char *t = load_shader(pShaderName);
+
+	shaderText->SetText(t);
 }
 
 void ResourceManager::Init()
@@ -513,6 +520,32 @@ vector<IMesh*> ResourceManager::find_loaded_meshes(const char* pRelativeModelPat
 	}
 
 	return std::move(out);
+}
+
+const char* ResourceManager::load_shader(const char *pShaderName)
+{
+	IFile *pFile = nullptr;
+	uint fileSize = 0;
+	
+	const char *pString;
+	_pCore->GetInstalledDir(&pString);
+	string installedDir = string(pString);
+	string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pShaderName;
+
+	if (!error_if_path_not_exist(shader_path))
+		return nullptr;
+	
+	_pFilesystem->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+
+	pFile->FileSize(&fileSize);
+
+	char *tmp = new char[fileSize + 1];
+	tmp[fileSize] = '\0';
+
+	pFile->Read((uint8 *)tmp, fileSize);
+	pFile->CloseAndFree();
+
+	return tmp;
 }
 
 API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
@@ -778,46 +811,18 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pShaderName)
 {
-	auto load_shader = [=](const char *&textOut) -> APIRESULT
-	{
-		IFile *pFile = nullptr;
-		uint fileSize = 0;
-		
-		const char *pString;
-		_pCore->GetInstalledDir(&pString);
-		string installedDir = string(pString);
-		string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pShaderName;
-
-		if (!error_if_path_not_exist(shader_path))
-			return S_FALSE;
-		
-		_pFilesystem->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
-
-		pFile->FileSize(&fileSize);
-
-		char *tmp = new char[fileSize + 1];
-		tmp[fileSize] = '\0';
-
-		pFile->Read((uint8 *)tmp, fileSize);
-		pFile->CloseAndFree();
-				
-		textOut = tmp;
-		
-		return S_OK;
-	};
-
-	string paths = pShaderName;
-	const char *t = nullptr;
-
-	auto ret = load_shader(t);
+	const char *t = load_shader(pShaderName);
 
 	DEBUG_LOG_FORMATTED("ResourceManager::LoadShaderText() new ShaderText");
 
+	string paths = pShaderName;
+
 	ShaderText *text = new ShaderText(t, paths);
 	_shared_shadertexts.emplace(paths, text);
+
 	*pShader = text;
 
-	return ret;
+	return S_OK;
 }
 
 API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags)

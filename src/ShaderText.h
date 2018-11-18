@@ -12,6 +12,7 @@ public:
 	virtual ~ShaderText();
 
 	API GetText(OUT const char **textOut) override { *textOut = text; return S_OK; }
+	API SetText(const char *textIn) override;
 
 	SHARED_ONLY_RESOURCE_HEADER
 };

@@ -45,6 +45,7 @@ class ResourceManager final : public IResourceManager
 	string construct_full_path(const string& file);
 	bool error_if_path_not_exist(const string& fullPath);
 	vector<IMesh*> find_loaded_meshes(const char* pRelativeModelPath, const char *pMeshID);
+	const char *load_shader(const char *fileName);
 
 public:
 
