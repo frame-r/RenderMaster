@@ -3,19 +3,15 @@
 
 class ShaderText : public IShaderText
 {
-	const char *vert = nullptr;
-	const char *geom = nullptr;
-	const char *frag = nullptr;
+	const char *text = nullptr;
 
 public:
-	ShaderText(const char *vertIn, const char *geomIn, const char *fragIn, const string& fileIn) :
-		vert(vertIn), geom(geomIn), frag(fragIn), _file(fileIn)	{}
+	ShaderText(const char *textIn, const string& fileIn) :
+		text(textIn), _file(fileIn)	{}
 
 	virtual ~ShaderText();
 
-	API GetVert(OUT const char **text) override { *text = vert; return S_OK; }
-	API GetGeom(OUT const char **text) override { *text = geom; return S_OK; }
-	API GetFrag(OUT const char **text) override { *text = frag; return S_OK; }
+	API GetText(OUT const char **textOut) override { *textOut = text; return S_OK; }
 
 	SHARED_ONLY_RESOURCE_HEADER
 };

@@ -20,12 +20,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 				resMan->LoadModel(&pModel, "box.fbx");
 				pModel->AddRef();
 
-				ITexture *tex;
-				resMan->CreateTexture(&tex, 100, 100, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::FILTER_POINT | TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET);
+				//ITexture *tex;
+				//resMan->CreateTexture(&tex, 100, 100, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::FILTER_POINT | TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET);
 
 				pCore->Start(); // Begin main loop
 
-				tex->Release();
+				//tex->Release();
 				pModel->Release();
 			} 
 

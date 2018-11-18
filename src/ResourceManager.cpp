@@ -776,9 +776,9 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	return S_OK;
 }
 
-API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName)
+API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pShaderName)
 {
-	auto load_shader = [=](string &paths, const char *&textOut, const char *pName) -> APIRESULT
+	auto load_shader = [=](const char *&textOut) -> APIRESULT
 	{
 		IFile *pFile = nullptr;
 		uint fileSize = 0;
@@ -786,14 +786,11 @@ API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pVert
 		const char *pString;
 		_pCore->GetInstalledDir(&pString);
 		string installedDir = string(pString);
-
-		string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pName + ".shader";
+		string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pShaderName;
 
 		if (!error_if_path_not_exist(shader_path))
 			return S_FALSE;
-
-		paths += shader_path + ";";
-
+		
 		_pFilesystem->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
 
 		pFile->FileSize(&fileSize);
@@ -809,21 +806,14 @@ API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pVert
 		return S_OK;
 	};
 
-	string paths;
-	const char *v = nullptr;
-	const char *g = nullptr;
-	const char *f = nullptr;
+	string paths = pShaderName;
+	const char *t = nullptr;
 
-	auto ret =	load_shader(paths, v, pVertName);
-
-	if (pGeomName)
-		ret &=	load_shader(paths, g, pGeomName);
-
-	ret &=		load_shader(paths, f, pFragName);
+	auto ret = load_shader(t);
 
 	DEBUG_LOG_FORMATTED("ResourceManager::LoadShaderText() new ShaderText");
 
-	ShaderText *text = new ShaderText(v, g, f, paths);
+	ShaderText *text = new ShaderText(t, paths);
 	_shared_shadertexts.emplace(paths, text);
 	*pShader = text;
 

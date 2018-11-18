@@ -1,4 +1,3 @@
-#version 420
 // Defines provided by engine:
 
 // ---Necessarily---
@@ -39,7 +38,7 @@
 #define OUT_POSITION gl_Position
 
 #define TEXTURE2D_IN(NAME, NUM) uniform sampler2D NAME;
-#define TEXTURE(NAME, UV) texture(NAME, UV);
+#define TEXTURE(NAME, UV) texture(NAME, UV)
 
 #ifdef ENG_SHADER_PIXEL
 out vec4 OUT_COLOR;
@@ -50,7 +49,7 @@ out vec4 OUT_COLOR;
 #define IN_ATTRIBUTE(NAME) NAME
 
 // fragment 
-#define GET_ATRRIBUTE(NAME) NAME
+#define GET_ATRRIBUTE(NAME)NAME
 
 #define FRAGMENT_OUT
 #define FRAGMENT_IN

@@ -78,6 +78,10 @@
     <ClInclude Include="..\src\Texture.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\simplecpp.h" />
+    <ClInclude Include="..\src\Shaders\language.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -142,17 +146,7 @@
     <ClCompile Include="..\src\Texture.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\src\shaders\mesh_vertex.shader">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\src\shaders\mesh_common.shader">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="..\src\shaders\mesh_fragment.shader">
-      <Filter>Shaders</Filter>
-    </None>
+    <ClCompile Include="..\src\simplecpp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CoreRender">
@@ -179,5 +173,10 @@
     <Filter Include="Graphics">
       <UniqueIdentifier>{ad4bb86c-756a-4863-9fad-8e69735a71af}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\Shaders\mesh.shader">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

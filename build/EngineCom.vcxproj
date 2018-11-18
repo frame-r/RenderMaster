@@ -48,9 +48,11 @@
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\Shader.h" />
+    <ClInclude Include="..\src\Shaders\language.h" />
     <ClInclude Include="..\src\shaders\language_dx11.h" />
     <ClInclude Include="..\src\shaders\language_gl.h" />
     <ClInclude Include="..\src\ShaderText.h" />
+    <ClInclude Include="..\src\simplecpp.h" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\Tree.h" />
     <ClInclude Include="..\src\MainWindow.h" />
@@ -91,12 +93,11 @@
     <ClCompile Include="..\src\Serialization.cpp" />
     <ClCompile Include="..\src\Shader.cpp" />
     <ClCompile Include="..\src\ShaderText.cpp" />
+    <ClCompile Include="..\src\simplecpp.cpp" />
     <ClCompile Include="..\src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\shaders\mesh_common.shader" />
-    <None Include="..\src\shaders\mesh_fragment.shader" />
-    <None Include="..\src\shaders\mesh_vertex.shader" />
+    <None Include="..\src\Shaders\mesh.shader" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A2F95159-CE4F-44B5-B6EC-96C5D392D34D}</ProjectGuid>

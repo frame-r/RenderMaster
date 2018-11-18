@@ -12,7 +12,5 @@ SHARED_ONLY_RESOURCE_IMPLEMENTATION(ShaderText, _pCore, RemoveSharedShaderText)
 
 ShaderText::~ShaderText()
 {
-	delete[] vert;
-	delete[] geom;
-	delete[] frag;
+	delete[] text;
 }

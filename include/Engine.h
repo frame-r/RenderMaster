@@ -529,9 +529,7 @@ namespace RENDER_MASTER
 	public:
 		virtual ~IShaderText() = default;
 
-		virtual API GetVert(OUT const char **textOut) = 0;
-		virtual API GetGeom(OUT const char **textOut) = 0;
-		virtual API GetFrag(OUT const char **textOut) = 0;
+		virtual API GetText(OUT const char **textOut) = 0;
 
 		SHARED_ONLY_RESOURCE_INTERFACE
 	};
@@ -580,7 +578,7 @@ namespace RENDER_MASTER
 		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
 		virtual API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) = 0;
 		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
-		virtual API LoadShaderText(OUT IShaderText **pShader, const char *pVertName, const char *pGeomName, const char *pFragName) = 0;
+		virtual API LoadShaderText(OUT IShaderText **pShader, const char *pShaderName) = 0;
 
 		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;

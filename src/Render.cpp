@@ -2,7 +2,8 @@
 #include "Render.h"
 #include "Core.h"
 #include "SceneManager.h"
-#include "Preprocessor.h"
+//#include "Preprocessor.h"
+#include "simplecpp.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -12,19 +13,19 @@ DEFINE_LOG_HELPERS(_pCore)
 // Render
 /////////////////////////
 
-void Render::_export_shader_to_file(list<string>& text, const string&& file)
-{
-	IFile *pFile;
-	
-	_fsystem->OpenFile(&pFile, file.c_str(), FILE_OPEN_MODE::WRITE);
-
-	for (auto& ll : text)
-	{
-		pFile->Write((uint8 *)ll.c_str(), (uint)ll.size());
-	}
-
-	pFile->CloseAndFree();
-}
+//void Render::_export_shader_to_file(list<string>& text, const string&& file)
+//{
+//	IFile *pFile;
+//	
+//	_fsystem->OpenFile(&pFile, file.c_str(), FILE_OPEN_MODE::WRITE);
+//
+//	for (auto& ll : text)
+//	{
+//		pFile->Write((uint8 *)ll.c_str(), (uint)ll.size());
+//	}
+//
+//	pFile->CloseAndFree();
+//}
 
 IShader* Render::_get_shader(const ShaderRequirement &req)
 {
@@ -39,57 +40,115 @@ IShader* Render::_get_shader(const ShaderRequirement &req)
 	}
 	else
 	{
-		const auto process_shader = [&](const char *&ppTextOut, const char *ppTextIn, const string&& fileName, int type) -> void
+		const auto process_shader = [&](const char *&ppTextOut, const char *ppTextIn, const string& fileNameIn, const string&& fileNameOut, int type) -> void
 		{
-			const char **textOut;
-			int numLinesOut;
-			split_by_eol(textOut, numLinesOut, ppTextIn);
-			list<string> lines = make_lines_list(textOut);
-			delete_char_pp(textOut);
-
-			list<string> lines_lang; 
-			if (is_opengl())
-				lines_lang = get_file_content("language_gl.h");
-			else
-				lines_lang = get_file_content("language_dx11.h");
-			
-			lines.insert(lines.begin(), lines_lang.begin(), lines_lang.end());
-
-			Preprocessor proc;
-			if (is_opengl())
-				proc.SetDefine("ENG_OPENGL");
-			else
-				proc.SetDefine("ENG_DIRECTX11");
-			if (type == 0)
-				proc.SetDefine("ENG_SHADER_VERTEX");
-			else if (type == 1)
-				proc.SetDefine("ENG_SHADER_PIXEL");
-			else if (type == 2)
-				proc.SetDefine("ENG_SHADER_GEOMETRY");
-			if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) proc.SetDefine("ENG_INPUT_NORMAL");
-			if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) proc.SetDefine("ENG_INPUT_TEXCOORD");
-			if ((int)(req.attributes & INPUT_ATTRUBUTE::COLOR)) proc.SetDefine("ENG_INPUT_COLOR");
-			if (req.alphaTest) proc.SetDefine("ENG_ALPHA_TEST");
-
-			proc.Run(lines);
+			//const char **textOut;
+			//int numLinesOut;
+			//split_by_eol(textOut, numLinesOut, ppTextIn);
+			//list<string> lines = make_lines_list(textOut);
+			//delete_char_pp(textOut);
+			//
+			//list<string> lines_lang; 
+			//if (is_opengl())
+			//	lines_lang = get_file_content("language_gl.h");
+			//else
+			//	lines_lang = get_file_content("language_dx11.h");
+			//
+			//lines.insert(lines.begin(), lines_lang.begin(), lines_lang.end());
+			//
+			//Preprocessor proc;
+			//if (is_opengl())
+			//	proc.SetDefine("ENG_OPENGL");
+			//else
+			//	proc.SetDefine("ENG_DIRECTX11");
+			//if (type == 0)
+			//	proc.SetDefine("ENG_SHADER_VERTEX");
+			//else if (type == 1)
+			//	proc.SetDefine("ENG_SHADER_PIXEL");
+			//else if (type == 2)
+			//	proc.SetDefine("ENG_SHADER_GEOMETRY");
+			//if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) proc.SetDefine("ENG_INPUT_NORMAL");
+			//if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) proc.SetDefine("ENG_INPUT_TEXCOORD");
+			//if ((int)(req.attributes & INPUT_ATTRUBUTE::COLOR)) proc.SetDefine("ENG_INPUT_COLOR");
+			//if (req.alphaTest) proc.SetDefine("ENG_ALPHA_TEST");
+			//
+			//proc.Run(lines);
 
 			// save to file
 			//_export_shader_to_file(lines, std::forward<const string>(fileName));
 			//LOG_FORMATTED("Render::_get_shader(): shader exported to \"%s\"", fileName.c_str());
 
-			ppTextOut = make_char_p(lines);
+			//ppTextOut = make_char_p(lines);
+
+			simplecpp::DUI dui;
+
+			if (is_opengl())
+				dui.defines.push_back("ENG_OPENGL");
+			else
+				dui.defines.push_back("ENG_DIRECTX11");
+
+			if (type == 0)
+				dui.defines.push_back("ENG_SHADER_VERTEX");
+			else if (type == 1)
+				dui.defines.push_back("ENG_SHADER_PIXEL");
+			else if (type == 2)
+				dui.defines.push_back("ENG_SHADER_GEOMETRY");
+
+			if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) dui.defines.push_back("ENG_INPUT_NORMAL");
+			if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) dui.defines.push_back("ENG_INPUT_TEXCOORD");
+			if ((int)(req.attributes & INPUT_ATTRUBUTE::COLOR)) dui.defines.push_back("ENG_INPUT_COLOR");
+			if (req.alphaTest) dui.defines.push_back("ENG_ALPHA_TEST");
+
+			// TODO: move to Common.h or filesystem
+			const char *pString;
+			_pCore->GetInstalledDir(&pString);
+			string installedDir = string(pString);
+			string fullPath = installedDir + '\\' + SHADER_DIR + '\\' + fileNameIn;
+
+			simplecpp::OutputList outputList;
+			std::vector<std::string> files;
+			string textIn = ppTextIn;
+			std::stringstream f(textIn);
+			std::map<std::string, simplecpp::TokenList*> included;
+
+			simplecpp::TokenList rawtokens(f, files, fullPath, &outputList);
+
+			simplecpp::TokenList outputTokens(files);
+
+			simplecpp::preprocess(outputTokens, rawtokens, files, included, dui, &outputList);
+			const string out = outputTokens.stringify();
+			auto size = out.size();
+
+			if (is_opengl())
+				size += 13;
+
+			char *tmp = new char[size + 1];
+			if (is_opengl())
+			{
+				strncpy(tmp + 0, "#version 420\n", 13);
+				strncpy(tmp + 13, out.c_str(), size - 13);
+			} else
+				strncpy(tmp, out.c_str(), size);
+
+			tmp[size] = '\0';
+
+			ppTextOut = tmp;
 		};
 
-		const char *vert, *frag;
-		const char *vertOut, *fragOut; 
+		const char *text;
+		_standardShader->GetText(&text);
 
-		_standardShader->GetVert(&vert);
-		_standardShader->GetFrag(&frag);
+		const char *pFileIn;
+		_standardShader->GetFile(&pFileIn);
+		string fileIn = pFileIn;
 
-		process_shader(vertOut, vert, "out_v.shader", 0);
-		process_shader(fragOut, frag, "out_f.shader", 1);
+		const char *textVertOut; 
+		const char *textFragOut;
 
-		bool compiled = SUCCEEDED(_pResMan->CreateShader(&pShader, vertOut, nullptr, fragOut)) && pShader != nullptr;
+		process_shader(textVertOut, text, fileIn, "out_v.shader", 0);
+		process_shader(textFragOut, text, fileIn, "out_f.shader", 1);
+
+		bool compiled = SUCCEEDED(_pResMan->CreateShader(&pShader, textVertOut, nullptr, textFragOut)) && pShader != nullptr;
 
 		if (!compiled)
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
@@ -153,7 +212,7 @@ Render::~Render()
 void Render::Init()
 {
 	IShaderText *st;
-	_pResMan->LoadShaderText(&st, "mesh_vertex", nullptr, "mesh_fragment");
+	_pResMan->LoadShaderText(&st, "mesh.shader");
 	_standardShader =  WRL::ComPtr<IShaderText>(st);
 
 	IMesh *mesh;
