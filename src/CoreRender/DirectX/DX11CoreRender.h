@@ -385,8 +385,8 @@ public:
 
 	API SetShader(const ICoreShader *pShader) override;
 	API SetMesh(const ICoreMesh* mesh) override;
-	API SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot) override;
-	API SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData) override;
+	API SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot) override;
+	API SetConstantBufferData(ICoreConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(ICoreMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint w, uint h) override;

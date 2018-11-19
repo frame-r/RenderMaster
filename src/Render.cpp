@@ -237,8 +237,8 @@ void Render::RenderFrame(const ICamera *pCamera)
 		ICoreConstantBuffer *coreCB;
 		_everyFrameParameters->GetCoreBuffer(&coreCB);
 
-		_pCoreRender->SetUniformBufferData(coreCB, &params.main_color);
-		_pCoreRender->SetUniformBuffer(coreCB, 0);
+		_pCoreRender->SetConstantBufferData(coreCB, &params.main_color);
+		_pCoreRender->SetConstantBuffer(coreCB, 0);
 
 		_pCoreRender->Draw(renderMesh.mesh);
 
@@ -257,7 +257,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 		//	params.main_color = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 		//	_pCoreRender->SetUniform(everyFrameParameters, &params.main_color);
-		//	_pCoreRender->SetUniformBuffer(everyFrameParameters, 0);
+		//	_pCoreRender->SetConstantBuffer(everyFrameParameters, 0);
 
 
 		//	_pCoreRender->SetDepthState(true);

@@ -400,8 +400,8 @@ namespace RENDER_MASTER
 
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
-		virtual API SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot) = 0;
-		virtual API SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData) = 0;
+		virtual API SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot) = 0;
+		virtual API SetConstantBufferData(ICoreConstantBuffer *pBuffer, const void *pData) = 0;
 		virtual API Draw(ICoreMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;

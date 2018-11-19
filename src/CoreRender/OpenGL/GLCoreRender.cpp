@@ -647,9 +647,9 @@ API GLCoreRender::SetMesh(const ICoreMesh* mesh)
 	return S_OK;
 }
 
-API GLCoreRender::SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot)
+API GLCoreRender::SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot)
 {
-	assert(_currentState.shader_program_id != 0 && "GLCoreRender::SetUniformBuffer(): shader not set");
+	assert(_currentState.shader_program_id != 0 && "GLCoreRender::SetConstantBuffer(): shader not set");
 
 	CHECK_GL_ERRORS();
 
@@ -667,7 +667,7 @@ API GLCoreRender::SetUniformBuffer(const ICoreConstantBuffer *pBuffer, uint slot
 	return S_OK;
 }
 
-API GLCoreRender::SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void *pData)
+API GLCoreRender::SetConstantBufferData(ICoreConstantBuffer *pBuffer, const void *pData)
 {
 	CHECK_GL_ERRORS();
 
@@ -685,7 +685,7 @@ API GLCoreRender::SetUniformBufferData(ICoreConstantBuffer *pBuffer, const void 
 
 API GLCoreRender::Draw(ICoreMesh *mesh)
 {
-	assert(_currentState.shader_program_id != 0 && "GLCoreRender::SetUniformBuffer(): shader not set");
+	assert(_currentState.shader_program_id != 0 && "GLCoreRender::SetConstantBuffer(): shader not set");
 
 	CHECK_GL_ERRORS();
 

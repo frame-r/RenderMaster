@@ -85,7 +85,7 @@ END_STRUCT
 
 		#ifdef ENG_INPUT_TEXCOORD
 			vec4 tex = TEXTURE(texture0, GET_ATRRIBUTE(TexCoord));
-			tex = pow(tex, vec4(2.2f, 2.2f, 2.2f, 2.2f));
+			tex = pow(tex, vec4(0.45f, 0.45f, 0.45f, 1.0f));
 			diffuse = diffuse * tex;
 		#endif
 
@@ -100,6 +100,7 @@ END_STRUCT
 
 		OUT_COLOR = diffuse + ambient;
 		
+		// make SRGB corection later in posteffect
 		//OUT_COLOR = pow(OUT_COLOR, vec4(2.2f, 2.2f, 2.2f, 2.2f));
 		
 	MAIN_FRAG_END
