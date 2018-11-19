@@ -97,6 +97,11 @@
   <ItemGroup>
     <None Include="..\src\Shaders\mesh.shader" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="yaml-cpp\yaml-cpp.vcxproj">
+      <Project>{85a87a52-3af1-359c-9e62-cab1b86d8355}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A2F95159-CE4F-44B5-B6EC-96C5D392D34D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
