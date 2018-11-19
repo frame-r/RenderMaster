@@ -114,8 +114,15 @@ LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 LRESULT CALLBACK Console::_s_WndEditProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	Console *this_ptr = (Console *)GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
-	
+
 	wchar_t wtmp[300];
+
+	auto set_cursor_at_the_end = [=]()
+	{
+		DWORD TextSize;
+		TextSize=GetWindowTextLength(this_ptr->_hEdit);
+		SendMessage(this_ptr->_hEdit,EM_SETSEL,TextSize,TextSize);
+	};	
 
 	switch (message) 
 	{
@@ -128,12 +135,49 @@ LRESULT CALLBACK Console::_s_WndEditProc(HWND hWnd, UINT message, WPARAM wParam,
 				SetWindowText(this_ptr->_hEdit, L"");
 				break;
 
-			case 38: //up			
-				//this_ptr->_pConWindowEvent(this_ptr->_pConsole, CWE_PREVIOUS_COMMAND, "");
+			case 38: //up
+			{
+				if (this_ptr->_completion_cmd_idx <= 0)
+					break;
+
+				if (this_ptr->_completion_cmd_idx == this_ptr->_completion_commands.size())
+				{
+					GetWindowText(this_ptr->_hEdit, wtmp, 300);
+					this_ptr->_typed_command = NativeToUTF8(wtmp);
+				}
+
+				this_ptr->_completion_cmd_idx--;
+
+				string mem_cmd = this_ptr->_completion_commands[this_ptr->_completion_cmd_idx];
+				mstring wmem_cmd = UTF8ToNative(mem_cmd);
+				SetWindowText(this_ptr->_hEdit, wmem_cmd.c_str());
+				set_cursor_at_the_end();
+			}
 				break;
 
-			case 40: //down				
-				//this_ptr->_pConWindowEvent(this_ptr->_pConsole, CWE_NEXT_COMMAND, "");
+			case 40: // down
+			{
+				if (this_ptr->_completion_cmd_idx > (int) (this_ptr->_completion_commands.size() - 1) || this_ptr->_completion_commands.empty())				
+					break;
+
+				if (this_ptr->_completion_cmd_idx == this_ptr->_completion_commands.size() - 1)
+				{
+					wstring wtyped = UTF8ToNative(this_ptr->_typed_command);
+					this_ptr->_typed_command = "";
+					SetWindowText(this_ptr->_hEdit, wtyped.c_str());
+					set_cursor_at_the_end();
+
+					
+				} else
+				{
+					string mem_cmd = this_ptr->_completion_commands[this_ptr->_completion_cmd_idx + 1];
+					mstring wmem_cmd = UTF8ToNative(mem_cmd);
+					SetWindowText(this_ptr->_hEdit, wmem_cmd.c_str());
+					set_cursor_at_the_end();
+				}
+
+				this_ptr->_completion_cmd_idx++;
+			}
 				break;
 		}
 		break;
@@ -160,6 +204,7 @@ LRESULT CALLBACK Console::_s_WndEditProc(HWND hWnd, UINT message, WPARAM wParam,
 					string tmp = NativeToUTF8(wtmp);
 
 					this_ptr->_execute_command(tmp);
+					this_ptr->_typed_command = "";
 				
 					break;
 				}
@@ -351,6 +396,15 @@ API Console::ExecuteCommand(const char *name, const char **arguments, uint argum
 {
 	auto it = _commands.find(string(name));
 
+	string commandFullText = string(name);
+	if (argumentsNum > 1)
+	{
+		for (size_t i = 1; i < argumentsNum; i++)
+			commandFullText += ' ' + string(*(arguments+i));
+	}
+	_completion_commands.push_back(commandFullText);
+	_completion_cmd_idx = (int)_completion_commands.size();
+
 	if (it == _commands.end())
 	{
 		LOG_WARNING_FORMATTED("Unknown command \'%s\'", name);
@@ -360,6 +414,7 @@ API Console::ExecuteCommand(const char *name, const char **arguments, uint argum
 	std::function<API(const char** arguments, uint argumentsNum)> f = it->second;
 
 	f(arguments, argumentsNum);
+
 
 	return S_OK;
 }

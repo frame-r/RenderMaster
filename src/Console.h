@@ -18,6 +18,10 @@ class Console : public IConsole
 	unique_ptr<LogEvent> _evLog{new LogEvent};
 	string fullLogPath;
 
+	string _typed_command; //  save command that user types
+	int _completion_cmd_idx = -1; // index of _completion_commands 0...vector.size()
+	std::vector<string> _completion_commands;
+
 	std::map<string, std::function<API(const char** arguments, uint argumentsNum)>> _commands;
 
 	void _print_help();
