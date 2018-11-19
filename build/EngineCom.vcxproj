@@ -48,8 +48,8 @@
     <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\Shader.h" />
     <ClInclude Include="..\src\Shaders\language.h" />
-    <ClInclude Include="..\src\shaders\language_dx11.h" />
-    <ClInclude Include="..\src\shaders\language_gl.h" />
+    <ClInclude Include="..\src\Shaders\language_dx11.h" />
+    <ClInclude Include="..\src\Shaders\language_gl.h" />
     <ClInclude Include="..\src\ShaderText.h" />
     <ClInclude Include="..\src\simplecpp.h" />
     <ClInclude Include="..\src\Texture.h" />

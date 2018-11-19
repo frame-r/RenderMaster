@@ -23,10 +23,10 @@
     </ClInclude>
     <ClInclude Include="..\src\Input.h" />
     <ClInclude Include="..\src\tree.h" />
-    <ClInclude Include="..\src\shaders\language_gl.h">
+    <ClInclude Include="..\src\Shaders\language_gl.h">
       <Filter>Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\shaders\language_dx11.h">
+    <ClInclude Include="..\src\Shaders\language_dx11.h">
       <Filter>Shaders</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pch.h" />
