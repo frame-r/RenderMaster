@@ -8,18 +8,19 @@
 
 class ResourceManager final : public IResourceManager
 {
+	// Rintime resources
+	// Not maps to any file
 	std::unordered_set<ITexture*> _runtime_textures;
-	std::unordered_map<string, ITexture*> _shared_textures;
-
 	std::unordered_set<IMesh*> _runtime_meshes;
-	std::unordered_map<string, IMesh*> _shared_meshes;
-
 	std::unordered_set<IGameObject*> _runtime_gameobjects;
-
-	std::unordered_map<string, IShaderText*> _shared_shadertexts;
-
 	std::unordered_set<IConstantBuffer*> _runtime_constntbuffer;
 	std::unordered_set<IShader*> _runtime_shaders;
+
+	// Shared resources
+	// Maps "file name" -> "pointer"
+	std::unordered_map<string, ITexture*> _shared_textures;	
+	std::unordered_map<string, IMesh*> _shared_meshes;
+	std::unordered_map<string, IShaderText*> _shared_shadertexts;		
 		
 	ICoreRender *_pCoreRender{nullptr};
 	IFileSystem *_pFilesystem{nullptr};
