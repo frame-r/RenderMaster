@@ -8,6 +8,40 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+#define C_WND_EDIT_HEIGHT 16
+#define C_WND_LISTBOX_HEIGHT 100
+
+void Console::_print_help()
+{
+	string txt;
+	for (auto &cmd : _commands)
+		txt += cmd.first + '\n';
+
+	LOG("Registered commands:");
+	LOG(txt.c_str());
+}
+
+void Console::_execute_command(const string& fullText)
+{
+	LOG(fullText.c_str());
+
+	vector<string> paths = split(string(fullText), ' ');
+	if (paths.size() <= 1)
+	{
+		string &name = paths[0];
+		ExecuteCommand(name.c_str(), nullptr, 0);
+	}
+	else
+	{
+		string &name = paths[0];
+		int arguments = (uint)paths.size();
+		const char **args = make_char_pp<vector<string>>(paths);
+
+		ExecuteCommand(name.c_str(), args, arguments);
+
+		delete_char_pp(args);
+	}
+}
 
 LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -40,6 +74,9 @@ LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		RECT rect;
 		GetClientRect(this_ptr->_hWnd, &rect);
 		MoveWindow(this_ptr->_hMemo, 0, 0, rect.right, rect.bottom - 0, true);
+		MoveWindow(this_ptr->_hMemo, 0, 0, rect.right, rect.bottom - C_WND_EDIT_HEIGHT, true);
+		MoveWindow(this_ptr->_hEdit, 0, rect.bottom - C_WND_EDIT_HEIGHT, rect.right, C_WND_EDIT_HEIGHT, true);
+		//MoveWindow(this_ptr->_hListBox, 0, rect.bottom - C_WND_LISTBOX_HEIGHT - C_WND_EDIT_HEIGHT, rect.right, C_WND_LISTBOX_HEIGHT, true);
 	}
 	break;
 
@@ -72,6 +109,77 @@ LRESULT CALLBACK Console::_s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
 	return 0;
 
+}
+
+LRESULT CALLBACK Console::_s_WndEditProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	Console *this_ptr = (Console *)GetWindowLongPtr(GetParent(hWnd), GWLP_USERDATA);
+	
+	wchar_t wtmp[300];
+
+	switch (message) 
+	{
+	case WM_KEYUP:
+		switch (wParam)
+		{
+			case 192: //tilda
+				if (this_ptr->_is_visible)
+					this_ptr->Hide();
+				SetWindowText(this_ptr->_hEdit, L"");
+				break;
+
+			case 38: //up			
+				//this_ptr->_pConWindowEvent(this_ptr->_pConsole, CWE_PREVIOUS_COMMAND, "");
+				break;
+
+			case 40: //down				
+				//this_ptr->_pConWindowEvent(this_ptr->_pConsole, CWE_NEXT_COMMAND, "");
+				break;
+		}
+		break;
+
+	case WM_CHAR:
+		if (wParam == 96 /*tilda*/)
+			break;
+
+		if (GetWindowTextLength(this_ptr->_hEdit) > 0)
+		{
+			if (wParam == 9 /*tab*/)
+			{
+				GetWindowText(this_ptr->_hEdit, wtmp, 300);
+				//this_ptr->_pConWindowEvent(this_ptr->_pConsole, CWE_COMPLETE_COMMAND, tmp);
+
+				break;
+			}
+			else
+				if (wParam == 13 /*return*/)
+				{
+					GetWindowText(this_ptr->_hEdit, wtmp, 300);
+					SetWindowText(this_ptr->_hEdit, NULL);
+
+					string tmp = NativeToUTF8(wtmp);
+
+					this_ptr->_execute_command(tmp);
+				
+					break;
+				}
+		}
+		goto callDefWndPros;
+
+	case WM_KEYDOWN:
+		if (wParam == 38 /*up*/ || wParam == 40 /*down*/)
+			break;
+		else
+			goto callDefWndPros;
+
+	default:
+		goto callDefWndPros;
+	}
+
+	return 0;
+
+callDefWndPros:
+	return CallWindowProc((WNDPROC)this_ptr->_pOldEditProc, hWnd, message, wParam, lParam);
 }
 
 WNDPROC Console::oldEditWndProc;
@@ -164,15 +272,16 @@ void Console::Init(bool createWindow)
 	_hFont = CreateFontIndirect(&LF);
 
 	SendMessage(_hMemo, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
-
-	//_hEdit = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 0, 0, 0, 0, _hWnd, 0, 0, NULL);
-	//_pOldEditProc = (void *)SetWindowLongPtr(_hEdit, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)CConsoleWindow::_s_WndEditProc);
-
-	//SendMessage(_hEdit, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
-
 	SendMessage(_hMemo, EM_LIMITTEXT, 200000, 0);
 
-	//ResetSizeAndPos();
+	_hEdit = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 0, 0, 0, 0, _hWnd, 0, 0, NULL);	
+	_pOldEditProc = (void *)SetWindowLongPtr(_hEdit, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)Console::_s_WndEditProc);
+	SendMessage(_hEdit, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
+
+	//_hListBox = CreateWindow(L"LISTBOX", L"", WS_CHILD | WS_VISIBLE, 0, 400, 400, 400, _hMemo, 0, 0, NULL);
+	//
+	//SendMessage(_hListBox, LB_ADDSTRING, 0, (LPARAM)(LPSTR)L"hello");
+	//SendMessage(_hListBox, LB_ADDSTRING, 0, (LPARAM)(LPSTR)L"hello");
 
 	Show();
 }
@@ -243,8 +352,11 @@ API Console::ExecuteCommand(const char *name, const char **arguments, uint argum
 	auto it = _commands.find(string(name));
 
 	if (it == _commands.end())
+	{
+		LOG_WARNING_FORMATTED("Unknown command \'%s\'", name);
+		_print_help();
 		return S_OK;
-
+	}
 	std::function<API(const char** arguments, uint argumentsNum)> f = it->second;
 
 	f(arguments, argumentsNum);

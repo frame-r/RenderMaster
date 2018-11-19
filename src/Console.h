@@ -7,18 +7,25 @@ class Console : public IConsole
 	HWND _hWnd  = 0;
 	HWND _hMemo = 0;
 	HWND _hEdit = 0;
+	HWND _hListBox = 0;
+
 	HFONT _hFont;
 	int	_iX, _iY, _iWidth, _iHeight;
 	int	_prev_line_size;
 	int _is_visible = 0;
 	static WNDPROC oldEditWndProc;
+	void *_pOldEditProc;
 	unique_ptr<LogEvent> _evLog{new LogEvent};
 	string fullLogPath;
 
 	std::map<string, std::function<API(const char** arguments, uint argumentsNum)>> _commands;
 
+	void _print_help();
+	void _execute_command(const string& fullText);
+
 	static LRESULT CALLBACK _s_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK _s_EditProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK _s_WndEditProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
 

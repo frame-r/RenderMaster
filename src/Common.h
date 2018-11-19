@@ -135,7 +135,26 @@ string make_absolute(const char *pRelDataPath, const char *pWorkingPath);
 
 // lines manipulation
 std::list<string> make_lines_list(const char **text);
-const char** make_char_pp(const std::list<string>& lines);
+
+template<class T>
+const char** make_char_pp(const T& lines)
+{
+	char **ret = new char*[lines.size() + 1];
+
+	memset(ret, 0, (lines.size() + 1) * sizeof(char*));
+
+	int i = 0;
+	for (auto it = lines.begin(); it != lines.end(); it++)
+	{
+		ret[i] = new char[it->size() + 1];
+		strncpy(ret[i], it->c_str(), it->size());
+		ret[i][it->size()] = '\0';
+		i++;
+	}
+
+	return const_cast<const char**>(ret);
+}
+
 const char* make_char_p(const std::list<string>& lines);
 void split_by_eol(const char **&text, int &num_lines, const string& str);
 void delete_char_pp(const char **pText);
