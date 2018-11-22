@@ -65,9 +65,6 @@
     <ClInclude Include="..\src\ConstantBuffer.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ShaderText.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Shader.h">
       <Filter>Graphics</Filter>
     </ClInclude>
@@ -80,6 +77,9 @@
     <ClInclude Include="..\src\simplecpp.h" />
     <ClInclude Include="..\src\Shaders\language.h">
       <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ShaderFile.h">
+      <Filter>Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -132,9 +132,6 @@
     <ClCompile Include="..\src\ConstantBuffer.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ShaderText.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Shader.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
@@ -145,6 +142,9 @@
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\simplecpp.cpp" />
+    <ClCompile Include="..\src\ShaderFile.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CoreRender">

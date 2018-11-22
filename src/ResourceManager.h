@@ -9,7 +9,7 @@
 class ResourceManager final : public IResourceManager
 {
 	// Rintime resources
-	// Not maps to any file
+	// No files associated with these resources
 	std::unordered_set<ITexture*> _runtime_textures;
 	std::unordered_set<IMesh*> _runtime_meshes;
 	std::unordered_set<IGameObject*> _runtime_gameobjects;
@@ -20,10 +20,10 @@ class ResourceManager final : public IResourceManager
 	// Maps "file name" -> "pointer"
 	std::unordered_map<string, ITexture*> _shared_textures;	
 	std::unordered_map<string, IMesh*> _shared_meshes;
-	std::unordered_map<string, IShaderText*> _shared_shadertexts;		
+	std::unordered_map<string, IShaderFile*> _shared_shadertexts;		
 		
-	ICoreRender *_pCoreRender{nullptr};
-	IFileSystem *_pFilesystem{nullptr};
+	ICoreRender *_pCoreRender = nullptr;
+	IFileSystem *_pFilesystem = nullptr;
 
 	CRITICAL_SECTION _cs{};
 
@@ -58,18 +58,18 @@ public:
 	void RemoveRuntimeTexture(ITexture *tex) { _runtime_textures.erase(tex); }
 	void RemoveSharedTexture(const string& file) { _shared_textures.erase(file); }
 	void RemoveRuntimeGameObject(IGameObject *g) { _runtime_gameobjects.erase(g); }
-	void RemoveSharedShaderText(const string& file) { _shared_shadertexts.erase(file); }
+	void RemoveSharedShaderFile(const string& file) { _shared_shadertexts.erase(file); }
 	void RemoveRuntimeConstantBuffer(IConstantBuffer *cb) { _runtime_constntbuffer.erase(cb); }
 	void RemoveRuntimeShader(IShader *s) { _runtime_shaders.erase(s); }
 
-	void ReloadShaderText(IShaderText *shaderText);
+	void ReloadShaderFile(IShaderFile *shaderText);
 
 	void Init();
 
 	API LoadModel(OUT IModel **pModel, const char *pModelPath) override;
 	API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) override;
-	API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) override;
-	API LoadShaderText(OUT IShaderText **pShader, const char *pShaderName) override;
+	API LoadTexture(OUT ITexture **pTexture, const char *pTexturePath, TEXTURE_CREATE_FLAGS flags) override;
+	API LoadShaderFile(OUT IShaderFile **pShader, const char *pShaderName) override;
 
 	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
@@ -79,6 +79,7 @@ public:
 	API CreateCamera(OUT ICamera **pCamera) override;
 
 	API Free() override;
+
 	API GetName(OUT const char **pTxt) override;
 };
 

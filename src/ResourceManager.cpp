@@ -6,7 +6,7 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "ShaderText.h"
+#include "ShaderFile.h"
 #include "ConstantBuffer.h"
 #include "Camera.h"
 #include "Console.h"
@@ -380,7 +380,7 @@ ResourceManager::~ResourceManager()
 {
 }
 
-void ResourceManager::ReloadShaderText(IShaderText *shaderText)
+void ResourceManager::ReloadShaderFile(IShaderFile *shaderText)
 {
 	const char *pShaderName;
 	shaderText->GetFile(&pShaderName);
@@ -444,7 +444,7 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	
 	PRINT_SHARED_RESOURCES("Shared Meshes:", _shared_meshes, IMesh);
 	PRINT_SHARED_RESOURCES("Shared Textures:", _shared_textures, ITexture);
-	PRINT_SHARED_RESOURCES("Shared ShaderTexts:", _shared_shadertexts, IShaderText);
+	PRINT_SHARED_RESOURCES("Shared ShaderFiles:", _shared_shadertexts, IShaderFile);
 
 	return S_OK;
 }
@@ -809,15 +809,15 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	return S_OK;
 }
 
-API ResourceManager::LoadShaderText(OUT IShaderText **pShader, const char *pShaderName)
+API ResourceManager::LoadShaderFile(OUT IShaderFile **pShader, const char *pShaderName)
 {
 	const char *t = load_shader(pShaderName);
 
-	DEBUG_LOG_FORMATTED("ResourceManager::LoadShaderText() new ShaderText");
+	DEBUG_LOG_FORMATTED("ResourceManager::LoadShaderFile() new ShaderFile");
 
 	string paths = pShaderName;
 
-	ShaderText *text = new ShaderText(t, paths);
+	ShaderFile *text = new ShaderFile(t, paths);
 	_shared_shadertexts.emplace(paths, text);
 
 	*pShader = text;

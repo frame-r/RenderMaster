@@ -50,7 +50,7 @@
     <ClInclude Include="..\src\Shaders\language.h" />
     <ClInclude Include="..\src\Shaders\language_dx11.h" />
     <ClInclude Include="..\src\Shaders\language_gl.h" />
-    <ClInclude Include="..\src\ShaderText.h" />
+    <ClInclude Include="..\src\ShaderFile.h" />
     <ClInclude Include="..\src\simplecpp.h" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\Tree.h" />
@@ -90,7 +90,7 @@
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
     <ClCompile Include="..\src\Shader.cpp" />
-    <ClCompile Include="..\src\ShaderText.cpp" />
+    <ClCompile Include="..\src\ShaderFile.cpp" />
     <ClCompile Include="..\src\simplecpp.cpp" />
     <ClCompile Include="..\src\Texture.cpp" />
   </ItemGroup>
@@ -106,7 +106,7 @@
     <ProjectGuid>{A2F95159-CE4F-44B5-B6EC-96C5D392D34D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>EngineCom</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <ProjectName>Engine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

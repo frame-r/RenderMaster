@@ -160,9 +160,9 @@ Render::~Render()
 
 void Render::Init()
 {
-	IShaderText *st;
-	_pResMan->LoadShaderText(&st, "mesh.shader");
-	_standardShader =  WRL::ComPtr<IShaderText>(st);
+	IShaderFile *st;
+	_pResMan->LoadShaderFile(&st, "mesh.shader");
+	_standardShader =  WRL::ComPtr<IShaderFile>(st);
 
 	IMesh *mesh;
 

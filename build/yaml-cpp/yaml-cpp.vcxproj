@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{85A87A52-3AF1-359C-9E62-CAB1B86D8355}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>x64</Platform>
     <ProjectName>yaml-cpp shared md</ProjectName>
@@ -96,7 +96,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR="Debug";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;YAML_CPP_NO_CONTRIB;CMAKE_INTDIR="Debug";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
@@ -138,7 +138,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR="Release";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;CMAKE_INTDIR="Release";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <DebugInformationFormat>
       </DebugInformationFormat>
@@ -182,7 +182,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR="MinSizeRel";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;CMAKE_INTDIR="MinSizeRel";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <DebugInformationFormat>
       </DebugInformationFormat>
@@ -227,7 +227,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR="RelWithDebInfo";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;CMAKE_INTDIR="RelWithDebInfo";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
