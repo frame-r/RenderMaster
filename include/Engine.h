@@ -1,31 +1,17 @@
 #pragma once
 
-#include "VectorMath.h"
-
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #define INITGUID
-#include <Unknwn.h>
 
 // comment this to build without FBX SDK
 #define USE_FBX
 
-#define APIRESULT HRESULT
-#define API HRESULT __stdcall 
+#include "VectorMath.h"
 
-typedef unsigned int uint;
-typedef unsigned char uint8;
-typedef int uint32;
-typedef HWND WindowHandle;
+#include <windows.h>
+#include <Unknwn.h>
 
-// native strings typedefs
-//
-#ifdef _WIN32
-typedef wchar_t mchar;
-#else
-typedef char mchar;
-#endif
+#define API HRESULT __stdcall
 
 #define DEFINE_ENUM_OPERATORS(ENUM_NAME) \
 inline ENUM_NAME operator|(ENUM_NAME a, ENUM_NAME b) \
@@ -50,6 +36,18 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 	virtual API GetReferences(int *refsOut) = 0; \
 	virtual API IsShared(int *isShared) = 0; \
 	virtual API GetFile(OUT const char **file) = 0;
+
+
+typedef unsigned int uint;
+typedef unsigned char uint8;
+typedef int uint32;
+typedef HWND WindowHandle;
+#ifdef _WIN32
+	typedef wchar_t mchar;
+#else
+	typedef char mchar;
+#endif
+
 
 namespace RENDER_MASTER 
 {
