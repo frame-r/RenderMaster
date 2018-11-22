@@ -439,12 +439,12 @@ namespace RENDER_MASTER
 	// All values specified in local game object coordinates
 	struct AABB
 	{
-		float maxX = 0.0f;
-		float minX = 0.0f;
-		float maxY = 0.0f;
-		float minY = 0.0f;
-		float maxZ = 0.0f;
-		float minZ = 0.0f;
+		float maxX;
+		float minX;
+		float maxY;
+		float minY;
+		float maxZ;
+		float minZ;
 	};
 
 	//////////////////////
