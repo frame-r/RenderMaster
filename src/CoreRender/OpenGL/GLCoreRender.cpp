@@ -800,21 +800,21 @@ API GLCoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readPi
 	glTex->GetWidth(&w);
 	glTex->GetHeight(&h);
 
-	int pixel_bytes = byte_per_pixel(format);
-	int all_bytes = w * h * pixel_bytes;
+	int pixelBytes = byte_per_pixel(format);
+	int allBytes = w * h * pixelBytes;
 
-	uint8 *p = new uint8[all_bytes];
+	uint8 *p = new uint8[allBytes];
 
 	// Inefficient! Don't use every frame because We send all texture
-	glGetnTexImage(GL_TEXTURE_2D, 0, sourceFormat, sourceType, all_bytes, p);
+	glGetnTexImage(GL_TEXTURE_2D, 0, sourceFormat, sourceType, allBytes, p);
 
 	// Reverese by Y for for conformity directx
 	y = h - y;
 
-	uint8 *p_read  = p + (y * w + x) * pixel_bytes; 
+	uint8 *p_read  = p + (y * w + x) * pixelBytes; 
 
-	memcpy(out, p_read, pixel_bytes);
-	*readPixel = pixel_bytes;
+	memcpy(out, p_read, pixelBytes);
+	*readPixel = pixelBytes;
 
 	delete[] p;
 
@@ -984,9 +984,9 @@ API GLCoreRender::Clear()
 
 GLUniformBuffer::~GLUniformBuffer()
 {
-	if (_UBO)
-		glDeleteBuffers(1, &_UBO);
-	_UBO = 0;
+	if (_ID)
+		glDeleteBuffers(1, &_ID);
+	_ID = 0;
 }
 
 GLRenderTarget::GLRenderTarget(GLuint idIn) : _ID(idIn)

@@ -4,14 +4,14 @@
 
 class GLUniformBuffer final : public ICoreConstantBuffer
 {
-	GLuint _UBO = 0u;
+	GLuint _ID = 0u;
 	uint _size = 0u;
 
 public:
-	GLUniformBuffer(GLuint ID, uint size) : _UBO(ID), _size(size) {}
+	GLUniformBuffer(GLuint ID, uint size) : _ID(ID), _size(size) {}
 	virtual ~GLUniformBuffer(); 
 
-	inline GLuint ID() const { return _UBO; }
+	inline GLuint ID() const { return _ID; }
 	inline uint size() const { return _size; }
 };
 

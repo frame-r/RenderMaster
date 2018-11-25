@@ -9,7 +9,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 	if (GetCore(&pCore))
 	{
-		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::OPENGL45 | INIT_FLAGS::MSAA_8X, L"resources", nullptr)))
+		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::DIRECTX11 | INIT_FLAGS::MSAA_8X, L"resources", nullptr)))
 		{
 			IResourceManager *resMan;
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
@@ -25,13 +25,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 			vec3 p = {11.0f, 0.0f, 0.0f};
 			m2->SetPosition(&p);
 
-
-			//ITexture *tex;
-			//resMan->CreateTexture(&tex, 100, 100, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::FILTER_POINT | TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET);
-
 			pCore->Start(); // Begin main loop
 
-			//tex->Release();
 			pModel->Release();
 			m2->Release();
 

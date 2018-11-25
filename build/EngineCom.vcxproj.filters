@@ -81,17 +81,17 @@
     <ClInclude Include="..\src\Shaders\common.h">
       <Filter>Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Shaders\language.h">
-      <Filter>Shaders\lang</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Shaders\language_dx11.h">
-      <Filter>Shaders\lang</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Shaders\language_gl.h">
-      <Filter>Shaders\lang</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\CoreRender\OpenGL\GLTexture.h">
       <Filter>CoreRender\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\lang\language.h">
+      <Filter>Shaders\lang</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\lang\language_dx11.h">
+      <Filter>Shaders\lang</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\lang\language_gl.h">
+      <Filter>Shaders\lang</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
