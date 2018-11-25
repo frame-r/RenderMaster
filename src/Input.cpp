@@ -17,7 +17,7 @@ DEFINE_LOG_HELPERS(_pCore)
 
 Input* Input::instance{nullptr};
 
-void Input::_update()
+void Input::update()
 {
 	_mouseDeltaPos.x = float(_cursorX) - _oldPos.x;
 	_mouseDeltaPos.y = float(_cursorY) - _oldPos.y;
@@ -90,7 +90,7 @@ Input::Input()
 	if (_pCore->mainWindow())
 		_pCore->mainWindow()->AddMessageCallback(_s_message_callback);
 
-	_pCore->AddUpdateCallback(std::bind(&Input::_update, this));
+	_pCore->AddUpdateCallback(std::bind(&Input::update, this));
 }
 
 Input::~Input()

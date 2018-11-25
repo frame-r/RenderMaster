@@ -10,18 +10,18 @@ class ResourceManager final : public IResourceManager
 {
 	// Rintime resources
 	// No files associated with these resources
-	std::unordered_set<ITexture*> _runtime_textures;
-	std::unordered_set<IMesh*> _runtime_meshes;
-	std::unordered_set<IGameObject*> _runtime_gameobjects;
-	std::unordered_set<IConstantBuffer*> _runtime_constntbuffer;
-	std::unordered_set<IShader*> _runtime_shaders;
-	std::unordered_set<IRenderTarget*> _runtime_render_targets;
+	std::unordered_set<ITexture*> _runtimeTextures;
+	std::unordered_set<IMesh*> _runtimeMeshes;
+	std::unordered_set<IGameObject*> _runtimeGameobjects;
+	std::unordered_set<IConstantBuffer*> _runtimeConstantBuffers;
+	std::unordered_set<IShader*> _runtimeShaders;
+	std::unordered_set<IRenderTarget*> _runtimeRenderTargets;
 
 	// Shared resources
 	// Maps "file name" -> "pointer"
-	std::unordered_map<string, ITexture*> _shared_textures;	
-	std::unordered_map<string, IMesh*> _shared_meshes;
-	std::unordered_map<string, IShaderFile*> _shared_shadertexts;		
+	std::unordered_map<string, ITexture*> _sharedTextures;	
+	std::unordered_map<string, IMesh*> _sharedMeshes;
+	std::unordered_map<string, IShaderFile*> _sharedShaderTexts;		
 		
 	ICoreRender *_pCoreRender = nullptr;
 	IFileSystem *_pFilesystem = nullptr;
@@ -54,15 +54,15 @@ public:
 	ResourceManager();
 	virtual ~ResourceManager();
 
-	void RemoveRuntimeMesh(IMesh *mesh) { _runtime_meshes.erase(mesh); }
-	void RemoveSharedMesh(const string& file) { _shared_meshes.erase(file); }
-	void RemoveRuntimeTexture(ITexture *tex) { _runtime_textures.erase(tex); }
-	void RemoveSharedTexture(const string& file) { _shared_textures.erase(file); }
-	void RemoveRuntimeGameObject(IGameObject *g) { _runtime_gameobjects.erase(g); }
-	void RemoveSharedShaderFile(const string& file) { _shared_shadertexts.erase(file); }
-	void RemoveRuntimeConstantBuffer(IConstantBuffer *cb) { _runtime_constntbuffer.erase(cb); }
-	void RemoveRuntimeShader(IShader *s) { _runtime_shaders.erase(s); }
-	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtime_render_targets.erase(rt); }
+	void RemoveRuntimeMesh(IMesh *mesh) { _runtimeMeshes.erase(mesh); }
+	void RemoveSharedMesh(const string& file) { _sharedMeshes.erase(file); }
+	void RemoveRuntimeTexture(ITexture *tex) { _runtimeTextures.erase(tex); }
+	void RemoveSharedTexture(const string& file) { _sharedTextures.erase(file); }
+	void RemoveRuntimeGameObject(IGameObject *g) { _runtimeGameobjects.erase(g); }
+	void RemoveSharedShaderFile(const string& file) { _sharedShaderTexts.erase(file); }
+	void RemoveRuntimeConstantBuffer(IConstantBuffer *cb) { _runtimeConstantBuffers.erase(cb); }
+	void RemoveRuntimeShader(IShader *s) { _runtimeShaders.erase(s); }
+	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtimeRenderTargets.erase(rt); }
 
 	void ReloadShaderFile(IShaderFile *shaderText);
 

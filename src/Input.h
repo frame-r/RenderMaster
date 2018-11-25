@@ -12,13 +12,10 @@ class Input : public IInput
 	vec2 _oldPos;
 	vec2 _mouseDeltaPos;
 
-
-	void _update();
-
+	void update();
+	void clear_mouse();
 	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
-
-	void clear_mouse();
 
 public:
 

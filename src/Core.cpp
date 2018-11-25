@@ -98,7 +98,7 @@ API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* ext
 	if (createWindow)
 		_pMainWindow->Show();
 
-	_update_callbacks.push_back(std::bind(&Core::_update, this));
+	_updateCallbacks.push_back(std::bind(&Core::_update, this));
 
 	Log("Engine initialized");
 
@@ -107,7 +107,7 @@ API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* ext
 
 API Core::Start()
 {
-	for (IInitCallback *callback : _init_callbacks)
+	for (IInitCallback *callback : _initCallbacks)
 		callback->Init();
 
 	//timer_fps.Start();
@@ -287,13 +287,13 @@ void Core::Log(const char *pStr, LOG_TYPE type)
 
 API Core::AddInitCallback(IInitCallback* pCallback)
 {
-	_init_callbacks.push_back(pCallback);
+	_initCallbacks.push_back(pCallback);
 	return S_OK;
 }
 
 API Core::AddUpdateCallback(IUpdateCallback* pCallback)
 {
-	_update_callbacks.push_back(std::bind(&IUpdateCallback::Update, pCallback));
+	_updateCallbacks.push_back(std::bind(&IUpdateCallback::Update, pCallback));
 	return S_OK;
 }
 
@@ -329,7 +329,7 @@ void Core::_internal_update()
 {
 	update_fps();
 
-	for (auto &callback : _update_callbacks)
+	for (auto &callback : _updateCallbacks)
 		callback();
 
 	_frame++;

@@ -30,8 +30,8 @@ class Core : public ICore
 
 	CRITICAL_SECTION _cs{};
 
-	vector<IInitCallback *> _init_callbacks;
-	vector<std::function<void()>> _update_callbacks;
+	vector<IInitCallback *> _initCallbacks;
+	vector<std::function<void()>> _updateCallbacks;
 
 	long _lRef{0};
 
@@ -46,7 +46,7 @@ class Core : public ICore
 	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 	void _set_window_caption(int is_paused, int fps);
 
-	int window_active = 1;	
+	int windowActive = 1;	
 
 	int64_t _frame = 0;
 	float dt = 0.0f;
@@ -65,7 +65,7 @@ public:
 		Log(buf, type);
 	}
 	MainWindow* mainWindow() { return _pMainWindow.get(); }
-	void AddUpdateCallback(std::function<void()>&& calback) { _update_callbacks.push_back(std::forward<std::function<void()>>(calback)); }
+	void AddUpdateCallback(std::function<void()>&& calback) { _updateCallbacks.push_back(std::forward<std::function<void()>>(calback)); }
 	float getDt() { return dt; }
 	void Log(const char *pStr, LOG_TYPE type = LOG_TYPE::NORMAL);
 	Console *getConsoole() { return _pConsole.get(); }

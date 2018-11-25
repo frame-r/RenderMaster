@@ -403,13 +403,13 @@ void ResourceManager::Init()
 
 API ResourceManager::resources_list(const char **args, uint argsNumber)
 {
-	LOG_FORMATTED("========= Runtime resources: %i =============", _runtime_textures.size() + _runtime_meshes.size() + _runtime_gameobjects.size() + _runtime_constntbuffer.size());
+	LOG_FORMATTED("========= Runtime resources: %i =============", _runtimeTextures.size() + _runtimeMeshes.size() + _runtimeGameobjects.size() + _runtimeConstantBuffers.size());
 
-	LOG_FORMATTED("Runtime Meshes: %i", _runtime_meshes.size());
-	LOG_FORMATTED("Runtime Textures: %i", _runtime_textures.size());
-	LOG_FORMATTED("Runtime Game Objects: %i", _runtime_gameobjects.size());
-	LOG_FORMATTED("Runtime Constnt Buffers: %i", _runtime_constntbuffer.size());
-	LOG_FORMATTED("Runtime Shaders: %i", _runtime_shaders.size());
+	LOG_FORMATTED("Runtime Meshes: %i", _runtimeMeshes.size());
+	LOG_FORMATTED("Runtime Textures: %i", _runtimeTextures.size());
+	LOG_FORMATTED("Runtime Game Objects: %i", _runtimeGameobjects.size());
+	LOG_FORMATTED("Runtime Constnt Buffers: %i", _runtimeConstantBuffers.size());
+	LOG_FORMATTED("Runtime Shaders: %i", _runtimeShaders.size());
 
 	#define PRINT_RUNTIME_RESOURCES(TITLE, SET) \
 	LOG(TITLE); \
@@ -420,16 +420,16 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 		LOG_FORMATTED("{refs = %i}", refs); \
 	}
 
-	PRINT_RUNTIME_RESOURCES("Meshes:", _runtime_meshes);
-	PRINT_RUNTIME_RESOURCES("Textures:", _runtime_textures);
-	PRINT_RUNTIME_RESOURCES("GameObjects:", _runtime_gameobjects);
-	PRINT_RUNTIME_RESOURCES("ConstantBuffers:", _runtime_constntbuffer);
-	PRINT_RUNTIME_RESOURCES("Shaders:", _runtime_shaders);
+	PRINT_RUNTIME_RESOURCES("Meshes:", _runtimeMeshes);
+	PRINT_RUNTIME_RESOURCES("Textures:", _runtimeTextures);
+	PRINT_RUNTIME_RESOURCES("GameObjects:", _runtimeGameobjects);
+	PRINT_RUNTIME_RESOURCES("ConstantBuffers:", _runtimeConstantBuffers);
+	PRINT_RUNTIME_RESOURCES("Shaders:", _runtimeShaders);
 
-	LOG_FORMATTED("========= Shared resources: %i =============", _shared_meshes.size() + _shared_textures.size() + _shared_shadertexts.size());
-	LOG_FORMATTED("Shared Meshes: %i", _shared_meshes.size());
-	LOG_FORMATTED("Shared Textures: %i", _shared_textures.size());
-	LOG_FORMATTED("Shared Shader Texts: %i", _shared_shadertexts.size());
+	LOG_FORMATTED("========= Shared resources: %i =============", _sharedMeshes.size() + _sharedTextures.size() + _sharedShaderTexts.size());
+	LOG_FORMATTED("Shared Meshes: %i", _sharedMeshes.size());
+	LOG_FORMATTED("Shared Textures: %i", _sharedTextures.size());
+	LOG_FORMATTED("Shared Shader Texts: %i", _sharedShaderTexts.size());
 
 	#define PRINT_SHARED_RESOURCES(TITLE, MAP, INTERFACE) \
 	LOG(TITLE); \
@@ -443,9 +443,9 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 		LOG_FORMATTED("{refs = %i, file = \"%s\"}", refs, path); \
 	}
 	
-	PRINT_SHARED_RESOURCES("Shared Meshes:", _shared_meshes, IMesh);
-	PRINT_SHARED_RESOURCES("Shared Textures:", _shared_textures, ITexture);
-	PRINT_SHARED_RESOURCES("Shared ShaderFiles:", _shared_shadertexts, IShaderFile);
+	PRINT_SHARED_RESOURCES("Shared Meshes:", _sharedMeshes, IMesh);
+	PRINT_SHARED_RESOURCES("Shared Textures:", _sharedTextures, ITexture);
+	PRINT_SHARED_RESOURCES("Shared ShaderFiles:", _sharedShaderTexts, IShaderFile);
 
 	return S_OK;
 }
@@ -477,11 +477,11 @@ API ResourceManager::GetName(OUT const char **pName)
 
 API ResourceManager::Free()
 {
-	assert(_shared_meshes.size() == 0 && "ResourceManager::Free: _shared_meshes.size() != 0. You should release all meshes before free resource manager");
-	assert(_runtime_meshes.size() == 0 && "ResourceManager::Free: _runtime_meshes.size() != 0. You should release all meshes before free resource manager");
-	assert(_shared_textures.size() == 0 && "ResourceManager::Free: _shared_textures.size() != 0. You should release all textures before free resource manager");
-	assert(_runtime_textures.size() == 0 && "ResourceManager::Free: _runtime_textures.size() != 0. You should release all textures before free resource manager");
-	assert(_runtime_gameobjects.size() == 0 && "ResourceManager::Free: _runtime_gameobjects.size() != 0. You should release all gameobjects before free resource manager");
+	assert(_sharedMeshes.size() == 0 && "ResourceManager::Free: _sharedMeshes.size() != 0. You should release all meshes before free resource manager");
+	assert(_runtimeMeshes.size() == 0 && "ResourceManager::Free: _runtimeMeshes.size() != 0. You should release all meshes before free resource manager");
+	assert(_sharedTextures.size() == 0 && "ResourceManager::Free: _sharedTextures.size() != 0. You should release all textures before free resource manager");
+	assert(_runtimeTextures.size() == 0 && "ResourceManager::Free: _runtimeTextures.size() != 0. You should release all textures before free resource manager");
+	assert(_runtimeGameobjects.size() == 0 && "ResourceManager::Free: _runtimeGameobjects.size() != 0. You should release all gameobjects before free resource manager");
 
 	return S_OK;
 }
@@ -502,7 +502,7 @@ vector<IMesh*> ResourceManager::find_loaded_meshes(const char* pRelativeModelPat
 {
 	vector<IMesh*> out;
 
-	for (auto it = _shared_meshes.begin(); it != _shared_meshes.end(); it++)
+	for (auto it = _sharedMeshes.begin(); it != _sharedMeshes.end(); it++)
 	{
 		string path = it->first;
 		string relativeModelPath;
@@ -575,7 +575,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x id = %i", model, id);
 
-		_runtime_gameobjects.emplace(model);
+		_runtimeGameobjects.emplace(model);
 
 		*pModel = model;
 	} else	
@@ -589,7 +589,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 			const char *meshName;
 			m->GetFile(&meshName);
 
-			_shared_meshes.emplace(meshName, m);
+			_sharedMeshes.emplace(meshName, m);
 		}
 		model = new Model(loaded_meshes);
 		uint id;
@@ -597,7 +597,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x id = %i", model, id);
 
-		_runtime_gameobjects.emplace(model);
+		_runtimeGameobjects.emplace(model);
 
 		*pModel = model;
 	}
@@ -770,7 +770,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		Mesh *m = new Mesh(stdCoreMesh, 1, pMeshPath);
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadMesh() new Mesh %#010x", m);
 		*pMesh = m;
-		_shared_meshes.emplace(pMeshPath, m);
+		_sharedMeshes.emplace(pMeshPath, m);
 		return S_OK;
 	}
 
@@ -830,7 +830,7 @@ API ResourceManager::LoadShaderFile(OUT IShaderFile **pShader, const char *pShad
 	string paths = pShaderName;
 
 	ShaderFile *text = new ShaderFile(t, paths);
-	_shared_shadertexts.emplace(paths, text);
+	_sharedShaderTexts.emplace(paths, text);
 
 	*pShader = text;
 
@@ -849,7 +849,7 @@ API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 
 	IGameObject *g = new GameObject;
 
-	_runtime_gameobjects.emplace(g);
+	_runtimeGameobjects.emplace(g);
 	*pGameObject = g;
 
 	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
@@ -864,7 +864,7 @@ API ResourceManager::CreateModel(OUT IModel **pModel)
 
 	IModel *g = new Model;
 
-	_runtime_gameobjects.emplace(g);
+	_runtimeGameobjects.emplace(g);
 	*pModel = g;
 
 	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
@@ -879,7 +879,7 @@ API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 
 	ICamera *g = new Camera;
 
-	_runtime_gameobjects.emplace(g);
+	_runtimeGameobjects.emplace(g);
 	*pCamera = g;
 
 	SceneManager *sm = static_cast<SceneManager*>(getSceneManager(_pCore));
@@ -902,7 +902,7 @@ API ResourceManager::CreateTexture(OUT ITexture **pTextureOut, uint width, uint 
 	Texture *tex = new Texture(pCoreTex, 0, "");
 	DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
 
-	_runtime_textures.emplace(tex);
+	_runtimeTextures.emplace(tex);
 
 	*pTextureOut = tex;
 
@@ -946,7 +946,7 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 	IShader *s = new Shader(coreShader, vert, geom, frag);
 	DEBUG_LOG_FORMATTED("ResourceManager::CreateShader() new Shader %#010x", s);
 
-	_runtime_shaders.emplace(s);
+	_runtimeShaders.emplace(s);
 
 	*pShaderOut = s;
 
@@ -969,7 +969,7 @@ API ResourceManager::CreateConstantBuffer(OUT IConstantBuffer **pConstantBuffer,
 	IConstantBuffer *cb = new ConstantBuffer(coreConstntBuffer);
 	DEBUG_LOG_FORMATTED("ResourceManager::CreateConstantBuffer() new ConstantBuffer %#010x", cb);
 
-	_runtime_constntbuffer.emplace(cb);
+	_runtimeConstantBuffers.emplace(cb);
 
 	*pConstantBuffer = cb;
 
@@ -992,7 +992,7 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 	IRenderTarget *rt = new RenderTarget(coreRenderTarget);
 	DEBUG_LOG_FORMATTED("ResourceManager::CreateRenderTarget() new RenderTarget %#010x", rt);
 
-	_runtime_render_targets.emplace(rt);
+	_runtimeRenderTargets.emplace(rt);
 
 	*pRenderTargetOut = rt;
 
