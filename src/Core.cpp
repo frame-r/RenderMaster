@@ -123,6 +123,12 @@ API Core::Start()
 	return S_OK;
 }
 
+API Core::Update()
+{
+	_internal_update();
+	return S_OK;
+}
+
 API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera)
 {
 	_pCoreRender->MakeCurrent(extern_handle);
@@ -163,10 +169,7 @@ API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 
 void Core::_main_loop()
 {
-	update_fps();
-
-	for (auto &callback : _update_callbacks)
-		callback();
+	_internal_update();
 
 	ICamera *cam;
 	_pSceneManager->GetDefaultCamera(&cam);
@@ -221,7 +224,7 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 	case WINDOW_MESSAGE::APPLICATION_DEACTIVATED:
 		if (_pMainWindow)
 		{
-			setWindowCaption(1, 0);
+			_set_window_caption(1, 0);
 			_pMainWindow->SetPassiveMainLoop(1);
 		}
 		break;
@@ -241,7 +244,7 @@ void Core::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2
 	_pCore->_message_callback(type, param1, param2, pData);
 }
 
-void Core::setWindowCaption(int is_paused, int fps)
+void Core::_set_window_caption(int is_paused, int fps)
 {
 	if (!_pMainWindow)
 		return;
@@ -322,6 +325,16 @@ API Core::ReleaseEngine()
 	return S_OK;
 }
 
+void Core::_internal_update()
+{
+	update_fps();
+
+	for (auto &callback : _update_callbacks)
+		callback();
+
+	_frame++;
+}
+
 void Core::_update()
 {
 	if (!_pConsole)
@@ -354,7 +367,7 @@ float Core::update_fps()
 	{
 		accum = 0.0f;
 		int fps = static_cast<int>(1.0f / dt);
-		setWindowCaption(0, fps);		
+		_set_window_caption(0, fps);		
 	}
 
 	start = std::chrono::steady_clock::now();

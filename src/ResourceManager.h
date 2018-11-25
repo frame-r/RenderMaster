@@ -15,6 +15,7 @@ class ResourceManager final : public IResourceManager
 	std::unordered_set<IGameObject*> _runtime_gameobjects;
 	std::unordered_set<IConstantBuffer*> _runtime_constntbuffer;
 	std::unordered_set<IShader*> _runtime_shaders;
+	std::unordered_set<IRenderTarget*> _runtime_render_targets;
 
 	// Shared resources
 	// Maps "file name" -> "pointer"
@@ -30,15 +31,15 @@ class ResourceManager final : public IResourceManager
 	#ifdef USE_FBX
 	const int fbxDebug = 0;
 
-	void _InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene);
-	void _DestroySdkObjects(FbxManager* pManager, bool pExitStatus);
+	void _FBX_initialize_SDK_objects(FbxManager*& pManager, FbxScene*& pScene);
+	void _FBX_destroy_SDK_objects(FbxManager* pManager, bool pExitStatus);
 
-	vector<IMesh*> _FBXLoadMeshes(const char *pFullPath, const char *pRelativePath);
-	bool _LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
-	void _LoadSceneHierarchy(vector<IMesh*>& meshes, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
-	void _LoadNode(vector<IMesh*>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
-	void _LoadMesh(vector<IMesh*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
-	void _LoadNodeTransform(FbxNode* pNode, const char *str);
+	vector<IMesh*> _FBX_load_meshes(const char *pFullPath, const char *pRelativePath);
+	bool _FBX_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
+	void _FBX_load_scene_hierarchy(vector<IMesh*>& meshes, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
+	void _FBX_load_node(vector<IMesh*>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
+	void _FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
+	void _FBX_load_node_transform(FbxNode* pNode, const char *str);
 	#endif
 
 	API resources_list(const char **args, uint argsNumber);
@@ -61,6 +62,7 @@ public:
 	void RemoveSharedShaderFile(const string& file) { _shared_shadertexts.erase(file); }
 	void RemoveRuntimeConstantBuffer(IConstantBuffer *cb) { _runtime_constntbuffer.erase(cb); }
 	void RemoveRuntimeShader(IShader *s) { _runtime_shaders.erase(s); }
+	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtime_render_targets.erase(rt); }
 
 	void ReloadShaderFile(IShaderFile *shaderText);
 
@@ -74,6 +76,7 @@ public:
 	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
 	API CreateConstantBuffer(OUT IConstantBuffer **pConstntBuffer, uint size) override;
+	API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) override;
 	API CreateGameObject(OUT IGameObject **pGameObject) override;
 	API CreateModel(OUT IModel **pModel) override;
 	API CreateCamera(OUT ICamera **pCamera) override;

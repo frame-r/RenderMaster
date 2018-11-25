@@ -7,7 +7,7 @@ class GameObjectBase : public T
 {
 protected:
 
-	int _fileID;
+	uint _id;
 	string _name{"GameObject"};
 	vec3 _pos;
 	quat _rot;
@@ -19,11 +19,11 @@ protected:
 
 public:
 
-	GameObjectBase(){ _fileID = getRandomInt(); }
+	GameObjectBase(){ _id = getRandomInt(); }
 	virtual ~GameObjectBase() {}
 
-	API GetID(OUT int *id) override					{ *id = _fileID; return S_OK; }
-	API SetID(int *id) override						{ _fileID = *id; return S_OK; }
+	API GetID(OUT uint *id) override					{ *id = _id; return S_OK; }
+	API SetID(uint *id) override						{ _id = *id; return S_OK; }
 	API GetName(OUT const char **pName) override	{ *pName = _name.c_str(); return S_OK; }
 	API SetName(const char *pName) override;
 	API SetPosition(const vec3 *pos) override;

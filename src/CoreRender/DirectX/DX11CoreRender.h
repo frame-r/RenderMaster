@@ -16,6 +16,29 @@ public:
 };
 
 
+class DX11RenderTarget : public ICoreRenderTarget
+{
+	WRL::ComPtr<ITexture> _colors[8];
+	WRL::ComPtr<ITexture> _depth;
+
+	void _get_colors(ID3D11RenderTargetView **arrayOut, uint& targetsNum);
+	void _get_depth(ID3D11DepthStencilView **depth);
+
+public:
+
+	DX11RenderTarget() {}
+	virtual ~DX11RenderTarget();
+
+	void bind(ID3D11DeviceContext *ctx);
+	void clear(ID3D11DeviceContext *ctx, FLOAT* color, FLOAT Depth, UINT8 stencil);
+
+	API SetColorTexture(uint slot, ITexture *tex) override;
+	API SetDepthTexture(ITexture *tex) override;
+	API UnbindColorTexture(uint slot) override;
+	API UnbindAll() override;
+};
+
+
 //
 // We define hash-functions and equality operators for: 
 // D3D11_RASTERIZER_DESC
@@ -175,10 +198,10 @@ class DX11CoreRender final : public ICoreRender
 
 	WRL::ComPtr<IDXGISwapChain> _swapChain; // TODO: make map HWND -> {IDXGISwapChain, ID3D11RenderTargetView} for support multiple windows
 
-	WRL::ComPtr<ID3D11Texture2D> _renderTargetTex;
-	WRL::ComPtr<ID3D11RenderTargetView> _renderTargetView;
-	WRL::ComPtr<ID3D11Texture2D> _depthStencilTex;
-	WRL::ComPtr<ID3D11DepthStencilView> _depthStencilView;
+	WRL::ComPtr<ID3D11Texture2D> _defaultRenderTargetTex;
+	WRL::ComPtr<ID3D11RenderTargetView> _defaultRenderTargetView;
+	WRL::ComPtr<ID3D11Texture2D> _defaultDepthStencilTex;
+	WRL::ComPtr<ID3D11DepthStencilView> _defaultDepthStencilView;
 
 	vector<std::function<void()>> _onCleanBroadcast;
 
@@ -355,14 +378,22 @@ class DX11CoreRender final : public ICoreRender
 	State _currentState;
 	std::stack<State> _statesStack;
 
-	IResourceManager *_pResMan{nullptr};
+	IResourceManager *_pResMan = nullptr;
 
 	int _MSAASamples = 0;
 	int _VSyncOn = 1;
 
-	ID3D11DeviceChild* create_shader_by_src(int type, const char *src);
-	bool create_viewport_buffers(uint w, uint h);
-	void destroy_viewport_buffers();
+	FLOAT _clear_color[4];
+	const FLOAT _depth_clear_color = 1.0f;
+	const UINT8 _stencil_clear_color = 0;
+
+	int is_default_rt_bound = 1;
+	DX11RenderTarget *current_render_target = nullptr;
+
+	bool create_default_buffers(uint w, uint h);
+	void destroy_default_buffers();
+
+	ID3D11DeviceChild* create_shader_by_src(int type, const char *src, HRESULT& err);
 	UINT msaa_quality(DXGI_FORMAT format, int MSAASamples);
 	
 public:
@@ -382,7 +413,11 @@ public:
 	API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) override;
 	API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
+	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
+	API SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget) override;
+	API RestoreDefaultRenderTarget() override;
+	API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixelBytes, uint x, uint y) override;
 	API SetShader(const ICoreShader *pShader) override;
 	API SetMesh(const ICoreMesh* mesh) override;
 	API SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot) override;
@@ -393,6 +428,6 @@ public:
 	API GetViewport(OUT uint* w, OUT uint* h) override;
 	API Clear() override;
 	
-	API GetName(OUT const char **pTxt) override;
+	API GetName(OUT const char **pNameOut) override;
 };
 

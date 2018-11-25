@@ -3,15 +3,15 @@
 
 class GLMesh : public ICoreMesh
 {
-	GLuint _VAO{0};
-	GLuint _VBO{0};
-	GLuint _IBO{0};
-	uint _number_of_vertices{0};
-	bool _index_presented{false};
-	uint _number_of_indicies{0};
-	MESH_INDEX_FORMAT _index_format{MESH_INDEX_FORMAT::NOTHING};
-	VERTEX_TOPOLOGY _topology{VERTEX_TOPOLOGY::TRIANGLES};
-	INPUT_ATTRUBUTE _attributes{INPUT_ATTRUBUTE::CUSTOM};
+	GLuint _VAO = 0u;
+	GLuint _VBO = 0u;
+	GLuint _IBO = 0u;
+	uint _number_of_vertices = 0u;
+	bool _index_presented = false;
+	uint _number_of_indicies = 0u;
+	MESH_INDEX_FORMAT _index_format = MESH_INDEX_FORMAT::NOTHING;
+	VERTEX_TOPOLOGY _topology = VERTEX_TOPOLOGY::TRIANGLES;
+	INPUT_ATTRUBUTE _attributes = INPUT_ATTRUBUTE::CUSTOM;
 
 public:
 	

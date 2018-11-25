@@ -58,6 +58,7 @@ namespace RENDER_MASTER
 	class ICamera;
 	class IGameObject;
 	class IShader;
+	class ITexture;
 	class IResourceManager;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
@@ -99,6 +100,7 @@ namespace RENDER_MASTER
 
 		virtual API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) = 0;
 		virtual API Start() = 0;
+		virtual API Update() = 0;
 		virtual API RenderFrame(const WindowHandle *externHandle, const ICamera *pCamera) = 0;
 		virtual API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) = 0;
 		virtual API GetDataDir(OUT const char **pStr) = 0;
@@ -306,23 +308,30 @@ namespace RENDER_MASTER
 
 	enum class TEXTURE_CREATE_FLAGS
 	{
+		NONE					= 0x00000000,
+
 		FILTER					= 0x000000F0,
 		FILTER_POINT			= 0x00000010,
-		FILTER_LINEAR			= 0x00000020,
-		FILTER_ANISOTROPY_2X	= 0x00000030,
-		FILTER_ANISOTROPY_4X	= 0x00000040,
-		FILTER_ANISOTROPY_8X	= 0x00000050,
-		FILTER_ANISOTROPY_16X	= 0x00000060,
+		// TODO
+		//FILTER_LINEAR			= 0x00000020,
+		//FILTER_ANISOTROPY_2X	= 0x00000030,
+		//FILTER_ANISOTROPY_4X	= 0x00000040,
+		//FILTER_ANISOTROPY_8X	= 0x00000050,
+		//FILTER_ANISOTROPY_16X	= 0x00000060,
 		// TODO: mipmaps filters
 
 		COORDS					= 0x00000F00,
 		COORDS_WRAP				= 0x00000100,
-		COORDS_MIRROR			= 0x00000200,
-		COORDS_CLAMP			= 0x00000300,
-		COORDS_BORDER			= 0x00000400,
+		// TODO
+		//COORDS_MIRROR			= 0x00000200,
+		//COORDS_CLAMP			= 0x00000300,
+		//COORDS_BORDER			= 0x00000400,
 
 		USAGE					= 0x0000F000,
-		USAGE_RENDER_TARGET		= 0x00001000
+		USAGE_RENDER_TARGET		= 0x00001000,
+
+		//CPU						= 0x000F0000,
+		//CPU_GPU_READ_WRITE		= 0x00010000
 	};
 	DEFINE_ENUM_OPERATORS(TEXTURE_CREATE_FLAGS)
 
@@ -344,16 +353,36 @@ namespace RENDER_MASTER
 		RGB32F,
 		RGBA32F,
 
+		// integer
+		R32UI,
+
 		// compressed
 		DXT1,
 		DXT3,
-		DXT5
+		DXT5,
+
+		// depth/stencil
+		D24S8
 	};
 
 	class ICoreTexture
 	{
 	public:
 		virtual ~ICoreTexture() = default;
+		virtual API GetWidth(OUT uint *w) = 0;
+		virtual API GetHeight(OUT uint *h) = 0;
+		virtual API GetFormat(OUT TEXTURE_FORMAT *formatOut) = 0;
+	};
+
+	class ICoreRenderTarget
+	{
+	public:
+		virtual ~ICoreRenderTarget() = default;
+
+		virtual API SetColorTexture(uint slot, ITexture *tex) = 0;
+		virtual API SetDepthTexture(ITexture *tex) = 0;
+		virtual API UnbindColorTexture(uint slot) = 0;
+		virtual API UnbindAll() = 0;
 	};
 
 	class ICoreConstantBuffer
@@ -395,7 +424,11 @@ namespace RENDER_MASTER
 		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
 		virtual API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) = 0;
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
+		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
 
+		virtual API SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget) = 0;
+		virtual API RestoreDefaultRenderTarget() = 0;
+		virtual API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) = 0;
 		virtual API SetShader(const ICoreShader *pShader) = 0;
 		virtual API SetMesh(const ICoreMesh* mesh) = 0;
 		virtual API SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot) = 0;
@@ -411,18 +444,27 @@ namespace RENDER_MASTER
 	// Render
 	//////////////////////
 
+	enum class RENDER_PASS
+	{
+		FORWARD = 0,
+		ID,
+		PASS_NUMBER
+	};
+	
 	struct ShaderRequirement
 	{
 		INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::CUSTOM};
-		bool alphaTest{false};
+		RENDER_PASS pass{RENDER_PASS::FORWARD};
 
 		size_t operator()(const ShaderRequirement& k) const
 		{
-			return ((int)k.alphaTest + 1) * (int)k.attributes;
+			int pass_n = (int)k.pass;
+			int pass_bumber = (int)RENDER_PASS::PASS_NUMBER;
+			return pass_bumber * (int)k.attributes + pass_n;
 		}
 		bool operator==(const ShaderRequirement &other) const
 		{
-			return attributes == other.attributes && alphaTest == other.alphaTest;
+			return attributes == other.attributes && pass == other.pass;
 		}
 	};
 
@@ -431,6 +473,9 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
+		virtual API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) = 0;
+		virtual API GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) = 0;
+		virtual API ReleaseRenderTexture2D(ITexture *texIn) = 0;
 		virtual API ShadersReload() = 0;
 	};
 
@@ -456,8 +501,8 @@ namespace RENDER_MASTER
 	public:
 		virtual ~IGameObject() = default;
 
-		virtual API GetID(OUT int *id) = 0;
-		virtual API SetID(int *id) = 0;
+		virtual API GetID(OUT uint *id) = 0;
+		virtual API SetID(uint *id) = 0;
 		virtual API GetName(OUT const char **pName) = 0;
 		virtual API SetName(const char *pName) = 0;
 		virtual API SetPosition(const vec3 *pos) = 0;
@@ -509,8 +554,24 @@ namespace RENDER_MASTER
 	public:
 		virtual ~ITexture() = default;
 		virtual API GetCoreTexture(OUT ICoreTexture **textureOut) = 0;
+		virtual API GetWidth(OUT uint *w) = 0;
+		virtual API GetHeight(OUT uint *h) = 0;
+		virtual API GetFormat(OUT TEXTURE_FORMAT *formatOut) = 0;
 
 		BASE_RESOURCE_INTERFACE
+	};
+
+	class IRenderTarget : public IUnknown
+	{
+	public:
+		virtual ~IRenderTarget() = default;
+		virtual API GetCoreRenderTarget(OUT ICoreRenderTarget **renderTargetOut) = 0;
+		virtual API SetColorTexture(uint slot, ITexture *tex) = 0;
+		virtual API SetDepthTexture(ITexture *tex) = 0;
+		virtual API UnbindColorTexture(uint slot) = 0;
+		virtual API UnbindAll() = 0;
+
+		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
 	class IConstantBuffer : public IUnknown
@@ -559,6 +620,7 @@ namespace RENDER_MASTER
 		virtual API CloseScene() = 0;
 		virtual API GetNumberOfChilds(OUT uint *number, IGameObject *parent) = 0;
 		virtual API GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) = 0;
+		virtual API FindChildById(OUT IGameObject **objectOut, uint id) = 0;
 		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
 
 		//events
@@ -571,6 +633,9 @@ namespace RENDER_MASTER
 	// Resource Manager
 	//////////////////////
 
+	#define E_VERTEX_SHADER_FAILED_COMPILE 0x80270007L
+	#define E_GEOM_SHADER_FAILED_COMPILE 0x80270008L
+	#define E_FRAGMENT_SHADER_FAILED_COMPILE 0x80270009L
 
 	class IResourceManager : public ISubSystem
 	{
@@ -583,6 +648,7 @@ namespace RENDER_MASTER
 		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
 		virtual API CreateConstantBuffer(OUT IConstantBuffer **pUniformBuffer, uint size) = 0;
+		virtual API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
 		virtual API CreateModel(OUT IModel **pModel) = 0;
 		virtual API CreateCamera(OUT ICamera **pCamera) = 0;
@@ -764,6 +830,7 @@ namespace RENDER_MASTER
 		virtual API IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) = 0;
 		virtual API IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) = 0;
 		virtual API GetMouseDeltaPos(OUT vec2 *dPos) = 0;
+		virtual API GetMousePos(OUT uint *x, OUT uint *y) = 0;
 	};
 
 

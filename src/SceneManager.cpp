@@ -154,6 +154,27 @@ API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, u
 	return S_OK;
 }
 
+API SceneManager::FindChildById(OUT IGameObject **objectOut, uint idIn)
+{
+	for (auto it = _gameobjects.begin(); it != _gameobjects.end(); ++it)
+	{
+		IGameObject* res = *it;
+		uint id;
+
+		res->GetID(&id);
+
+		if (id == idIn)
+		{
+			*objectOut = res;
+			return S_OK;
+		}
+	}
+
+	*objectOut = nullptr;
+
+	return S_OK;
+}
+
 void SceneManager::Init()
 {
 	IResourceManager *rm = getResourceManager(_pCore);

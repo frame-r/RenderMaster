@@ -1,3 +1,5 @@
+#ifndef H_LANGUAGE
+#define H_LANGUAGE
 
 #ifdef ENG_OPENGL
 	#include "language_gl.h"
@@ -5,4 +7,6 @@
 	#include "language_dx11.h"
 #else
 	#error "Unknown language"
+#endif
+
 #endif

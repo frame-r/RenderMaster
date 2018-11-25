@@ -115,6 +115,13 @@ API Input::GetMouseDeltaPos(OUT vec2 *dPos)
 	return S_OK;
 }
 
+API Input::GetMousePos(OUT uint * x, OUT uint * y)
+{
+	*x = _cursorX;
+	*y = _cursorY;
+	return S_OK;
+}
+
 API Input::GetName(OUT const char **pName)
 {
 	*pName = "Input";

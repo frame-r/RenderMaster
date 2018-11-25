@@ -4,6 +4,7 @@
 #include "ResourceManager.h"
 #include "GLShader.h"
 #include "GLMesh.h"
+#include "GLTexture.h"
 
 using string = string;
 
@@ -325,6 +326,10 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 	_currentState.viewport_w = vp[2];
 	_currentState.viewport_h = vp[3];
 
+	GLint fbo;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
+	_currentState.fbo = fbo;
+
 	CHECK_GL_ERRORS();
 
 	LOG("GLCoreRender initalized");
@@ -393,6 +398,7 @@ API GLCoreRender::SwapBuffers()
 API GLCoreRender::PushStates()
 {
 	_statesStack.push(_currentState);
+
 	return S_OK;
 }
 
@@ -457,6 +463,8 @@ API GLCoreRender::PopStates()
 		state.viewport_w != _currentState.viewport_w ||
 		state.viewport_h != _currentState.viewport_h)
 		glViewport(state.viewport_x, state.viewport_y, state.viewport_w, state.viewport_h);
+
+	// TODO: FBO
 
 	_currentState = state;
 
@@ -551,7 +559,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, cons
 	if (!create_shader(vertID, GL_VERTEX_SHADER, vert, programID))
 	{
 		glDeleteProgram(programID);
-		return S_FALSE;
+		return E_VERTEX_SHADER_FAILED_COMPILE;
 	}
 	
 	if (geom != nullptr)
@@ -560,7 +568,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, cons
 		{
 			glDeleteProgram(programID);
 			glDeleteShader(vertID);
-			return S_FALSE;
+			return E_GEOM_SHADER_FAILED_COMPILE;
 		}
 	}
 	
@@ -570,7 +578,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, cons
 		glDeleteShader(vertID);
 		if (geomID)
 			glDeleteShader(geomID);
-		return S_FALSE;
+		return E_FRAGMENT_SHADER_FAILED_COMPILE;
 	}
 
 	CHECK_GL_ERRORS();
@@ -598,9 +606,219 @@ API GLCoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint s
 	return S_OK;
 }
 
-API GLCoreRender::CreateTexture(OUT ICoreTexture ** pTexture, uint8 * pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+void get_gl_formats(TEXTURE_FORMAT format, GLint& VRAMFormat, GLenum& sourceFormat, GLenum& sourceType)
 {
-	return E_NOTIMPL;
+	switch (format)
+	{
+	case TEXTURE_FORMAT::R8:		VRAMFormat = GL_R8;		sourceFormat = GL_RED;			sourceType = GL_UNSIGNED_BYTE; return;
+	case TEXTURE_FORMAT::RG8:		VRAMFormat = GL_RG8;	sourceFormat = GL_RG;			sourceType = GL_UNSIGNED_BYTE; return;
+	case TEXTURE_FORMAT::RGB8:		VRAMFormat = GL_RGB8;	sourceFormat = GL_RGB;			sourceType = GL_UNSIGNED_BYTE; return;
+	case TEXTURE_FORMAT::RGBA8:		VRAMFormat = GL_RGBA8;	sourceFormat = GL_RGBA;			sourceType = GL_UNSIGNED_BYTE; return;
+	case TEXTURE_FORMAT::R16F:		VRAMFormat = GL_R16F;	sourceFormat = GL_RED;			sourceType = GL_HALF_FLOAT; return;
+	case TEXTURE_FORMAT::RG16F:		VRAMFormat = GL_RG16F;	sourceFormat = GL_RG;			sourceType = GL_HALF_FLOAT; return;
+	case TEXTURE_FORMAT::RGB16F:	VRAMFormat = GL_RGB16F;	sourceFormat = GL_RGB;			sourceType = GL_HALF_FLOAT; return;
+	case TEXTURE_FORMAT::RGBA16F:	VRAMFormat = GL_RGBA16F;sourceFormat = GL_RGBA;			sourceType = GL_HALF_FLOAT; return;
+	case TEXTURE_FORMAT::R32F:		VRAMFormat = GL_R32F;	sourceFormat = GL_R;			sourceType = GL_FLOAT; return;
+	case TEXTURE_FORMAT::RG32F:		VRAMFormat = GL_RG32F;	sourceFormat = GL_RG;			sourceType = GL_FLOAT; return;
+	case TEXTURE_FORMAT::RGB32F:	VRAMFormat = GL_RGB32F;	sourceFormat = GL_RGB;			sourceType = GL_FLOAT; return;
+	case TEXTURE_FORMAT::RGBA32F:	VRAMFormat = GL_RGBA32F;sourceFormat = GL_RGBA;			sourceType = GL_FLOAT; return;
+	case TEXTURE_FORMAT::R32UI:		VRAMFormat = GL_R32UI;	sourceFormat = GL_RED_INTEGER;	sourceType = GL_UNSIGNED_INT; return;
+	case TEXTURE_FORMAT::DXT1:		VRAMFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;	/* no sense */ return;
+	case TEXTURE_FORMAT::DXT3:		VRAMFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;	/* no sense */ return;
+	case TEXTURE_FORMAT::DXT5:		VRAMFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;	/* no sense */ return;
+	case TEXTURE_FORMAT::D24S8:		VRAMFormat = GL_DEPTH24_STENCIL8; sourceFormat = GL_DEPTH_STENCIL; sourceType = GL_UNSIGNED_INT_24_8; return;
+	}
+
+	LOG_WARNING("get_gl_formats(): unknown format\n");
+}
+
+int byte_per_pixel(TEXTURE_FORMAT format)
+{
+	switch(format)
+	{
+		case TEXTURE_FORMAT::R8:		return 1;
+		case TEXTURE_FORMAT::RG8:		return 2;
+		case TEXTURE_FORMAT::RGB8:		return 3;
+		case TEXTURE_FORMAT::RGBA8:		return 4;
+		case TEXTURE_FORMAT::R16F:		return 1;
+		case TEXTURE_FORMAT::RG16F:		return 2;
+		case TEXTURE_FORMAT::RGB16F:	return 3;
+		case TEXTURE_FORMAT::RGBA16F:	return 4;
+		case TEXTURE_FORMAT::R32F:		return 4;
+		case TEXTURE_FORMAT::RG32F:		return 8;
+		case TEXTURE_FORMAT::RGB32F:	return 12;
+		case TEXTURE_FORMAT::RGBA32F:	return 16;
+		case TEXTURE_FORMAT::R32UI:		return 4;
+		case TEXTURE_FORMAT::D24S8:		return 4;
+		default: assert(false); // no sense
+	}
+	return 1;
+}
+
+int calculate_data_size(TEXTURE_FORMAT format, uint width, uint height)
+{
+	//TODO: support align
+	if (is_compressed_format(format))
+	{
+		int blockSize;
+		if (format == TEXTURE_FORMAT::DXT1)
+			blockSize = 8;
+		else
+			blockSize = 16;
+		if (width < 4 || height < 4) return blockSize;
+		return (width / 4) * (height / 4) * blockSize;
+	}
+
+	int n = width * height * byte_per_pixel(format);
+	return n;
+}
+
+API GLCoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+{
+	CHECK_GL_ERRORS();
+
+	GLuint id;
+	glGenTextures(1, &id);
+
+	glBindTexture(GL_TEXTURE_2D, id);
+
+	// filter
+	{
+		GLint glMinFilter;
+		glMinFilter = GL_NEAREST;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glMinFilter);
+		CHECK_GL_ERRORS();
+
+		GLint glMagFilter;
+		glMagFilter = GL_NEAREST;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glMagFilter);
+		CHECK_GL_ERRORS();
+	}
+
+	// wrap
+	{
+		GLint glWrap;
+		glWrap = GL_REPEAT;	
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrap);
+		CHECK_GL_ERRORS();
+	}
+
+	GLint internalFormat;
+	GLenum sourceFormat;
+	GLenum sourceType;
+	get_gl_formats(format, internalFormat, sourceFormat, sourceType);		
+
+	if (is_compressed_format(format))
+	{
+		int dataSize = calculate_data_size(format, width, height);
+		glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataSize, pData);
+	}
+	else
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, sourceFormat, sourceType, pData);		
+
+	CHECK_GL_ERRORS();
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	GLTexture *glTex = new GLTexture(id, format);
+	*pTexture = glTex;
+
+	CHECK_GL_ERRORS();	
+
+	return S_OK;
+}
+
+API GLCoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
+{
+	GLuint id;
+	glGenFramebuffers(1, &id);
+	glBindFramebuffer(GL_FRAMEBUFFER, id);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	*pRenderTarget = new GLRenderTarget(id);
+
+	return S_OK;
+}
+
+API GLCoreRender::SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget)
+{
+	GLRenderTarget *glRT = static_cast<GLRenderTarget*>(pRenderTarget);
+	_currentState.fbo = glRT->ID();
+	glBindFramebuffer(GL_FRAMEBUFFER, glRT->ID());
+
+	glRT->bind();
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+	{
+		if (status == GL_FRAMEBUFFER_UNSUPPORTED)
+			LOG_FATAL("GLFrameBuffer::enable(): unsupported\n");
+		else if (status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT)
+			LOG_FATAL("GLFrameBuffer::enable(): incomplete attachment\n");
+		else if (status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT)
+			LOG_FATAL("GLFrameBuffer::enable(): incomplete missing attachment\n");
+		else if (status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER)
+			LOG_FATAL("GLFrameBuffer::enable(): incomplete draw buffer\n");
+		else if (status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER)
+			LOG_FATAL("GLFrameBuffer::enable(): incomplete read buffer\n");
+		else if (status == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE)
+			LOG_FATAL("GLFrameBuffer::enable(): incomplete multisample\n");
+		else if (status == GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS)
+			LOG_FATAL("GLFrameBuffer::enable(): incomplete layer targets\n");
+		else
+			LOG_FATAL_FORMATTED("GLFrameBuffer::enable(): failed 0x%04X\n", status);
+	}
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::RestoreDefaultRenderTarget()
+{
+	_currentState.fbo = 0;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return S_OK;
+}
+
+API GLCoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readPixel, uint x, uint y)
+{
+	GLTexture *glTex = static_cast<GLTexture*>(tex);
+
+	TEXTURE_FORMAT format;
+	glTex->GetFormat(&format);
+
+	glBindTexture(GL_TEXTURE_2D, glTex->textureID());
+
+	GLint internalFormat;
+	GLenum sourceFormat;
+	GLenum sourceType;
+	get_gl_formats(format, internalFormat, sourceFormat, sourceType);
+
+	uint w, h;
+	glTex->GetWidth(&w);
+	glTex->GetHeight(&h);
+
+	int pixel_bytes = byte_per_pixel(format);
+	int all_bytes = w * h * pixel_bytes;
+
+	uint8 *p = new uint8[all_bytes];
+
+	// Inefficient! Don't use every frame because We send all texture
+	glGetnTexImage(GL_TEXTURE_2D, 0, sourceFormat, sourceType, all_bytes, p);
+
+	// Reverese by Y for for conformity directx
+	y = h - y;
+
+	uint8 *p_read  = p + (y * w + x) * pixel_bytes; 
+
+	memcpy(out, p_read, pixel_bytes);
+	*readPixel = pixel_bytes;
+
+	delete[] p;
+
+	return S_OK;
 }
 
 API GLCoreRender::SetShader(const ICoreShader* pShader)
@@ -766,6 +984,111 @@ API GLCoreRender::Clear()
 
 GLUniformBuffer::~GLUniformBuffer()
 {
-	if (_UBO) glDeleteBuffers(1, &_UBO);
+	if (_UBO)
+		glDeleteBuffers(1, &_UBO);
 	_UBO = 0;
+}
+
+GLRenderTarget::GLRenderTarget(GLuint idIn) : _ID(idIn)
+{
+	for (int i = 0; i < 8; i++)
+		_colors[i] = 0u;
+}
+
+void GLRenderTarget::bind()
+{
+	CHECK_GL_ERRORS();
+
+	//int targets;
+	for (int i = 0; i < 8; i++)
+	{
+		if (!_colors[i])
+			break;
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _colors[i], 0);
+		//targets++;
+	}
+
+	CHECK_GL_ERRORS();
+
+	if (_depth)
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, _depth, 0);
+
+	CHECK_GL_ERRORS();
+}
+
+API GLRenderTarget::SetColorTexture(uint slot, ITexture *tex)
+{
+	assert(slot < 8 && "GLRenderTarget::SetColorTexture() slot must be 0..7");
+
+	if (tex)
+	{
+		ICoreTexture *coreTex;
+		tex->GetCoreTexture(&coreTex);
+		GLTexture *glTex = static_cast<GLTexture*>(coreTex);
+
+		_colors[slot] = glTex->textureID();
+	} else
+	{
+		if (_colors[slot])
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, _ID);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, 0, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+		_colors[slot] = 0u;
+	}
+	
+	return S_OK;
+}
+
+API GLRenderTarget::SetDepthTexture(ITexture *tex)
+{
+	if (tex)
+	{
+		ICoreTexture *coreTex;
+		tex->GetCoreTexture(&coreTex);
+		GLTexture *glTex = static_cast<GLTexture*>(coreTex);	
+		_depth = glTex->textureID();
+	} else
+	{
+		if (_depth)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, _ID);
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 0, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+		_depth = 0u;
+	}
+
+	return S_OK;
+}
+
+API GLRenderTarget::UnbindColorTexture(uint slot)
+{
+	assert(slot < 8 && "GLRenderTarget::UnbindColorTexture() slot must be 0..7");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, _ID);
+	_colors[slot] = 0;
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, 0, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLRenderTarget::UnbindAll()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, _ID);
+	for (int i = 0; i < 8; i++)
+	{
+		_colors[i] = 0;
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
+	}
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,  0, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
 }

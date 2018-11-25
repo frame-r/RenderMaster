@@ -35,6 +35,7 @@ public:
 	// GameObjects manipulations
 	API GetNumberOfChilds(OUT uint *number, IGameObject *parent) override;
 	API GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) override;
+	API FindChildById(OUT IGameObject **objectOut, uint id) override;
 
 	// Default camera
 	API GetDefaultCamera(OUT ICamera **pCamera) override;

@@ -10,6 +10,9 @@ public:
 	virtual ~Texture();
 
 	API GetCoreTexture(ICoreTexture **texOut) override;
+	API GetWidth(OUT uint *w) override;
+	API GetHeight(OUT uint *h) override;
+	API GetFormat(OUT TEXTURE_FORMAT *formatOut) override;
 
 	BASE_RESOURCE_HEADER
 };

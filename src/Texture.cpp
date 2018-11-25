@@ -21,3 +21,20 @@ Texture::~Texture()
 	delete _coreTexture;
 	_coreTexture = nullptr;
 }
+
+API Texture::GetWidth(OUT uint * w)
+{
+	_coreTexture->GetWidth(w);
+	return S_OK;
+}
+
+API Texture::GetHeight(OUT uint * h)
+{
+	_coreTexture->GetHeight(h);
+	return S_OK;
+}
+
+API Texture::GetFormat(OUT TEXTURE_FORMAT * formatOut)
+{
+	return S_OK;
+}

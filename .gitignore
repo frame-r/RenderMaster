@@ -18,4 +18,7 @@ resources/scene.yaml
 src/shaders/out.shader
 resources/out_f.shader
 resources/out_v.shader
+resources/err_compile.shader
+build/MainWindow.dat
+build/ContainerWidget.dat
 

@@ -3,9 +3,9 @@
 
 class DX11Shader : public ICoreShader
 {
-	ID3D11VertexShader *pVertex{nullptr};
-	ID3D11GeometryShader *pGeometry{nullptr};
-	ID3D11PixelShader *pFragment{nullptr};
+	ID3D11VertexShader *pVertex = nullptr;
+	ID3D11GeometryShader *pGeometry = nullptr;
+	ID3D11PixelShader *pFragment = nullptr;
 
 public:
 

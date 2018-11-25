@@ -1,3 +1,6 @@
+#ifndef H_LANGUAGE_GL
+#define H_LANGUAGE_GL
+
 // Defines provided by engine:
 
 // ---Necessarily---
@@ -8,8 +11,6 @@
 // ENG_INPUT_NORMAL
 // ENG_INPUT_TEXCOORD
 // ENG_INPUT_COLOR
-// ENG_ALPHA_TEST
-
 
 #define STRUCT(NAME)
 #define END_STRUCT
@@ -40,9 +41,7 @@
 #define TEXTURE2D_IN(NAME, NUM) uniform sampler2D NAME;
 #define TEXTURE(NAME, UV) texture(NAME, UV)
 
-#ifdef ENG_SHADER_PIXEL
-out vec4 OUT_COLOR;
-#endif
+#define OUT_COLOR color
 
 // vertex
 #define OUT_ATTRIBUTE(NAME) NAME
@@ -57,10 +56,12 @@ out vec4 OUT_COLOR;
 #define VERTEX_IN
 #define MAIN_VERTEX(VERTEX_IN_, VERTEX_OUT_) void main() {
 #define MAIN_VERTEX_END }
-#define MAIN_FRAG(FRAG_IN) void main() {
+#define MAIN_FRAG(FRAG_IN) out vec4 color; void main() {
 #define MAIN_FRAG_END }
+#define MAIN_FRAG_UI(FRAG_IN) out uint color; void main() {
 
 // math
 #define mul(M, V) M * V
 
 
+#endif // H_LANGUAGE_GL

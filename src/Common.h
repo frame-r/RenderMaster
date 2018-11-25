@@ -219,6 +219,10 @@ inline ISceneManager *getSceneManager(ICore *core)
 int get_msaa_samples(INIT_FLAGS flags);
 string msaa_to_string(int samples);
 
+// texture formats
+bool is_color_format(TEXTURE_FORMAT format);
+bool is_compressed_format(TEXTURE_FORMAT format);
+
 #define BASE_RESOURCE_HEADER \
 private: \
 	int _isShared = 0; \

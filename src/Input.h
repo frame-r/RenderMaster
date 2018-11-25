@@ -28,5 +28,6 @@ public:
 	API IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) override;
 	API IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) override;
 	API GetMouseDeltaPos(OUT vec2 *dPos) override;
+	API GetMousePos(OUT uint *x, OUT uint *y) override;
 	API GetName(OUT const char **pName) override;
 };

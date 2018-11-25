@@ -51,7 +51,7 @@ SamplerState g_samLinear : register( s0 );
 
 #define TEXTURE(NAME, UV) NAME.Sample(g_samLinear, UV)
 
-#define OUT_COLOR color
+#define OUT_COLOR out_color.color
 
 // vertex in/out
 #define OUT_ATTRIBUTE(NAME) vs_output.NAME
@@ -68,11 +68,24 @@ VERTEX_OUT vs_output;
 } \
   
 
-#define MAIN_FRAG(FRAG_IN) float4 mainFS(FRAG_IN fs_input) : SV_TARGET \
+struct PixelShaderOutputFloat4
+{          
+	float4 color : SV_Target0;   
+};
+#define MAIN_FRAG(FRAG_IN) PixelShaderOutputFloat4 mainFS(FRAG_IN fs_input) \
 { \
-float4 color;
+PixelShaderOutputFloat4 out_color;
 
-#define MAIN_FRAG_END return color; \
+
+struct PixelShaderOutputUint
+{          
+	uint color : SV_Target0;   
+};
+#define MAIN_FRAG_UI(FRAG_IN) PixelShaderOutputUint mainFS(FRAG_IN fs_input) \
+{ \
+PixelShaderOutputUint out_color;
+
+#define MAIN_FRAG_END return out_color; \
 } \
   
 

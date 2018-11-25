@@ -141,7 +141,7 @@ mat4 perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar)
 
 int initialized = 0;
 int seed = 0;
-std::set<int> instances_id;
+std::set<uint> instances_id;
 
 unsigned int random8()
 {
@@ -156,7 +156,7 @@ unsigned int random8()
 
 int getRandomInt()
 {
-	int newid;
+	uint newid;
 	do
 	{
 		newid = random8();
@@ -277,6 +277,21 @@ string msaa_to_string(int samples)
 	if (samples <= 1)
 		return "no";
 	return std::to_string(samples) + "x";
+}
+
+bool is_color_format(TEXTURE_FORMAT format)
+{
+	if (format == TEXTURE_FORMAT::D24S8)
+		return false;
+	return true;
+}
+
+bool is_compressed_format(TEXTURE_FORMAT format)
+{
+	if (format == TEXTURE_FORMAT::DXT1 || format == TEXTURE_FORMAT::DXT3 || format == TEXTURE_FORMAT::DXT5)
+		return true;
+	return false;
+
 }
 
 

@@ -8,6 +8,7 @@
 #include "Texture.h"
 #include "ShaderFile.h"
 #include "ConstantBuffer.h"
+#include "RenderTarget.h"
 #include "Camera.h"
 #include "Console.h"
 #include "SceneManager.h"
@@ -34,7 +35,7 @@ DEFINE_LOG_HELPERS(_pCore)
 #define IOS_REF (*(pManager->GetIOSettings()))
 #endif
 
-void ResourceManager::_InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pScene)
+void ResourceManager::_FBX_initialize_SDK_objects(FbxManager*& pManager, FbxScene*& pScene)
 {
 	pManager = FbxManager::Create();
 
@@ -63,14 +64,14 @@ void ResourceManager::_InitializeSdkObjects(FbxManager*& pManager, FbxScene*& pS
 	}
 }
 
-void ResourceManager::_DestroySdkObjects(FbxManager* pManager, bool pExitStatus)
+void ResourceManager::_FBX_destroy_SDK_objects(FbxManager* pManager, bool pExitStatus)
 {
 	if (pManager) pManager->Destroy();
 	if (pExitStatus)
 		if (fbxDebug) LOG("FBX SDK destroyed");
 }
 
-bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename)
+bool ResourceManager::_FBX_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename)
 {
 	int lFileMajor, lFileMinor, lFileRevision;
 	int lSDKMajor, lSDKMinor, lSDKRevision;
@@ -139,20 +140,20 @@ bool ResourceManager::_LoadScene(FbxManager* pManager, FbxDocument* pScene, cons
 	return lStatus;
 }
 
-void ResourceManager::_LoadSceneHierarchy(vector<IMesh*>& meshes, FbxScene * pScene, const char *pFullPath, const char *pRelativePath)
+void ResourceManager::_FBX_load_scene_hierarchy(vector<IMesh*>& meshes, FbxScene * pScene, const char *pFullPath, const char *pRelativePath)
 {
 	FbxString lString;
 
 	if (fbxDebug) LOG("Scene hierarchy:");
 
 	FbxNode* lRootNode = pScene->GetRootNode();
-	_LoadNode(meshes, lRootNode, 0, pFullPath, pRelativePath);
+	_FBX_load_node(meshes, lRootNode, 0, pFullPath, pRelativePath);
 
 	if (meshes.size() == 0)
 		LOG_WARNING("No meshes loaded");
 }
 
-void ResourceManager::_LoadNode(vector<IMesh*>& meshes, FbxNode* pNode, int depth, const char *fullPath, const char *pRelativePath)
+void ResourceManager::_FBX_load_node(vector<IMesh*>& meshes, FbxNode* pNode, int depth, const char *fullPath, const char *pRelativePath)
 {
 	FbxString lString;
 	FbxNodeAttribute* node = pNode->GetNodeAttribute();
@@ -161,15 +162,15 @@ void ResourceManager::_LoadNode(vector<IMesh*>& meshes, FbxNode* pNode, int dept
 
 	switch (lAttributeType)
 	{
-		case FbxNodeAttribute::eMesh:		_LoadMesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), pNode, fullPath, pRelativePath); break;
+		case FbxNodeAttribute::eMesh:		_FBX_load_mesh(meshes, (FbxMesh*)pNode->GetNodeAttribute(), pNode, fullPath, pRelativePath); break;
 		case FbxNodeAttribute::eMarker:		LOG(("(eMarker) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eSkeleton:	LOG(("(eSkeleton) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eNurbs:		LOG(("(eNurbs) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::ePatch:		LOG(("(ePatch) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::eCamera:		_LoadNodeTransform(pNode, ("(eCamera) " + lString + pNode->GetName()).Buffer()); break;
+		case FbxNodeAttribute::eCamera:		_FBX_load_node_transform(pNode, ("(eCamera) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eLight:		LOG(("(eLight) " + lString + pNode->GetName()).Buffer()); break;
 		case FbxNodeAttribute::eLODGroup:	LOG(("(eLODGroup) " + lString + pNode->GetName()).Buffer()); break;
-		default:							_LoadNodeTransform(pNode, ("(unknown!) " + lString + pNode->GetName()).Buffer()); break;
+		default:							_FBX_load_node_transform(pNode, ("(unknown!) " + lString + pNode->GetName()).Buffer()); break;
 	}
 
 	int childs = pNode->GetChildCount();
@@ -177,7 +178,7 @@ void ResourceManager::_LoadNode(vector<IMesh*>& meshes, FbxNode* pNode, int dept
 	{
 		if (fbxDebug) LOG_FORMATTED("for node=%s childs=%i", pNode->GetName(), childs);
 		for (int i = 0; i < childs; i++)
-			_LoadNode(meshes, pNode->GetChild(i), depth + 1, fullPath, pRelativePath);
+			_FBX_load_node(meshes, pNode->GetChild(i), depth + 1, fullPath, pRelativePath);
 	}
 }
 
@@ -187,7 +188,7 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void ResourceManager::_LoadMesh(vector<IMesh*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const char *pRelativePath)
+void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const char *pRelativePath)
 {
 	int control_points_count = pMesh->GetControlPointsCount();
 	int polygon_count = pMesh->GetPolygonCount();
@@ -327,10 +328,10 @@ void ResourceManager::_LoadMesh(vector<IMesh*>& meshes, FbxMesh *pMesh, FbxNode 
 	if (pCoreMesh)
 		meshes.push_back(new Mesh(pCoreMesh, 1, path));
 	else
-		LOG_FATAL("ResourceManager::_LoadMesh(): Can not create mesh");
+		LOG_FATAL("ResourceManager::_FBX_load_mesh(): Can not create mesh");
 }
 
-void ResourceManager::_LoadNodeTransform(FbxNode* pNode, const char *str)
+void ResourceManager::_FBX_load_node_transform(FbxNode* pNode, const char *str)
 {
 	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
 	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
@@ -339,7 +340,7 @@ void ResourceManager::_LoadNodeTransform(FbxNode* pNode, const char *str)
 	if (fbxDebug)
 		DEBUG_LOG_FORMATTED("%s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", str, tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2]);
 }
-vector<IMesh*> ResourceManager::_FBXLoadMeshes(const char *pFullPath, const char *pRelativePath)
+vector<IMesh*> ResourceManager::_FBX_load_meshes(const char *pFullPath, const char *pRelativePath)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
@@ -347,21 +348,21 @@ vector<IMesh*> ResourceManager::_FBXLoadMeshes(const char *pFullPath, const char
 
 	if (fbxDebug) LOG("Initializing FBX SDK...");
 
-	_InitializeSdkObjects(lSdkManager, lScene);
+	_FBX_initialize_SDK_objects(lSdkManager, lScene);
 
 	FbxString lFilePath(pFullPath);
 
 	LOG_FORMATTED("Loading file: %s", lFilePath.Buffer());
 
-	bool lResult = _LoadScene(lSdkManager, lScene, lFilePath.Buffer());
+	bool lResult = _FBX_load_scene(lSdkManager, lScene, lFilePath.Buffer());
 
 	if (!lResult)
 		LOG_FATAL("An error occurred while loading the scene...");
 	else
-		_LoadSceneHierarchy(meshes, lScene, pFullPath, pRelativePath);
+		_FBX_load_scene_hierarchy(meshes, lScene, pFullPath, pRelativePath);
 
 	if (fbxDebug) LOG("Destroying FBX SDK...");
-	_DestroySdkObjects(lSdkManager, lResult);
+	_FBX_destroy_SDK_objects(lSdkManager, lResult);
 
 	return std::move(meshes);
 }
@@ -569,14 +570,20 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 	if (loaded_meshes.size())
 	{
 		model = new Model(loaded_meshes);
+		uint id;
+		model->GetID(&id);
+
+		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x id = %i", model, id);
+
 		_runtime_gameobjects.emplace(model);
-		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x", model);
+
+		*pModel = model;
 	} else	
 
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), pModelPath);
+		loaded_meshes = _FBX_load_meshes(fullPath.c_str(), pModelPath);
 		for (IMesh *m : loaded_meshes)
 		{
 			const char *meshName;
@@ -585,8 +592,13 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 			_shared_meshes.emplace(meshName, m);
 		}
 		model = new Model(loaded_meshes);
+		uint id;
+		model->GetID(&id);
+
+		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x id = %i", model, id);
+
 		_runtime_gameobjects.emplace(model);
-		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x", model);
+
 		*pModel = model;
 	}
 	else
@@ -901,12 +913,33 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 {
 	ICoreShader *coreShader = nullptr;
 
-	bool compiled = SUCCEEDED(_pCoreRender->CreateShader(&coreShader, vert, frag, geom)) && coreShader != nullptr;
+	auto hr = _pCoreRender->CreateShader(&coreShader, vert, frag, geom);
+	bool compiled = SUCCEEDED(hr) && coreShader != nullptr;
 
 	if (!compiled)
 	{
 		*pShaderOut = nullptr;
 		LOG_WARNING("ResourceManager::CreateShader(): failed to create shader");
+
+		const char *shaderText;
+
+		switch (hr)
+		{
+		case E_VERTEX_SHADER_FAILED_COMPILE: shaderText = vert; break;
+		case E_GEOM_SHADER_FAILED_COMPILE: shaderText = geom; break;
+		case E_FRAGMENT_SHADER_FAILED_COMPILE: shaderText = frag; break;
+		};
+
+		IFile *pFile;
+	
+		_pFilesystem->OpenFile(&pFile, "err_compile.shader", FILE_OPEN_MODE::WRITE);
+
+		pFile->Write((uint8 *)shaderText, (uint)strlen(shaderText));
+
+		pFile->CloseAndFree();
+
+		LOG_FORMATTED("err_compile.shader saved");
+
 		return E_FAIL;
 	}
 
@@ -939,6 +972,29 @@ API ResourceManager::CreateConstantBuffer(OUT IConstantBuffer **pConstantBuffer,
 	_runtime_constntbuffer.emplace(cb);
 
 	*pConstantBuffer = cb;
+
+	return S_OK;
+}
+
+API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
+{
+	ICoreRenderTarget *coreRenderTarget = nullptr;
+
+	bool created = SUCCEEDED(_pCoreRender->CreateRenderTarget(&coreRenderTarget)) && coreRenderTarget != nullptr;
+
+	if (!created)
+	{
+		*pRenderTargetOut = nullptr;
+		LOG_WARNING("ResourceManager::CreateRenderTarget(): failed to create constnt buffer");
+		return E_FAIL;
+	}
+
+	IRenderTarget *rt = new RenderTarget(coreRenderTarget);
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateRenderTarget() new RenderTarget %#010x", rt);
+
+	_runtime_render_targets.emplace(rt);
+
+	*pRenderTargetOut = rt;
 
 	return S_OK;
 }

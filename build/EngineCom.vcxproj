@@ -30,6 +30,7 @@
     <ClInclude Include="..\src\CoreRender\DirectX\DX11Mesh.h" />
     <ClInclude Include="..\src\CoreRender\DirectX\DX11Shader.h" />
     <ClInclude Include="..\src\CoreRender\DirectX\DX11Texture.h" />
+    <ClInclude Include="..\src\CoreRender\OpenGL\GLTexture.h" />
     <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\GameObject.h" />
@@ -43,14 +44,17 @@
     <ClInclude Include="..\src\Model.h" />
     <ClInclude Include="..\src\Pch.h" />
     <ClInclude Include="..\src\Render.h" />
+    <ClInclude Include="..\src\RenderTarget.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\Shader.h" />
+    <ClInclude Include="..\src\Shaders\common.h" />
     <ClInclude Include="..\src\Shaders\language.h" />
     <ClInclude Include="..\src\Shaders\language_dx11.h" />
     <ClInclude Include="..\src\Shaders\language_gl.h" />
     <ClInclude Include="..\src\ShaderFile.h" />
+    <ClInclude Include="..\src\Shaders\vertex.h" />
     <ClInclude Include="..\src\simplecpp.h" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\Tree.h" />
@@ -66,6 +70,7 @@
     <ClCompile Include="..\src\CoreRender\DirectX\DX11Mesh.cpp" />
     <ClCompile Include="..\src\CoreRender\DirectX\DX11Shader.cpp" />
     <ClCompile Include="..\src\CoreRender\DirectX\DX11Texture.cpp" />
+    <ClCompile Include="..\src\CoreRender\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\CoreRender\OpenGL\GLCoreRender.cpp" />
@@ -84,6 +89,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\Render.cpp" />
+    <ClCompile Include="..\src\RenderTarget.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
     <ClCompile Include="..\src\SceneManager.cpp" />
     <ClCompile Include="..\src\Input.cpp" />
@@ -95,6 +101,7 @@
     <ClCompile Include="..\src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\src\Shaders\id.shader" />
     <None Include="..\src\Shaders\mesh.shader" />
   </ItemGroup>
   <ItemGroup>

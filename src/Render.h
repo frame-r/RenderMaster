@@ -12,38 +12,61 @@ class Render : public IRender
 	ISceneManager *_pSceneMan{nullptr};
 	IFileSystem *_fsystem{nullptr};
 
-	WRL::ComPtr<IShaderFile> _standardShader;
+	WRL::ComPtr<IShaderFile> _forwardShader;
+	WRL::ComPtr<IShaderFile> _idShader;
 
-	WRL::ComPtr<IMesh> _axesMesh;
-	WRL::ComPtr<IMesh> _axesArrowMesh;
-	WRL::ComPtr<IMesh> _gridMesh;
+	WRL::ComPtr<IConstantBuffer> _meshParameters;
+	WRL::ComPtr<IConstantBuffer> _idParameters;
 
-	WRL::ComPtr<IConstantBuffer> _everyFrameParameters;
+	WRL::ComPtr<ITexture> _idTex;
+	WRL::ComPtr<IRenderTarget> _idTexRT;
 
-	#pragma pack(push, 4)
-	struct EveryFrameParameters
+	struct TexturePoolable
 	{
-		vec4 main_color;
-		vec4 nL;
-		mat4 NM;
-		mat4 MVP;
-	} params;
-	#pragma pack(pop)
-
-	float _aspect{1.0f};	
+		int64_t frame;
+		int free;
+		uint width;
+		uint height;
+		TEXTURE_FORMAT format;
+		WRL::ComPtr<ITexture> tex;
+	};
+	vector<TexturePoolable> _texture_pool;		
 
 	std::unordered_map<ShaderRequirement, WRL::ComPtr<IShader>, ShaderRequirement> _shaders_pool;
-	
-	struct TRenderMesh
+
+	#pragma pack(push, 4)
+		struct EveryFrameParameters
+		{
+			vec4 main_color;
+			vec4 nL;
+			mat4 NM;
+			mat4 MVP;
+		} params;
+
+		struct IdParameters
+		{
+			int model_id;
+		} id_params;
+	#pragma pack(pop)
+
+	struct RenderMesh
 	{
+		uint model_id;
 		ICoreMesh *mesh{nullptr};
 		mat4 modelMat;
 	};
 
+	void _update();
+
 	IShader* _get_shader(const ShaderRequirement &req);
-	bool is_opengl();	
-	void _create_render_mesh_vec(vector<TRenderMesh>& meshes);
-	void _sort_meshes(vector<TRenderMesh>& meshes);
+
+	bool _is_opengl();
+
+	void _get_render_mesh_vec(vector<RenderMesh>& meshes);
+	void _draw_meshes(const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass);
+
+	ITexture* _get_render_target_texture_2d(uint width, uint height, TEXTURE_FORMAT format);
+	void _release_texture_2d(ITexture *tex);
 
 public:
 
@@ -55,6 +78,9 @@ public:
 	void RenderFrame(const ICamera *pCamera);
 
 	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
+	API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) override;
+	API GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) override;
+	API ReleaseRenderTexture2D(ITexture *texIn) override;
 	API ShadersReload() override;
 	API GetName(OUT const char **pName) override;
 };

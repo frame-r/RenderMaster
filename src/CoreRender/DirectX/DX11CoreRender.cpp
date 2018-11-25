@@ -38,6 +38,9 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
+	for(int i= 0; i < 4; i++)
+		_clear_color[i] = 0.0f;
+
 	HRESULT hr = S_OK;
 
 	RECT rc;
@@ -177,14 +180,13 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 		hr = dxgiFactory->CreateSwapChain(_device.Get(), &sd, &_swapChain);
 	}
 
-	// Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut
+	// We block the ALT+ENTER shortcut
 	dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
-
 
 	if (FAILED(hr))
 		return hr;
 
-	create_viewport_buffers(width, height);
+	create_default_buffers(width, height);
 
 	// Viewport state
 	//
@@ -197,40 +199,33 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	vp.TopLeftY = 0;
 	_context->RSSetViewports(1, &vp);
 
-
 	// Rasterizer state
-	//
 	auto defaultRasterState = _rasterizerStatePool.FetchDefaultState();
 	_context->RSSetState(defaultRasterState.Get());
 	defaultRasterState->GetDesc(&_currentState.rasterState);
 
-	// debug
+	// Debug
 	ComPtr<ID3D11RasterizerState> _rasterState;
 	_context->RSGetState(_rasterState.GetAddressOf());
 	D3D11_RASTERIZER_DESC desc;
 	_rasterState->GetDesc(&desc);
 
-
 	// Depth Stencil state
-	//
 	auto defaultDepthStencilState = _depthStencilStatePool.FetchDefaultState();
 	_context->OMSetDepthStencilState(defaultDepthStencilState.Get(), 0);
 	defaultDepthStencilState->GetDesc(&_currentState.depthState);
 
-	// debug
+	// Debug
 	ComPtr<ID3D11DepthStencilState> _depthStencilState;
 	UINT sref = 0;
 	_context->OMGetDepthStencilState(_depthStencilState.GetAddressOf(), &sref);
 	D3D11_DEPTH_STENCIL_DESC dss;
 	_depthStencilState->GetDesc(&dss);
 
-
 	// Blend State
-	//
 	auto defaultBlendState = _blendStatePool.FetchDefaultState();
 	_context->OMSetBlendState(defaultBlendState.Get(), nullptr, 0xffffffff);
 	defaultBlendState->GetDesc(&_currentState.blendState);
-
 
 	LOG("DX11CoreRender initalized");
 
@@ -244,20 +239,18 @@ API DX11CoreRender::Free()
 
 	_context->ClearState();
 
-	destroy_viewport_buffers();
+	destroy_default_buffers();
 	_swapChain = nullptr;
 
 	_context = nullptr;
 
 	LOG("DX11CoreRender::Free()");
 
-	// debug
-	//ID3D11Debug *pDebug;
-	//auto hr = _device->QueryInterface(IID_PPV_ARGS(&pDebug));
-	//if (pDebug != nullptr)
+	// Debug
 	//{
-	//	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-	//	pDebug->Release();
+	//	WRL::ComPtr<ID3D11Debug> pDebug;
+	//	_device.As(&pDebug);	
+	//	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);	
 	//}
 
 	_device = nullptr;
@@ -465,9 +458,17 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 
 API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom)
 {
-	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, vert);
-	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, frag);
-	ID3D11GeometryShader *gs = geom ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geom) : nullptr;
+	HRESULT err;
+
+	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, vert, err);
+	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, frag, err);
+	ID3D11GeometryShader *gs = geom ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geom, err) : nullptr;
+
+	if (!vs || !fs || (frag && !fs))
+	{
+		*pShader = nullptr;
+		return err;
+	}
 
 	*pShader = new DX11Shader(vs, gs, fs);
 
@@ -477,6 +478,10 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, co
 API DX11CoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size)
 {
 	ComPtr<ID3D11Buffer> ret;
+
+	// make byte width multiplied by 16
+	if (size % 16 != 0)
+		size = 16 * ((size / 16) + 1);
 
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -492,7 +497,7 @@ API DX11CoreRender::CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint
 	return hr;
 }
 
-DXGI_FORMAT eng_to_d3d_format(TEXTURE_FORMAT format)
+DXGI_FORMAT resource_format(TEXTURE_FORMAT format)
 {
 	switch (format)
 	{
@@ -508,23 +513,65 @@ DXGI_FORMAT eng_to_d3d_format(TEXTURE_FORMAT format)
 	case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
 	case TEXTURE_FORMAT::RGB32F:
 	case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
+	case TEXTURE_FORMAT::R32UI:		return DXGI_FORMAT_R32_UINT;
 	case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
 	case TEXTURE_FORMAT::DXT3:		return DXGI_FORMAT_BC2_UNORM;
 	case TEXTURE_FORMAT::DXT5:		return DXGI_FORMAT_BC3_UNORM;
+	case TEXTURE_FORMAT::D24S8:		return DXGI_FORMAT_R24G8_TYPELESS;
 	}
 
-	LOG_FATAL("eng_to_d3d_format(): unknown format\n");
+	LOG_WARNING("eng_to_d3d11_format(): unknown format\n");
 	return DXGI_FORMAT_UNKNOWN;
 }
-UINT bind_flags(TEXTURE_CREATE_FLAGS flags, bool isColorFormat)
-{
-	UINT bind_flags = 0;
 
-	bind_flags |= D3D11_BIND_SHADER_RESOURCE;
+DXGI_FORMAT srv_format(TEXTURE_FORMAT format)
+{
+	switch (format)
+	{
+	case TEXTURE_FORMAT::R8:		return DXGI_FORMAT_R8_UNORM;
+	case TEXTURE_FORMAT::RG8:		return DXGI_FORMAT_R8G8_UNORM;
+	case TEXTURE_FORMAT::RGB8:
+	case TEXTURE_FORMAT::RGBA8:		return DXGI_FORMAT_R8G8B8A8_UNORM;
+	case TEXTURE_FORMAT::R16F:		return DXGI_FORMAT_R16_FLOAT;
+	case TEXTURE_FORMAT::RG16F:		return DXGI_FORMAT_R16G16_FLOAT;
+	case TEXTURE_FORMAT::RGB16F:
+	case TEXTURE_FORMAT::RGBA16F:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
+	case TEXTURE_FORMAT::R32F:		return DXGI_FORMAT_R32_FLOAT;
+	case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
+	case TEXTURE_FORMAT::RGB32F:
+	case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
+	case TEXTURE_FORMAT::R32UI:		return DXGI_FORMAT_R32_UINT;
+	case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
+	case TEXTURE_FORMAT::DXT3:		return DXGI_FORMAT_BC2_UNORM;
+	case TEXTURE_FORMAT::DXT5:		return DXGI_FORMAT_BC3_UNORM;
+	case TEXTURE_FORMAT::D24S8:		return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	}
+
+	LOG_WARNING("eng_to_d3d11_format(): unknown format\n");
+	return DXGI_FORMAT_UNKNOWN;
+}
+
+DXGI_FORMAT dsv_format(TEXTURE_FORMAT format)
+{
+	switch (format)
+	{
+	case TEXTURE_FORMAT::D24S8:		return DXGI_FORMAT_D24_UNORM_S8_UINT;
+	}
+
+	LOG_WARNING("dsv_format(): unknown format\n");
+	return DXGI_FORMAT_UNKNOWN;
+}
+
+UINT bind_flags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
+{
+	UINT bind_flags = D3D11_BIND_SHADER_RESOURCE;
+
+	//if (is_color_format(format))
+	//	bind_flags = D3D11_BIND_SHADER_RESOURCE;
 
 	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
 	{
-		if (isColorFormat)
+		if (is_color_format(format))
 			bind_flags |= D3D11_BIND_RENDER_TARGET;
 		else
 			bind_flags |= D3D11_BIND_DEPTH_STENCIL;
@@ -540,11 +587,11 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 	texture_desc.Height = height;
 	texture_desc.MipLevels = 1;
 	texture_desc.ArraySize = 1;
-	texture_desc.Format = eng_to_d3d_format(format);
+	texture_desc.Format = resource_format(format);
 	texture_desc.SampleDesc.Count = 1; // TODO: MSAA textures
 	texture_desc.SampleDesc.Quality = 0;
 	texture_desc.Usage = D3D11_USAGE_DEFAULT;
-	texture_desc.BindFlags = bind_flags(flags, true);
+	texture_desc.BindFlags = bind_flags(flags, format);
 	texture_desc.CPUAccessFlags = 0;
 	texture_desc.MiscFlags = 0;
 
@@ -556,14 +603,14 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 		return E_FAIL;
 	}
 
-	// create shader resource view
+	// shader resource view
+	ID3D11ShaderResourceView *srv = nullptr;
 	D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc;
-	shader_resource_view_desc.Format = texture_desc.Format;
+	shader_resource_view_desc.Format = srv_format(format);
 	shader_resource_view_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shader_resource_view_desc.TextureCube.MostDetailedMip = 0;
 	shader_resource_view_desc.TextureCube.MipLevels = texture_desc.MipLevels;
-
-	ID3D11ShaderResourceView *srv = nullptr;
+	
 	if (FAILED(_device->CreateShaderResourceView(tex, &shader_resource_view_desc, &srv)))
 	{
 		tex->Release();
@@ -572,27 +619,125 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 		return E_FAIL;
 	}
 
-	// create render target view
+	// render target (color\depth stencil)
 	ID3D11RenderTargetView *rtv = nullptr;
+	ID3D11DepthStencilView *dsv = nullptr;
+
 	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
 	{
-		D3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc;
-		render_target_view_desc.Format = texture_desc.Format;
-		render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-		render_target_view_desc.Texture2D.MipSlice = 0;
-
-		if (FAILED(_device->CreateRenderTargetView(tex, &render_target_view_desc, &rtv)))
+		if (is_color_format(format))
 		{
-			tex->Release();
-			srv->Release();
-			LOG_FATAL("DX11CoreRender::CreateTexture(): can't create render target view\n");
-			*pTexture = nullptr;
-			return E_FAIL;
+			D3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc;
+			render_target_view_desc.Format = texture_desc.Format;
+			render_target_view_desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+			render_target_view_desc.Texture2D.MipSlice = 0;
+
+			if (FAILED(_device->CreateRenderTargetView(tex, &render_target_view_desc, &rtv)))
+			{
+				tex->Release();
+				srv->Release();
+				LOG_FATAL("DX11CoreRender::CreateTexture(): can't create render target view\n");
+				*pTexture = nullptr;
+				return E_FAIL;
+			}
+		} else
+		{
+			D3D11_DEPTH_STENCIL_VIEW_DESC dsv_desc;
+			dsv_desc.Flags = 0;
+			dsv_desc.Format = dsv_format(format);
+			dsv_desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			dsv_desc.Texture2D.MipSlice = 0;
+
+			if (FAILED(_device->CreateDepthStencilView(tex, &dsv_desc, &dsv)))
+			{
+				tex->Release();
+				srv->Release();
+				LOG_FATAL("DX11CoreRender::CreateTexture(): can't create depth stencil view\n");
+				*pTexture = nullptr;
+				return E_FAIL;
+			}
 		}
 	}
 
-	DX11Texture *dxTex = new DX11Texture(tex, srv, rtv);
+	DX11Texture *dxTex = new DX11Texture(tex, srv, rtv, dsv, format);
 	*pTexture = dxTex;
+
+	return S_OK;
+}
+
+API DX11CoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
+{
+	*pRenderTarget = new DX11RenderTarget();
+	return S_OK;
+}
+
+API DX11CoreRender::SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget)
+{
+	is_default_rt_bound = 0;
+
+	DX11RenderTarget *dxrt = static_cast<DX11RenderTarget*>(pRenderTarget);
+	dxrt->bind(_context.Get());
+
+	current_render_target = dxrt;
+
+	return S_OK;
+}
+
+API DX11CoreRender::RestoreDefaultRenderTarget()
+{
+	is_default_rt_bound = 1;
+
+	_context->OMSetRenderTargets(1, _defaultRenderTargetView.GetAddressOf(), _defaultDepthStencilView.Get());
+
+	current_render_target = nullptr;
+
+	return S_OK;
+}
+
+API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readBytes, uint x, uint y)
+{
+	DX11Texture *d3dtex = static_cast<DX11Texture*>(tex);
+	ID3D11Texture2D *d3dtex2d = static_cast<ID3D11Texture2D*>(d3dtex->resource());
+
+	ID3D11Texture2D* cpuReadTex;
+	D3D11_TEXTURE2D_DESC cpuReadTexDesc;
+	ZeroMemory(&cpuReadTexDesc, sizeof(cpuReadTexDesc));
+	cpuReadTexDesc.Width = d3dtex->width();
+	cpuReadTexDesc.Height = d3dtex->height();
+	cpuReadTexDesc.MipLevels = 1;
+	cpuReadTexDesc.ArraySize = 1;
+	cpuReadTexDesc.Format = d3dtex->desc().Format;
+	cpuReadTexDesc.SampleDesc.Count = 1;
+	cpuReadTexDesc.SampleDesc.Quality = 0;
+	cpuReadTexDesc.Usage = D3D11_USAGE_STAGING;
+	cpuReadTexDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	cpuReadTexDesc.MiscFlags = 0;
+
+	_device->CreateTexture2D(&cpuReadTexDesc, nullptr, &cpuReadTex);
+
+	_context->CopyResource(cpuReadTex, d3dtex2d);
+	D3D11_MAPPED_SUBRESOURCE mapResource;
+	auto hr = _context->Map(cpuReadTex, 0, D3D11_MAP_READ, 0, &mapResource);
+
+	// TODO: make other!
+	int byteWidthElement = 4;
+
+	void *src = (char*)mapResource.pData + y * mapResource.RowPitch + x * byteWidthElement;
+	memcpy(out, reinterpret_cast<void*>(src), byteWidthElement);
+
+	*readBytes = byteWidthElement;
+
+	//struct Color {float r, g, b, a;};
+	//Color* obj;
+	//obj=new Color[(mapResource.RowPitch/sizeof(Color)) * Height];
+	//memcpy(obj, mapResource.pData,mapResource.RowPitch * Height);
+
+	//if(mousePos.x>0&&mousePos.x<Width&&mousePos.y>0&&mousePos.y<Height)
+	//if(obj[(mousePos.y*Width)+(4*mousePos.y)+mousePos.x].r==1.0/*If object that we was pick mouse have 1.0 on red bit we draw little cloud*/)model.rysujOtoczk?(model.dolny,model.gorny);
+	
+	_context->Unmap(cpuReadTex,0);
+	cpuReadTex->Release();
+	//delete [] obj;
 
 	return S_OK;
 }
@@ -683,12 +828,12 @@ API DX11CoreRender::SetViewport(uint w, uint h)
 		v.Height = (float)h;
 		v.Width = (float)w;
 
-		destroy_viewport_buffers();
+		destroy_default_buffers();
 		
 		if (FAILED(_swapChain->ResizeBuffers(1, w, h, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH)))
 			return E_ABORT;
 
-		create_viewport_buffers(w, h);
+		create_default_buffers(w, h);
 
 		_context->RSSetViewports(1, &v);
 	}
@@ -711,20 +856,22 @@ API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 
 API DX11CoreRender::Clear()
 {
-	static const FLOAT color[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-
-	_context->ClearRenderTargetView(_renderTargetView.Get(), color);
-	_context->ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	if (is_default_rt_bound)
+	{
+		_context->ClearRenderTargetView(_defaultRenderTargetView.Get(), _clear_color);
+		_context->ClearDepthStencilView(_defaultDepthStencilView.Get(), D3D11_CLEAR_DEPTH, _depth_clear_color, _stencil_clear_color);
+	} else
+		current_render_target->clear(_context.Get(), _clear_color, _depth_clear_color, _stencil_clear_color);
 
 	return S_OK;
 }
 
-void DX11CoreRender::destroy_viewport_buffers()
+void DX11CoreRender::destroy_default_buffers()
 {
-	_renderTargetTex = nullptr;
-	_renderTargetView = nullptr;
-	_depthStencilTex = nullptr;
-	_depthStencilView = nullptr;
+	_defaultRenderTargetTex = nullptr;
+	_defaultRenderTargetView = nullptr;
+	_defaultDepthStencilTex = nullptr;
+	_defaultDepthStencilView = nullptr;
 }
 
 UINT DX11CoreRender::msaa_quality(DXGI_FORMAT format, int MSAASamples)
@@ -736,12 +883,12 @@ UINT DX11CoreRender::msaa_quality(DXGI_FORMAT format, int MSAASamples)
 	return maxQuality;
 }
 
-bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
+bool DX11CoreRender::create_default_buffers(uint w, uint h)
 {
-	if (FAILED(_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)_renderTargetTex.GetAddressOf())))
+	if (FAILED(_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)_defaultRenderTargetTex.GetAddressOf())))
 		return false;
 
-	if (FAILED(_device->CreateRenderTargetView(_renderTargetTex.Get(), nullptr, _renderTargetView.GetAddressOf())))
+	if (FAILED(_device->CreateRenderTargetView(_defaultRenderTargetTex.Get(), nullptr, _defaultRenderTargetView.GetAddressOf())))
 		return false;
 
 	D3D11_TEXTURE2D_DESC descDepth;
@@ -758,7 +905,7 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
 
-	if (FAILED(_device->CreateTexture2D(&descDepth, nullptr, _depthStencilTex.GetAddressOf())))
+	if (FAILED(_device->CreateTexture2D(&descDepth, nullptr, _defaultDepthStencilTex.GetAddressOf())))
 		return false;
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
@@ -767,10 +914,10 @@ bool DX11CoreRender::create_viewport_buffers(uint w, uint h)
 	descDSV.ViewDimension = _MSAASamples > 0 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
 
-	if (FAILED(_device->CreateDepthStencilView(_depthStencilTex.Get(), &descDSV, _depthStencilView.GetAddressOf())))
+	if (FAILED(_device->CreateDepthStencilView(_defaultDepthStencilTex.Get(), &descDSV, _defaultDepthStencilView.GetAddressOf())))
 		return false;
 
-	_context->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), _depthStencilView.Get());
+	_context->OMSetRenderTargets(1, _defaultRenderTargetView.GetAddressOf(), _defaultDepthStencilView.Get());
 
 	return true;
 }
@@ -781,7 +928,7 @@ API DX11CoreRender::GetName(OUT const char **pTxt)
 	return S_OK;
 }
 
-ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* src)
+ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* src, HRESULT& err)
 {
 	ID3D11DeviceChild *ret{nullptr};
 	ComPtr<ID3DBlob> error_buffer;
@@ -791,8 +938,17 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* sr
 
 	if (FAILED(hr))
 	{
+		const char *type_str = nullptr;
+		switch (type)
+		{
+		case SHADER_VERTEX: type_str = "vertex"; err = E_VERTEX_SHADER_FAILED_COMPILE; break;
+		case SHADER_GEOMETRY: type_str = "geometry"; err = E_GEOM_SHADER_FAILED_COMPILE; break;
+		case SHADER_FRAGMENT: type_str = "fragment"; err = E_FRAGMENT_SHADER_FAILED_COMPILE; break;
+		}
+
 		if (error_buffer)
-			LOG_FATAL_FORMATTED("DX11CoreRender::_create_shader() failed to compile shader %s\n", (char*)error_buffer->GetBufferPointer());
+			LOG_FATAL_FORMATTED("DX11CoreRender::_create_shader() failed to compile %s shader %s\n", type_str, (char*)error_buffer->GetBufferPointer());
+
 	}
 	else
 	{
@@ -867,4 +1023,97 @@ const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)
 DX11ConstantBuffer::~DX11ConstantBuffer()
 {
 	buffer = nullptr;
+}
+
+void DX11RenderTarget::_get_colors(ID3D11RenderTargetView **arrayOut, uint &targetsNum)
+{
+	uint targets = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		if (_colors[i])
+		{
+			ITexture *tex = _colors[i].Get();
+			ICoreTexture *coreTex;
+			tex->GetCoreTexture(&coreTex);
+			DX11Texture *dxct = static_cast<DX11Texture*>(coreTex);
+			arrayOut[i] = dxct->rtView();
+			targets++;
+		} else
+			break;
+	}
+
+	targetsNum = targets;
+}
+
+void DX11RenderTarget::_get_depth(ID3D11DepthStencilView **depthOut)
+{
+	ITexture *dtex = _depth.Get();
+	ICoreTexture *dcoreTex;
+	dtex->GetCoreTexture(&dcoreTex);
+	DX11Texture *dxdct = static_cast<DX11Texture*>(dcoreTex);
+	*depthOut = dxdct->dsView();
+}
+
+DX11RenderTarget::~DX11RenderTarget()
+{
+}
+
+void DX11RenderTarget::bind(ID3D11DeviceContext *ctx)
+{
+	ID3D11RenderTargetView *renderTargetViews[8];
+	UINT targets;
+	_get_colors(renderTargetViews, targets);
+
+	ID3D11DepthStencilView *depthStencilView = nullptr;
+	if (_depth)
+		_get_depth(&depthStencilView);
+
+	ctx->OMSetRenderTargets(targets, renderTargetViews, depthStencilView);
+}
+
+void DX11RenderTarget::clear(ID3D11DeviceContext *ctx, FLOAT* color, FLOAT depth, UINT8 stencil)
+{
+	ID3D11RenderTargetView *renderTargetViews[8];
+	UINT targets;
+	_get_colors(renderTargetViews, targets);
+
+	for (UINT i = 0; i < targets; i++)
+	{
+		ctx->ClearRenderTargetView(renderTargetViews[i], color);
+	}
+
+	ID3D11DepthStencilView *depthStencilView = nullptr;
+	if (_depth)
+	{
+		_get_depth(&depthStencilView);
+		ctx->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH, depth, stencil);
+	}
+}
+
+API DX11RenderTarget::SetColorTexture(uint slot, ITexture *tex)
+{
+	assert(slot < 8 && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
+	_colors[slot] = WRL::ComPtr<ITexture>(tex);
+	return S_OK;
+}
+
+API DX11RenderTarget::SetDepthTexture(ITexture *tex)
+{
+	_depth = WRL::ComPtr<ITexture>(tex);
+	return S_OK;
+}
+
+API DX11RenderTarget::UnbindColorTexture(uint slot)
+{
+	assert(slot < 8 && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
+	_colors[slot] = WRL::ComPtr<ITexture>();
+	return S_OK;
+}
+
+API DX11RenderTarget::UnbindAll()
+{
+	for (auto &rtx : _colors)
+		rtx = WRL::ComPtr<ITexture>();
+	_depth = WRL::ComPtr<ITexture>();
+	return S_OK;
 }

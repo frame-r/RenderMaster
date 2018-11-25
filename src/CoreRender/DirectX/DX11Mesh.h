@@ -3,16 +3,16 @@
 
 class DX11Mesh : public ICoreMesh
 {
-	ID3D11Buffer* _pVertexBuffer{nullptr};
-	ID3D11Buffer *_pIndexBuffer = {nullptr};
-	ID3D11InputLayout* _pInputLayoyt{nullptr};
-	uint _number_of_vertices{0};
-	bool _index_presented{false};
-	uint _number_of_indicies{0};
-	MESH_INDEX_FORMAT _index_format{MESH_INDEX_FORMAT::NOTHING};
-	VERTEX_TOPOLOGY _topology{VERTEX_TOPOLOGY::TRIANGLES};
-	INPUT_ATTRUBUTE _attributes{INPUT_ATTRUBUTE::CUSTOM};
-	int _bytesWidth{0};
+	ID3D11Buffer* _pVertexBuffer = nullptr;
+	ID3D11Buffer *_pIndexBuffer = nullptr;
+	ID3D11InputLayout* _pInputLayoyt = nullptr;
+	uint _number_of_vertices = 0u;
+	bool _index_presented = false;
+	uint _number_of_indicies = 0;
+	MESH_INDEX_FORMAT _index_format = MESH_INDEX_FORMAT::NOTHING;
+	VERTEX_TOPOLOGY _topology = VERTEX_TOPOLOGY::TRIANGLES;
+	INPUT_ATTRUBUTE _attributes = INPUT_ATTRUBUTE::CUSTOM;
+	int _bytesWidth = 0;
 
 public:
 
