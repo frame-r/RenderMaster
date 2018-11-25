@@ -456,18 +456,18 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	return S_OK;
 }
 
-API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom)
+API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText)
 {
 	HRESULT err;
 
-	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, vert, err);
+	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, vertText, err);
 	if (!vs)
 	{
 		*pShader = nullptr;
 		return err;
 	}
 
-	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, frag, err);
+	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, fragText, err);
 	if (!fs)
 	{
 		vs->Release();
@@ -475,8 +475,8 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, co
 		return err;
 	}
 
-	ID3D11GeometryShader *gs = geom ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geom, err) : nullptr;
-	if (!gs && geom)
+	ID3D11GeometryShader *gs = geomText ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geomText, err) : nullptr;
+	if (!gs && geomText)
 	{
 		vs->Release();
 		fs->Release();
@@ -944,7 +944,7 @@ API DX11CoreRender::GetName(OUT const char **pTxt)
 
 ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* src, HRESULT& err)
 {
-	ID3D11DeviceChild *ret{nullptr};
+	ID3D11DeviceChild *ret = nullptr;
 	ComPtr<ID3DBlob> error_buffer;
 	ComPtr<ID3DBlob> shader_buffer;
 
@@ -970,7 +970,7 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* sr
 	{
 		unsigned char *data = (unsigned char *)shader_buffer->GetBufferPointer();
 		int size = (int)shader_buffer->GetBufferSize();
-		HRESULT res = S_FALSE;
+		HRESULT res = E_FAIL;
 
 		switch (type)
 		{
@@ -1000,8 +1000,7 @@ const char *get_shader_profile(int type)
 		case SHADER_GEOMETRY: return "gs_5_0";
 		case SHADER_FRAGMENT: return "ps_5_0";
 	}
-
-	return NULL;
+	return nullptr;
 }
 
 const char *get_main_function(int type)
@@ -1012,8 +1011,7 @@ const char *get_main_function(int type)
 		case SHADER_GEOMETRY: return "mainGS";
 		case SHADER_FRAGMENT: return "mainFS";
 	}
-
-	return NULL;
+	return nullptr;
 }
 
 const char* dgxgi_to_hlsl_type(DXGI_FORMAT f)

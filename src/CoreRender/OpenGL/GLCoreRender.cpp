@@ -547,7 +547,7 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 	return S_OK;
 }
 
-API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom)
+API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText)
 {
 	GLuint vertID = 0;
 	GLuint geomID = 0;
@@ -557,15 +557,15 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, cons
 
 	GLuint programID = glCreateProgram();
 	
-	if (!create_shader(vertID, GL_VERTEX_SHADER, vert, programID))
+	if (!create_shader(vertID, GL_VERTEX_SHADER, vertText, programID))
 	{
 		glDeleteProgram(programID);
 		return E_VERTEX_SHADER_FAILED_COMPILE;
 	}
 	
-	if (geom != nullptr)
+	if (geomText != nullptr)
 	{
-		if (!create_shader(geomID, GL_GEOMETRY_SHADER, geom, programID))
+		if (!create_shader(geomID, GL_GEOMETRY_SHADER, geomText, programID))
 		{
 			glDeleteProgram(programID);
 			glDeleteShader(vertID);
@@ -573,7 +573,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, cons
 		}
 	}
 	
-	if (!create_shader(fragID, GL_FRAGMENT_SHADER, frag, programID))
+	if (!create_shader(fragID, GL_FRAGMENT_SHADER, fragText, programID))
 	{
 		glDeleteProgram(programID);
 		glDeleteShader(vertID);
