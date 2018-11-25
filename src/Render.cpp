@@ -120,7 +120,10 @@ IShader* Render::_get_shader(const ShaderRequirement &req)
 		bool compiled = SUCCEEDED(_pResMan->CreateShader(&pShader, textVertOut, nullptr, textFragOut)) && pShader != nullptr;
 
 		if (!compiled)
+		{
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
+			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(nullptr));
+		}
 		else
 			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(pShader));
 	}
@@ -171,6 +174,7 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 	{
 		INPUT_ATTRUBUTE attribs;
 		renderMesh.mesh->GetAttributes(&attribs);		
+
 		IShader *shader = _get_shader({attribs, pass});
 
 		if (!shader)

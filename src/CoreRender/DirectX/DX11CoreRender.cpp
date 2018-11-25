@@ -461,11 +461,25 @@ API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vert, co
 	HRESULT err;
 
 	ID3D11VertexShader *vs = (ID3D11VertexShader*) create_shader_by_src(SHADER_VERTEX, vert, err);
-	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, frag, err);
-	ID3D11GeometryShader *gs = geom ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geom, err) : nullptr;
-
-	if (!vs || !fs || (frag && !fs))
+	if (!vs)
 	{
+		*pShader = nullptr;
+		return err;
+	}
+
+	ID3D11PixelShader *fs = (ID3D11PixelShader*) create_shader_by_src(SHADER_FRAGMENT, frag, err);
+	if (!fs)
+	{
+		vs->Release();
+		*pShader = nullptr;
+		return err;
+	}
+
+	ID3D11GeometryShader *gs = geom ? (ID3D11GeometryShader*)create_shader_by_src(SHADER_GEOMETRY, geom, err) : nullptr;
+	if (!gs && geom)
+	{
+		vs->Release();
+		fs->Release();
 		*pShader = nullptr;
 		return err;
 	}
@@ -947,8 +961,10 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* sr
 		}
 
 		if (error_buffer)
-			LOG_FATAL_FORMATTED("DX11CoreRender::_create_shader() failed to compile %s shader %s\n", type_str, (char*)error_buffer->GetBufferPointer());
-
+		{
+			LOG_FATAL_FORMATTED("DX11CoreRender::create_shader_by_src() failed to compile %s shader. Error:", type_str);
+			LOG_FATAL_FORMATTED("%s", (char*)error_buffer->GetBufferPointer());
+		}
 	}
 	else
 	{

@@ -70,7 +70,8 @@ bool GLCoreRender::check_shader_errors(int id, GLenum constant)
 		else if (constant == GL_LINK_STATUS)
 			glGetProgramInfoLog(id, length, &length, error_message);
 
-		LOG_FATAL(error_message);
+		LOG_FATAL_FORMATTED("GLCoreRender::check_shader_errors(): failed to compile shader. Error:");
+		LOG_FATAL_FORMATTED("%s", error_message);
 
 		delete error_message;
 

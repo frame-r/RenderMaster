@@ -919,7 +919,7 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 	if (!compiled)
 	{
 		*pShaderOut = nullptr;
-		LOG_WARNING("ResourceManager::CreateShader(): failed to create shader");
+		
 
 		const char *shaderText;
 
@@ -938,7 +938,7 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 
 		pFile->CloseAndFree();
 
-		LOG_FORMATTED("err_compile.shader saved");
+		LOG_FATAL_FORMATTED("ResourceManager::CreateShader(): failed to create shader. Shader saved to \"err_compile.shader\"");
 
 		return E_FAIL;
 	}
