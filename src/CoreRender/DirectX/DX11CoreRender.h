@@ -362,30 +362,50 @@ class DX11CoreRender final : public ICoreRender
 		}
 	};
 
-	struct State
-	{
-		D3D11_RASTERIZER_DESC rasterState;
-		D3D11_DEPTH_STENCIL_DESC depthState;
-		D3D11_BLEND_DESC blendState;
-
-		// TODO: shader, textures, render target
-	};
-
 	RasterizerStatePool _rasterizerStatePool{*this};
 	DepthStencilStatePool _depthStencilStatePool{*this};
 	BlendStatePool _blendStatePool{*this};
 
-	State _currentState;
+	struct State
+	{
+		// Rasterizer
+		//
+		D3D11_RASTERIZER_DESC rasterState;
+
+		// Depth/Stencil
+		//
+		D3D11_DEPTH_STENCIL_DESC depthStencilState;
+
+		// Viewport
+		// TODO
+
+		// Blending
+		//
+		D3D11_BLEND_DESC blendState;
+
+		// Shader
+		// TODO
+
+		// Textures
+		// TODO
+
+		// Framebuffer
+		// TODO
+
+		// Clear
+		//
+		FLOAT clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+		FLOAT depth_clear_color = 1.0f;
+		UINT8 stencil_clear_color = 0;
+	};
+
+	State _state;
 	std::stack<State> _statesStack;
 
 	IResourceManager *_pResMan = nullptr;
 
 	int _MSAASamples = 0;
 	int _VSyncOn = 1;
-
-	FLOAT _clear_color[4];
-	const FLOAT _depth_clear_color = 1.0f;
-	const UINT8 _stencil_clear_color = 0;
 
 	int is_default_rt_bound = 1;
 	DX11RenderTarget *current_render_target = nullptr;

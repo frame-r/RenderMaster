@@ -38,9 +38,6 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-	for(int i= 0; i < 4; i++)
-		_clear_color[i] = 0.0f;
-
 	HRESULT hr = S_OK;
 
 	RECT rc;
@@ -202,7 +199,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	// Rasterizer state
 	auto defaultRasterState = _rasterizerStatePool.FetchDefaultState();
 	_context->RSSetState(defaultRasterState.Get());
-	defaultRasterState->GetDesc(&_currentState.rasterState);
+	defaultRasterState->GetDesc(&_state.rasterState);
 
 	// Debug
 	ComPtr<ID3D11RasterizerState> _rasterState;
@@ -213,7 +210,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	// Depth Stencil state
 	auto defaultDepthStencilState = _depthStencilStatePool.FetchDefaultState();
 	_context->OMSetDepthStencilState(defaultDepthStencilState.Get(), 0);
-	defaultDepthStencilState->GetDesc(&_currentState.depthState);
+	defaultDepthStencilState->GetDesc(&_state.depthStencilState);
 
 	// Debug
 	ComPtr<ID3D11DepthStencilState> _depthStencilState;
@@ -225,7 +222,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	// Blend State
 	auto defaultBlendState = _blendStatePool.FetchDefaultState();
 	_context->OMSetBlendState(defaultBlendState.Get(), nullptr, 0xffffffff);
-	defaultBlendState->GetDesc(&_currentState.blendState);
+	defaultBlendState->GetDesc(&_state.blendState);
 
 	LOG("DX11CoreRender initalized");
 
@@ -271,7 +268,7 @@ API DX11CoreRender::SwapBuffers()
 
 API DX11CoreRender::PushStates()
 {
-	_statesStack.push(_currentState);
+	_statesStack.push(_state);
 	return S_OK;
 }
 
@@ -284,25 +281,25 @@ API DX11CoreRender::PopStates()
 	static BlendHash blendEq;
 	static DepthStencilHash depthStenciEq;
 
-	if (!rasterEq.operator()(state.rasterState, _currentState.rasterState))
+	if (!rasterEq.operator()(state.rasterState, _state.rasterState))
 	{
 		auto s = _rasterizerStatePool.FetchState(state.rasterState);
 		_context->RSSetState(s.Get());
 	}
 
-	if (!blendEq.operator()(state.blendState, _currentState.blendState))
+	if (!blendEq.operator()(state.blendState, _state.blendState))
 	{
 		auto s = _blendStatePool.FetchState(state.blendState);
 		_context->OMSetBlendState(s.Get(), nullptr, 0xffffffff);
 	}
 
-	if (!depthStenciEq.operator()(state.depthState, _currentState.depthState))
+	if (!depthStenciEq.operator()(state.depthStencilState, _state.depthStencilState))
 	{
-		auto s = _depthStencilStatePool.FetchState(state.depthState);
+		auto s = _depthStencilStatePool.FetchState(state.depthStencilState);
 		_context->OMSetDepthStencilState(s.Get(), 0);
 	}
 
-	_currentState = state;
+	_state = state;
 
 	return S_OK;
 }
@@ -817,10 +814,10 @@ API DX11CoreRender::Draw(ICoreMesh* mesh)
 
 API DX11CoreRender::SetDepthState(int enabled)
 {
-	if (_currentState.depthState.DepthEnable != enabled)
+	if (_state.depthStencilState.DepthEnable != enabled)
 	{
-		_currentState.depthState.DepthEnable = enabled;
-		ComPtr<ID3D11DepthStencilState> d = _depthStencilStatePool.FetchState(_currentState.depthState);
+		_state.depthStencilState.DepthEnable = enabled;
+		ComPtr<ID3D11DepthStencilState> d = _depthStencilStatePool.FetchState(_state.depthStencilState);
 		_context->OMSetDepthStencilState(d.Get(), 0);
 	}
 
@@ -872,10 +869,10 @@ API DX11CoreRender::Clear()
 {
 	if (is_default_rt_bound)
 	{
-		_context->ClearRenderTargetView(_defaultRenderTargetView.Get(), _clear_color);
-		_context->ClearDepthStencilView(_defaultDepthStencilView.Get(), D3D11_CLEAR_DEPTH, _depth_clear_color, _stencil_clear_color);
+		_context->ClearRenderTargetView(_defaultRenderTargetView.Get(), _state.clear_color);
+		_context->ClearDepthStencilView(_defaultDepthStencilView.Get(), D3D11_CLEAR_DEPTH, _state.depth_clear_color, _state.stencil_clear_color);
 	} else
-		current_render_target->clear(_context.Get(), _clear_color, _depth_clear_color, _stencil_clear_color);
+		current_render_target->clear(_context.Get(), _state.clear_color, _state.depth_clear_color, _state.stencil_clear_color);
 
 	return S_OK;
 }
