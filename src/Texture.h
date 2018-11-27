@@ -6,7 +6,8 @@ class Texture : public ITexture
 	ICoreTexture *_coreTexture = nullptr;
 
 public:
-	Texture(ICoreTexture *tex, int isShared, const string& fileIn) : _coreTexture(tex), _isShared(isShared), _file(fileIn) {}
+	Texture(ICoreTexture *tex) : _coreTexture(tex) {}
+	Texture(ICoreTexture *tex, const string& filePath) : _coreTexture(tex), _file(filePath) {}
 	virtual ~Texture();
 
 	API GetCoreTexture(ICoreTexture **texOut) override;

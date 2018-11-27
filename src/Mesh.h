@@ -7,7 +7,7 @@ class Mesh : public IMesh
 
 public:
 	Mesh(ICoreMesh *m) : _coreMesh(m) {}
-	Mesh(ICoreMesh *m, int isShared, const string& fileIn) : _coreMesh(m), _isShared(isShared), _file(fileIn) {}
+	Mesh(ICoreMesh *m, const string& filePath) : _coreMesh(m),_file(filePath) {}
 	virtual ~Mesh(); 
 
 	API GetCoreMesh(OUT ICoreMesh **meshOut) override;

@@ -34,7 +34,6 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 // shared and runtime
 #define BASE_RESOURCE_INTERFACE \
 	virtual API GetReferences(int *refsOut) = 0; \
-	virtual API IsShared(int *isShared) = 0; \
 	virtual API GetFile(OUT const char **file) = 0;
 
 

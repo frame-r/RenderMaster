@@ -326,7 +326,7 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
-		meshes.push_back(new Mesh(pCoreMesh, 1, path));
+		meshes.push_back(new Mesh(pCoreMesh, path));
 	else
 		LOG_FATAL("ResourceManager::_FBX_load_mesh(): Can not create mesh");
 }
@@ -767,7 +767,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 	if (stdCoreMesh)
 	{
-		Mesh *m = new Mesh(stdCoreMesh, 1, pMeshPath);
+		Mesh *m = new Mesh(stdCoreMesh, pMeshPath);
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadMesh() new Mesh %#010x", m);
 		*pMesh = m;
 		_sharedMeshes.emplace(pMeshPath, m);
@@ -899,7 +899,7 @@ API ResourceManager::CreateTexture(OUT ITexture **pTextureOut, uint width, uint 
 		return E_FAIL;
 	}
 
-	Texture *tex = new Texture(pCoreTex, 0, "");
+	Texture *tex = new Texture(pCoreTex);
 	DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
 
 	_runtimeTextures.emplace(tex);

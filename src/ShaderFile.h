@@ -6,8 +6,8 @@ class ShaderFile : public IShaderFile
 	const char *text = nullptr;
 
 public:
-	ShaderFile(const char *textIn, const string& fileIn) :
-		text(textIn), _file(fileIn)	{}
+	ShaderFile(const char *textIn, const string& filePath) :
+		text(textIn), _file(filePath)	{}
 
 	virtual ~ShaderFile();
 

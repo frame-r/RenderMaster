@@ -225,12 +225,10 @@ bool is_compressed_format(TEXTURE_FORMAT format);
 
 #define BASE_RESOURCE_HEADER \
 private: \
-	int _isShared = 0; \
 	string _file; \
 	int _refs = 0; \
 public: \
 	API GetReferences(int *refsOut) override; \
-	API IsShared(int *isShared) override; \
 	API GetFile(OUT const char **file) override; \
 	STDMETHODIMP_(ULONG) AddRef() override; \
 	STDMETHODIMP_(ULONG) Release() override; \
@@ -242,11 +240,6 @@ public: \
 	API CLASS::GetReferences(int *refsOut) \
 	{ \
 		*refsOut = _refs; \
-		return S_OK; \
-	} \
-	API CLASS::IsShared(int *isShared) \
-	{ \
-		*isShared = _isShared; \
 		return S_OK; \
 	} \
 	API CLASS::GetFile(OUT const char **file) \
@@ -268,7 +261,7 @@ public: \
 		{ \
 			IResourceManager *irm = getResourceManager(CORE); \
 			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
-			if (_isShared) \
+			if (!_file.empty()) \
 				rm->REMOVE_SHARED_METHOD(_file); \
 			else \
 				rm->REMOVE_RUNTIME_METHOD(this); \
