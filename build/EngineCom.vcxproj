@@ -101,6 +101,7 @@
     <ClCompile Include="..\src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\src\CoreRender\DirectX\states_pools.inl" />
     <None Include="..\src\Shaders\id.shader" />
     <None Include="..\src\Shaders\mesh.shader" />
   </ItemGroup>

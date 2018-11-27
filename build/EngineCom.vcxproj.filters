@@ -200,5 +200,8 @@
     <None Include="..\src\Shaders\id.shader">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\src\CoreRender\DirectX\states_pools.inl">
+      <Filter>CoreRender\DirectX</Filter>
+    </None>
   </ItemGroup>
 </Project>
