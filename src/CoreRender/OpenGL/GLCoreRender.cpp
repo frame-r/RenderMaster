@@ -408,11 +408,22 @@ API GLCoreRender::PopStates()
 	State& state = _statesStack.top();
 	_statesStack.pop();
 
+	// Blending
+	//
+	if (_state.blending_enabled != state.blending_enabled)
+	{
+		if (state.blending_enabled)
+			glEnable(GL_BLEND);
+		else
+			glDisable(GL_BLEND);
+	}
+
+	if (_state.src_blend_factor != state.src_blend_factor || _state.dst_blend_factor != state.dst_blend_factor)
+		glBlendFunc(state.src_blend_factor, state.dst_blend_factor);
+
+
 	// Rasterizer
 	//
-	if (state.poligon_mode != _state.poligon_mode)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	if (state.culling_enabled != _state.culling_enabled)
 	{
 		if (state.culling_enabled)
@@ -420,6 +431,9 @@ API GLCoreRender::PopStates()
 		else
 			glDisable(GL_CULL_FACE);
 	}
+
+	if (state.poligon_mode != _state.poligon_mode)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	if (state.culling_mode != _state.culling_mode)
 		glCullFace(state.culling_mode);
@@ -439,18 +453,7 @@ API GLCoreRender::PopStates()
 	if (state.viewport_x != _state.viewport_x || state.viewport_y != _state.viewport_y || state.viewport_w != _state.viewport_w || state.viewport_h != _state.viewport_h)
 		glViewport(state.viewport_x, state.viewport_y, state.viewport_w, state.viewport_h);
 
-	// Blending
-	//
-	if (_state.blending_enabled != state.blending_enabled)
-	{
-		if (state.blending_enabled)
-			glEnable(GL_BLEND);
-		else
-			glDisable(GL_BLEND);
-	}
 
-	if (_state.src_blend_factor != state.src_blend_factor || _state.dst_blend_factor != state.dst_blend_factor)
-		glBlendFunc(state.src_blend_factor, state.dst_blend_factor);
 
 	// Shader
 	//

@@ -60,6 +60,10 @@ class DX11CoreRender final : public ICoreRender
 
 	struct State
 	{
+		// Blending
+		//
+		D3D11_BLEND_DESC blendState;
+
 		// Rasterizer
 		//
 		D3D11_RASTERIZER_DESC rasterState;
@@ -70,10 +74,6 @@ class DX11CoreRender final : public ICoreRender
 
 		// Viewport
 		// TODO
-
-		// Blending
-		//
-		D3D11_BLEND_DESC blendState;
 
 		// Shader
 		// TODO

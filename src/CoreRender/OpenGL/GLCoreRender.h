@@ -46,10 +46,17 @@ class GLCoreRender final : public ICoreRender
 
 	struct State
 	{
+		// Blending
+		// Note: blending operation always "+"
+		//
+		int blending_enabled = 0;
+		GLenum src_blend_factor = GL_ZERO; // written by shader
+		GLenum dst_blend_factor = GL_ZERO; // value in framebuffer
+
 		// Rasterizer
 		//
-		GLint poligon_mode = GL_FILL;				// GL_FILL	GL_LINE
 		GLboolean culling_enabled = GL_FALSE;		// GL_FALSE	GL_TRUE
+		GLint poligon_mode = GL_FILL;				// GL_FILL	GL_LINE
 		GLint culling_mode = GL_FRONT;				// GL_FRONT	GL_BACK
 
 		// Depth/Stencil
@@ -60,13 +67,6 @@ class GLCoreRender final : public ICoreRender
 		//
 		GLint viewport_x = 0, viewport_y = 0;
 		GLint viewport_w = 0, viewport_h = 0;
-
-		// Blending
-		// Note: blending operation always "+"
-		//
-		int blending_enabled = 0;
-		GLenum src_blend_factor = GL_ZERO; // written by shader
-		GLenum dst_blend_factor = GL_ZERO; // value in framebuffer
 
 		// Shader
 		//
