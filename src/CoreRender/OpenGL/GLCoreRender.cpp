@@ -12,10 +12,37 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-namespace
+GLMesh *getGLMesh(IMesh *mesh)
 {
-	PIXELFORMATDESCRIPTOR pfd{};
-};
+	ICoreMesh *cm = getCoreMesh(mesh);
+	return static_cast<GLMesh*>(cm);
+}
+
+GLTexture *getGLTexture(ITexture *tex)
+{
+	ICoreTexture *ct = getCoreTexture(tex);
+	return static_cast<GLTexture*>(ct);
+}
+
+GLShader *getGLShader(IShader *shader)
+{
+	ICoreShader *cs = getCoreShader(shader);
+	return static_cast<GLShader*>(cs);
+}
+
+GLUniformBuffer *getGLConstantBuffer(IConstantBuffer *cb)
+{
+	ICoreConstantBuffer *ccb = getCoreConstantBuffer(cb);
+	return static_cast<GLUniformBuffer*>(ccb);
+}
+
+GLRenderTarget *getGLRenderTarget(IRenderTarget *rt)
+{
+	ICoreRenderTarget *crt = getCoreRenderTarget(rt);
+	return static_cast<GLRenderTarget*>(crt);
+}
+
+PIXELFORMATDESCRIPTOR pfd{};
 
 void CHECK_GL_ERRORS()
 {
@@ -288,48 +315,50 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 
 	CHECK_GL_ERRORS();
 
+	// Fill state
+	//
+	GLboolean blending;
+	glGetBooleanv(GL_BLEND, &blending);
+	assert(_state.blending == (bool)blending && "Incorrect default state");
+
+	GLint src, dest;
+	glGetIntegerv(GL_BLEND_SRC_RGB, &src);
+	glGetIntegerv(GL_BLEND_DST_RGB, &dest);
+	assert(_state.srcBlend == src && "Incorrect default state");
+	assert(_state.dstBlend == dest && "Incorrect default state");
+
+	GLfloat c[4];
+	glGetFloatv(GL_COLOR_CLEAR_VALUE, c);
+
+	assert(_state.culling == (bool)glIsEnabled(GL_CULL_FACE) && "Incorrect default state");
+
+	GLint cullMode;
+	glGetIntegerv(GL_CULL_FACE_MODE, &cullMode);
+	assert(_state.cullingMode == cullMode && "Incorrect default state");
+
+	GLint i[2];
+	glGetIntegerv(GL_POLYGON_MODE, i);
+	assert(_state.polygonMode == i[0] && "Incorrect default state");
+
+	GLboolean depthTest;
+	glGetBooleanv(GL_DEPTH_TEST, &depthTest);
+	assert(_state.depthTest == (bool)depthTest && "Incorrect default state");
+
+	GLint vp[4];
+	glGetIntegerv(GL_VIEWPORT, vp);
+	_state.viewportX = vp[0];
+	_state.viewportY = vp[1];
+	_state.viewportWidth = vp[2];
+	_state.viewportHeigth = vp[3];
+
 	//vsync
 	if (VSyncOn)
 		wglSwapIntervalEXT(1);
 	else
 		wglSwapIntervalEXT(0);
 
-	glEnable(GL_DEPTH_TEST);
 	glClearDepth(1.0f);
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // to DirectX conformity
-
-	glDisable(GL_CULL_FACE);
-
-	// Fill state
-	//
-	_state.blending_enabled = 0;
-	GLint blend_factor;
-	glGetIntegerv(GL_BLEND_SRC_RGB, &blend_factor);
-	_state.src_blend_factor = blend_factor;
-	glGetIntegerv(GL_BLEND_DST_ALPHA, &blend_factor);
-	_state.src_blend_factor = blend_factor;
-
-	glGetFloatv(GL_COLOR_CLEAR_VALUE, &_state.clear_color[0]);
-
-	GLint i[2];
-	glGetIntegerv(GL_POLYGON_MODE, i);
-	_state.poligon_mode = i[0];
-
-	_state.culling_enabled = glIsEnabled(GL_CULL_FACE);
-	glGetIntegerv(GL_CULL_FACE_MODE, &_state.culling_mode);
-
-	glGetBooleanv(GL_DEPTH_TEST, &_state.depth_test_enabled);
-
-	GLint vp[4];
-	glGetIntegerv(GL_VIEWPORT, vp);
-	_state.viewport_x = vp[0];
-	_state.viewport_y = vp[1];
-	_state.viewport_w = vp[2];
-	_state.viewport_h = vp[3];
-
-	GLint fbo;
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
-	_state.fbo = fbo;
 
 	CHECK_GL_ERRORS();
 
@@ -396,10 +425,16 @@ API GLCoreRender::SwapBuffers()
 	return S_OK;
 }
 
+API GLCoreRender::ClearState()
+{
+	_state = State();
+	// TODO: actualy clear state
+	return S_OK;
+}
+
 API GLCoreRender::PushStates()
 {
 	_statesStack.push(_state);
-
 	return S_OK;
 }
 
@@ -410,39 +445,40 @@ API GLCoreRender::PopStates()
 
 	// Blending
 	//
-	if (_state.blending_enabled != state.blending_enabled)
+	if (_state.blending != state.blending)
 	{
-		if (state.blending_enabled)
+		if (state.blending)
 			glEnable(GL_BLEND);
 		else
 			glDisable(GL_BLEND);
 	}
 
-	if (_state.src_blend_factor != state.src_blend_factor || _state.dst_blend_factor != state.dst_blend_factor)
-		glBlendFunc(state.src_blend_factor, state.dst_blend_factor);
-
+	if (_state.srcBlend != state.srcBlend || _state.dstBlend != state.dstBlend)
+		glBlendFunc(state.srcBlend, state.dstBlend);
 
 	// Rasterizer
 	//
-	if (state.culling_enabled != _state.culling_enabled)
+	if (state.culling != _state.culling)
 	{
-		if (state.culling_enabled)
+		if (state.culling)
+		{
 			glEnable(GL_CULL_FACE);
+			if (state.cullingMode != _state.cullingMode)
+				glCullFace(state.cullingMode);
+		}
 		else
 			glDisable(GL_CULL_FACE);
 	}
 
-	if (state.poligon_mode != _state.poligon_mode)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (state.polygonMode != _state.polygonMode)
+		glPolygonMode(GL_FRONT_AND_BACK, _state.polygonMode);
 
-	if (state.culling_mode != _state.culling_mode)
-		glCullFace(state.culling_mode);
 
 	// Depth/Stencil
 	//
-	if (state.depth_test_enabled != _state.depth_test_enabled)
+	if (state.depthTest != _state.depthTest)
 	{
-		if (state.depth_test_enabled)
+		if (state.depthTest)
 			glEnable(GL_DEPTH_TEST);
 		else
 			glDisable(GL_DEPTH_TEST);
@@ -450,27 +486,44 @@ API GLCoreRender::PopStates()
 
 	// Viewport
 	//
-	if (state.viewport_x != _state.viewport_x || state.viewport_y != _state.viewport_y || state.viewport_w != _state.viewport_w || state.viewport_h != _state.viewport_h)
-		glViewport(state.viewport_x, state.viewport_y, state.viewport_w, state.viewport_h);
-
-
+	if (state.viewportX != _state.viewportX || state.viewportY != _state.viewportY || state.viewportWidth != _state.viewportWidth || state.viewportHeigth != _state.viewportHeigth)
+		glViewport(state.viewportX, state.viewportY, state.viewportWidth, state.viewportHeigth);
 
 	// Shader
 	//
-	if (state.shader_program_id != _state.shader_program_id)
-		glUseProgram(state.shader_program_id);
+	if (state.shader.Get() != _state.shader.Get())
+	{		
+		if (state.shader.Get())
+		{
+			GLShader *glShader = getGLShader(state.shader.Get());
+			glUseProgram(glShader->programID());
+		} else
+			glUseProgram(0);
+	}
 
 	// Textures
 	//
-	for (int i = 0; i < 16; i++)
 	{
-		if (state.tex_slots_bindings[i].tex_id != _state.tex_slots_bindings[i].tex_id ||
-			state.tex_slots_bindings[i].shader_variable_id != _state.tex_slots_bindings[i].shader_variable_id)
+		GLShader *glShader = getGLShader(_state.shader.Get());
+		GLuint programID = glShader->programID();
+
+		for (int i = 0; i < 16; i++)
 		{
-			// TODO: make other types (not only GL_TEXTURE_2D)!
-			glActiveTexture(GL_TEXTURE0 + i);									// now work with slot == i
-			glBindTexture(GL_TEXTURE_2D, state.tex_slots_bindings[i].tex_id);	// slot <- texture id
-			glUniform1i(state.tex_slots_bindings[i].shader_variable_id, i);			// slot <- shader variable id
+			if (state.texShaderBindings[i].Get() != _state.texShaderBindings[i].Get())
+			{
+				GLTexture *glTex = getGLTexture(_state.texShaderBindings[i].Get());
+
+				// now work with slot == i
+				// TODO: make other types (not only GL_TEXTURE_2D)!
+				glActiveTexture(GL_TEXTURE0 + i);
+
+				// texture id -> slot
+				glBindTexture(GL_TEXTURE_2D, glTex->textureID());
+
+				// shader variable id -> slot
+				GLuint tex_ID = glGetUniformLocation(programID, ("_texture_" + std::to_string(i)).c_str());
+				glUniform1i(glTex->textureID(), i);
+			}
 		}
 	}
 
@@ -479,9 +532,9 @@ API GLCoreRender::PopStates()
 
 	// Clear
 	//
-	if (state.clear_color[0] != _state.clear_color[0] || state.clear_color[1] != _state.clear_color[1] ||
-		state.clear_color[2] != _state.clear_color[2] || state.clear_color[3] != _state.clear_color[3])
-		glClearColor(state.clear_color[0], state.clear_color[1], state.clear_color[2], state.clear_color[3]);
+	if (state.clearColor[0] != _state.clearColor[0] || state.clearColor[1] != _state.clearColor[1] ||
+		state.clearColor[2] != _state.clearColor[2] || state.clearColor[3] != _state.clearColor[3])
+		glClearColor(state.clearColor[0], state.clearColor[1], state.clearColor[2], state.clearColor[3]);
 
 	_state = state;
 
@@ -758,12 +811,12 @@ API GLCoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 	return S_OK;
 }
 
-API GLCoreRender::SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget)
+API GLCoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 {
-	GLRenderTarget *glRT = static_cast<GLRenderTarget*>(pRenderTarget);
-	_state.fbo = glRT->ID();
-	glBindFramebuffer(GL_FRAMEBUFFER, glRT->ID());
+	_state.renderTarget = WRL::ComPtr<IRenderTarget>(pRenderTarget);
 
+	GLRenderTarget *glRT = getGLRenderTarget(pRenderTarget);
+	glBindFramebuffer(GL_FRAMEBUFFER, glRT->ID());
 	glRT->bind();
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -794,8 +847,166 @@ API GLCoreRender::SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget)
 
 API GLCoreRender::RestoreDefaultRenderTarget()
 {
-	_state.fbo = 0;
+	_state.renderTarget = WRL::ComPtr<IRenderTarget>();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	return S_OK;
+}
+
+API GLCoreRender::SetShader(IShader* pShader)
+{
+	if (_state.shader.Get() == pShader)
+		return S_OK;
+
+	_state.shader = WRL::ComPtr<IShader>(pShader);
+
+	CHECK_GL_ERRORS();	
+	
+	if (pShader == nullptr)
+		glUseProgram(0);
+	else
+	{
+		GLShader *pGLShader = getGLShader(pShader);
+		glUseProgram(pGLShader->programID());
+	}
+
+	CHECK_GL_ERRORS();
+			
+	return S_OK;
+}
+
+
+API GLCoreRender::SetConstantBuffer(IConstantBuffer *pBuffer, uint slot)
+{
+	assert(_state.shader.Get() && "GLCoreRender::SetConstantBuffer(): shader not set");
+
+	CHECK_GL_ERRORS();
+
+	// uniform buffer -> UBO slot
+	GLUniformBuffer *glBuf = getGLConstantBuffer(pBuffer);
+	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
+
+	// shader -> UBO slot
+	string s = "const_buffer_" + std::to_string(slot);
+	GLShader *glShader = getGLShader(_state.shader.Get());
+	unsigned int block_index = glGetUniformBlockIndex(glShader->programID(), s.c_str());
+	glUniformBlockBinding(glShader->programID(), block_index, slot);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData)
+{
+	CHECK_GL_ERRORS();
+
+	GLUniformBuffer *glBuf = getGLConstantBuffer(pBuffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, glBuf->ID());
+	GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+	memcpy(p, pData, glBuf->size());
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::SetMesh(IMesh* mesh)
+{
+	if (_state.mesh.Get() == mesh)
+		return S_OK;
+
+	CHECK_GL_ERRORS();
+
+	_state.mesh = WRL::ComPtr<IMesh>(mesh);
+
+	if (mesh == nullptr)
+		glBindVertexArray(0);
+	else
+	{
+		const GLMesh *glMesh = getGLMesh(mesh);
+		glBindVertexArray(glMesh->VAO_ID());
+	}
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::Draw(IMesh *mesh)
+{
+	assert(_state.shader.Get() && "GLCoreRender::Draw(): shader not set");
+
+	CHECK_GL_ERRORS();
+
+	if (_state.mesh.Get() != mesh)
+		SetMesh(mesh);
+
+	uint vertecies;
+	mesh->GetNumberOfVertex(&vertecies);
+
+	VERTEX_TOPOLOGY topology;
+	mesh->GetVertexTopology(&topology);
+
+	// glDrawElements - for index! Why it works?
+	glDrawArrays((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, 0, vertecies);
+	
+	CHECK_GL_ERRORS();
+	
+	return S_OK;
+}
+
+API GLCoreRender::SetDepthState(int enabled)
+{
+	CHECK_GL_ERRORS();
+
+	if (bool(enabled) == bool(_state.depthTest))
+		return S_OK;
+
+	if (enabled)
+		glEnable(GL_DEPTH_TEST);
+	else
+		glDisable(GL_DEPTH_TEST);
+
+	_state.depthTest = enabled;
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::SetViewport(uint wIn, uint hIn)
+{
+	if (wIn == _state.viewportWidth && hIn == _state.viewportHeigth) 
+		return S_OK;
+
+	glViewport(0, 0, wIn, hIn);
+
+	_state.viewportWidth = wIn;
+	_state.viewportHeigth = hIn;
+
+	return S_OK;
+}
+
+API GLCoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
+{
+	CHECK_GL_ERRORS();
+
+	*wOut = _state.viewportWidth;
+	*hOut = _state.viewportHeigth;
+
+	CHECK_GL_ERRORS();
+	return S_OK;
+}
+
+API GLCoreRender::Clear()
+{
+	CHECK_GL_ERRORS();
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	CHECK_GL_ERRORS();
 	return S_OK;
 }
 
@@ -838,166 +1049,6 @@ API GLCoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readPi
 	return S_OK;
 }
 
-API GLCoreRender::SetShader(const ICoreShader* pShader)
-{
-	CHECK_GL_ERRORS();
-
-	const GLShader *pGLShader = static_cast<const GLShader*>(pShader);
-	
-	if (pShader == nullptr)
-	{
-		if (_state.shader_program_id != 0u)
-		{
-			glUseProgram(0);
-			_state.shader_program_id = 0u;
-			return S_OK;
-		}
-	}
-
-	if (_state.shader_program_id == pGLShader->programID())
-		return S_OK;
-	
-	glUseProgram(pGLShader->programID());
-	_state.shader_program_id = pGLShader->programID();
-
-	CHECK_GL_ERRORS();
-			
-	return S_OK;
-}
-
-API GLCoreRender::SetMesh(const ICoreMesh* mesh)
-{
-	CHECK_GL_ERRORS();
-
-	if (mesh == nullptr)
-		glBindVertexArray(0);
-	else
-	{
-		const GLMesh *glMesh = static_cast<const GLMesh*>(mesh);
-		glBindVertexArray(glMesh->VAO_ID());
-	}
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
-API GLCoreRender::SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot)
-{
-	assert(_state.shader_program_id != 0 && "GLCoreRender::SetConstantBuffer(): shader not set");
-
-	CHECK_GL_ERRORS();
-
-	// uniform buffer -> UBO slot
-	const GLUniformBuffer *glBuf = static_cast<const GLUniformBuffer*>(pBuffer);
-	glBindBufferBase(GL_UNIFORM_BUFFER, slot, glBuf->ID());
-
-	// shader -> UBO slot
-	string s = "const_buffer_" + std::to_string(slot);
-	unsigned int block_index = glGetUniformBlockIndex(_state.shader_program_id, s.c_str());
-	glUniformBlockBinding(_state.shader_program_id, block_index, slot);
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
-API GLCoreRender::SetConstantBufferData(ICoreConstantBuffer *pBuffer, const void *pData)
-{
-	CHECK_GL_ERRORS();
-
-	const GLUniformBuffer *glBuf = static_cast<const GLUniformBuffer*>(pBuffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, glBuf->ID());
-	GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-	memcpy(p, pData, glBuf->size());
-	glUnmapBuffer(GL_UNIFORM_BUFFER);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
-API GLCoreRender::Draw(ICoreMesh *mesh)
-{
-	assert(_state.shader_program_id != 0 && "GLCoreRender::SetConstantBuffer(): shader not set");
-
-	CHECK_GL_ERRORS();
-
-	if (!mesh)
-		glBindVertexArray(0);
-	else
-	{
-		GLMesh *pGLMesh = static_cast<GLMesh*>(mesh);
-		glBindVertexArray(pGLMesh->VAO_ID());
-
-		uint vertecies;
-		mesh->GetNumberOfVertex(&vertecies);
-
-		VERTEX_TOPOLOGY topology;
-		mesh->GetVertexTopology(&topology);
-
-		// glDrawElements - for index! Why it works?
-		glDrawArrays((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, 0, vertecies);
-	}
-	
-	CHECK_GL_ERRORS();
-	
-	return S_OK;
-}
-
-API GLCoreRender::SetDepthState(int enabled)
-{
-	CHECK_GL_ERRORS();
-
-	if (bool(enabled) == bool(_state.depth_test_enabled))
-		return S_OK;
-
-	if (enabled)
-		glEnable(GL_DEPTH_TEST);
-	else
-		glDisable(GL_DEPTH_TEST);
-
-	_state.depth_test_enabled = enabled;
-
-	CHECK_GL_ERRORS();
-
-	return S_OK;
-}
-
-API GLCoreRender::SetViewport(uint wIn, uint hIn)
-{
-	if (wIn == _state.viewport_w && hIn == _state.viewport_h) 
-		return S_OK;
-
-	glViewport(0, 0, wIn, hIn);
-
-	_state.viewport_w = wIn;
-	_state.viewport_h = hIn;
-
-	return S_OK;
-}
-
-API GLCoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
-{
-	CHECK_GL_ERRORS();
-
-	*wOut = _state.viewport_w;
-	*hOut = _state.viewport_h;
-
-	CHECK_GL_ERRORS();
-	return S_OK;
-}
-
-API GLCoreRender::Clear()
-{
-	CHECK_GL_ERRORS();
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-	CHECK_GL_ERRORS();
-	return S_OK;
-}
 
 GLUniformBuffer::~GLUniformBuffer()
 {

@@ -15,12 +15,10 @@ Model::Model(const vector<IMesh*>& meshes)
 	//_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
 }
 
-API Model::GetCoreMesh(OUT ICoreMesh  **pMesh, uint idx)
+API Model::GetMesh(OUT IMesh **pMesh, uint idx)
 {
 	WRL::ComPtr<IMesh>& m = _meshes[idx];
-	ICoreMesh *mesh;
-	m->GetCoreMesh(&mesh);
-	*pMesh = mesh;
+	*pMesh = m.Get();
 	return S_OK;
 }
 

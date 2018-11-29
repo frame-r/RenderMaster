@@ -31,6 +31,37 @@ const char *get_shader_profile(int type);
 const char *get_main_function(int type);
 const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
 
+DX11Mesh *getDX11Mesh(IMesh *mesh)
+{
+	ICoreMesh *cm = getCoreMesh(mesh);
+	return static_cast<DX11Mesh*>(cm);
+}
+
+DX11Texture *getDX11Texture(ITexture *tex)
+{
+	ICoreTexture *ct = getCoreTexture(tex);
+	return static_cast<DX11Texture*>(ct);
+}
+
+DX11Shader *getDX11Shader(IShader *shader)
+{
+	ICoreShader *cs = getCoreShader(shader);
+	return static_cast<DX11Shader*>(cs);
+}
+
+DX11ConstantBuffer *getDX11ConstantBuffer(IConstantBuffer *cb)
+{
+	ICoreConstantBuffer *ccb = getCoreConstantBuffer(cb);
+	return static_cast<DX11ConstantBuffer*>(ccb);
+}
+
+DX11RenderTarget *getDX11RenderTarget(IRenderTarget *rt)
+{
+	ICoreRenderTarget *crt = getCoreRenderTarget(rt);
+	return static_cast<DX11RenderTarget*>(crt);
+}
+
+
 DX11CoreRender::DX11CoreRender(){}
 DX11CoreRender::~DX11CoreRender(){}
 
@@ -197,32 +228,32 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	_context->RSSetViewports(1, &vp);
 
 	// Rasterizer state
-	auto defaultRasterState = _rasterizerStatePool.FetchDefaultState();
-	_context->RSSetState(defaultRasterState.Get());
-	defaultRasterState->GetDesc(&_state.rasterState);
+	_state.rasterState = _rasterizerStatePool.FetchDefaultState();
+	_context->RSSetState(_state.rasterState.Get());
+	_state.rasterState->GetDesc(&_state.rasterStateDesc);
 
 	// Debug
-	ComPtr<ID3D11RasterizerState> _rasterState;
-	_context->RSGetState(_rasterState.GetAddressOf());
-	D3D11_RASTERIZER_DESC desc;
-	_rasterState->GetDesc(&desc);
+	//ComPtr<ID3D11RasterizerState> _rasterState;
+	//_context->RSGetState(_rasterState.GetAddressOf());
+	//D3D11_RASTERIZER_DESC desc;
+	//_rasterState->GetDesc(&desc);
 
 	// Depth Stencil state
-	auto defaultDepthStencilState = _depthStencilStatePool.FetchDefaultState();
-	_context->OMSetDepthStencilState(defaultDepthStencilState.Get(), 0);
-	defaultDepthStencilState->GetDesc(&_state.depthStencilState);
+	_state.depthStencilState = _depthStencilStatePool.FetchDefaultState();
+	_context->OMSetDepthStencilState(_state.depthStencilState.Get(), 0);
+	_state.depthStencilState->GetDesc(&_state.depthStencilDesc);
 
 	// Debug
-	ComPtr<ID3D11DepthStencilState> _depthStencilState;
-	UINT sref = 0;
-	_context->OMGetDepthStencilState(_depthStencilState.GetAddressOf(), &sref);
-	D3D11_DEPTH_STENCIL_DESC dss;
-	_depthStencilState->GetDesc(&dss);
+	//ComPtr<ID3D11DepthStencilState> _depthStencilState;
+	//UINT sref = 0;
+	//_context->OMGetDepthStencilState(_depthStencilState.GetAddressOf(), &sref);
+	//D3D11_DEPTH_STENCIL_DESC dss;
+	//_depthStencilState->GetDesc(&dss);
 
 	// Blend State
-	auto defaultBlendState = _blendStatePool.FetchDefaultState();
-	_context->OMSetBlendState(defaultBlendState.Get(), nullptr, 0xffffffff);
-	defaultBlendState->GetDesc(&_state.blendState);
+	_state.blendState = _blendStatePool.FetchDefaultState();
+	_context->OMSetBlendState(_state.blendState.Get(), nullptr, 0xffffffff);
+	_state.blendState->GetDesc(&_state.blendStateDesc);
 
 	LOG("DX11CoreRender initalized");
 
@@ -245,7 +276,7 @@ API DX11CoreRender::Free()
 
 	// Debug
 	//{
-	//	WRL::ComPtr<ID3D11Debug> pDebug;
+	//	ComPtr<ID3D11Debug> pDebug;
 	//	_device.As(&pDebug);	
 	//	pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);	
 	//}
@@ -266,6 +297,14 @@ API DX11CoreRender::SwapBuffers()
 	return S_OK;
 }
 
+API DX11CoreRender::ClearState()
+{
+	_state = State();
+	// TODO: filling field by default states
+	_context->ClearState();
+	return S_OK;
+}
+
 API DX11CoreRender::PushStates()
 {
 	_statesStack.push(_state);
@@ -281,22 +320,28 @@ API DX11CoreRender::PopStates()
 	static BlendHash blendEq;
 	static DepthStencilHash depthStenciEq;
 
-	if (!rasterEq.operator()(state.rasterState, _state.rasterState))
+	if (!rasterEq.operator()(state.rasterStateDesc, _state.rasterStateDesc))
 	{
-		auto s = _rasterizerStatePool.FetchState(state.rasterState);
-		_context->RSSetState(s.Get());
+		_context->RSSetState(state.rasterState.Get());
+
+		_state.rasterStateDesc = state.rasterStateDesc;
+		_state.rasterState = state.rasterState;
 	}
 
-	if (!blendEq.operator()(state.blendState, _state.blendState))
+	if (!blendEq.operator()(state.blendStateDesc, _state.blendStateDesc))
 	{
-		auto s = _blendStatePool.FetchState(state.blendState);
-		_context->OMSetBlendState(s.Get(), nullptr, 0xffffffff);
+		_context->OMSetBlendState(state.blendState.Get(), nullptr, 0xffffffff);
+
+		_state.blendStateDesc = state.blendStateDesc;
+		_state.blendState = state.blendState;
 	}
 
-	if (!depthStenciEq.operator()(state.depthStencilState, _state.depthStencilState))
+	if (!depthStenciEq.operator()(state.depthStencilDesc, _state.depthStencilDesc))
 	{
-		auto s = _depthStencilStatePool.FetchState(state.depthStencilState);
-		_context->OMSetDepthStencilState(s.Get(), 0);
+		_context->OMSetDepthStencilState(state.depthStencilState.Get(), 0);
+
+		_state.depthStencilDesc = state.depthStencilDesc;
+		_state.depthStencilState = state.depthStencilState;
 	}
 
 	_state = state;
@@ -682,80 +727,42 @@ API DX11CoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 	return S_OK;
 }
 
-API DX11CoreRender::SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget)
+API DX11CoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 {
-	is_default_rt_bound = 0;
+	assert(pRenderTarget && "DX11CoreRender::SetCurrentRenderTarget(): pRenderTarget can not be null. To set default framebuffer use DX11CoreRender::RestoreDefaultRenderTarget()");
 
-	DX11RenderTarget *dxrt = static_cast<DX11RenderTarget*>(pRenderTarget);
+	if (_state.renderTarget.Get() == pRenderTarget)
+		return S_OK;
+
+	_state.renderTarget = ComPtr<IRenderTarget>(pRenderTarget);
+
+	DX11RenderTarget *dxrt = getDX11RenderTarget(pRenderTarget);
 	dxrt->bind(_context.Get());
-
-	current_render_target = dxrt;
 
 	return S_OK;
 }
 
 API DX11CoreRender::RestoreDefaultRenderTarget()
 {
-	is_default_rt_bound = 1;
+	if (_state.renderTarget.Get() == nullptr)
+		return S_OK;
+
+	_state.renderTarget = ComPtr<IRenderTarget>();
 
 	_context->OMSetRenderTargets(1, _defaultRenderTargetView.GetAddressOf(), _defaultDepthStencilView.Get());
 
-	current_render_target = nullptr;
-
 	return S_OK;
 }
 
-API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readBytes, uint x, uint y)
+
+API DX11CoreRender::SetShader(IShader* pShader)
 {
-	DX11Texture *d3dtex = static_cast<DX11Texture*>(tex);
-	ID3D11Texture2D *d3dtex2d = static_cast<ID3D11Texture2D*>(d3dtex->resource());
+	if (_state.shader.Get() == pShader)
+		return S_OK;
 
-	ID3D11Texture2D* cpuReadTex;
-	D3D11_TEXTURE2D_DESC cpuReadTexDesc;
-	ZeroMemory(&cpuReadTexDesc, sizeof(cpuReadTexDesc));
-	cpuReadTexDesc.Width = d3dtex->width();
-	cpuReadTexDesc.Height = d3dtex->height();
-	cpuReadTexDesc.MipLevels = 1;
-	cpuReadTexDesc.ArraySize = 1;
-	cpuReadTexDesc.Format = d3dtex->desc().Format;
-	cpuReadTexDesc.SampleDesc.Count = 1;
-	cpuReadTexDesc.SampleDesc.Quality = 0;
-	cpuReadTexDesc.Usage = D3D11_USAGE_STAGING;
-	cpuReadTexDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-	cpuReadTexDesc.MiscFlags = 0;
+	_state.shader = ComPtr<IShader>(pShader);
 
-	_device->CreateTexture2D(&cpuReadTexDesc, nullptr, &cpuReadTex);
-
-	_context->CopyResource(cpuReadTex, d3dtex2d);
-	D3D11_MAPPED_SUBRESOURCE mapResource;
-	auto hr = _context->Map(cpuReadTex, 0, D3D11_MAP_READ, 0, &mapResource);
-
-	// TODO: make other!
-	int byteWidthElement = 4;
-
-	void *src = (char*)mapResource.pData + y * mapResource.RowPitch + x * byteWidthElement;
-	memcpy(out, reinterpret_cast<void*>(src), byteWidthElement);
-
-	*readBytes = byteWidthElement;
-
-	//struct Color {float r, g, b, a;};
-	//Color* obj;
-	//obj=new Color[(mapResource.RowPitch/sizeof(Color)) * Height];
-	//memcpy(obj, mapResource.pData,mapResource.RowPitch * Height);
-
-	//if(mousePos.x>0&&mousePos.x<Width&&mousePos.y>0&&mousePos.y<Height)
-	//if(obj[(mousePos.y*Width)+(4*mousePos.y)+mousePos.x].r==1.0/*If object that we was pick mouse have 1.0 on red bit we draw little cloud*/)model.rysujOtoczk?(model.dolny,model.gorny);
-	
-	_context->Unmap(cpuReadTex,0);
-	cpuReadTex->Release();
-	//delete [] obj;
-
-	return S_OK;
-}
-
-API DX11CoreRender::SetShader(const ICoreShader* pShader)
-{
-	const DX11Shader *dxShader = static_cast<const DX11Shader*>(pShader);
+	const DX11Shader *dxShader = getDX11Shader(pShader);
 
 	_context->VSSetShader(dxShader->vs(), nullptr, 0);
 	_context->GSSetShader(dxShader->gs(), nullptr, 0);
@@ -764,9 +771,14 @@ API DX11CoreRender::SetShader(const ICoreShader* pShader)
 	return S_OK;
 }
 
-API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
+API DX11CoreRender::SetMesh(IMesh* mesh)
 {
-	const DX11Mesh *dxMesh = static_cast<const DX11Mesh*>(mesh);
+	if (_state.mesh.Get() == mesh)
+		return S_OK;
+
+	_state.mesh = ComPtr<IMesh>(mesh);
+
+	const DX11Mesh *dxMesh = getDX11Mesh(mesh);
 
 	_context->IASetInputLayout(dxMesh->inputLayout());
 
@@ -784,9 +796,10 @@ API DX11CoreRender::SetMesh(const ICoreMesh* mesh)
 	return S_OK;
 }
 
-API DX11CoreRender::SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot)
+API DX11CoreRender::SetConstantBuffer(IConstantBuffer *pBuffer, uint slot)
 {
-	ID3D11Buffer *buf = static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer();
+	const DX11ConstantBuffer * dxBuffer = getDX11ConstantBuffer(pBuffer);
+	ID3D11Buffer *buf = dxBuffer->nativeBuffer();
 
 	_context->VSSetConstantBuffers(slot, 1, &buf);
 	_context->PSSetConstantBuffers(slot, 1, &buf);
@@ -795,30 +808,39 @@ API DX11CoreRender::SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint s
 	return S_OK;
 }
 
-API DX11CoreRender::SetConstantBufferData(ICoreConstantBuffer *pBuffer, const void *pData)
+API DX11CoreRender::SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData)
 {
-	_context->UpdateSubresource(static_cast<const DX11ConstantBuffer *>(pBuffer)->nativeBuffer(), 0, nullptr, pData, 0, 0);
+	const DX11ConstantBuffer * dxBuffer = getDX11ConstantBuffer(pBuffer);
+	ID3D11Buffer *buf = dxBuffer->nativeBuffer();
+
+	_context->UpdateSubresource(buf, 0, nullptr, pData, 0, 0);
 
 	return S_OK;
 }
 
-API DX11CoreRender::Draw(ICoreMesh* mesh)
+API DX11CoreRender::Draw(IMesh* mesh)
 {
-	if (static_cast<const DX11Mesh*>(mesh)->indexBuffer())
-		_context->DrawIndexed(static_cast<const DX11Mesh*>(mesh)->indexNumber(), 0, 0);
+	assert(_state.shader.Get() && "DX11CoreRender::Draw(): shader not set");
+
+	_state.mesh = ComPtr<IMesh>(mesh);
+
+	DX11Mesh *dxMesh = getDX11Mesh(mesh);
+
+	if (dxMesh->indexBuffer())
+		_context->DrawIndexed(dxMesh->indexNumber(), 0, 0);
 	else
-		_context->Draw(static_cast<const DX11Mesh*>(mesh)->vertexNumber(), 0);
+		_context->Draw(dxMesh->vertexNumber(), 0);
 
 	return S_OK;
 }
 
 API DX11CoreRender::SetDepthState(int enabled)
 {
-	if (_state.depthStencilState.DepthEnable != enabled)
+	if (_state.depthStencilDesc.DepthEnable != enabled)
 	{
-		_state.depthStencilState.DepthEnable = enabled;
-		ComPtr<ID3D11DepthStencilState> d = _depthStencilStatePool.FetchState(_state.depthStencilState);
-		_context->OMSetDepthStencilState(d.Get(), 0);
+		_state.depthStencilDesc.DepthEnable = enabled;
+		_state.depthStencilState = _depthStencilStatePool.FetchState(_state.depthStencilDesc);
+		_context->OMSetDepthStencilState(_state.depthStencilState.Get(), 0);
 	}
 
 	return S_OK;
@@ -867,12 +889,15 @@ API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 
 API DX11CoreRender::Clear()
 {
-	if (is_default_rt_bound)
+	if (_state.renderTarget.Get() == nullptr) // default
 	{
-		_context->ClearRenderTargetView(_defaultRenderTargetView.Get(), _state.clear_color);
-		_context->ClearDepthStencilView(_defaultDepthStencilView.Get(), D3D11_CLEAR_DEPTH, _state.depth_clear_color, _state.stencil_clear_color);
+		_context->ClearRenderTargetView(_defaultRenderTargetView.Get(), _state.clearColor);
+		_context->ClearDepthStencilView(_defaultDepthStencilView.Get(), D3D11_CLEAR_DEPTH, _state.depthClearColor, _state.stencilClearColor);
 	} else
-		current_render_target->clear(_context.Get(), _state.clear_color, _state.depth_clear_color, _state.stencil_clear_color);
+	{
+		DX11RenderTarget *dxRT = getDX11RenderTarget(_state.renderTarget.Get());
+		dxRT->clear(_context.Get(), _state.clearColor, _state.depthClearColor, _state.stencilClearColor);
+	}
 
 	return S_OK;
 }
@@ -987,6 +1012,54 @@ ID3D11DeviceChild* DX11CoreRender::create_shader_by_src(int type, const char* sr
 	}
 
 	return nullptr;
+}
+
+API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readBytes, uint x, uint y)
+{
+	DX11Texture *d3dtex = static_cast<DX11Texture*>(tex);
+	ID3D11Texture2D *d3dtex2d = static_cast<ID3D11Texture2D*>(d3dtex->resource());
+
+	ID3D11Texture2D* cpuReadTex;
+	D3D11_TEXTURE2D_DESC cpuReadTexDesc;
+	ZeroMemory(&cpuReadTexDesc, sizeof(cpuReadTexDesc));
+	cpuReadTexDesc.Width = d3dtex->width();
+	cpuReadTexDesc.Height = d3dtex->height();
+	cpuReadTexDesc.MipLevels = 1;
+	cpuReadTexDesc.ArraySize = 1;
+	cpuReadTexDesc.Format = d3dtex->desc().Format;
+	cpuReadTexDesc.SampleDesc.Count = 1;
+	cpuReadTexDesc.SampleDesc.Quality = 0;
+	cpuReadTexDesc.Usage = D3D11_USAGE_STAGING;
+	cpuReadTexDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	cpuReadTexDesc.MiscFlags = 0;
+
+	_device->CreateTexture2D(&cpuReadTexDesc, nullptr, &cpuReadTex);
+
+	_context->CopyResource(cpuReadTex, d3dtex2d);
+	D3D11_MAPPED_SUBRESOURCE mapResource;
+	auto hr = _context->Map(cpuReadTex, 0, D3D11_MAP_READ, 0, &mapResource);
+
+	// TODO: make other!
+	int byteWidthElement = 4;
+
+	void *src = (char*)mapResource.pData + y * mapResource.RowPitch + x * byteWidthElement;
+	memcpy(out, reinterpret_cast<void*>(src), byteWidthElement);
+
+	*readBytes = byteWidthElement;
+
+	//struct Color {float r, g, b, a;};
+	//Color* obj;
+	//obj=new Color[(mapResource.RowPitch/sizeof(Color)) * Height];
+	//memcpy(obj, mapResource.pData,mapResource.RowPitch * Height);
+
+	//if(mousePos.x>0&&mousePos.x<Width&&mousePos.y>0&&mousePos.y<Height)
+	//if(obj[(mousePos.y*Width)+(4*mousePos.y)+mousePos.x].r==1.0/*If object that we was pick mouse have 1.0 on red bit we draw little cloud*/)model.rysujOtoczk?(model.dolny,model.gorny);
+	
+	_context->Unmap(cpuReadTex,0);
+	cpuReadTex->Release();
+	//delete [] obj;
+
+	return S_OK;
 }
 
 const char *get_shader_profile(int type)
@@ -1104,27 +1177,27 @@ void DX11RenderTarget::clear(ID3D11DeviceContext *ctx, FLOAT* color, FLOAT depth
 API DX11RenderTarget::SetColorTexture(uint slot, ITexture *tex)
 {
 	assert(slot < 8 && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
-	_colors[slot] = WRL::ComPtr<ITexture>(tex);
+	_colors[slot] = ComPtr<ITexture>(tex);
 	return S_OK;
 }
 
 API DX11RenderTarget::SetDepthTexture(ITexture *tex)
 {
-	_depth = WRL::ComPtr<ITexture>(tex);
+	_depth = ComPtr<ITexture>(tex);
 	return S_OK;
 }
 
 API DX11RenderTarget::UnbindColorTexture(uint slot)
 {
 	assert(slot < 8 && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
-	_colors[slot] = WRL::ComPtr<ITexture>();
+	_colors[slot] = ComPtr<ITexture>();
 	return S_OK;
 }
 
 API DX11RenderTarget::UnbindAll()
 {
 	for (auto &rtx : _colors)
-		rtx = WRL::ComPtr<ITexture>();
-	_depth = WRL::ComPtr<ITexture>();
+		rtx = ComPtr<ITexture>();
+	_depth = ComPtr<ITexture>();
 	return S_OK;
 }

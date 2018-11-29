@@ -35,9 +35,11 @@
 #define UNIFORM(TYPE, NAME) TYPE NAME;
 
 // Textures
-#define TEXTURE2D_IN(NAME, NUM) Texture2D NAME : register(t ## NUM); \
-SamplerState g_samLinear : register( s0 );
-#define TEXTURE(NAME, UV) NAME.Sample(g_samLinear, UV)
+SamplerState s_sampler_default;
+#define TEXTURE2D_IN(SLOT, NAME)\
+	Texture2D _texture_ ## SLOT : register(t ## NUM);\
+	#define NAME _texture_ ## SLOT SLOT
+#define TEXTURE(NAME, UV) _texture_ ## NAME.Sample(s_sampler_default, UV)
 
 // Vertex in/out
 #define IN_ATTRIBUTE(NAME) vs_input.NAME

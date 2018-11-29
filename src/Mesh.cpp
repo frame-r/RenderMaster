@@ -21,3 +21,18 @@ Mesh::~Mesh()
 	delete _coreMesh;
 	_coreMesh = nullptr;
 }
+
+API Mesh::GetNumberOfVertex(OUT uint *number)
+{
+	return _coreMesh->GetNumberOfVertex(number);
+}
+
+API Mesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
+{
+	return _coreMesh->GetAttributes(attribs);
+}
+
+API Mesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
+{
+	return _coreMesh->GetVertexTopology(topology);
+}

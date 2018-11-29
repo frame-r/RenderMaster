@@ -54,41 +54,50 @@ class DX11CoreRender final : public ICoreRender
 	vector<std::function<void()>> _onCleanBroadcast;
 
 	#include "states_pools.inl"
-	RasterizerStatePool _rasterizerStatePool{*this};
-	DepthStencilStatePool _depthStencilStatePool{*this};
 	BlendStatePool _blendStatePool{*this};
+	RasterizerStatePool _rasterizerStatePool{*this};
+	DepthStencilStatePool _depthStencilStatePool{*this};	
 
 	struct State
 	{
 		// Blending
 		//
-		D3D11_BLEND_DESC blendState;
+		D3D11_BLEND_DESC blendStateDesc;
+		WRL::ComPtr<ID3D11BlendState> blendState;
 
 		// Rasterizer
 		//
-		D3D11_RASTERIZER_DESC rasterState;
+		D3D11_RASTERIZER_DESC rasterStateDesc;
+		WRL::ComPtr<ID3D11RasterizerState> rasterState;
 
 		// Depth/Stencil
 		//
-		D3D11_DEPTH_STENCIL_DESC depthStencilState;
+		D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+		WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
 
 		// Viewport
 		// TODO
 
 		// Shader
-		// TODO
+		//
+		WRL::ComPtr<IShader> shader;
+
+		// Mesh
+		//
+		WRL::ComPtr<IMesh> mesh;
 
 		// Textures
-		// TODO
+		//
+		WRL::ComPtr<ITexture> texShaderBindings[16]; // slot -> texture
 
 		// Framebuffer
-		// TODO
+		WRL::ComPtr<IRenderTarget> renderTarget;
 
 		// Clear
 		//
-		FLOAT clear_color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-		FLOAT depth_clear_color = 1.0f;
-		UINT8 stencil_clear_color = 0;
+		FLOAT clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+		FLOAT depthClearColor = 1.0f;
+		UINT8 stencilClearColor = 0;
 	};
 
 	State _state;
@@ -98,9 +107,6 @@ class DX11CoreRender final : public ICoreRender
 
 	int _MSAASamples = 0;
 	int _VSyncOn = 1;
-
-	int is_default_rt_bound = 1;
-	DX11RenderTarget *current_render_target = nullptr;
 
 	bool create_default_buffers(uint w, uint h);
 	void destroy_default_buffers();
@@ -118,6 +124,7 @@ public:
 	API MakeCurrent(const WindowHandle* handle) override;
 	API SwapBuffers() override;
 
+	API ClearState() override;
 	API PushStates() override;
 	API PopStates() override;
 
@@ -127,18 +134,19 @@ public:
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
-	API SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget) override;
+	API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) override;
 	API RestoreDefaultRenderTarget() override;
-	API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixelBytes, uint x, uint y) override;
-	API SetShader(const ICoreShader *pShader) override;
-	API SetMesh(const ICoreMesh* mesh) override;
-	API SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot) override;
-	API SetConstantBufferData(ICoreConstantBuffer *pBuffer, const void *pData) override;
-	API Draw(ICoreMesh *mesh) override;
+	API SetShader(IShader *pShader) override;
+	API SetMesh(IMesh* mesh) override;
+	API SetConstantBuffer(IConstantBuffer *pBuffer, uint slot) override;
+	API SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData) override;
+	API Draw(IMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint w, uint h) override;
 	API GetViewport(OUT uint* w, OUT uint* h) override;
 	API Clear() override;
+
+	API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixelBytes, uint x, uint y) override;
 	
 	API GetName(OUT const char **pNameOut) override;
 };

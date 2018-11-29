@@ -18,7 +18,7 @@ public:
 	Model(){}
 	virtual ~Model(){};
 		
-	API GetCoreMesh(OUT ICoreMesh **pMesh, uint idx) override;
+	API GetMesh(OUT IMesh **pMesh, uint idx) override;
 	API GetNumberOfMesh(OUT uint *number) override;
 	API GetAABB(OUT AABB *aabb) override;
 	API Copy(OUT IModel *copy) override;

@@ -309,6 +309,7 @@ API Core::ReleaseEngine()
 
 	_pSceneManager->Free();
 	_pRender->Free();
+	_pCoreRender->ClearState();
 	_pResMan->Free();
 	_pCoreRender->Free();
 

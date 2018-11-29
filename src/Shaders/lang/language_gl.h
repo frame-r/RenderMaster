@@ -27,8 +27,11 @@
 #define UNIFORM(TYPE, NAME) uniform TYPE NAME;
 
 // Textures
-#define TEXTURE2D_IN(NAME, NUM) uniform sampler2D NAME;
-#define TEXTURE(NAME, UV) texture(NAME, UV)
+#define TEXTURE2D_IN(SLOT, NAME)\
+	layout(binding=SLOT) uniform sampler2D _texture_ ## SLOT;\
+	#define NAME _texture_ ## SLOT SLOT
+
+#define TEXTURE(NAME, UV) texture(_texture_ ## NAME, UV)
 
 // Vertex in/out
 #define IN_ATTRIBUTE(NAME) NAME

@@ -370,3 +370,40 @@ public: \
 		*ppv = nullptr;  \
 		return S_OK;  \
 	}
+
+//
+inline ICoreMesh *getCoreMesh(IMesh *mesh)
+{
+	ICoreMesh *m;
+	mesh->GetCoreMesh(&m);
+	return m;
+}
+
+inline ICoreTexture *getCoreTexture(ITexture *tex)
+{
+	ICoreTexture *t;
+	tex->GetCoreTexture(&t);
+	return t;
+}
+
+inline ICoreConstantBuffer *getCoreConstantBuffer(IConstantBuffer *cb)
+{
+	ICoreConstantBuffer *c;
+	cb->GetCoreBuffer(&c);
+	return c;
+}
+
+inline ICoreShader *getCoreShader(IShader *shader)
+{
+	ICoreShader *s;
+	shader->GetCoreShader(&s);
+	return s;
+}
+
+inline ICoreRenderTarget *getCoreRenderTarget(IRenderTarget *rt)
+{
+	ICoreRenderTarget *r;
+	rt->GetCoreRenderTarget(&r);
+	return r;
+}
+

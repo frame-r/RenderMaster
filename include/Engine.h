@@ -59,6 +59,9 @@ namespace RENDER_MASTER
 	class IShader;
 	class ITexture;
 	class IResourceManager;
+	class IRenderTarget;
+	class IMesh;
+	class IConstantBuffer;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
 
@@ -416,6 +419,7 @@ namespace RENDER_MASTER
 		virtual API MakeCurrent(const WindowHandle* handle) = 0;
 		virtual API SwapBuffers() = 0;
 
+		virtual API ClearState() = 0;
 		virtual API PushStates() = 0;
 		virtual API PopStates() = 0;
 
@@ -425,18 +429,20 @@ namespace RENDER_MASTER
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
 
-		virtual API SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget) = 0;
+		// state
+		virtual API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) = 0;
 		virtual API RestoreDefaultRenderTarget() = 0;
-		virtual API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) = 0;
-		virtual API SetShader(const ICoreShader *pShader) = 0;
-		virtual API SetMesh(const ICoreMesh* mesh) = 0;
-		virtual API SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot) = 0;
-		virtual API SetConstantBufferData(ICoreConstantBuffer *pBuffer, const void *pData) = 0;
-		virtual API Draw(ICoreMesh *mesh) = 0;
+		virtual API SetShader(IShader *pShader) = 0;
+		virtual API SetMesh(IMesh* mesh) = 0;
+		virtual API SetConstantBuffer(IConstantBuffer *pBuffer, uint slot) = 0;
+		virtual API SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData) = 0;
+		virtual API Draw(IMesh *mesh) = 0;
 		virtual API SetDepthState(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
-		virtual API GetViewport(OUT uint* w, OUT uint* h) = 0;
 		virtual API Clear() = 0;
+		virtual API GetViewport(OUT uint* w, OUT uint* h) = 0;
+
+		virtual API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) = 0;
 	};
 
 	//////////////////////
@@ -534,7 +540,7 @@ namespace RENDER_MASTER
 	class IModel : public IGameObject
 	{
 	public:
-		virtual API GetCoreMesh(OUT ICoreMesh **pMesh, uint idx) = 0;
+		virtual API GetMesh(OUT IMesh **pMesh, uint idx) = 0;
 		virtual API GetNumberOfMesh(OUT uint *number) = 0;
 		virtual API Copy(OUT IModel *copy) = 0;
 	};
@@ -544,6 +550,9 @@ namespace RENDER_MASTER
 	public:
 		virtual ~IMesh() = default;
 		virtual API GetCoreMesh(OUT ICoreMesh **meshOut) = 0;
+		virtual API GetNumberOfVertex(OUT uint *number) = 0;
+		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
+		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
 
 		BASE_RESOURCE_INTERFACE
 	};

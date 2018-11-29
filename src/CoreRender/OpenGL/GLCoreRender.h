@@ -49,45 +49,44 @@ class GLCoreRender final : public ICoreRender
 		// Blending
 		// Note: blending operation always "+"
 		//
-		int blending_enabled = 0;
-		GLenum src_blend_factor = GL_ZERO; // written by shader
-		GLenum dst_blend_factor = GL_ZERO; // value in framebuffer
+		bool blending = false;
+		GLenum srcBlend = GL_ONE; // written by shader
+		GLenum dstBlend = GL_ZERO; // value in framebuffer
 
 		// Rasterizer
 		//
-		GLboolean culling_enabled = GL_FALSE;		// GL_FALSE	GL_TRUE
-		GLint poligon_mode = GL_FILL;				// GL_FILL	GL_LINE
-		GLint culling_mode = GL_FRONT;				// GL_FRONT	GL_BACK
+		bool culling = false;
+		GLint cullingMode = GL_BACK;	// GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
+		GLint polygonMode = GL_FILL;	// GL_FILL, GL_LINE, GL_POINT
 
 		// Depth/Stencil
 		//
-		GLboolean depth_test_enabled = GL_FALSE;
+		bool depthTest = false;
 
 		// Viewport
 		//
-		GLint viewport_x = 0, viewport_y = 0;
-		GLint viewport_w = 0, viewport_h = 0;
+		GLint viewportX = 0, viewportY = 0;
+		GLint viewportWidth = 0, viewportHeigth = 0;
 
 		// Shader
 		//
-		GLuint shader_program_id = 0u;
+		WRL::ComPtr<IShader> shader;
+
+		// Mesh
+		//
+		WRL::ComPtr<IMesh> mesh;
 
 		// Textures
 		//
-		struct SlotBindingDesc
-		{
-			GLuint tex_id = 0u;
-			GLuint shader_variable_id = 0u;			
-		};
-		SlotBindingDesc tex_slots_bindings[16]; // slot -> {shader, texture}
+		WRL::ComPtr<ITexture> texShaderBindings[16]; // slot -> texture
 
 		// Framebuffer
 		//
-		GLint fbo = 0u; // 0 - default FBO
+		WRL::ComPtr<IRenderTarget> renderTarget;
 
 		// Clear
 		//
-		GLfloat clear_color[4] = {0.0f, 0.0, 0.0f, 1.0f};
+		GLfloat clearColor[4] = {0.0f, 0.0, 0.0f, 0.0f};
 	};
 
 	State _state;
@@ -106,6 +105,7 @@ public:
 	API MakeCurrent(const WindowHandle* handle) override;
 	API SwapBuffers() override;
 
+	API ClearState() override;
 	API PushStates() override;
 	API PopStates() override;
 
@@ -115,18 +115,19 @@ public:
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
-	API SetCurrentRenderTarget(ICoreRenderTarget *pRenderTarget) override;
+	API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) override;
 	API RestoreDefaultRenderTarget() override;
-	API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) override;
-	API SetShader(const ICoreShader *pShader) override;
-	API SetMesh(const ICoreMesh* mesh) override;
-	API SetConstantBuffer(const ICoreConstantBuffer *pBuffer, uint slot) override;
-	API SetConstantBufferData(ICoreConstantBuffer *pBuffer, const void *pData) override;
-	API Draw(ICoreMesh *mesh) override;
+	API SetShader(IShader *pShader) override;
+	API SetMesh(IMesh* mesh) override;
+	API SetConstantBuffer(IConstantBuffer *pBuffer, uint slot) override;
+	API SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData) override;
+	API Draw(IMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint wIn, uint hIn) override;
 	API GetViewport(OUT uint* wOut, OUT uint* hOut) override;
 	API Clear() override;
+
+	API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) override;
 
 	API GetName(OUT const char **pTxt) override;
 };

@@ -52,7 +52,7 @@ class Render : public IRender
 	struct RenderMesh
 	{
 		uint model_id;
-		ICoreMesh *mesh{nullptr};
+		IMesh *mesh{nullptr};
 		mat4 modelMat;
 	};
 

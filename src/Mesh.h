@@ -11,6 +11,9 @@ public:
 	virtual ~Mesh(); 
 
 	API GetCoreMesh(OUT ICoreMesh **meshOut) override;
+	API GetNumberOfVertex(OUT uint *number) override;
+	API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) override;
+	API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) override;
 
 	BASE_RESOURCE_HEADER
 };

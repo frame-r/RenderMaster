@@ -19,7 +19,7 @@
 	///////////////////////
 
 	#ifdef ENG_INPUT_TEXCOORD
-		TEXTURE2D_IN(texture0, 0)
+		TEXTURE2D_IN(0)
 	#endif
 
 

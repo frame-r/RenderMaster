@@ -156,8 +156,8 @@ void Render::_get_render_mesh_vec(vector<RenderMesh>& meshes_vec)
 				uint id;
 				model->GetID(&id);
 
-				ICoreMesh *mesh{ nullptr };
-				model->GetCoreMesh(&mesh, j);
+				IMesh *mesh = nullptr;
+				model->GetMesh(&mesh, j);
 
 				mat4 mat;
 				model->GetModelMatrix(&mat);
@@ -180,11 +180,8 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 		if (!shader)
 			continue;
 
-		ICoreShader *coreShader;
-		shader->GetCoreShader(&coreShader);
-
 		_pCoreRender->SetMesh(renderMesh.mesh);
-		_pCoreRender->SetShader(coreShader);
+		_pCoreRender->SetShader(shader);
 
 		// mesh parameters
 		{
@@ -196,11 +193,8 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 				params.nL = vec3(1.0f, -2.0f, 3.0f).Normalized();
 			}
 
-			ICoreConstantBuffer *coreBuffer;
-			_meshParameters->GetCoreBuffer(&coreBuffer);
-
-			_pCoreRender->SetConstantBufferData(coreBuffer, &params.main_color);
-			_pCoreRender->SetConstantBuffer(coreBuffer, 0);
+			_pCoreRender->SetConstantBufferData(_meshParameters.Get(), &params.main_color);
+			_pCoreRender->SetConstantBuffer(_meshParameters.Get(), 0);
 		}
 
 		// id parameters
@@ -208,11 +202,8 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 		{
 			id_params.model_id = renderMesh.model_id;
 
-			ICoreConstantBuffer *coreBuffer;
-			_idParameters->GetCoreBuffer(&coreBuffer);
-
-			_pCoreRender->SetConstantBufferData(coreBuffer, &id_params.model_id);
-			_pCoreRender->SetConstantBuffer(coreBuffer, 1);
+			_pCoreRender->SetConstantBufferData(_idParameters.Get(), &id_params.model_id);
+			_pCoreRender->SetConstantBuffer(_idParameters.Get(), 1);
 		}
 
 		_pCoreRender->Draw(renderMesh.mesh);
@@ -267,6 +258,8 @@ Render::~Render()
 
 void Render::Init()
 {
+	_pCoreRender->SetDepthState(1);
+
 	_pCore->AddUpdateCallback(std::bind(&Render::_update, this));
 
 
@@ -363,9 +356,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 	_idTexRT->SetColorTexture(0, tex);
 	_idTexRT->SetDepthTexture(depthTex);
 
-	ICoreRenderTarget *coreRenderTarget;
-	_idTexRT->GetCoreRenderTarget(&coreRenderTarget);
-	_pCoreRender->SetCurrentRenderTarget(coreRenderTarget);
+	_pCoreRender->SetCurrentRenderTarget(_idTexRT.Get());
 	{
 		_pCoreRender->Clear();
 
@@ -433,9 +424,7 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	_idTexRT->SetColorTexture(0, tex);
 	_idTexRT->SetDepthTexture(depthTex);
 
-	ICoreRenderTarget *coreRT;
-	_idTexRT->GetCoreRenderTarget(&coreRT);
-	_pCoreRender->SetCurrentRenderTarget(coreRT);
+	_pCoreRender->SetCurrentRenderTarget(_idTexRT.Get());
 	{
 		_pCoreRender->Clear();
 
