@@ -68,5 +68,5 @@ To clean Windows Registry run uninstall.bat located ib build/ directory.
 By default Engine solution configured to find FBX SDK at C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\. To build engine without FBX SDK comment '#define USE_FBX' in include\Engine.h and remove libfbxsdk-md.lib from Engine project settings (Linker -> Input -> Additional Dependencies)
 
 ## Resource management
-We supports DirectX-style resource management. After loading resource through the ResourceManager you should call AddRef(). When you don't need resource you should call Release().
+We follow DirectX-style resource management. After loading resource through the ResourceManager you should call AddRef(). When you don't need resource you should call Release().
 
