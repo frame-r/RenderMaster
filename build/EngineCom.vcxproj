@@ -48,12 +48,11 @@
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\Shader.h" />
-    <ClInclude Include="..\src\Shaders\common.h" />
     <ClInclude Include="..\src\ShaderFile.h" />
+    <ClInclude Include="..\src\Shaders\common\common.h" />
     <ClInclude Include="..\src\Shaders\lang\language.h" />
     <ClInclude Include="..\src\Shaders\lang\language_dx11.h" />
     <ClInclude Include="..\src\Shaders\lang\language_gl.h" />
-    <ClInclude Include="..\src\Shaders\vertex.h" />
     <ClInclude Include="..\src\simplecpp.h" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\Tree.h" />

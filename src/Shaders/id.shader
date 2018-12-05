@@ -1,25 +1,15 @@
-
 #include "lang/language.h"
-#include "common.h"
+#include "common/common.h"
 
-UNIFORM_BUFFER_BEGIN(id)
-	UNIFORM(uint, model_id)
-UNIFORM_BUFFER_END
-
-#ifdef ENG_SHADER_VERTEX
-
-	///////////////////////
-	// VERTEX SHADER
-	///////////////////////
-
-	#include "vertex.h"
-
-
-#elif ENG_SHADER_PIXEL
+#ifdef ENG_SHADER_PIXEL
 
 	///////////////////////
 	// PIXEL SHADER
 	///////////////////////
+
+	UNIFORM_BUFFER_BEGIN(id)
+		UNIFORM(uint, model_id)
+	UNIFORM_BUFFER_END
 	
 	MAIN_FRAG_UI(VS_OUTPUT)
 

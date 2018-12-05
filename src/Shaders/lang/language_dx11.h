@@ -5,7 +5,6 @@
 // We don't use this option beacuse we already specify flag
 // for compilation "D3DCOMPILE_PACK_MATRIX_ROW_MAJOR"
 
-
 // Math
 #define int2 ivec2
 #define int3 ivec3
@@ -21,7 +20,6 @@
 #define mat4 float4x4
 
 #define mul(M, V) mul(M, V)
-
 
 #define STRUCT(NAME) struct NAME {
 #define END_STRUCT };
@@ -76,6 +74,5 @@ PixelShaderOutputUint out_color;
 
 #define MAIN_FRAG_END return out_color; \
 } \
-
 
 #endif // H_LANGUAGE_DX11

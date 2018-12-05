@@ -72,12 +72,6 @@
     <ClInclude Include="..\src\RenderTarget.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Shaders\vertex.h">
-      <Filter>Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Shaders\common.h">
-      <Filter>Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\CoreRender\OpenGL\GLTexture.h">
       <Filter>CoreRender\OpenGL</Filter>
     </ClInclude>
@@ -89,6 +83,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Shaders\lang\language_gl.h">
       <Filter>Shaders\lang</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\common\common.h">
+      <Filter>Shaders\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +182,9 @@
     </Filter>
     <Filter Include="Shaders\lang">
       <UniqueIdentifier>{6e0dd2d6-4b4c-49f5-86e7-3b7a95bd7c6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\common">
+      <UniqueIdentifier>{5fd1ece3-970f-42da-9331-ea35d5a23c0e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

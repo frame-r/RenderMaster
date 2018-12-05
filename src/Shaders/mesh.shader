@@ -1,18 +1,7 @@
-
 #include "lang/language.h"
-#include "common.h"
+#include "common/common.h"
 
-
-#ifdef ENG_SHADER_VERTEX
-
-	///////////////////////
-	// VERTEX SHADER
-	///////////////////////
-
-	#include "vertex.h"
-
-
-#elif ENG_SHADER_PIXEL
+#ifdef ENG_SHADER_PIXEL
 
 	///////////////////////
 	// PIXEL SHADER
@@ -21,7 +10,6 @@
 	#ifdef ENG_INPUT_TEXCOORD
 		TEXTURE2D_IN(0)
 	#endif
-
 
 	MAIN_FRAG(VS_OUTPUT)
 		vec4 ambient = vec4(0.1f, 0.1f, 0.1f, 0.0f);
