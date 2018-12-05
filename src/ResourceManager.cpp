@@ -7,7 +7,6 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "ShaderFile.h"
-#include "ConstantBuffer.h"
 #include "RenderTarget.h"
 #include "Camera.h"
 #include "Console.h"
@@ -403,12 +402,11 @@ void ResourceManager::Init()
 
 API ResourceManager::resources_list(const char **args, uint argsNumber)
 {
-	LOG_FORMATTED("========= Runtime resources: %i =============", _runtimeTextures.size() + _runtimeMeshes.size() + _runtimeGameobjects.size() + _runtimeConstantBuffers.size());
+	LOG_FORMATTED("========= Runtime resources: %i =============", _runtimeTextures.size() + _runtimeMeshes.size() + _runtimeGameobjects.size());
 
 	LOG_FORMATTED("Runtime Meshes: %i", _runtimeMeshes.size());
 	LOG_FORMATTED("Runtime Textures: %i", _runtimeTextures.size());
 	LOG_FORMATTED("Runtime Game Objects: %i", _runtimeGameobjects.size());
-	LOG_FORMATTED("Runtime Constnt Buffers: %i", _runtimeConstantBuffers.size());
 	LOG_FORMATTED("Runtime Shaders: %i", _runtimeShaders.size());
 
 	#define PRINT_RUNTIME_RESOURCES(TITLE, SET) \
@@ -423,7 +421,6 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	PRINT_RUNTIME_RESOURCES("Meshes:", _runtimeMeshes);
 	PRINT_RUNTIME_RESOURCES("Textures:", _runtimeTextures);
 	PRINT_RUNTIME_RESOURCES("GameObjects:", _runtimeGameobjects);
-	PRINT_RUNTIME_RESOURCES("ConstantBuffers:", _runtimeConstantBuffers);
 	PRINT_RUNTIME_RESOURCES("Shaders:", _runtimeShaders);
 
 	LOG_FORMATTED("========= Shared resources: %i =============", _sharedMeshes.size() + _sharedTextures.size() + _sharedShaderTexts.size());
@@ -949,29 +946,6 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 	_runtimeShaders.emplace(s);
 
 	*pShaderOut = s;
-
-	return S_OK;
-}
-
-API ResourceManager::CreateConstantBuffer(OUT IConstantBuffer **pConstantBuffer, uint size)
-{
-	ICoreConstantBuffer *coreConstntBuffer = nullptr;
-
-	bool created = SUCCEEDED(_pCoreRender->CreateConstantBuffer(&coreConstntBuffer, size)) && coreConstntBuffer != nullptr;
-
-	if (!created)
-	{
-		*pConstantBuffer = nullptr;
-		LOG_WARNING("ResourceManager::CreateConstantBuffer(): failed to create constnt buffer");
-		return E_FAIL;
-	}
-
-	IConstantBuffer *cb = new ConstantBuffer(coreConstntBuffer);
-	DEBUG_LOG_FORMATTED("ResourceManager::CreateConstantBuffer() new ConstantBuffer %#010x", cb);
-
-	_runtimeConstantBuffers.emplace(cb);
-
-	*pConstantBuffer = cb;
 
 	return S_OK;
 }

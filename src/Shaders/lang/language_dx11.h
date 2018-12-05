@@ -30,7 +30,7 @@
 #define ATTRIBUTE(TYPE, NAME, SEMANTIC) TYPE NAME : SEMANTIC;
 
 // Uniform blocks (constant buffers)
-#define UNIFORM_BUFFER_BEGIN(SLOT) cbuffer const_buffer_##SLOT : register( b##SLOT ) {
+#define UNIFORM_BUFFER_BEGIN(NAME) cbuffer const_buffer_##NAME {
 #define UNIFORM_BUFFER_END };
 #define UNIFORM(TYPE, NAME) TYPE NAME;
 

@@ -181,30 +181,23 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 			continue;
 
 		_pCoreRender->SetMesh(renderMesh.mesh);
-		_pCoreRender->SetShader(shader);
+		_pCoreRender->SetShader(shader);		
 
-		// mesh parameters
-		{
-			params.MVP = ViewProjMat * renderMesh.modelMat;
-			params.main_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-			if ((int)(attribs & INPUT_ATTRUBUTE::NORMAL))
-			{
-				params.NM = mat4();
-				params.nL = vec3(1.0f, -2.0f, 3.0f).Normalized();
-			}
+		mat4 MVP = ViewProjMat * renderMesh.modelMat;
+		shader->SetMat4Parameter("MVP", &MVP);
 
-			_pCoreRender->SetConstantBufferData(_meshParameters.Get(), &params.main_color);
-			_pCoreRender->SetConstantBuffer(_meshParameters.Get(), 0);
-		}
+		shader->SetMat4Parameter("NM", &mat4());		
 
-		// id parameters
 		if (pass == RENDER_PASS::ID)
 		{
-			id_params.model_id = renderMesh.model_id;
-
-			_pCoreRender->SetConstantBufferData(_idParameters.Get(), &id_params.model_id);
-			_pCoreRender->SetConstantBuffer(_idParameters.Get(), 1);
+			shader->SetUintParameter("model_id", renderMesh.model_id);
+		} else if (pass == RENDER_PASS::FORWARD)
+		{
+			shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
+			shader->SetVec4Parameter("nL", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
 		}
+
+		shader->FlushParameters();		
 
 		_pCoreRender->Draw(renderMesh.mesh);
 	}
@@ -254,8 +247,6 @@ Render::~Render()
 {
 }
 
-#define _RT
-
 void Render::Init()
 {
 	_pCoreRender->SetDepthState(1);
@@ -272,22 +263,10 @@ void Render::Init()
 	_pResMan->LoadShaderFile(&shader, "id.shader");
 	_idShader =  WRL::ComPtr<IShaderFile>(shader);
 
-
-	// Constant buffers
-	IConstantBuffer *cb;
-
-	_pResMan->CreateConstantBuffer(&cb, sizeof(EveryFrameParameters));
-	_meshParameters = WRL::ComPtr<IConstantBuffer>(cb);
-
-	_pResMan->CreateConstantBuffer(&cb, sizeof(IdParameters));
-	_idParameters = WRL::ComPtr<IConstantBuffer>(cb);
-
-#ifdef _RT
 	// Render Targets
 	IRenderTarget *RT;
 	_pResMan->CreateRenderTarget(&RT);
 	_idTexRT = WRL::ComPtr<IRenderTarget>(RT);
-#endif
 
 	// Meshes
 	// get all default meshes and release only for test
@@ -317,15 +296,10 @@ void Render::Init()
 
 void Render::Free()
 {
-#ifdef _RT
 	_idTexRT.Reset();
-#endif
 
 	_forwardShader.Reset();
 	_idShader.Reset();
-
-	_meshParameters.Reset();
-	_idParameters.Reset();
 
 	_texture_pool.clear();
 	_shaders_pool.clear();	
@@ -349,7 +323,6 @@ void Render::RenderFrame(const ICamera *pCamera)
 	// Render all models ID (for picking)
 	// to R32UI texture
 	//
-#ifdef _RT
 	ITexture *tex = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::R32UI);
 	ITexture *depthTex = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::D24S8);
 
@@ -361,23 +334,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 		_pCoreRender->Clear();
 
 		_draw_meshes(ViewProjMat, meshes, RENDER_PASS::ID);
-	}	
-	_pCoreRender->RestoreDefaultRenderTarget();
-	_idTexRT->UnbindAll();
-
-	_release_texture_2d(tex);
-	_release_texture_2d(depthTex);
-#endif
-
-	// Forward pass
-	// to default framebuffer
-	//
-	{
-		_pCoreRender->Clear();
-
-		_draw_meshes(ViewProjMat, meshes, RENDER_PASS::FORWARD);
 	}
-
 
 	//
 	//IInput *i;
@@ -399,6 +356,21 @@ void Render::RenderFrame(const ICamera *pCamera)
 	//		LOG_FORMATTED("Id = %i", data);
 	//	}
 	//}
+	
+	_pCoreRender->RestoreDefaultRenderTarget();
+	_idTexRT->UnbindAll();
+
+	_release_texture_2d(tex);
+	_release_texture_2d(depthTex);
+
+	// Forward pass
+	// to default framebuffer
+	//
+	{
+		_pCoreRender->Clear();
+
+		_draw_meshes(ViewProjMat, meshes, RENDER_PASS::FORWARD);
+	}
 }
 
 API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)

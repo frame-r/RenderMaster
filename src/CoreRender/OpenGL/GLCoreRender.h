@@ -1,18 +1,58 @@
 #pragma once
 #include "Common.h"
 
-
-class GLUniformBuffer final : public ICoreConstantBuffer
+struct UBO
 {
+	string name;
+	uint bytes = 0;	
+
+	struct UBOParameter
+	{
+		string name;
+		uint offset = 0;
+		uint bytes = 0;
+		uint elements = 1; // number of elements in array (if parameter is array)
+	};
+	vector<UBOParameter> parameters;
+
+	std::unique_ptr<uint8[]> data;
+	bool needFlush = true;
+
 	GLuint _ID = 0u;
-	uint _size = 0u;
 
 public:
-	GLUniformBuffer(GLuint ID, uint size) : _ID(ID), _size(size) {}
-	virtual ~GLUniformBuffer(); 
-
-	inline GLuint ID() const { return _ID; }
-	inline uint size() const { return _size; }
+	UBO(GLuint IDIn, uint bytesIn, const string& nameIn, const vector<UBOParameter>& paramsIn) :
+		_ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
+	{
+		data = std::make_unique<uint8[]>(bytesIn);
+		memset(data.get(), '\0', bytesIn);
+	}
+	UBO(const UBO& r) = delete;
+	UBO(UBO&& r)
+	{
+		name = r.name;
+		bytes = r.bytes;
+		parameters = std::move(r.parameters);
+		_ID = r._ID;
+		r._ID = 0;
+		data = std::move(r.data);
+		needFlush = r.needFlush;
+	}
+	UBO& operator=(UBO&& r)
+	{
+		name = r.name;
+		bytes = r.bytes;
+		parameters = std::move(r.parameters);
+		_ID = r._ID;
+		r._ID = 0;
+		data = std::move(r.data);
+		needFlush = r.needFlush;
+	}
+	UBO& operator=(const UBO& r) = delete;
+	~UBO()
+	{
+		if (_ID) { glDeleteBuffers(1, &_ID); _ID = 0; }
+	}
 };
 
 class GLRenderTarget : public ICoreRenderTarget
@@ -111,7 +151,6 @@ public:
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText) override;
-	API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
@@ -119,8 +158,6 @@ public:
 	API RestoreDefaultRenderTarget() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
-	API SetConstantBuffer(IConstantBuffer *pBuffer, uint slot) override;
-	API SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(IMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint wIn, uint hIn) override;

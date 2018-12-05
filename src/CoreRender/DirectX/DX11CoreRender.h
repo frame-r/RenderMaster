@@ -3,18 +3,55 @@
 
 namespace WRL = Microsoft::WRL;
 
-class DX11ConstantBuffer final: public ICoreConstantBuffer
+struct ConstantBuffer
 {
-	WRL::ComPtr<ID3D11Buffer> buffer;
+	string name;
+	uint bytes = 0;	
+
+	struct ConstantBufferParameter
+	{
+		string name;
+		uint offset = 0;
+		uint bytes = 0;
+		uint elements = 1; // number of elements in array (if parameter is array)
+	};
+	vector<ConstantBufferParameter> parameters;
+
+	std::unique_ptr<uint8[]> data;
+	bool needFlush = true;
+
+	WRL::ComPtr<ID3D11Buffer> dxBuffer;
 
 public:
-
-	DX11ConstantBuffer(ID3D11Buffer *bufferIn) : buffer(bufferIn) {}
-	virtual ~DX11ConstantBuffer(); 
-
-	ID3D11Buffer *nativeBuffer() const { return buffer.Get(); }
+	ConstantBuffer(WRL::ComPtr<ID3D11Buffer> dxBufferIn, uint bytesIn, const string& nameIn, const vector<ConstantBufferParameter>& paramsIn) :
+		dxBuffer(dxBufferIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
+	{
+		data = std::make_unique<uint8[]>(bytesIn);
+		memset(data.get(), '\0', bytesIn);
+	}
+	ConstantBuffer(const ConstantBuffer& r) = delete;
+	ConstantBuffer(ConstantBuffer&& r)
+	{
+		name = r.name;
+		bytes = r.bytes;
+		parameters = std::move(r.parameters);
+		dxBuffer = r.dxBuffer;
+		r.dxBuffer = nullptr;
+		data = std::move(r.data);
+		needFlush = r.needFlush;
+	}
+	ConstantBuffer& operator=(ConstantBuffer&& r)
+	{
+		name = r.name;
+		bytes = r.bytes;
+		parameters = std::move(r.parameters);
+		dxBuffer = r.dxBuffer;
+		r.dxBuffer = nullptr;
+		data = std::move(r.data);
+		needFlush = r.needFlush;
+	}
+	ConstantBuffer& operator=(const ConstantBuffer& r) = delete;
 };
-
 
 class DX11RenderTarget : public ICoreRenderTarget
 {
@@ -37,7 +74,6 @@ public:
 	API UnbindColorTexture(uint slot) override;
 	API UnbindAll() override;
 };
-
 
 class DX11CoreRender final : public ICoreRender
 {
@@ -111,10 +147,13 @@ class DX11CoreRender final : public ICoreRender
 	bool create_default_buffers(uint w, uint h);
 	void destroy_default_buffers();
 
-	ID3D11DeviceChild* create_shader_by_src(int type, const char *src, HRESULT& err);
+	WRL::ComPtr<ID3DBlob> create_shader_by_src(ID3D11DeviceChild *&poiterOut, SHADER_TYPE type, const char *src, HRESULT& err);
 	UINT msaa_quality(DXGI_FORMAT format, int MSAASamples);
 	
 public:
+
+	ID3D11Device* getDevice() { return _device.Get(); }
+	ID3D11DeviceContext* getContext() { return _context.Get(); }
 
 	DX11CoreRender();
 	virtual ~DX11CoreRender();
@@ -130,7 +169,6 @@ public:
 
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText) override;
-	API CreateConstantBuffer(OUT ICoreConstantBuffer **pBuffer, uint size) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
@@ -138,8 +176,6 @@ public:
 	API RestoreDefaultRenderTarget() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
-	API SetConstantBuffer(IConstantBuffer *pBuffer, uint slot) override;
-	API SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData) override;
 	API Draw(IMesh *mesh) override;
 	API SetDepthState(int enabled) override;
 	API SetViewport(uint w, uint h) override;

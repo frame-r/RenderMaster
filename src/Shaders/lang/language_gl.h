@@ -17,12 +17,11 @@
 
 // Uniform Blocks
 // Note:
-//		- Use only types multiplied 2 or 4 (not vec3, mat3!)
 //		- By default in OpenGL (and DirectX) CPU-GPU transfer implemented in column-major style.
 //		We change this behaviour by keyword "row_major" for all uniform buffers
 //		to match C++ math lib wich keeps matrix in rom_major style.
 //		- Don't use ifdef in uniform buffer block to match C++ side struct
-#define UNIFORM_BUFFER_BEGIN(SLOT) layout (std140, binding = SLOT, row_major) uniform const_buffer_ ## SLOT { 
+#define UNIFORM_BUFFER_BEGIN(NAME) layout (row_major) uniform ubo_ ## NAME { 
 #define UNIFORM_BUFFER_END };
 #define UNIFORM(TYPE, NAME) uniform TYPE NAME;
 

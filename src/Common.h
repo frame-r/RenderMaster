@@ -215,6 +215,13 @@ inline ISceneManager *getSceneManager(ICore *core)
 	return ret;
 }
 
+inline ICoreRender *getCoreRender(ICore *core)
+{
+	ICoreRender *ret;
+	core->GetSubSystem((ISubSystem**)&ret, SUBSYSTEM_TYPE::CORE_RENDER);
+	return ret;
+}
+
 // core render
 int get_msaa_samples(INIT_FLAGS flags);
 string msaa_to_string(int samples);
@@ -372,6 +379,13 @@ public: \
 	}
 
 //
+enum class SHADER_TYPE
+{
+	SHADER_VERTEX,
+	SHADER_GEOMETRY,
+	SHADER_FRAGMENT
+};
+
 inline ICoreMesh *getCoreMesh(IMesh *mesh)
 {
 	ICoreMesh *m;
@@ -384,13 +398,6 @@ inline ICoreTexture *getCoreTexture(ITexture *tex)
 	ICoreTexture *t;
 	tex->GetCoreTexture(&t);
 	return t;
-}
-
-inline ICoreConstantBuffer *getCoreConstantBuffer(IConstantBuffer *cb)
-{
-	ICoreConstantBuffer *c;
-	cb->GetCoreBuffer(&c);
-	return c;
 }
 
 inline ICoreShader *getCoreShader(IShader *shader)

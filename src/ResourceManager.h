@@ -13,7 +13,6 @@ class ResourceManager final : public IResourceManager
 	std::unordered_set<ITexture*> _runtimeTextures;
 	std::unordered_set<IMesh*> _runtimeMeshes;
 	std::unordered_set<IGameObject*> _runtimeGameobjects;
-	std::unordered_set<IConstantBuffer*> _runtimeConstantBuffers;
 	std::unordered_set<IShader*> _runtimeShaders;
 	std::unordered_set<IRenderTarget*> _runtimeRenderTargets;
 
@@ -60,7 +59,6 @@ public:
 	void RemoveSharedTexture(const string& file) { _sharedTextures.erase(file); }
 	void RemoveRuntimeGameObject(IGameObject *g) { _runtimeGameobjects.erase(g); }
 	void RemoveSharedShaderFile(const string& file) { _sharedShaderTexts.erase(file); }
-	void RemoveRuntimeConstantBuffer(IConstantBuffer *cb) { _runtimeConstantBuffers.erase(cb); }
 	void RemoveRuntimeShader(IShader *s) { _runtimeShaders.erase(s); }
 	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtimeRenderTargets.erase(rt); }
 
@@ -75,7 +73,6 @@ public:
 
 	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
-	API CreateConstantBuffer(OUT IConstantBuffer **pConstntBuffer, uint size) override;
 	API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) override;
 	API CreateGameObject(OUT IGameObject **pGameObject) override;
 	API CreateModel(OUT IModel **pModel) override;

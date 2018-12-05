@@ -2,8 +2,7 @@
 #include "lang/language.h"
 #include "common.h"
 
-// Constant buffer
-UNIFORM_BUFFER_BEGIN(1)
+UNIFORM_BUFFER_BEGIN(id)
 	UNIFORM(uint, model_id)
 UNIFORM_BUFFER_END
 

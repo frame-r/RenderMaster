@@ -15,9 +15,6 @@ class Render : public IRender
 	WRL::ComPtr<IShaderFile> _forwardShader;
 	WRL::ComPtr<IShaderFile> _idShader;
 
-	WRL::ComPtr<IConstantBuffer> _meshParameters;
-	WRL::ComPtr<IConstantBuffer> _idParameters;
-
 	WRL::ComPtr<ITexture> _idTex;
 	WRL::ComPtr<IRenderTarget> _idTexRT;
 
@@ -33,22 +30,7 @@ class Render : public IRender
 	vector<TexturePoolable> _texture_pool;		
 
 	std::unordered_map<ShaderRequirement, WRL::ComPtr<IShader>, ShaderRequirement> _shaders_pool;
-
-	#pragma pack(push, 4)
-		struct EveryFrameParameters
-		{
-			vec4 main_color;
-			vec4 nL;
-			mat4 NM;
-			mat4 MVP;
-		} params;
-
-		struct IdParameters
-		{
-			int model_id;
-		} id_params;
-	#pragma pack(pop)
-
+	
 	struct RenderMesh
 	{
 		uint model_id;

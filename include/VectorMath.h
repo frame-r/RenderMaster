@@ -33,6 +33,16 @@ struct Vector4
 
 	Vector4& operator/=(float value);
 	Vector4& operator/(float value) const;
+
+	float Lenght() const
+	{
+		return sqrt(x * x + y * y + z * z + w * w);
+	}
+	Vector4 Normalized() const
+	{
+		float len = Lenght();
+		return Vector4(x / len, y / len, z / len, w / len);
+	}
 };
 
 struct Vector3

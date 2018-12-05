@@ -56,9 +56,6 @@
     <ClInclude Include="..\src\Mesh.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ConstantBuffer.h">
-      <Filter>Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Shader.h">
       <Filter>Graphics</Filter>
     </ClInclude>
@@ -139,9 +136,6 @@
       <Filter>GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Mesh.cpp">
-      <Filter>Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ConstantBuffer.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
     <ClCompile Include="..\src\Shader.cpp">

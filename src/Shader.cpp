@@ -15,9 +15,9 @@ Shader::~Shader()
 	delete _coreShader;
 	_coreShader = nullptr;
 
-	delete[] vert;
-	delete[] geom;
-	delete[] frag;
+	delete[] vertText;
+	delete[] geomText;
+	delete[] fragText;
 }
 
 API Shader::GetCoreShader(ICoreShader **shaderOut)
@@ -26,17 +26,45 @@ API Shader::GetCoreShader(ICoreShader **shaderOut)
 	return S_OK;
 }
 
-API Shader::GetVert(OUT const char ** textOut)
+API Shader::GetVert(OUT const char **textOut)
 {
+	*textOut = vertText;
 	return S_OK;
 }
 
-API Shader::GetGeom(OUT const char ** textOut)
+API Shader::GetGeom(OUT const char **textOut)
 {
+	*textOut = geomText;
 	return S_OK;
 }
 
-API Shader::GetFrag(OUT const char ** textOut)
+API Shader::GetFrag(OUT const char **textOut)
 {
+	*textOut = fragText;
 	return S_OK;
+}
+
+API Shader::SetFloatParameter(const char *name, float value)
+{
+	return _coreShader->SetFloatParameter(name, value);
+}
+
+API Shader::SetVec4Parameter(const char *name, const vec4 *value)
+{
+	return _coreShader->SetVec4Parameter(name, value);
+}
+
+API Shader::SetMat4Parameter(const char *name, const mat4 *value)
+{
+	return _coreShader->SetMat4Parameter(name, value);
+}
+
+API Shader::SetUintParameter(const char *name, uint value)
+{
+	return _coreShader->SetUintParameter(name, value);
+}
+
+API Shader::FlushParameters()
+{
+	return _coreShader->FlushParameters();
 }
