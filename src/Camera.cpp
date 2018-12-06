@@ -100,6 +100,12 @@ Camera::~Camera()
 {
 }
 
+API Camera::GetViewMatrix(OUT mat4 *mat)
+{
+	GetInvModelMatrix(mat);
+	return S_OK;
+}
+
 API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 {
 	mat4 P;

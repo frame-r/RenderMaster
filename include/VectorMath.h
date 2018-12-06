@@ -407,6 +407,30 @@ struct Matrix4x4
 
 		return Matrix4x4(invOut);
 	}
+
+	Matrix4x4 Transpose()
+	{
+		Matrix4x4 tmp(*this);
+
+		el_2D[0][1] = tmp.el_2D[1][0];
+		el_2D[0][2] = tmp.el_2D[2][0];
+		el_2D[0][3] = tmp.el_2D[3][0];
+
+		el_2D[1][0] = tmp.el_2D[0][1];
+		el_2D[1][2] = tmp.el_2D[2][1];
+		el_2D[1][3] = tmp.el_2D[3][1];
+
+		el_2D[2][0] = tmp.el_2D[0][2];
+		el_2D[2][1] = tmp.el_2D[1][2];
+		el_2D[2][3] = tmp.el_2D[3][2];
+
+		el_2D[3][0] = tmp.el_2D[0][3];
+		el_2D[3][1] = tmp.el_2D[1][3];
+		el_2D[3][2] = tmp.el_2D[2][3];
+
+		return *this;
+	}
+
 };
 
 

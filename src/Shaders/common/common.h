@@ -2,14 +2,6 @@
 #define H_COMMON
 
 	// Constant buffer
-	UNIFORM_BUFFER_BEGIN(material_parameters)
-		UNIFORM(vec4, main_color)
-	UNIFORM_BUFFER_END
-
-	UNIFORM_BUFFER_BEGIN(light_parameters)
-		UNIFORM(vec4, nL)
-	UNIFORM_BUFFER_END
-
 	UNIFORM_BUFFER_BEGIN(vertex_transformation_parameters)
 		UNIFORM(mat4, MVP)
 		UNIFORM(mat4, NM)

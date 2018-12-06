@@ -168,7 +168,7 @@ void Render::_get_render_mesh_vec(vector<RenderMesh>& meshes_vec)
 	}
 }
 
-void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, RENDER_PASS pass)
+void Render::_draw_meshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass)
 {
 	for(RenderMesh &renderMesh : meshes)
 	{
@@ -183,10 +183,12 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 		_pCoreRender->SetMesh(renderMesh.mesh);
 		_pCoreRender->SetShader(shader);		
 
-		mat4 MVP = ViewProjMat * renderMesh.modelMat;
+		mat4 MVP = VP * renderMesh.modelMat;
 		shader->SetMat4Parameter("MVP", &MVP);
 
-		shader->SetMat4Parameter("NM", &mat4());		
+		mat4 M = renderMesh.modelMat;
+		mat4 NM = M.Inverse().Transpose();
+		shader->SetMat4Parameter("NM", &NM);		
 
 		if (pass == RENDER_PASS::ID)
 		{
@@ -194,7 +196,7 @@ void Render::_draw_meshes(const mat4& ViewProjMat, vector<RenderMesh>& meshes, R
 		} else if (pass == RENDER_PASS::FORWARD)
 		{
 			shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
-			shader->SetVec4Parameter("nL", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
+			shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
 		}
 
 		shader->FlushParameters();		
@@ -308,13 +310,15 @@ void Render::Free()
 void Render::RenderFrame(const ICamera *pCamera)
 {
 	mat4 ViewProjMat;
+	mat4 ViewMat;
 
 	uint w, h;
 	_pCoreRender->GetViewport(&w, &h);
 	float aspect = (float)w / h;
 
 	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
-	
+	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
+
 	vector<RenderMesh> meshes;
 	_get_render_mesh_vec(meshes);
 
@@ -333,7 +337,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 	{
 		_pCoreRender->Clear();
 
-		_draw_meshes(ViewProjMat, meshes, RENDER_PASS::ID);
+		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
 	}
 
 	//
@@ -369,22 +373,22 @@ void Render::RenderFrame(const ICamera *pCamera)
 	{
 		_pCoreRender->Clear();
 
-		_draw_meshes(ViewProjMat, meshes, RENDER_PASS::FORWARD);
+		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::FORWARD);
 	}
 }
 
 API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
 {
 	mat4 ViewProjMat;
+	mat4 ViewMat;
 
 	uint w, h;
-	//_pCoreRender->GetViewport(&w, &h);
 	tex->GetWidth(&w);
 	tex->GetHeight(&h);
-
 	float aspect = (float)w / h;
 
 	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
+	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
 	
 	vector<RenderMesh> meshes;
 	_get_render_mesh_vec(meshes);
@@ -400,7 +404,7 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	{
 		_pCoreRender->Clear();
 
-		_draw_meshes(ViewProjMat, meshes, RENDER_PASS::ID);
+		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
 	}
 	_idTexRT->UnbindAll();
 	_pCoreRender->RestoreDefaultRenderTarget();

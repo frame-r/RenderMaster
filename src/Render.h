@@ -45,7 +45,7 @@ class Render : public IRender
 	bool _is_opengl();
 
 	void _get_render_mesh_vec(vector<RenderMesh>& meshes);
-	void _draw_meshes(const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass);
+	void _draw_meshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass);
 
 	ITexture* _get_render_target_texture_2d(uint width, uint height, TEXTURE_FORMAT format);
 	void _release_texture_2d(ITexture *tex);

@@ -529,6 +529,7 @@ namespace RENDER_MASTER
 	class ICamera : public IGameObject
 	{
 	public:
+		virtual API GetViewMatrix(OUT mat4 *mat) = 0;
 		virtual API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
 		virtual API GetFovAngle(OUT float *fovInDegrees) = 0;
 		virtual API Copy(ICamera *copy) = 0;

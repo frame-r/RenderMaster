@@ -11,6 +11,14 @@
 		TEXTURE2D_IN(0)
 	#endif
 
+	UNIFORM_BUFFER_BEGIN(material_parameters)
+		UNIFORM(vec4, main_color)
+	UNIFORM_BUFFER_END
+
+	UNIFORM_BUFFER_BEGIN(light_parameters)
+		UNIFORM(vec4, nL_world)
+	UNIFORM_BUFFER_END
+
 	MAIN_FRAG(VS_OUTPUT)
 		vec4 ambient = vec4(0.1f, 0.1f, 0.1f, 0.0f);
 
@@ -18,7 +26,7 @@
 
 		#ifdef ENG_INPUT_NORMAL
 			vec3 nN = normalize(GET_ATRRIBUTE(Normal).rgb);
-			diffuse = diffuse * max(dot(nN, nL.rgb), 0);
+			diffuse = diffuse * max(dot(nN, nL_world.rgb), 0);
 		#endif
 
 		#ifdef ENG_INPUT_TEXCOORD
