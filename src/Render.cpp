@@ -322,54 +322,60 @@ void Render::RenderFrame(const ICamera *pCamera)
 	vector<RenderMesh> meshes;
 	_get_render_mesh_vec(meshes);
 
-
+	///////////////////////////////
 	// ID pass
-	// Render all models ID (for picking)
-	// to R32UI texture
+	///////////////////////////////
 	//
-	ITexture *tex = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::R32UI);
-	ITexture *depthTex = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::D24S8);
-
-	_idTexRT->SetColorTexture(0, tex);
-	_idTexRT->SetDepthTexture(depthTex);
-
-	_pCoreRender->SetCurrentRenderTarget(_idTexRT.Get());
+	// Render all models ID (only for debug picking)
+	//
+#if _DEBUG
 	{
-		_pCoreRender->Clear();
+		ITexture *tex = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::R32UI);
+		ITexture *depthTex = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::D24S8);
 
-		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
+		_idTexRT->SetColorTexture(0, tex);
+		_idTexRT->SetDepthTexture(depthTex);
+
+		_pCoreRender->SetCurrentRenderTarget(_idTexRT.Get());
+		{
+			_pCoreRender->Clear();
+
+			_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
+		}
+
+		#if 0
+			IInput *i;
+			_pCore->GetSubSystem((ISubSystem**)&i, SUBSYSTEM_TYPE::INPUT);
+			int pr;
+			i->IsMoisePressed(&pr, MOUSE_BUTTON::LEFT);
+			if (pr)
+			{
+				uint curX, curY;
+				i->GetMousePos(&curX, &curY);
+
+				ICoreTexture *coreTex;
+				tex->GetCoreTexture(&coreTex);
+				uint data;
+				uint read;
+				_pCoreRender->ReadPixel2D(coreTex, &data, &read, curX, curY);
+				if (read > 0)
+				{
+					LOG_FORMATTED("Id = %i", data);
+				}
+			}
+		#endif
+
+		_pCoreRender->RestoreDefaultRenderTarget();
+		_idTexRT->UnbindAll();
+
+		_release_texture_2d(tex);
+		_release_texture_2d(depthTex);
 	}
+#endif
 
-	//
-	//IInput *i;
-	//_pCore->GetSubSystem((ISubSystem**)&i, SUBSYSTEM_TYPE::INPUT);
-	//int pr;
-	//i->IsMoisePressed(&pr, MOUSE_BUTTON::LEFT);
-	//if (pr)
-	//{
-	//	uint curX, curY;
-	//	i->GetMousePos(&curX, &curY);
-
-	//	ICoreTexture *coreTex;
-	//	tex->GetCoreTexture(&coreTex);
-	//	uint data;
-	//	uint read;
-	//	_pCoreRender->ReadPixel2D(coreTex, &data, &read, curX, curY);
-	//	if (read > 0)
-	//	{
-	//		LOG_FORMATTED("Id = %i", data);
-	//	}
-	//}
-	
-	_pCoreRender->RestoreDefaultRenderTarget();
-	_idTexRT->UnbindAll();
-
-	_release_texture_2d(tex);
-	_release_texture_2d(depthTex);
-
+	///////////////////////////////////
 	// Forward pass
-	// to default framebuffer
-	//
+	///////////////////////////////////
 	{
 		_pCoreRender->Clear();
 
@@ -393,10 +399,6 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	vector<RenderMesh> meshes;
 	_get_render_mesh_vec(meshes);
 
-	// ID pass
-	// Render all models ID (for picking)
-	// to R32UI texture
-	//
 	_idTexRT->SetColorTexture(0, tex);
 	_idTexRT->SetDepthTexture(depthTex);
 
