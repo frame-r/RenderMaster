@@ -681,8 +681,8 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	} else if (!strcmp(pMeshPath, "std#axes_arrows"))
 	{
 		// Layout: position, color, position, color, ...
-		const float arrowRadius = 0.065f;
-		const float arrowLength = 0.3f;
+		const float arrowRadius = 0.055f;
+		const float arrowLength = 0.26f;
 		const int segments = 12;
 		const int numberOfVeretex = 3 * 3 * segments;
 		const int floats = (4 + 4) * numberOfVeretex;
