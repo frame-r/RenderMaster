@@ -9,7 +9,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 	if (GetCore(&pCore))
 	{
-		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::OPENGL45 | INIT_FLAGS::MSAA_8X, L"resources", nullptr)))
+		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::DIRECTX11 | INIT_FLAGS::MSAA_8X, L"resources", nullptr)))
 		{
 			IResourceManager *resMan;
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);

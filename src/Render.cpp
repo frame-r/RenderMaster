@@ -238,6 +238,40 @@ void Render::_release_texture_2d(ITexture *tex)
 	}
 }
 
+RenderBuffers Render::initBuffers(uint w, uint h)
+{
+	RenderBuffers ret;
+
+	ret.width = w;
+	ret.height = h;
+
+	ret.color = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGBA16F);
+	ret.depth = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::D24S8);
+
+	ret.directLight = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB16F);
+
+	ret.normal = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB8);
+	ret.shading = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB8);
+
+	ret.id = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::R32UI);
+
+	return ret;
+}
+
+void Render::releaseBuffers(RenderBuffers& buffers)
+{
+	_release_texture_2d(buffers.color.Get()); buffers.color = nullptr;
+	_release_texture_2d(buffers.depth.Get()); buffers.depth = nullptr;
+
+	_release_texture_2d(buffers.directLight.Get()); buffers.directLight = nullptr;
+
+	_release_texture_2d(buffers.normal.Get()); buffers.normal = nullptr;
+	_release_texture_2d(buffers.shading.Get()); buffers.shading = nullptr;
+
+	_release_texture_2d(buffers.id.Get()); buffers.id = nullptr;
+
+}
+
 Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
@@ -267,7 +301,7 @@ void Render::Init()
 	// Render Targets
 	IRenderTarget *RT;
 	_pResMan->CreateRenderTarget(&RT);
-	_idTexRT = WRL::ComPtr<IRenderTarget>(RT);
+	renderTarget = WRL::ComPtr<IRenderTarget>(RT);
 
 	// Meshes
 	// get all default meshes and release only for test
@@ -297,7 +331,7 @@ void Render::Init()
 
 void Render::Free()
 {
-	_idTexRT.Reset();
+	renderTarget.Reset();
 
 	_forwardShader.Reset();
 	_idShader.Reset();
@@ -310,9 +344,11 @@ void Render::RenderFrame(const ICamera *pCamera)
 {
 	uint w, h;
 	_pCoreRender->GetViewport(&w, &h);
-	float aspect = (float)w / h;
+
+	RenderBuffers buffers = initBuffers(w, h);
 
 	mat4 ViewProjMat;
+	float aspect = (float)w / h;
 	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
 
 	mat4 ViewMat;
@@ -321,21 +357,33 @@ void Render::RenderFrame(const ICamera *pCamera)
 	vector<RenderMesh> meshes;
 	_get_render_mesh_vec(meshes);
 
+	///////////////////////////////////
+	// Forward pass
+	///////////////////////////////////
+	renderTarget->SetColorTexture(0, buffers.color.Get());
+	renderTarget->SetDepthTexture(buffers.depth.Get());
+	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+	{
+		_pCoreRender->Clear();
+
+		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::FORWARD);
+	}
+	_pCoreRender->RestoreDefaultRenderTarget();
+	renderTarget->UnbindAll();
+
+
 	///////////////////////////////
 	// ID pass
 	///////////////////////////////
 	//
 	// Render all models ID (only for debug picking)
 	//
-#if _DEBUG
+#if 0
 	{
-		ITexture *tex = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::R32UI);
-		ITexture *depthTex = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::D24S8);
+		renderTarget->SetColorTexture(0, buffers.id.Get());
+		renderTarget->SetDepthTexture(buffers.depth.Get());
 
-		_idTexRT->SetColorTexture(0, tex);
-		_idTexRT->SetDepthTexture(depthTex);
-
-		_pCoreRender->SetCurrentRenderTarget(_idTexRT.Get());
+		_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
 		{
 			_pCoreRender->Clear();
 
@@ -365,21 +413,11 @@ void Render::RenderFrame(const ICamera *pCamera)
 		#endif
 
 		_pCoreRender->RestoreDefaultRenderTarget();
-		_idTexRT->UnbindAll();
-
-		_release_texture_2d(tex);
-		_release_texture_2d(depthTex);
+		renderTarget->UnbindAll();
 	}
 #endif
 
-	///////////////////////////////////
-	// Forward pass
-	///////////////////////////////////
-	{
-		_pCoreRender->Clear();
-
-		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::FORWARD);
-	}
+	releaseBuffers(buffers);
 }
 
 API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
@@ -398,16 +436,16 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	vector<RenderMesh> meshes;
 	_get_render_mesh_vec(meshes);
 
-	_idTexRT->SetColorTexture(0, tex);
-	_idTexRT->SetDepthTexture(depthTex);
+	renderTarget->SetColorTexture(0, tex);
+	renderTarget->SetDepthTexture(depthTex);
 
-	_pCoreRender->SetCurrentRenderTarget(_idTexRT.Get());
+	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
 	{
 		_pCoreRender->Clear();
 
 		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
 	}
-	_idTexRT->UnbindAll();
+	renderTarget->UnbindAll();
 	_pCoreRender->RestoreDefaultRenderTarget();
 
 	return S_OK;

@@ -1,6 +1,23 @@
 #pragma once
 #include "Common.h"
 
+struct RenderBuffers
+{
+	uint height;
+	uint width;
+
+	WRL::ComPtr<ITexture> color;		// RGBA16F	- Result frame
+	WRL::ComPtr<ITexture> depth;		// D24S8	- Depth
+
+	WRL::ComPtr<ITexture> directLight;	// RGB16F	- Accumulation texture for all lights	
+
+	// GBuffer
+	WRL::ComPtr<ITexture> normal;		// RGB8		- World space normal
+	WRL::ComPtr<ITexture> shading;		// RGB8		- ?
+
+	WRL::ComPtr<ITexture> id;			// R32UI	- Models id
+};
+
 //
 // Hight-lever render
 // Based on CoreRender (GLCoreRender or DX11CoreRender)
@@ -15,8 +32,7 @@ class Render : public IRender
 	WRL::ComPtr<IShaderFile> _forwardShader;
 	WRL::ComPtr<IShaderFile> _idShader;
 
-	WRL::ComPtr<ITexture> _idTex;
-	WRL::ComPtr<IRenderTarget> _idTexRT;
+	WRL::ComPtr<IRenderTarget> renderTarget;
 
 	struct TexturePoolable
 	{
@@ -49,6 +65,9 @@ class Render : public IRender
 
 	ITexture* _get_render_target_texture_2d(uint width, uint height, TEXTURE_FORMAT format);
 	void _release_texture_2d(ITexture *tex);
+
+	RenderBuffers initBuffers(uint w, uint h);
+	void releaseBuffers(RenderBuffers& buffers);
 
 public:
 
