@@ -6,6 +6,9 @@
 // comment this to build without FBX SDK
 #define USE_FBX
 
+// print all resources allocation and deallocation 
+//#define PROFILE_RESOURCES
+
 #include "VectorMath.h"
 
 #include <windows.h>

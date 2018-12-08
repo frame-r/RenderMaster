@@ -570,7 +570,9 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 		uint id;
 		model->GetID(&id);
 
-		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x id = %i", model, id);
+		#ifdef PROFILE_RESOURCES
+			DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x id = %i", model, id);
+		#endif
 
 		_runtimeGameobjects.emplace(model);
 
@@ -592,7 +594,9 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 		uint id;
 		model->GetID(&id);
 
-		DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x id = %i", model, id);
+		#ifdef PROFILE_RESOURCES
+			DEBUG_LOG_FORMATTED("ResourceManager::LoadModel() new Model %#010x id = %i", model, id);
+		#endif
 
 		_runtimeGameobjects.emplace(model);
 
@@ -765,7 +769,10 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	if (stdCoreMesh)
 	{
 		Mesh *m = new Mesh(stdCoreMesh, pMeshPath);
-		DEBUG_LOG_FORMATTED("ResourceManager::LoadMesh() new Mesh %#010x", m);
+
+		#ifdef PROFILE_RESOURCES
+			DEBUG_LOG_FORMATTED("ResourceManager::LoadMesh() new Mesh %#010x", m);
+		#endif
 		*pMesh = m;
 		_sharedMeshes.emplace(pMeshPath, m);
 		return S_OK;
@@ -822,8 +829,9 @@ API ResourceManager::LoadShaderFile(OUT IShaderFile **pShader, const char *pShad
 {
 	const char *t = load_shader(pShaderName);
 
-	DEBUG_LOG_FORMATTED("ResourceManager::LoadShaderFile() new ShaderFile");
-
+	#ifdef PROFILE_RESOURCES
+		DEBUG_LOG_FORMATTED("ResourceManager::LoadShaderFile() new ShaderFile");
+	#endif
 	string paths = pShaderName;
 
 	ShaderFile *text = new ShaderFile(t, paths);
@@ -857,8 +865,9 @@ API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 
 API ResourceManager::CreateModel(OUT IModel **pModel)
 {
-	DEBUG_LOG_FORMATTED("ResourceManager::CreateModel() new Model");
-
+	#ifdef PROFILE_RESOURCES
+		DEBUG_LOG_FORMATTED("ResourceManager::CreateModel() new Model");
+	#endif
 	IModel *g = new Model;
 
 	_runtimeGameobjects.emplace(g);
@@ -872,8 +881,9 @@ API ResourceManager::CreateModel(OUT IModel **pModel)
 
 API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 {
-	DEBUG_LOG_FORMATTED("ResourceManager::CreateCamera() new Camera");
-
+	#ifdef PROFILE_RESOURCES
+		DEBUG_LOG_FORMATTED("ResourceManager::CreateCamera() new Camera");
+	#endif
 	ICamera *g = new Camera;
 
 	_runtimeGameobjects.emplace(g);
@@ -897,8 +907,10 @@ API ResourceManager::CreateTexture(OUT ITexture **pTextureOut, uint width, uint 
 	}
 
 	Texture *tex = new Texture(pCoreTex);
-	DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
 
+	#ifdef PROFILE_RESOURCES
+		DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
+	#endif
 	_runtimeTextures.emplace(tex);
 
 	*pTextureOut = tex;
@@ -935,13 +947,18 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 
 		pFile->CloseAndFree();
 
-		LOG_FATAL_FORMATTED("ResourceManager::CreateShader(): failed to create shader. Shader saved to \"err_compile.shader\"");
+		#ifdef PROFILE_RESOURCES
+			LOG_FATAL_FORMATTED("ResourceManager::CreateShader(): failed to create shader. Shader saved to \"err_compile.shader\"");
+		#endif
 
 		return E_FAIL;
 	}
 
 	IShader *s = new Shader(coreShader, vert, geom, frag);
-	DEBUG_LOG_FORMATTED("ResourceManager::CreateShader() new Shader %#010x", s);
+
+	#ifdef PROFILE_RESOURCES
+		DEBUG_LOG_FORMATTED("ResourceManager::CreateShader() new Shader %#010x", s);
+	#endif
 
 	_runtimeShaders.emplace(s);
 
@@ -964,7 +981,10 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 	}
 
 	IRenderTarget *rt = new RenderTarget(coreRenderTarget);
-	DEBUG_LOG_FORMATTED("ResourceManager::CreateRenderTarget() new RenderTarget %#010x", rt);
+
+	#ifdef PROFILE_RESOURCES
+		DEBUG_LOG_FORMATTED("ResourceManager::CreateRenderTarget() new RenderTarget %#010x", rt);
+	#endif
 
 	_runtimeRenderTargets.emplace(rt);
 

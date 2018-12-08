@@ -255,7 +255,6 @@ void Render::Init()
 
 	_pCore->AddUpdateCallback(std::bind(&Render::_update, this));
 
-
 	// Shaders
 	IShaderFile *shader;
 
@@ -309,14 +308,14 @@ void Render::Free()
 
 void Render::RenderFrame(const ICamera *pCamera)
 {
-	mat4 ViewProjMat;
-	mat4 ViewMat;
-
 	uint w, h;
 	_pCoreRender->GetViewport(&w, &h);
 	float aspect = (float)w / h;
 
+	mat4 ViewProjMat;
 	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
+
+	mat4 ViewMat;
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
 
 	vector<RenderMesh> meshes;
@@ -385,15 +384,15 @@ void Render::RenderFrame(const ICamera *pCamera)
 
 API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
 {
-	mat4 ViewProjMat;
-	mat4 ViewMat;
-
 	uint w, h;
 	tex->GetWidth(&w);
 	tex->GetHeight(&h);
 	float aspect = (float)w / h;
 
+	mat4 ViewProjMat;
 	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
+
+	mat4 ViewMat;
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
 	
 	vector<RenderMesh> meshes;

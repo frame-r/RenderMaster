@@ -242,6 +242,12 @@ public: \
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 
 
+#ifdef PROFILE_RESOURCES
+#define PRINT_DELETE_RES DEBUG_LOG_FORMATTED
+#else
+#define PRINT_DELETE_RES
+#endif
+
 #define BASE_RESOURCE_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD, REMOVE_SHARED_METHOD) \
  \
 	API CLASS::GetReferences(int *refsOut) \
@@ -272,7 +278,7 @@ public: \
 				rm->REMOVE_SHARED_METHOD(_file); \
 			else \
 				rm->REMOVE_RUNTIME_METHOD(this); \
-			DEBUG_LOG_FORMATTED("delete %#010x", this); \
+			PRINT_DELETE_RES("delete %#010x", this); \
 			delete this; \
 		} \
 		return S_OK;  \
@@ -315,7 +321,7 @@ public: \
 			IResourceManager *irm = getResourceManager(CORE); \
 			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
 			rm->REMOVE_RUNTIME_METHOD(this); \
-			DEBUG_LOG_FORMATTED("delete %#010x", this); \
+			PRINT_DELETE_RES("delete %#010x", this); \
 			delete this; \
 		} \
 		return S_OK;  \
@@ -366,7 +372,7 @@ public: \
 			IResourceManager *irm = getResourceManager(CORE); \
 			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
 			rm->REMOVE_SHARED_METHOD(_file); \
-			DEBUG_LOG_FORMATTED("delete %#010x", this); \
+			PRINT_DELETE_RES("delete %#010x", this); \
 			delete this; \
 		} \
 		return S_OK;  \
