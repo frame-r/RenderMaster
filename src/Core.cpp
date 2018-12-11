@@ -208,10 +208,7 @@ void Core::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, 
 		break;
 
 	case WINDOW_MESSAGE::WINDOW_REDRAW:
-		ICamera * cam;
-		_pSceneManager->GetDefaultCamera(&cam);
-		_pRender->RenderFrame(cam);
-		_pCoreRender->SwapBuffers();
+		_main_loop();
 		break;
 
 	case WINDOW_MESSAGE::APPLICATION_ACTIVATED:

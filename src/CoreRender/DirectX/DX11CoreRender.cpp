@@ -166,7 +166,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 		sd.Height = height;
 		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.SampleDesc.Count =_MSAASamples;
-		sd.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
+		sd.SampleDesc.Quality = _MSAASamples <= 1 ? 0 : msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
@@ -191,7 +191,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.OutputWindow = hwnd;
 		sd.SampleDesc.Count = _MSAASamples;
-		sd.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
+		sd.SampleDesc.Quality = _MSAASamples <= 1 ? 0 : msaa_quality(DXGI_FORMAT_R8G8B8A8_UNORM, _MSAASamples);
 		sd.Windowed = TRUE;
 
 		hr = dxgiFactory->CreateSwapChain(_device.Get(), &sd, &_swapChain);
@@ -640,7 +640,27 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 		return E_FAIL;
 	}
 
-	// shader resource view
+	// Create the sample
+	// TODO: create sampler from flags
+	ID3D11SamplerState* sampler = nullptr;
+    D3D11_SAMPLER_DESC sampDesc;
+    ZeroMemory(&sampDesc, sizeof(sampDesc));
+    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    sampDesc.MinLOD = 0;
+    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+    if(FAILED(_device->CreateSamplerState(&sampDesc, &sampler)))
+	{
+		tex->Release();
+		LOG_FATAL("DX11CoreRender::CreateTexture(): can't create sampler\n");
+		*pTexture = nullptr;
+		return E_FAIL;
+	}
+
+	// Shader Resource View
 	ID3D11ShaderResourceView *srv = nullptr;
 	D3D11_SHADER_RESOURCE_VIEW_DESC shader_resource_view_desc;
 	shader_resource_view_desc.Format = srv_format(format);
@@ -656,7 +676,7 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 		return E_FAIL;
 	}
 
-	// render target (color\depth stencil)
+	// Render Target View (color\depth stencil)
 	ID3D11RenderTargetView *rtv = nullptr;
 	ID3D11DepthStencilView *dsv = nullptr;
 
@@ -696,7 +716,7 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 		}
 	}
 
-	DX11Texture *dxTex = new DX11Texture(tex, srv, rtv, dsv, format);
+	DX11Texture *dxTex = new DX11Texture(tex, sampler, srv, rtv, dsv, format);
 	*pTexture = dxTex;
 
 	return S_OK;
@@ -718,7 +738,7 @@ API DX11CoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 	_state.renderTarget = ComPtr<IRenderTarget>(pRenderTarget);
 
 	DX11RenderTarget *dxrt = getDX11RenderTarget(pRenderTarget);
-	dxrt->bind(_context.Get());
+	dxrt->bind(_context.Get(), _defaultDepthStencilView.Get());
 
 	return S_OK;
 }
@@ -735,7 +755,6 @@ API DX11CoreRender::RestoreDefaultRenderTarget()
 	return S_OK;
 }
 
-
 API DX11CoreRender::SetShader(IShader* pShader)
 {
 	if (_state.shader.Get() == pShader)
@@ -743,9 +762,16 @@ API DX11CoreRender::SetShader(IShader* pShader)
 
 	_state.shader = ComPtr<IShader>(pShader);
 
-	DX11Shader *dxShader = getDX11Shader(pShader);
-
-	dxShader->bind();
+	if (pShader)
+	{
+		DX11Shader *dxShader = getDX11Shader(pShader);
+		dxShader->bind();
+	} else
+	{
+		_context->VSSetShader(nullptr, nullptr, 0);
+		_context->PSSetShader(nullptr, nullptr, 0);
+		_context->GSSetShader(nullptr, nullptr, 0);
+	}
 
 	return S_OK;
 }
@@ -775,33 +801,66 @@ API DX11CoreRender::SetMesh(IMesh* mesh)
 	return S_OK;
 }
 
-//API DX11CoreRender::SetConstantBuffer(IConstantBuffer *pBuffer, uint slot)
-//{
-//	const DX11ConstantBuffer * dxBuffer = getDX11ConstantBuffer(pBuffer);
-//	ID3D11Buffer *buf = dxBuffer->nativeBuffer();
-//
-//	_context->VSSetConstantBuffers(slot, 1, &buf);
-//	_context->PSSetConstantBuffers(slot, 1, &buf);
-//	_context->GSSetConstantBuffers(slot, 1, &buf);
-//
-//	return S_OK;
-//}
-//
-//API DX11CoreRender::SetConstantBufferData(IConstantBuffer *pBuffer, const void *pData)
-//{
-//	const DX11ConstantBuffer * dxBuffer = getDX11ConstantBuffer(pBuffer);
-//	ID3D11Buffer *buf = dxBuffer->nativeBuffer();
-//
-//	_context->UpdateSubresource(buf, 0, nullptr, pData, 0, 0);
-//
-//	return S_OK;
-//}
+API DX11CoreRender::SetTexture(uint slot, ITexture *texture)
+{
+	assert(slot < 16 && "DX11CoreRender::SetTexture(): slot must be 0...15");
+
+	if (_state.texShaderBindings[slot].Get() == texture)
+		return S_OK;
+
+	_state.texShaderBindings[slot] = texture;
+
+	if (texture)
+	{
+		DX11Texture *dxTex = getDX11Texture(texture);
+
+		ID3D11ShaderResourceView *srv = dxTex->srView();
+		_context->PSSetShaderResources(slot, 1, &srv);
+
+		ID3D11SamplerState *smpl = dxTex->sampler();
+		_context->PSSetSamplers(slot, 1, &smpl);
+	} else
+	{
+		ID3D11ShaderResourceView *const pSRV[1] = { nullptr };
+		_context->PSSetShaderResources(slot, 1, pSRV);
+
+		ID3D11SamplerState *const pSamplers[1] = { nullptr };
+		_context->PSSetSamplers(slot, 1, pSamplers);
+	}
+
+	return S_OK;
+}
+
+API DX11CoreRender::UnbindAllTextures()
+{
+	int someTextureBinded = 0;
+	for (int i = 0; i < 16; i++)
+	{
+		if (_state.texShaderBindings[i].Get())
+		{
+			someTextureBinded = 1;
+			_state.texShaderBindings[i] = nullptr;
+		}
+	}
+
+	if (someTextureBinded)
+	{
+		ID3D11ShaderResourceView *nullArraySRV[16] = {};
+		_context->PSSetShaderResources(0, 16, nullArraySRV);
+
+		ID3D11SamplerState *nullArraySs[16] = {};
+		_context->PSSetSamplers(0, 16, nullArraySs);
+	}
+
+	return S_OK;
+}
 
 API DX11CoreRender::Draw(IMesh* mesh)
 {
 	assert(_state.shader.Get() && "DX11CoreRender::Draw(): shader not set");
 
-	_state.mesh = ComPtr<IMesh>(mesh);
+	if (_state.mesh.Get() != mesh)
+		SetMesh(mesh);
 
 	DX11Mesh *dxMesh = getDX11Mesh(mesh);
 
@@ -813,7 +872,7 @@ API DX11CoreRender::Draw(IMesh* mesh)
 	return S_OK;
 }
 
-API DX11CoreRender::SetDepthState(int enabled)
+API DX11CoreRender::SetDepthTest(int enabled)
 {
 	if (_state.depthStencilDesc.DepthEnable != enabled)
 	{
@@ -914,7 +973,7 @@ bool DX11CoreRender::create_default_buffers(uint w, uint h)
 	descDepth.ArraySize = 1;
 	descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	descDepth.SampleDesc.Count = _MSAASamples;
-	descDepth.SampleDesc.Quality = _MSAASamples == 0 ? 1 : msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
+	descDepth.SampleDesc.Quality = _MSAASamples <= 1 ? 0 : msaa_quality(DXGI_FORMAT_D24_UNORM_S8_UINT, _MSAASamples);
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
@@ -926,7 +985,7 @@ bool DX11CoreRender::create_default_buffers(uint w, uint h)
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
 	ZeroMemory(&descDSV, sizeof(descDSV));
 	descDSV.Format = descDepth.Format;
-	descDSV.ViewDimension = _MSAASamples > 0 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.ViewDimension = _MSAASamples > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
 
 	if (FAILED(_device->CreateDepthStencilView(_defaultDepthStencilTex.Get(), &descDSV, _defaultDepthStencilView.GetAddressOf())))
@@ -1040,6 +1099,19 @@ API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *read
 	return S_OK;
 }
 
+API DX11CoreRender::BlitRenderTargetToDefault(IRenderTarget *pRenderTarget)
+{
+	DX11RenderTarget *dxrt = getDX11RenderTarget(pRenderTarget);
+
+	DX11Texture *dxTexColor = getDX11Texture(dxrt->texColor(0));
+	_context->CopyResource(_defaultRenderTargetTex.Get(), dxTexColor->resource());
+
+	DX11Texture *dxTexDepth = getDX11Texture(dxrt->texDepth());
+	_context->CopyResource(_defaultDepthStencilTex.Get(), dxTexDepth->resource());
+
+	return S_OK;
+}
+
 const char *get_shader_profile(SHADER_TYPE type)
 {
 	switch (type)
@@ -1115,7 +1187,7 @@ DX11RenderTarget::~DX11RenderTarget()
 {
 }
 
-void DX11RenderTarget::bind(ID3D11DeviceContext *ctx)
+void DX11RenderTarget::bind(ID3D11DeviceContext *ctx, ID3D11DepthStencilView *standardDepthBuffer)
 {
 	ID3D11RenderTargetView *renderTargetViews[8];
 	UINT targets;

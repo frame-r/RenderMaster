@@ -50,9 +50,10 @@
     <ClInclude Include="..\src\Shader.h" />
     <ClInclude Include="..\src\ShaderFile.h" />
     <ClInclude Include="..\src\Shaders\common\common.h" />
-    <ClInclude Include="..\src\Shaders\lang\language.h" />
-    <ClInclude Include="..\src\Shaders\lang\language_dx11.h" />
-    <ClInclude Include="..\src\Shaders\lang\language_gl.h" />
+    <ClInclude Include="..\src\Shaders\common\common_post.h" />
+    <ClInclude Include="..\src\Shaders\common\language.h" />
+    <ClInclude Include="..\src\Shaders\common\language_dx11.h" />
+    <ClInclude Include="..\src\Shaders\common\language_gl.h" />
     <ClInclude Include="..\src\simplecpp.h" />
     <ClInclude Include="..\src\Texture.h" />
     <ClInclude Include="..\src\Tree.h" />
@@ -101,6 +102,7 @@
     <None Include="..\src\CoreRender\DirectX\states_pools.inl" />
     <None Include="..\src\Shaders\id.shader" />
     <None Include="..\src\Shaders\mesh.shader" />
+    <None Include="..\src\Shaders\post\post.shader" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="yaml-cpp\yaml-cpp.vcxproj">

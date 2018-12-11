@@ -27,10 +27,9 @@
 
 // Textures
 #define TEXTURE2D_IN(SLOT, NAME)\
-	layout(binding=SLOT) uniform sampler2D _texture_ ## SLOT;\
-	#define NAME _texture_ ## SLOT SLOT
+	layout(binding=SLOT) uniform sampler2D _texture_ ## SLOT;
 
-#define TEXTURE(NAME, UV) texture(_texture_ ## NAME, UV)
+#define TEXTURE(SLOT, UV) texture(_texture_ ## SLOT, UV)
 
 // Vertex in/out
 #define IN_ATTRIBUTE(NAME) NAME

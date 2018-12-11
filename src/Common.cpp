@@ -269,7 +269,7 @@ int get_msaa_samples(INIT_FLAGS flags)
 	else if ((flags & INIT_FLAGS::MSAA_FLAG) == INIT_FLAGS::MSAA_8X) return 8;
 	else if ((flags & INIT_FLAGS::MSAA_FLAG) == INIT_FLAGS::MSAA_16X) return 16;
 	else if ((flags & INIT_FLAGS::MSAA_FLAG) == INIT_FLAGS::MSAA_32X) return 32;
-	return 0;
+	return 1;
 }
 
 string msaa_to_string(int samples)

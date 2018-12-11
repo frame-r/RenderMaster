@@ -19,6 +19,7 @@ public:
 	virtual ~GLMesh();
 
 	GLuint VAO_ID() const { return _VAO; }
+	uint Indexes() { return _number_of_indicies; }
 
 	API GetNumberOfVertex(OUT uint *number) override;
 	API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) override;

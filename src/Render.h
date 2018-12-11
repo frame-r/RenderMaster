@@ -6,8 +6,10 @@ struct RenderBuffers
 	uint height;
 	uint width;
 
-	WRL::ComPtr<ITexture> color;		// RGBA16F	- Result frame
-	WRL::ComPtr<ITexture> depth;		// D24S8	- Depth
+	WRL::ComPtr<ITexture> color;		// RGBA8	- Result tonemaped frame
+
+	WRL::ComPtr<ITexture> colorHDR;		// RGBA16F	- HDR frame
+	WRL::ComPtr<ITexture> depth;		// D24S8	- Hardware depth
 
 	WRL::ComPtr<ITexture> directLight;	// RGB16F	- Accumulation texture for all lights	
 
@@ -31,6 +33,9 @@ class Render : public IRender
 
 	WRL::ComPtr<IShaderFile> _forwardShader;
 	WRL::ComPtr<IShaderFile> _idShader;
+	WRL::ComPtr<IShaderFile> _postShader;
+
+	WRL::ComPtr<IMesh> _postPlane;
 
 	WRL::ComPtr<IRenderTarget> renderTarget;
 
@@ -56,13 +61,11 @@ class Render : public IRender
 
 	void _update();
 
+	void setShaderParameters(const mat4& V, const mat4& VP,RenderMesh *mesh, RENDER_PASS pass, IShader *shader);
 	IShader* _get_shader(const ShaderRequirement &req);
-
 	bool _is_opengl();
-
 	void _get_render_mesh_vec(vector<RenderMesh>& meshes);
 	void _draw_meshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass);
-
 	ITexture* _get_render_target_texture_2d(uint width, uint height, TEXTURE_FORMAT format);
 	void _release_texture_2d(ITexture *tex);
 

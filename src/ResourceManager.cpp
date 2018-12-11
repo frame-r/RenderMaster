@@ -641,13 +641,13 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 			-1.0f, 1.0f, 0.0f, 1.0f,
 			 1.0f,-1.0f, 0.0f, 1.0f,
 			 1.0f, 1.0f, 0.0f, 1.0f,
-			-1.0f, 1.0f, 0.0f, 1.0f
+			-1.0f,-1.0f, 0.0f, 1.0f
 		};
 
 		unsigned short indexPlane[6]
 		{
-			0, 1, 2,
-			0, 2, 3
+			0, 2, 1,
+			0, 1, 3
 		};
 
 		MeshDataDesc desc;

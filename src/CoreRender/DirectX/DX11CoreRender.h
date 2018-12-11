@@ -63,11 +63,13 @@ class DX11RenderTarget : public ICoreRenderTarget
 
 public:
 
-	DX11RenderTarget() {}
+	DX11RenderTarget(){}
 	virtual ~DX11RenderTarget();
 
-	void bind(ID3D11DeviceContext *ctx);
+	void bind(ID3D11DeviceContext *ctx, ID3D11DepthStencilView *standardDepthBuffer);
 	void clear(ID3D11DeviceContext *ctx, FLOAT* color, FLOAT Depth, UINT8 stencil);
+	ITexture *texColor(uint slot) { return _colors[slot].Get(); }
+	ITexture *texDepth() { return _depth.Get(); }
 
 	API SetColorTexture(uint slot, ITexture *tex) override;
 	API SetDepthTexture(ITexture *tex) override;
@@ -141,7 +143,7 @@ class DX11CoreRender final : public ICoreRender
 
 	IResourceManager *_pResMan = nullptr;
 
-	int _MSAASamples = 0;
+	int _MSAASamples = 1;
 	int _VSyncOn = 1;
 
 	bool create_default_buffers(uint w, uint h);
@@ -172,17 +174,21 @@ public:
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
+	API SetTexture(uint slot, ITexture* texture) override;
+	API UnbindAllTextures() override;
+
 	API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) override;
 	API RestoreDefaultRenderTarget() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
 	API Draw(IMesh *mesh) override;
-	API SetDepthState(int enabled) override;
+	API SetDepthTest(int enabled) override;
 	API SetViewport(uint w, uint h) override;
 	API GetViewport(OUT uint* w, OUT uint* h) override;
 	API Clear() override;
 
 	API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixelBytes, uint x, uint y) override;
+	API BlitRenderTargetToDefault(IRenderTarget *pRenderTarget) override;
 	
 	API GetName(OUT const char **pNameOut) override;
 };

@@ -432,17 +432,21 @@ namespace RENDER_MASTER
 		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
 
 		// state
+		virtual API SetTexture(uint slot, ITexture* texture) = 0;
+		virtual API UnbindAllTextures() = 0;
+
 		virtual API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) = 0;
 		virtual API RestoreDefaultRenderTarget() = 0;
 		virtual API SetShader(IShader *pShader) = 0;
 		virtual API SetMesh(IMesh* mesh) = 0;
 		virtual API Draw(IMesh *mesh) = 0;
-		virtual API SetDepthState(int enabled) = 0;
+		virtual API SetDepthTest(int enabled) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
 		virtual API Clear() = 0;
 		virtual API GetViewport(OUT uint* w, OUT uint* h) = 0;
 
 		virtual API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) = 0;
+		virtual API BlitRenderTargetToDefault(IRenderTarget *pRenderTarget) = 0;
 	};
 
 	//////////////////////
@@ -453,6 +457,7 @@ namespace RENDER_MASTER
 	{
 		FORWARD = 0,
 		ID,
+		ENGINE_POST,
 		PASS_NUMBER
 	};
 	

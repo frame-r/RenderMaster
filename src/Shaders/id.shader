@@ -1,4 +1,4 @@
-#include "lang/language.h"
+#include "common/language.h"
 #include "common/common.h"
 
 #ifdef ENG_SHADER_PIXEL

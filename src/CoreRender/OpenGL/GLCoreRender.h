@@ -63,7 +63,7 @@ class GLRenderTarget : public ICoreRenderTarget
 
 public:
 	GLRenderTarget(GLuint idIn);
-	virtual ~GLRenderTarget(){ if (_ID) glDeleteFramebuffers(1, &_ID); }
+	virtual ~GLRenderTarget(){ if (_ID) glDeleteFramebuffers(1, &_ID); _ID = 0; }
 
 	GLuint ID() { return _ID; }
 
@@ -156,15 +156,20 @@ public:
 
 	API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) override;
 	API RestoreDefaultRenderTarget() override;
+
+	API SetTexture(uint slot, ITexture* texture) override;
+	API UnbindAllTextures() override;
+
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
 	API Draw(IMesh *mesh) override;
-	API SetDepthState(int enabled) override;
+	API SetDepthTest(int enabled) override;
 	API SetViewport(uint wIn, uint hIn) override;
 	API GetViewport(OUT uint* wOut, OUT uint* hOut) override;
 	API Clear() override;
 
 	API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) override;
+	API BlitRenderTargetToDefault(IRenderTarget *pRenderTarget) override;
 
 	API GetName(OUT const char **pTxt) override;
 };

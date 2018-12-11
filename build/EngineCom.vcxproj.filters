@@ -75,16 +75,19 @@
     <ClInclude Include="..\src\CoreRender\OpenGL\GLTexture.h">
       <Filter>CoreRender\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Shaders\lang\language.h">
-      <Filter>Shaders\lang</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Shaders\lang\language_dx11.h">
-      <Filter>Shaders\lang</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Shaders\lang\language_gl.h">
-      <Filter>Shaders\lang</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Shaders\common\common.h">
+      <Filter>Shaders\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\common\common_post.h">
+      <Filter>Shaders\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\common\language.h">
+      <Filter>Shaders\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\common\language_dx11.h">
+      <Filter>Shaders\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Shaders\common\language_gl.h">
       <Filter>Shaders\common</Filter>
     </ClInclude>
   </ItemGroup>
@@ -180,11 +183,11 @@
     <Filter Include="Graphics">
       <UniqueIdentifier>{ad4bb86c-756a-4863-9fad-8e69735a71af}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\lang">
-      <UniqueIdentifier>{6e0dd2d6-4b4c-49f5-86e7-3b7a95bd7c6e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\common">
       <UniqueIdentifier>{5fd1ece3-970f-42da-9331-ea35d5a23c0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\post">
+      <UniqueIdentifier>{a1de24f7-ff8e-4c76-a775-7f6600afa783}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -196,6 +199,9 @@
     </None>
     <None Include="..\src\CoreRender\DirectX\states_pools.inl">
       <Filter>CoreRender\DirectX</Filter>
+    </None>
+    <None Include="..\src\Shaders\post\post.shader">
+      <Filter>Shaders\post</Filter>
     </None>
   </ItemGroup>
 </Project>

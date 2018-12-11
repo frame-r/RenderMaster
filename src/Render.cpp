@@ -98,17 +98,19 @@ IShader* Render::_get_shader(const ShaderRequirement &req)
 
 		const char *text;
 
-		WRL::ComPtr<IShaderFile> tergetShader;
+		WRL::ComPtr<IShaderFile> targetShader;
 
-		if (req.pass == RENDER_PASS::ID)
-			tergetShader = _idShader;
-		else
-			tergetShader = _forwardShader;
+		switch (req.pass)
+		{
+			case RENDER_PASS::ID: targetShader = _idShader; break;
+			case RENDER_PASS::FORWARD: targetShader = _forwardShader; break;
+			case RENDER_PASS::ENGINE_POST: targetShader = _postShader; break;
+		}
 
-		tergetShader->GetText(&text);
+		targetShader->GetText(&text);
 
 		const char *pFileIn;
-		tergetShader->GetFile(&pFileIn);
+		targetShader->GetFile(&pFileIn);
 		string fileIn = pFileIn;
 
 		const char *textVertOut; 
@@ -168,6 +170,40 @@ void Render::_get_render_mesh_vec(vector<RenderMesh>& meshes_vec)
 	}
 }
 
+void Render::setShaderParameters(const mat4& V, const mat4& VP,RenderMesh *mesh, RENDER_PASS pass, IShader *shader)
+{
+	if (mesh)
+	{
+		mat4 MVP = VP * mesh->modelMat;
+		shader->SetMat4Parameter("MVP", &MVP);
+
+		mat4 M = mesh->modelMat;
+		mat4 NM = M.Inverse().Transpose();
+		shader->SetMat4Parameter("NM", &NM);
+	}
+
+	if (pass == RENDER_PASS::ID)
+	{
+		shader->SetUintParameter("model_id", mesh->model_id);
+	} else if (pass == RENDER_PASS::FORWARD)
+	{
+		shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
+		shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
+	} else if (pass == RENDER_PASS::ENGINE_POST)
+	{
+		uint w, h;
+		_pCoreRender->GetViewport(&w, &h);
+		shader->SetUintParameter("width", w);
+		shader->SetUintParameter("height", h);
+		float invW = 1.0f / w;
+		float invH = 1.0f / h;
+		shader->SetFloatParameter("invWidth", invW);
+		shader->SetFloatParameter("invHeight", invH);
+	}
+
+	shader->FlushParameters();
+}
+
 void Render::_draw_meshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass)
 {
 	for(RenderMesh &renderMesh : meshes)
@@ -183,23 +219,7 @@ void Render::_draw_meshes(const mat4& V, const mat4& VP, vector<RenderMesh>& mes
 		_pCoreRender->SetMesh(renderMesh.mesh);
 		_pCoreRender->SetShader(shader);		
 
-		mat4 MVP = VP * renderMesh.modelMat;
-		shader->SetMat4Parameter("MVP", &MVP);
-
-		mat4 M = renderMesh.modelMat;
-		mat4 NM = M.Inverse().Transpose();
-		shader->SetMat4Parameter("NM", &NM);		
-
-		if (pass == RENDER_PASS::ID)
-		{
-			shader->SetUintParameter("model_id", renderMesh.model_id);
-		} else if (pass == RENDER_PASS::FORWARD)
-		{
-			shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
-			shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
-		}
-
-		shader->FlushParameters();		
+		setShaderParameters(V, VP, &renderMesh, pass, shader);		
 
 		_pCoreRender->Draw(renderMesh.mesh);
 	}
@@ -207,15 +227,15 @@ void Render::_draw_meshes(const mat4& V, const mat4& VP, vector<RenderMesh>& mes
 
 ITexture* Render::_get_render_target_texture_2d(uint width, uint height, TEXTURE_FORMAT format)
 {
-	for (TexturePoolable &tp : _texture_pool)
+	for (TexturePoolable &tex : _texture_pool)
 	{
-		if (tp.free)
+		if (tex.free)
 		{
-			if (width == tp.width && height == tp.height && format == tp.format)
+			if (width == tex.width && height == tex.height && format == tex.format)
 			{
-				tp.free = 0;
-				tp.frame = _pCore->frame();
-				return tp.tex.Get();
+				tex.free = 0;
+				tex.frame = _pCore->frame();
+				return tex.tex.Get();
 			}
 		}
 	}
@@ -245,7 +265,8 @@ RenderBuffers Render::initBuffers(uint w, uint h)
 	ret.width = w;
 	ret.height = h;
 
-	ret.color = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGBA16F);
+	ret.color = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGBA8);
+	ret.colorHDR = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGBA16F);
 	ret.depth = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::D24S8);
 
 	ret.directLight = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB16F);
@@ -261,6 +282,7 @@ RenderBuffers Render::initBuffers(uint w, uint h)
 void Render::releaseBuffers(RenderBuffers& buffers)
 {
 	_release_texture_2d(buffers.color.Get()); buffers.color = nullptr;
+	_release_texture_2d(buffers.colorHDR.Get()); buffers.colorHDR = nullptr;
 	_release_texture_2d(buffers.depth.Get()); buffers.depth = nullptr;
 
 	_release_texture_2d(buffers.directLight.Get()); buffers.directLight = nullptr;
@@ -285,7 +307,7 @@ Render::~Render()
 
 void Render::Init()
 {
-	_pCoreRender->SetDepthState(1);
+	_pCoreRender->SetDepthTest(1);
 
 	_pCore->AddUpdateCallback(std::bind(&Render::_update, this));
 
@@ -297,6 +319,9 @@ void Render::Init()
 
 	_pResMan->LoadShaderFile(&shader, "id.shader");
 	_idShader =  WRL::ComPtr<IShaderFile>(shader);
+
+	_pResMan->LoadShaderFile(&shader, "post\\post.shader");
+	_postShader =  WRL::ComPtr<IShaderFile>(shader);
 
 	// Render Targets
 	IRenderTarget *RT;
@@ -319,6 +344,9 @@ void Render::Init()
 	_pResMan->LoadMesh(&mesh, "std#grid");
 	gridMesh = WRL::ComPtr<IMesh>(mesh);
 
+	_pResMan->LoadMesh(&mesh, "std#plane");
+	_postPlane = WRL::ComPtr<IMesh>(mesh);
+
 	// Create texture for test
 	ITexture *tex;
 	_pResMan->CreateTexture(&tex, 300, 300, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::R32UI, TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT);
@@ -331,6 +359,8 @@ void Render::Init()
 
 void Render::Free()
 {
+	_postPlane.Reset();
+
 	renderTarget.Reset();
 
 	_forwardShader.Reset();
@@ -345,8 +375,6 @@ void Render::RenderFrame(const ICamera *pCamera)
 	uint w, h;
 	_pCoreRender->GetViewport(&w, &h);
 
-	RenderBuffers buffers = initBuffers(w, h);
-
 	mat4 ViewProjMat;
 	float aspect = (float)w / h;
 	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
@@ -357,10 +385,13 @@ void Render::RenderFrame(const ICamera *pCamera)
 	vector<RenderMesh> meshes;
 	_get_render_mesh_vec(meshes);
 
+	RenderBuffers buffers = initBuffers(w, h);
+
 	///////////////////////////////////
 	// Forward pass
 	///////////////////////////////////
-	renderTarget->SetColorTexture(0, buffers.color.Get());
+	
+	renderTarget->SetColorTexture(0, buffers.colorHDR.Get());
 	renderTarget->SetDepthTexture(buffers.depth.Get());
 	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
 	{
@@ -369,16 +400,43 @@ void Render::RenderFrame(const ICamera *pCamera)
 		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::FORWARD);
 	}
 	_pCoreRender->RestoreDefaultRenderTarget();
-	renderTarget->UnbindAll();
 
 
+	///////////////////////////////////
+	// Post pass
+	///////////////////////////////////	
+
+	INPUT_ATTRUBUTE attribs;
+	_postPlane->GetAttributes(&attribs);
+	IShader *shader = _get_shader({attribs, RENDER_PASS::ENGINE_POST});
+	_pCoreRender->SetShader(shader);
+
+	setShaderParameters(ViewMat, ViewProjMat, nullptr, RENDER_PASS::ENGINE_POST, shader);
+
+	_pCoreRender->SetTexture(0, buffers.colorHDR.Get());
+
+	_pCoreRender->SetDepthTest(0);	
+	
+
+	renderTarget->SetColorTexture(0, buffers.color.Get());
+	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+	{
+		_pCoreRender->Draw(_postPlane.Get());
+	}
+	_pCoreRender->RestoreDefaultRenderTarget();
+
+
+	_pCoreRender->UnbindAllTextures();
+	_pCoreRender->SetDepthTest(1);	
+	
+
+#if 0
 	///////////////////////////////
 	// ID pass
 	///////////////////////////////
 	//
 	// Render all models ID (only for debug picking)
 	//
-#if 0
 	{
 		renderTarget->SetColorTexture(0, buffers.id.Get());
 		renderTarget->SetDepthTexture(buffers.depth.Get());
@@ -417,6 +475,9 @@ void Render::RenderFrame(const ICamera *pCamera)
 	}
 #endif
 
+	_pCoreRender->BlitRenderTargetToDefault(renderTarget.Get());
+	renderTarget->UnbindAll();
+
 	releaseBuffers(buffers);
 }
 
@@ -445,8 +506,9 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 
 		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
 	}
-	renderTarget->UnbindAll();
 	_pCoreRender->RestoreDefaultRenderTarget();
+
+	renderTarget->UnbindAll();
 
 	return S_OK;
 }
@@ -469,6 +531,7 @@ API Render::ShadersReload()
 	LOG("Shaders reloading...");
 	_idShader->Reload();
 	_forwardShader->Reload();
+	_postShader->Reload();
 	_shaders_pool.clear();
 	return S_OK;
 }

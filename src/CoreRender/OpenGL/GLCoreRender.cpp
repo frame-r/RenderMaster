@@ -10,7 +10,11 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
+#define TEXTURE_NAME "_texture_"
+#define DONT_CHECK_GL_ERRORS 1
+
 vector<UBO> UBOpool;
+
 
 GLMesh *getGLMesh(IMesh *mesh)
 {
@@ -40,7 +44,7 @@ PIXELFORMATDESCRIPTOR pfd{};
 
 void CHECK_GL_ERRORS()
 {
-#ifdef _DEBUG
+#if _DEBUG && !DONT_CHECK_GL_ERRORS
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR)
 	{
@@ -501,24 +505,22 @@ API GLCoreRender::PopStates()
 	//
 	{
 		GLShader *glShader = getGLShader(_state.shader.Get());
-		GLuint programID = glShader->programID();
 
 		for (int i = 0; i < 16; i++)
 		{
 			if (state.texShaderBindings[i].Get() != _state.texShaderBindings[i].Get())
 			{
-				GLTexture *glTex = getGLTexture(_state.texShaderBindings[i].Get());
+				if (state.texShaderBindings[i].Get())
+				{
+					// texture -> slot
+					GLTexture *glTex = getGLTexture(state.texShaderBindings[i].Get());
+					glBindTextureUnit(i, glTex->textureID());
 
-				// now work with slot == i
-				// TODO: make other types (not only GL_TEXTURE_2D)!
-				glActiveTexture(GL_TEXTURE0 + i);
-
-				// texture id -> slot
-				glBindTexture(GL_TEXTURE_2D, glTex->textureID());
-
-				// shader variable id -> slot
-				GLuint tex_ID = glGetUniformLocation(programID, ("_texture_" + std::to_string(i)).c_str());
-				glUniform1i(glTex->textureID(), i);
+					// shader variable -> slot
+					GLint location = glGetUniformLocation(glShader->programID(), (TEXTURE_NAME + std::to_string(i)).c_str());
+					glUniform1i(location, i);
+				} else
+					glBindTextureUnit(i, 0);
 			}
 		}
 	}
@@ -875,6 +877,46 @@ API GLCoreRender::SetMesh(IMesh* mesh)
 	return S_OK;
 }
 
+API GLCoreRender::SetTexture(uint slot, ITexture *texture)
+{
+	assert(slot < 16);
+
+	CHECK_GL_ERRORS();
+
+	if (_state.texShaderBindings[slot].Get() != texture)
+	{
+		// texture -> slot
+		GLTexture *glTex = getGLTexture(texture);
+		glBindTextureUnit(slot, glTex->textureID());
+
+		// shader variable -> slot
+		GLShader *glShader = getGLShader(_state.shader.Get());
+		GLint location = glGetUniformLocation(glShader->programID(), (TEXTURE_NAME + std::to_string(slot)).c_str());
+		glUniform1i(location, slot);
+
+		_state.texShaderBindings[slot] = texture;
+	}
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::UnbindAllTextures()
+{
+	CHECK_GL_ERRORS();
+
+	GLuint zeroTex[16] = {};
+	glBindTextures(0, 16, zeroTex);
+
+	for (int i = 0; i < 16; i++)
+		_state.texShaderBindings[i] = nullptr;
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
 API GLCoreRender::Draw(IMesh *mesh)
 {
 	assert(_state.shader.Get() && "GLCoreRender::Draw(): shader not set");
@@ -890,15 +932,19 @@ API GLCoreRender::Draw(IMesh *mesh)
 	VERTEX_TOPOLOGY topology;
 	mesh->GetVertexTopology(&topology);
 
-	// glDrawElements - for index! Why it works?
-	glDrawArrays((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, 0, vertecies);
+	GLMesh *glMesh = getGLMesh(mesh);
+
+	if (glMesh->Indexes())
+		glDrawElements((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, glMesh->Indexes(), ((glMesh->Indexes() > 65535) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT), nullptr);
+	else
+		glDrawArrays((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, 0, vertecies);	
 	
 	CHECK_GL_ERRORS();
 	
 	return S_OK;
 }
 
-API GLCoreRender::SetDepthState(int enabled)
+API GLCoreRender::SetDepthTest(int enabled)
 {
 	CHECK_GL_ERRORS();
 
@@ -917,15 +963,15 @@ API GLCoreRender::SetDepthState(int enabled)
 	return S_OK;
 }
 
-API GLCoreRender::SetViewport(uint wIn, uint hIn)
+API GLCoreRender::SetViewport(uint wNew, uint hNew)
 {
-	if (wIn == _state.viewportWidth && hIn == _state.viewportHeigth) 
+	if (wNew == _state.viewportWidth && hNew == _state.viewportHeigth) 
 		return S_OK;
 
-	glViewport(0, 0, wIn, hIn);
+	glViewport(0, 0, wNew, hNew);
 
-	_state.viewportWidth = wIn;
-	_state.viewportHeigth = hIn;
+	_state.viewportWidth = wNew;
+	_state.viewportHeigth = hNew;
 
 	return S_OK;
 }
@@ -990,6 +1036,24 @@ API GLCoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readPi
 	return S_OK;
 }
 
+API GLCoreRender::BlitRenderTargetToDefault(IRenderTarget *pRenderTarget)
+{
+	GLRenderTarget *glRT = getGLRenderTarget(pRenderTarget);
+
+	CHECK_GL_ERRORS();
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, glRT->ID());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	uint w = _state.viewportWidth;
+	uint h = _state.viewportHeigth;
+	glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
 GLRenderTarget::GLRenderTarget(GLuint idIn) : _ID(idIn)
 {
 	for (int i = 0; i < 8; i++)
@@ -1000,13 +1064,11 @@ void GLRenderTarget::bind()
 {
 	CHECK_GL_ERRORS();
 
-	//int targets;
 	for (int i = 0; i < 8; i++)
 	{
-		if (!_colors[i])
+		if (!_colors[i]) // if 0 then break
 			break;
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _colors[i], 0);
-		//targets++;
 	}
 
 	CHECK_GL_ERRORS();
@@ -1030,7 +1092,7 @@ API GLRenderTarget::SetColorTexture(uint slot, ITexture *tex)
 		_colors[slot] = glTex->textureID();
 	} else
 	{
-		if (_colors[slot])
+		if (_colors[slot]) // unbind immediately here 
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, _ID);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, 0, 0);
