@@ -102,7 +102,7 @@
     <None Include="..\src\CoreRender\DirectX\states_pools.inl" />
     <None Include="..\src\Shaders\id.shader" />
     <None Include="..\src\Shaders\mesh.shader" />
-    <None Include="..\src\Shaders\post\post.shader" />
+    <None Include="..\src\Shaders\post\engine_post.shader" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="yaml-cpp\yaml-cpp.vcxproj">

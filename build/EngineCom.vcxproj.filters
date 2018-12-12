@@ -200,7 +200,7 @@
     <None Include="..\src\CoreRender\DirectX\states_pools.inl">
       <Filter>CoreRender\DirectX</Filter>
     </None>
-    <None Include="..\src\Shaders\post\post.shader">
+    <None Include="..\src\Shaders\post\engine_post.shader">
       <Filter>Shaders\post</Filter>
     </None>
   </ItemGroup>

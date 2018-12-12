@@ -32,11 +32,9 @@ class Render : public IRender
 	IFileSystem *_fsystem{nullptr};
 
 	WRL::ComPtr<IShaderFile> _forwardShader;
-	WRL::ComPtr<IShaderFile> _idShader;
 	WRL::ComPtr<IShaderFile> _postShader;
-
+	WRL::ComPtr<IShaderFile> _idShader;	
 	WRL::ComPtr<IMesh> _postPlane;
-
 	WRL::ComPtr<IRenderTarget> renderTarget;
 
 	struct TexturePoolable
@@ -60,7 +58,6 @@ class Render : public IRender
 	};
 
 	void _update();
-
 	void setShaderParameters(const mat4& V, const mat4& VP,RenderMesh *mesh, RENDER_PASS pass, IShader *shader);
 	IShader* _get_shader(const ShaderRequirement &req);
 	bool _is_opengl();

@@ -268,12 +268,9 @@ RenderBuffers Render::initBuffers(uint w, uint h)
 	ret.color = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGBA8);
 	ret.colorHDR = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGBA16F);
 	ret.depth = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::D24S8);
-
 	ret.directLight = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB16F);
-
 	ret.normal = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB8);
 	ret.shading = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB8);
-
 	ret.id = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::R32UI);
 
 	return ret;
@@ -281,17 +278,13 @@ RenderBuffers Render::initBuffers(uint w, uint h)
 
 void Render::releaseBuffers(RenderBuffers& buffers)
 {
-	_release_texture_2d(buffers.color.Get()); buffers.color = nullptr;
-	_release_texture_2d(buffers.colorHDR.Get()); buffers.colorHDR = nullptr;
-	_release_texture_2d(buffers.depth.Get()); buffers.depth = nullptr;
-
-	_release_texture_2d(buffers.directLight.Get()); buffers.directLight = nullptr;
-
-	_release_texture_2d(buffers.normal.Get()); buffers.normal = nullptr;
-	_release_texture_2d(buffers.shading.Get()); buffers.shading = nullptr;
-
-	_release_texture_2d(buffers.id.Get()); buffers.id = nullptr;
-
+	_release_texture_2d(buffers.color.Get());		buffers.color = nullptr;
+	_release_texture_2d(buffers.colorHDR.Get());	buffers.colorHDR = nullptr;
+	_release_texture_2d(buffers.depth.Get());		buffers.depth = nullptr;
+	_release_texture_2d(buffers.directLight.Get());	buffers.directLight = nullptr;
+	_release_texture_2d(buffers.normal.Get());		buffers.normal = nullptr;
+	_release_texture_2d(buffers.shading.Get());		buffers.shading = nullptr;
+	_release_texture_2d(buffers.id.Get());			buffers.id = nullptr;
 }
 
 Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
@@ -320,7 +313,7 @@ void Render::Init()
 	_pResMan->LoadShaderFile(&shader, "id.shader");
 	_idShader =  WRL::ComPtr<IShaderFile>(shader);
 
-	_pResMan->LoadShaderFile(&shader, "post\\post.shader");
+	_pResMan->LoadShaderFile(&shader, "post\\engine_post.shader");
 	_postShader =  WRL::ComPtr<IShaderFile>(shader);
 
 	// Render Targets
