@@ -5,7 +5,6 @@ Graphic engine.
 ## Features
 * [Editor](https://github.com/fra-zz-mer/RenderMasterEditor)
 * Multi-render: DirectX 11, OpenGL 4.5
-* MSAA
 * Stable ABI (Application Binary Interface). I.e engine binaries stable across different compiler that supports COM and different release of one compiler. No need recompile engine if you migrate to new compiler.
 
 Planned:
@@ -13,7 +12,7 @@ Planned:
 * Physically Based Shading
 * TAA
 * SSAO, SSR
-* Voxel Cone Tracing (or another solution for indirect light)
+* Some indirect light solution
 
 ## Building and installation engine
 Clone repositiory. Build solution Engine.sln located in build/ directory. I use Visual Studio 2017 (15.8.2), but I'm sure that the engine is compiled with VS 2015. Then you should register Engine.dll in Windows Registry. Just run cmd.exe as Administrator, navigate to build/ directory and type "install.bat release" for release build or "install.bat debug" for debug build. Now everything is ready to work with the engine. See example build/Test.vcxproj for more details.
