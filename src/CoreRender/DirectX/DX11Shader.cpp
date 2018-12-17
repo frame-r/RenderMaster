@@ -26,7 +26,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 	}
 
 	ID3D11ShaderReflection* reflection = nullptr;
-	D3D11Reflect(data.bytecode, data.size, &reflection);
+	D3DReflect(data.bytecode, data.size, IID_ID3D11ShaderReflection, (void**)&reflection);
 
 	D3D11_SHADER_DESC shaderDesc;
 	reflection->GetDesc(&shaderDesc);

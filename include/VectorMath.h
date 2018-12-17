@@ -38,11 +38,14 @@ struct Vector4
 	{
 		return sqrt(x * x + y * y + z * z + w * w);
 	}
+
 	Vector4 Normalized() const
 	{
 		float len = Lenght();
 		return Vector4(x / len, y / len, z / len, w / len);
 	}
+
+	Vector3 Vec3();
 };
 
 struct Vector3
@@ -191,6 +194,100 @@ struct Vector2
 	Vector2(float v) : x(v), y(v) {}
 	Vector2(float xIn, float yIn) : x(xIn), y(yIn) {}
 	Vector2(const Vector3& v3) : x(v3.x), y(v3.y) {}
+
+	Vector2 &operator+=(const Vector2 &point)
+	{
+		x += point.x;
+		y += point.y;
+		return *this;
+	}
+
+	Vector2 operator+(const Vector2 &point) const
+	{
+		return Vector2(*this) += point;
+	}
+
+	Vector2 &operator-=(const Vector2 &point)
+	{
+		x -= point.x;
+		y -= point.y;
+		return *this;
+	}
+
+	Vector2 operator-(const Vector2 &point) const
+	{
+		return Vector2(*this) -= point;
+	}
+
+	Vector2 operator-() const
+	{
+		return Vector2(-x, -y);
+	}
+
+	Vector2 &operator*=(const Vector2 &point)
+	{
+		x *= point.x;
+		y *= point.y;
+		return *this;
+	}
+
+	Vector2 operator*(const Vector2 &point) const
+	{
+		return Vector2(*this) *= point;
+	}
+
+	Vector2 &operator*=(float value)
+	{
+		x *= value;
+		y *= value;
+		return *this;
+	}
+
+	Vector2 operator*(float value) const
+	{
+		return Vector2(*this) *= value;
+	}
+
+	Vector2& operator/=(float value)
+	{
+		x /= value;
+		y /= value;
+		return *this;
+	}
+
+	Vector2& operator/(float value) const
+	{
+		return Vector2(*this) /= value;
+	}
+	
+	Vector2& Normalize()
+	{
+		float len = Lenght();
+		x /= len;
+		y /= len;
+		return *this;
+	}
+
+	Vector2 Normalized() const
+	{
+		float len = Lenght();
+		return Vector2(x / len, y / len);
+	}
+
+	float Dot(const Vector2& point) const
+	{
+		return x * point.x + y*point.y;
+	}
+
+	float Lenght() const
+	{
+		return sqrt(x * x + y * y);
+	}
+
+	bool Aproximately(const Vector2& r) const
+	{
+		return std::abs(r.x - x) < EPSILON && std::abs(r.y - y) < EPSILON;
+	}
 };
 
 inline Vector4::Vector4(float xIn, float yIn, float zIn, float wIn) : x(xIn), y(yIn), z(zIn), w(wIn) {}
@@ -209,6 +306,11 @@ inline Vector4& Vector4::operator/=(float value)
 inline Vector4& Vector4::operator/(float value) const
 {
 	return Vector4(*this) /= value;
+}
+
+inline Vector3 Vector4::Vec3()
+{
+	return Vector3(x, y, z);
 }
 
 struct Matrix4x4
@@ -251,6 +353,13 @@ struct Matrix4x4
 	Vector3 Column3(int i) const
 	{
 		return Vector3(el_2D[0][i], el_2D[1][i], el_2D[2][i]);
+	}
+
+	Vector3 SetColumn3(int i, const Vector3& vec)
+	{
+		el_2D[0][i] = vec.x;
+		el_2D[1][i] = vec.y;
+		el_2D[2][i] = vec.y;
 	}
 
 	Vector4 operator*(const Vector4& v) const

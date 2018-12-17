@@ -154,6 +154,12 @@ API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 	return S_OK;
 }
 
+API Camera::GetProjectionMatrix(OUT mat4 *mat, float aspect)
+{
+	*mat = perspectiveRH_ZO(_fovAngle * DEGTORAD, aspect, _zNear, _zFar);
+	return S_OK;
+}
+
 API Camera::GetFovAngle(OUT float *fovInDegrees)
 {
 	*fovInDegrees = _fovAngle;

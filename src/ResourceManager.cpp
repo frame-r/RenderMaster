@@ -665,19 +665,14 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 	} else if (!strcmp(pMeshPath, "std#axes"))
 	{
-		float vertexAxes[] = {0.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,		1.0f, 0.0f, 0.0f, 1.0f,
-								0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,		0.0f, 1.0f, 0.0f, 1.0f,
-								0.0f, 0.0f, 0.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f,		0.0f, 0.0f, 1.0f, 1.0f};
+		float vertexAxes[] = {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 
 		MeshIndexDesc indexEmpty;
 
 		MeshDataDesc descAxes;
 		descAxes.pData = reinterpret_cast<uint8*>(vertexAxes);
-		descAxes.numberOfVertex = 6;
-		descAxes.positionStride = 32;
-		descAxes.colorPresented = true;
-		descAxes.colorOffset = 16;
-		descAxes.colorStride = 32;
+		descAxes.numberOfVertex = 2;
+		descAxes.positionStride = 16;
 
 		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
 			return E_ABORT;
@@ -685,19 +680,14 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	} else if (!strcmp(pMeshPath, "std#axes_arrows"))
 	{
 		// Layout: position, color, position, color, ...
-		const float arrowRadius = 0.055f;
-		const float arrowLength = 0.26f;
+		const float arrowRadius = 0.052f;
+		const float arrowLength = 0.28f;
 		const int segments = 12;
-		const int numberOfVeretex = 3 * 3 * segments;
-		const int floats = (4 + 4) * numberOfVeretex;
+		const int numberOfVeretex =  3 * segments;
+		const int floats = 4 * numberOfVeretex;
 
 		float vertexAxesArrows[floats];
-		void *M = vertexAxesArrows;
-		for (int i = 0; i < 3; i++) // 3 axes
 		{
-			vec4 color;
-			color.xyzw[i] = 1.0f;
-			color.w = 1.0f;
 			for (int j = 0; j < segments; j++)
 			{
 				constexpr float pi2 = 3.141592654f * 2.0f;
@@ -706,25 +696,22 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 				vec4 v1, v2, v3;
 
-				v1.xyzw[i] = 1.0f + arrowLength;
+				v1.xyzw[0] = 1.0f;
 				v1.w = 1.0f;
 
-				v2.xyzw[i] = 1.0f;
-				v2.xyzw[(i + 1) % 3] = cos(alpha) * arrowRadius;
-				v2.xyzw[(i + 2) % 3] = sin(alpha) * arrowRadius;
+				v2.xyzw[0] = 1.0f - arrowLength;
+				v2.xyzw[1] = cos(alpha) * arrowRadius;
+				v2.xyzw[2] = sin(alpha) * arrowRadius;
 				v2.w = 1.0f;
 
-				v3.xyzw[i] = 1.0f;
-				v3.xyzw[(i + 1) % 3] = cos(alpha + dAlpha) * arrowRadius;
-				v3.xyzw[(i + 2) % 3] = sin(alpha + dAlpha) * arrowRadius;
+				v3.xyzw[0] = 1.0f - arrowLength;
+				v3.xyzw[1] = cos(alpha + dAlpha) * arrowRadius;
+				v3.xyzw[2] = sin(alpha + dAlpha) * arrowRadius;
 				v3.w = 1.0f;
 
-				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 0, &v1.x, 16);
-				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 4, &color.x, 16);
-				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 8, &v2.x, 16);
-				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 12, &color.x, 16);
-				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 16, &v3.x, 16);
-				memcpy(vertexAxesArrows + i * segments * 24 + j * 24 + 20, &color.x, 16);
+				memcpy(vertexAxesArrows + j * 12 + 0, &v1.x, 16);
+				memcpy(vertexAxesArrows + j * 12 + 4, &v2.x, 16);
+				memcpy(vertexAxesArrows + j * 12 + 8, &v3.x, 16);
 			}
 		}
 		MeshIndexDesc indexEmpty;
@@ -732,10 +719,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		MeshDataDesc descArrows;
 		descArrows.pData = reinterpret_cast<uint8*>(vertexAxesArrows);
 		descArrows.numberOfVertex = numberOfVeretex;
-		descArrows.positionStride = 32;
-		descArrows.colorPresented = true;
-		descArrows.colorOffset = 16;
-		descArrows.colorStride = 32;
+		descArrows.positionStride = 16;
 
 		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
 			return E_ABORT;

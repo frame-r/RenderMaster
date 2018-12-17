@@ -23,6 +23,7 @@ public:
 
 	API GetViewMatrix(OUT mat4 *mat) override;
 	API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) override;
+	API GetProjectionMatrix(OUT mat4 *mat, float aspect) override;
 	API GetFovAngle(OUT float *fovInDegrees) override;
 	API Copy(OUT ICamera *copy) override;
 

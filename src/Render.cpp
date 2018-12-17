@@ -22,8 +22,8 @@ void Render::_update()
 	}),
     _texture_pool.end());
 
-	if (before != _texture_pool.size())
-		LOG_FORMATTED("Render::_update() textures removed. was = %i, now = %i", before, _texture_pool.size());
+	//if (before != _texture_pool.size())
+	//	LOG_FORMATTED("Render::_update() textures removed. was = %i, now = %i", before, _texture_pool.size());
 }
 
 IShader* Render::_get_shader(const ShaderRequirement &req)

@@ -33,7 +33,6 @@
 
 #include <d3d11_2.h>
 #include <d3dcompiler.h>
-#include <d3dcompiler.inl>
 #include <wrl/client.h>
 
 #include "Tree.h"
