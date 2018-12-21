@@ -425,120 +425,6 @@ API GLCoreRender::SwapBuffers()
 	return S_OK;
 }
 
-API GLCoreRender::ClearState()
-{
-	_state = State();
-	// TODO: actualy clear state
-	return S_OK;
-}
-
-API GLCoreRender::PushStates()
-{
-	_statesStack.push(_state);
-	return S_OK;
-}
-
-API GLCoreRender::PopStates()
-{
-	State& state = _statesStack.top();
-	_statesStack.pop();
-
-	// Blending
-	//
-	if (_state.blending != state.blending)
-	{
-		if (state.blending)
-			glEnable(GL_BLEND);
-		else
-			glDisable(GL_BLEND);
-	}
-
-	if (_state.srcBlend != state.srcBlend || _state.dstBlend != state.dstBlend)
-		glBlendFunc(state.srcBlend, state.dstBlend);
-
-	// Rasterizer
-	//
-	if (state.culling != _state.culling)
-	{
-		if (state.culling)
-		{
-			glEnable(GL_CULL_FACE);
-			if (state.cullingMode != _state.cullingMode)
-				glCullFace(state.cullingMode);
-		}
-		else
-			glDisable(GL_CULL_FACE);
-	}
-
-	if (state.polygonMode != _state.polygonMode)
-		glPolygonMode(GL_FRONT_AND_BACK, _state.polygonMode);
-
-
-	// Depth/Stencil
-	//
-	if (state.depthTest != _state.depthTest)
-	{
-		if (state.depthTest)
-			glEnable(GL_DEPTH_TEST);
-		else
-			glDisable(GL_DEPTH_TEST);
-	}
-
-	// Viewport
-	//
-	if (state.viewportX != _state.viewportX || state.viewportY != _state.viewportY || state.viewportWidth != _state.viewportWidth || state.viewportHeigth != _state.viewportHeigth)
-		glViewport(state.viewportX, state.viewportY, state.viewportWidth, state.viewportHeigth);
-
-	// Shader
-	//
-	if (state.shader.Get() != _state.shader.Get())
-	{		
-		if (state.shader.Get())
-		{
-			GLShader *glShader = getGLShader(state.shader.Get());
-			glUseProgram(glShader->programID());
-		} else
-			glUseProgram(0);
-	}
-
-	// Textures
-	//
-	{
-		GLShader *glShader = getGLShader(_state.shader.Get());
-
-		for (int i = 0; i < 16; i++)
-		{
-			if (state.texShaderBindings[i].Get() != _state.texShaderBindings[i].Get())
-			{
-				if (state.texShaderBindings[i].Get())
-				{
-					// texture -> slot
-					GLTexture *glTex = getGLTexture(state.texShaderBindings[i].Get());
-					glBindTextureUnit(i, glTex->textureID());
-
-					// shader variable -> slot
-					GLint location = glGetUniformLocation(glShader->programID(), (TEXTURE_NAME + std::to_string(i)).c_str());
-					glUniform1i(location, i);
-				} else
-					glBindTextureUnit(i, 0);
-			}
-		}
-	}
-
-	// Framebuffer
-	// TODO
-
-	// Clear
-	//
-	if (state.clearColor[0] != _state.clearColor[0] || state.clearColor[1] != _state.clearColor[1] ||
-		state.clearColor[2] != _state.clearColor[2] || state.clearColor[3] != _state.clearColor[3])
-		glClearColor(state.clearColor[0], state.clearColor[1], state.clearColor[2], state.clearColor[3]);
-
-	_state = state;
-
-	return S_OK;
-}
-
 API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
 {
 	const int indexes = indexDesc->format != MESH_INDEX_FORMAT::NOTHING;
@@ -788,6 +674,119 @@ API GLCoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	*pRenderTarget = new GLRenderTarget(id);
+
+	return S_OK;
+}
+API GLCoreRender::ClearState()
+{
+	_state = State();
+	// TODO: actualy clear state
+	return S_OK;
+}
+
+API GLCoreRender::PushStates()
+{
+	_statesStack.push(_state);
+	return S_OK;
+}
+
+API GLCoreRender::PopStates()
+{
+	State& state = _statesStack.top();
+
+	// Blending
+	//
+	if (_state.blending != state.blending)
+	{
+		if (state.blending)
+			glEnable(GL_BLEND);
+		else
+			glDisable(GL_BLEND);
+	}
+
+	if (_state.srcBlend != state.srcBlend || _state.dstBlend != state.dstBlend)
+		glBlendFunc(state.srcBlend, state.dstBlend);
+
+	// Rasterizer
+	//
+	if (state.culling != _state.culling)
+	{
+		if (state.culling)
+		{
+			glEnable(GL_CULL_FACE);
+			if (state.cullingMode != _state.cullingMode)
+				glCullFace(state.cullingMode);
+		}
+		else
+			glDisable(GL_CULL_FACE);
+	}
+
+	if (state.polygonMode != _state.polygonMode)
+		glPolygonMode(GL_FRONT_AND_BACK, _state.polygonMode);
+
+
+	// Depth/Stencil
+	//
+	if (state.depthTest != _state.depthTest)
+	{
+		if (state.depthTest)
+			glEnable(GL_DEPTH_TEST);
+		else
+			glDisable(GL_DEPTH_TEST);
+	}
+
+	// Viewport
+	//
+	if (state.viewportX != _state.viewportX || state.viewportY != _state.viewportY || state.viewportWidth != _state.viewportWidth || state.viewportHeigth != _state.viewportHeigth)
+		glViewport(state.viewportX, state.viewportY, state.viewportWidth, state.viewportHeigth);
+
+	// Shader
+	//
+	if (state.shader.Get() != _state.shader.Get())
+	{		
+		if (state.shader.Get())
+		{
+			GLShader *glShader = getGLShader(state.shader.Get());
+			glUseProgram(glShader->programID());
+		} else
+			glUseProgram(0);
+	}
+
+	// Textures
+	//
+	{
+		GLShader *glShader = getGLShader(_state.shader.Get());
+
+		for (int i = 0; i < 16; i++)
+		{
+			if (state.texShaderBindings[i].Get() != _state.texShaderBindings[i].Get())
+			{
+				if (state.texShaderBindings[i].Get())
+				{
+					// texture -> slot
+					GLTexture *glTex = getGLTexture(state.texShaderBindings[i].Get());
+					glBindTextureUnit(i, glTex->textureID());
+
+					// shader variable -> slot
+					GLint location = glGetUniformLocation(glShader->programID(), (TEXTURE_NAME + std::to_string(i)).c_str());
+					glUniform1i(location, i);
+				} else
+					glBindTextureUnit(i, 0);
+			}
+		}
+	}
+
+	// Framebuffer
+	// TODO
+
+	// Clear
+	//
+	if (state.clearColor[0] != _state.clearColor[0] || state.clearColor[1] != _state.clearColor[1] ||
+		state.clearColor[2] != _state.clearColor[2] || state.clearColor[3] != _state.clearColor[3])
+		glClearColor(state.clearColor[0], state.clearColor[1], state.clearColor[2], state.clearColor[3]);
+
+	_state = state;
+	_statesStack.pop();
 
 	return S_OK;
 }

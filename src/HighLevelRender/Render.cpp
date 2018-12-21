@@ -27,6 +27,8 @@ void Render::renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes)
 
 void Render::renderEnginePost(RenderBuffers& buffers)
 {
+	//_pCoreRender->PushStates();
+
 	INPUT_ATTRUBUTE attribs;
 	_postPlane->GetAttributes(&attribs);
 
@@ -47,6 +49,8 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 
 	_pCoreRender->UnbindAllTextures();
 	_pCoreRender->SetDepthTest(1);
+
+	//_pCoreRender->PopStates();
 }
 
 void Render::RenderFrame(const ICamera *pCamera)

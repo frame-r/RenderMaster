@@ -165,18 +165,16 @@ public:
 	API MakeCurrent(const WindowHandle* handle) override;
 	API SwapBuffers() override;
 
-	API ClearState() override;
-	API PushStates() override;
-	API PopStates() override;
-
 	API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) override;
 	API CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
+	API ClearState() override;
+	API PushStates() override;
+	API PopStates() override;
 	API SetTexture(uint slot, ITexture* texture) override;
 	API UnbindAllTextures() override;
-
 	API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) override;
 	API RestoreDefaultRenderTarget() override;
 	API SetShader(IShader *pShader) override;

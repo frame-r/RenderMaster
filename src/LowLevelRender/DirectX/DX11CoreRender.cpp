@@ -288,58 +288,6 @@ API DX11CoreRender::SwapBuffers()
 	return S_OK;
 }
 
-API DX11CoreRender::ClearState()
-{
-	_state = State();
-	// TODO: filling field by default states
-	_context->ClearState();
-	return S_OK;
-}
-
-API DX11CoreRender::PushStates()
-{
-	_statesStack.push(_state);
-	return S_OK;
-}
-
-API DX11CoreRender::PopStates()
-{
-	State& state = _statesStack.top();
-	_statesStack.pop();
-
-	static RasterHash rasterEq;
-	static BlendHash blendEq;
-	static DepthStencilHash depthStenciEq;
-
-	if (!rasterEq.operator()(state.rasterStateDesc, _state.rasterStateDesc))
-	{
-		_context->RSSetState(state.rasterState.Get());
-
-		_state.rasterStateDesc = state.rasterStateDesc;
-		_state.rasterState = state.rasterState;
-	}
-
-	if (!blendEq.operator()(state.blendStateDesc, _state.blendStateDesc))
-	{
-		_context->OMSetBlendState(state.blendState.Get(), nullptr, 0xffffffff);
-
-		_state.blendStateDesc = state.blendStateDesc;
-		_state.blendState = state.blendState;
-	}
-
-	if (!depthStenciEq.operator()(state.depthStencilDesc, _state.depthStencilDesc))
-	{
-		_context->OMSetDepthStencilState(state.depthStencilState.Get(), 0);
-
-		_state.depthStencilDesc = state.depthStencilDesc;
-		_state.depthStencilState = state.depthStencilState;
-	}
-
-	_state = state;
-
-	return S_OK;
-}
-
 API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
 {
 	assert(dataDesc->colorOffset % 8 == 0 && "");
@@ -725,6 +673,43 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 API DX11CoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 {
 	*pRenderTarget = new DX11RenderTarget();
+	return S_OK;
+}
+
+API DX11CoreRender::ClearState()
+{
+	_state = State();
+	// TODO: filling field by default states
+	_context->ClearState();
+	return S_OK;
+}
+
+API DX11CoreRender::PushStates()
+{
+	_statesStack.push(_state);
+	return S_OK;
+}
+
+API DX11CoreRender::PopStates()
+{
+	State& state = _statesStack.top();
+
+	static RasterHash rasterEq;
+	static BlendHash blendEq;
+	static DepthStencilHash depthStenciEq;
+
+	if (!rasterEq.operator()(state.rasterStateDesc, _state.rasterStateDesc))
+		_context->RSSetState(state.rasterState.Get());
+
+	if (!blendEq.operator()(state.blendStateDesc, _state.blendStateDesc))
+		_context->OMSetBlendState(state.blendState.Get(), nullptr, 0xffffffff);
+
+	if (!depthStenciEq.operator()(state.depthStencilDesc, _state.depthStencilDesc))
+		_context->OMSetDepthStencilState(state.depthStencilState.Get(), 0);
+
+	_state = state;
+	_statesStack.pop();
+
 	return S_OK;
 }
 
