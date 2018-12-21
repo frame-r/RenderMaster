@@ -153,15 +153,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	hr = dxgiFactory.As(&dxgiFactory2);
 	if (dxgiFactory2)
 	{
-		// DirectX 11.1 or later
-		//hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(&g_pd3dDevice1));
-		//if (SUCCEEDED(hr))
-		//{
-		//	(void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&g_pImmediateContext1));
-		//}
-
-		DXGI_SWAP_CHAIN_DESC1 sd;
-		ZeroMemory(&sd, sizeof(sd));
+		DXGI_SWAP_CHAIN_DESC1 sd{};
 		sd.Width = width;
 		sd.Height = height;
 		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -173,15 +165,12 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 		ComPtr<IDXGISwapChain1> g_pSwapChain1;
 		hr = dxgiFactory2->CreateSwapChainForHwnd(_device.Get(), hwnd, &sd, nullptr, nullptr, &g_pSwapChain1);
 		if (SUCCEEDED(hr))
-		{
 			hr = g_pSwapChain1.As(&_swapChain);
-		}
 	}
 	else
 	{
 		// DirectX 11.0 systems
-		DXGI_SWAP_CHAIN_DESC sd;
-		ZeroMemory(&sd, sizeof(sd));
+		DXGI_SWAP_CHAIN_DESC sd{};
 		sd.BufferCount = 1;
 		sd.BufferDesc.Width = width;
 		sd.BufferDesc.Height = height;
@@ -221,23 +210,10 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	_context->RSSetState(_state.rasterState.Get());
 	_state.rasterState->GetDesc(&_state.rasterStateDesc);
 
-	// Debug
-	//ComPtr<ID3D11RasterizerState> _rasterState;
-	//_context->RSGetState(_rasterState.GetAddressOf());
-	//D3D11_RASTERIZER_DESC desc;
-	//_rasterState->GetDesc(&desc);
-
 	// Depth Stencil state
 	_state.depthStencilState = _depthStencilStatePool.FetchDefaultState();
 	_context->OMSetDepthStencilState(_state.depthStencilState.Get(), 0);
 	_state.depthStencilState->GetDesc(&_state.depthStencilDesc);
-
-	// Debug
-	//ComPtr<ID3D11DepthStencilState> _depthStencilState;
-	//UINT sref = 0;
-	//_context->OMGetDepthStencilState(_depthStencilState.GetAddressOf(), &sref);
-	//D3D11_DEPTH_STENCIL_DESC dss;
-	//_depthStencilState->GetDesc(&dss);
 
 	// Blend State
 	_state.blendState = _blendStatePool.FetchDefaultState();
@@ -376,15 +352,13 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	// vertex buffer
 	ID3D11Buffer *vb = nullptr;
 
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
+	D3D11_BUFFER_DESC bd{};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = bytes;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
-	D3D11_SUBRESOURCE_DATA initData;
-	ZeroMemory(&initData, sizeof(initData));
+	D3D11_SUBRESOURCE_DATA initData{};
 	initData.pSysMem = dataDesc->pData;
 
 	hr = _device->CreateBuffer(&bd, &initData, &vb);
@@ -591,8 +565,7 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 	// Create the sample
 	// TODO: create sampler from flags
 	ID3D11SamplerState* sampler = nullptr;
-    D3D11_SAMPLER_DESC sampDesc;
-    ZeroMemory(&sampDesc, sizeof(sampDesc));
+	D3D11_SAMPLER_DESC sampDesc{};
     sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
     sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
     sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -950,8 +923,7 @@ bool DX11CoreRender::create_default_buffers(uint w, uint h)
 	if (FAILED(_device->CreateRenderTargetView(_defaultRenderTargetTex.Get(), nullptr, _defaultRenderTargetView.GetAddressOf())))
 		return false;
 
-	D3D11_TEXTURE2D_DESC descDepth;
-	ZeroMemory(&descDepth, sizeof(descDepth));
+	D3D11_TEXTURE2D_DESC descDepth{};
 	descDepth.Width = w;
 	descDepth.Height = h;
 	descDepth.MipLevels = 1;
@@ -967,8 +939,7 @@ bool DX11CoreRender::create_default_buffers(uint w, uint h)
 	if (FAILED(_device->CreateTexture2D(&descDepth, nullptr, _defaultDepthStencilTex.GetAddressOf())))
 		return false;
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
-	ZeroMemory(&descDSV, sizeof(descDSV));
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV{};
 	descDSV.Format = descDepth.Format;
 	descDSV.ViewDimension = _MSAASamples > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice = 0;
@@ -1042,8 +1013,7 @@ API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *read
 	ID3D11Texture2D *d3dtex2d = static_cast<ID3D11Texture2D*>(d3dtex->resource());
 
 	ID3D11Texture2D* cpuReadTex;
-	D3D11_TEXTURE2D_DESC cpuReadTexDesc;
-	ZeroMemory(&cpuReadTexDesc, sizeof(cpuReadTexDesc));
+	D3D11_TEXTURE2D_DESC cpuReadTexDesc{};
 	cpuReadTexDesc.Width = d3dtex->width();
 	cpuReadTexDesc.Height = d3dtex->height();
 	cpuReadTexDesc.MipLevels = 1;
@@ -1069,17 +1039,8 @@ API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *read
 
 	*readBytes = byteWidthElement;
 
-	//struct Color {float r, g, b, a;};
-	//Color* obj;
-	//obj=new Color[(mapResource.RowPitch/sizeof(Color)) * Height];
-	//memcpy(obj, mapResource.pData,mapResource.RowPitch * Height);
-
-	//if(mousePos.x>0&&mousePos.x<Width&&mousePos.y>0&&mousePos.y<Height)
-	//if(obj[(mousePos.y*Width)+(4*mousePos.y)+mousePos.x].r==1.0/*If object that we was pick mouse have 1.0 on red bit we draw little cloud*/)model.rysujOtoczk?(model.dolny,model.gorny);
-	
 	_context->Unmap(cpuReadTex,0);
 	cpuReadTex->Release();
-	//delete [] obj;
 
 	return S_OK;
 }

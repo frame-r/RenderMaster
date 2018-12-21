@@ -113,9 +113,6 @@ class DX11CoreRender final : public ICoreRender
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 		WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
 
-		// Viewport
-		// TODO
-
 		// Shader
 		//
 		WRL::ComPtr<IShader> shader;

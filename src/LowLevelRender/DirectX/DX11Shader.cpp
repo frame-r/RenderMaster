@@ -127,8 +127,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			if (size % 16 != 0)
 				size = 16 * ((size / 16) + 1);
 		
-			D3D11_BUFFER_DESC bd;
-			ZeroMemory(&bd, sizeof(bd));
+			D3D11_BUFFER_DESC bd{};
 			bd.Usage = D3D11_USAGE_DEFAULT;
 			bd.ByteWidth = size;
 			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
