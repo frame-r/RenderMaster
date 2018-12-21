@@ -12,7 +12,7 @@ DEFINE_LOG_HELPERS(_pCore)
 // Render
 /////////////////////////
 
-void Render::renderForward(RenderBuffers& buffers, const mat4& ViewMat, const mat4& ViewProjMat, vector<RenderMesh>& meshes)
+void Render::renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes)
 {
 	renderTarget->SetColorTexture(0, buffers.colorHDR.Get());
 	renderTarget->SetDepthTexture(buffers.depth.Get());
@@ -20,19 +20,19 @@ void Render::renderForward(RenderBuffers& buffers, const mat4& ViewMat, const ma
 	{
 		_pCoreRender->Clear();
 
-		drawMeshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::FORWARD);
+		drawMeshes(meshes, RENDER_PASS::FORWARD);
 	}
 	_pCoreRender->RestoreDefaultRenderTarget();
 }
 
-void Render::renderEnginePost(RenderBuffers& buffers, const mat4& ViewMat, const mat4& ViewProjMat, vector<RenderMesh>& meshes)
+void Render::renderEnginePost(RenderBuffers& buffers)
 {
 	INPUT_ATTRUBUTE attribs;
 	_postPlane->GetAttributes(&attribs);
+
 	IShader *shader = getShader({attribs, RENDER_PASS::ENGINE_POST});
 	_pCoreRender->SetShader(shader);
-
-	setShaderParameters(ViewMat, ViewProjMat, nullptr, RENDER_PASS::ENGINE_POST, shader);
+	setShaderPostParameters(RENDER_PASS::ENGINE_POST, shader);
 
 	_pCoreRender->SetTexture(0, buffers.colorHDR.Get());
 
@@ -45,9 +45,117 @@ void Render::renderEnginePost(RenderBuffers& buffers, const mat4& ViewMat, const
 	}
 	_pCoreRender->RestoreDefaultRenderTarget();
 
-
 	_pCoreRender->UnbindAllTextures();
 	_pCoreRender->SetDepthTest(1);
+}
+
+void Render::RenderFrame(const ICamera *pCamera)
+{
+	uint w, h;
+	_pCoreRender->GetViewport(&w, &h);
+	float aspect = (float)w / h;
+
+	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
+	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
+
+	vector<RenderMesh> meshes;
+	getRenderMeshes(meshes);
+
+	RenderBuffers buffers = initBuffers(w, h);
+
+	// Forward pass
+	//
+	renderForward(buffers, meshes);
+
+	// Engine post pass
+	//
+	renderEnginePost(buffers);
+
+#if 0
+	///////////////////////////////
+	// ID pass
+	///////////////////////////////
+	//
+	// Render all models ID (only for debug picking)
+	//
+	{
+		renderTarget->SetColorTexture(0, buffers.id.Get());
+		renderTarget->SetDepthTexture(buffers.depth.Get());
+
+		_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+		{
+			_pCoreRender->Clear();
+
+			_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
+		}
+
+		#if 0
+			IInput *i;
+			_pCore->GetSubSystem((ISubSystem**)&i, SUBSYSTEM_TYPE::INPUT);
+			int pr;
+			i->IsMoisePressed(&pr, MOUSE_BUTTON::LEFT);
+			if (pr)
+			{
+				uint curX, curY;
+				i->GetMousePos(&curX, &curY);
+
+				ICoreTexture *coreTex;
+				tex->GetCoreTexture(&coreTex);
+				uint data;
+				uint read;
+				_pCoreRender->ReadPixel2D(coreTex, &data, &read, curX, curY);
+				if (read > 0)
+				{
+					LOG_FORMATTED("Id = %i", data);
+				}
+			}
+		#endif
+
+		_pCoreRender->RestoreDefaultRenderTarget();
+		renderTarget->UnbindAll();
+	}
+#endif
+
+	_pCoreRender->BlitRenderTargetToDefault(renderTarget.Get());
+	renderTarget->UnbindAll();
+
+	releaseBuffers(buffers);
+}
+
+API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
+{
+	uint w, h;
+	tex->GetWidth(&w);
+	tex->GetHeight(&h);
+	float aspect = (float)w / h;
+
+	mat4 ViewProjMat;
+	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
+
+	mat4 ViewMat;
+	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
+	
+	vector<RenderMesh> meshes;
+	getRenderMeshes(meshes);
+
+	renderTarget->SetColorTexture(0, tex);
+	renderTarget->SetDepthTexture(depthTex);
+
+	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+	{
+		_pCoreRender->Clear();
+
+		drawMeshes(meshes, RENDER_PASS::ID);
+	}
+	_pCoreRender->RestoreDefaultRenderTarget();
+
+	renderTarget->UnbindAll();
+
+	return S_OK;
+}
+
+void Render::setShaderPostParameters(RENDER_PASS pass, IShader *shader)
+{
 }
 
 void Render::_update()
@@ -207,11 +315,11 @@ void Render::getRenderMeshes(vector<RenderMesh>& meshes_vec)
 	}
 }
 
-void Render::setShaderParameters(const mat4& V, const mat4& VP,RenderMesh *mesh, RENDER_PASS pass, IShader *shader)
+void Render::setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader *shader)
 {
 	if (mesh)
 	{
-		mat4 MVP = VP * mesh->modelMat;
+		mat4 MVP = ViewProjMat * mesh->modelMat;
 		shader->SetMat4Parameter("MVP", &MVP);
 
 		mat4 M = mesh->modelMat;
@@ -226,22 +334,12 @@ void Render::setShaderParameters(const mat4& V, const mat4& VP,RenderMesh *mesh,
 	{
 		shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
-	} else if (pass == RENDER_PASS::ENGINE_POST)
-	{
-		//uint w, h;
-		//_pCoreRender->GetViewport(&w, &h);
-		//shader->SetUintParameter("width", w);
-		//shader->SetUintParameter("height", h);
-		//float invW = 1.0f / w;
-		//float invH = 1.0f / h;
-		//shader->SetFloatParameter("invWidth", invW);
-		//shader->SetFloatParameter("invHeight", invH);
 	}
 
 	shader->FlushParameters();
 }
 
-void Render::drawMeshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass)
+void Render::drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass)
 {
 	for(RenderMesh &renderMesh : meshes)
 	{
@@ -252,11 +350,9 @@ void Render::drawMeshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshe
 
 		if (!shader)
 			continue;
-
-		_pCoreRender->SetMesh(renderMesh.mesh);
-		_pCoreRender->SetShader(shader);		
-
-		setShaderParameters(V, VP, &renderMesh, pass, shader);		
+		
+		_pCoreRender->SetShader(shader);
+		setShaderMeshParameters(pass, &renderMesh, shader);		
 
 		_pCoreRender->Draw(renderMesh.mesh);
 	}
@@ -393,114 +489,6 @@ void Render::Free()
 	_idShader.Reset();
 	_texture_pool.clear();
 	_shaders_pool.clear();	
-}
-
-void Render::RenderFrame(const ICamera *pCamera)
-{
-	uint w, h;
-	_pCoreRender->GetViewport(&w, &h);
-
-	mat4 ViewProjMat;
-	float aspect = (float)w / h;
-	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
-
-	mat4 ViewMat;
-	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
-
-	vector<RenderMesh> meshes;
-	getRenderMeshes(meshes);
-
-	RenderBuffers buffers = initBuffers(w, h);
-
-	// Forward pass
-	//
-	renderForward(buffers, ViewMat, ViewProjMat, meshes);
-
-	// Engine post pass
-	//
-	renderEnginePost(buffers, ViewMat, ViewProjMat, meshes);
-
-#if 0
-	///////////////////////////////
-	// ID pass
-	///////////////////////////////
-	//
-	// Render all models ID (only for debug picking)
-	//
-	{
-		renderTarget->SetColorTexture(0, buffers.id.Get());
-		renderTarget->SetDepthTexture(buffers.depth.Get());
-
-		_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
-		{
-			_pCoreRender->Clear();
-
-			_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
-		}
-
-		#if 0
-			IInput *i;
-			_pCore->GetSubSystem((ISubSystem**)&i, SUBSYSTEM_TYPE::INPUT);
-			int pr;
-			i->IsMoisePressed(&pr, MOUSE_BUTTON::LEFT);
-			if (pr)
-			{
-				uint curX, curY;
-				i->GetMousePos(&curX, &curY);
-
-				ICoreTexture *coreTex;
-				tex->GetCoreTexture(&coreTex);
-				uint data;
-				uint read;
-				_pCoreRender->ReadPixel2D(coreTex, &data, &read, curX, curY);
-				if (read > 0)
-				{
-					LOG_FORMATTED("Id = %i", data);
-				}
-			}
-		#endif
-
-		_pCoreRender->RestoreDefaultRenderTarget();
-		renderTarget->UnbindAll();
-	}
-#endif
-
-	_pCoreRender->BlitRenderTargetToDefault(renderTarget.Get());
-	renderTarget->UnbindAll();
-
-	releaseBuffers(buffers);
-}
-
-API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
-{
-	uint w, h;
-	tex->GetWidth(&w);
-	tex->GetHeight(&h);
-	float aspect = (float)w / h;
-
-	mat4 ViewProjMat;
-	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
-
-	mat4 ViewMat;
-	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
-	
-	vector<RenderMesh> meshes;
-	getRenderMeshes(meshes);
-
-	renderTarget->SetColorTexture(0, tex);
-	renderTarget->SetDepthTexture(depthTex);
-
-	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
-	{
-		_pCoreRender->Clear();
-
-		drawMeshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
-	}
-	_pCoreRender->RestoreDefaultRenderTarget();
-
-	renderTarget->UnbindAll();
-
-	return S_OK;
 }
 
 API Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format)

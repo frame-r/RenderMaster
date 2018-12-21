@@ -57,15 +57,23 @@ class Render : public IRender
 		mat4 modelMat;
 	};
 
-	void renderForward(RenderBuffers& buffers, const mat4& V, const mat4& VP, vector<RenderMesh>& meshes);
-	void renderEnginePost(RenderBuffers& buffers, const mat4& V, const mat4& VP, vector<RenderMesh>& meshes);
+	// Frame data
+	mat4 ViewMat;
+	mat4 ViewProjMat;
+
+	void renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes);
+	void renderEnginePost(RenderBuffers& buffers);
+
+	void setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader *shader);
+	void setShaderPostParameters(RENDER_PASS pass, IShader *shader);
+
+	void drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass);
 
 	void _update();
-	void setShaderParameters(const mat4& V, const mat4& VP,RenderMesh *mesh, RENDER_PASS pass, IShader *shader);
+	
 	IShader* getShader(const ShaderRequirement &req);
 	bool isOpenGL();
-	void getRenderMeshes(vector<RenderMesh>& meshes);
-	void drawMeshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass);
+	void getRenderMeshes(vector<RenderMesh>& meshes);	
 	ITexture* getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORMAT format);
 	void releaseTexture2d(ITexture *tex);
 	RenderBuffers initBuffers(uint w, uint h);
