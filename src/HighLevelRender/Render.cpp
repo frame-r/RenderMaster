@@ -12,6 +12,44 @@ DEFINE_LOG_HELPERS(_pCore)
 // Render
 /////////////////////////
 
+void Render::renderForward(RenderBuffers& buffers, const mat4& ViewMat, const mat4& ViewProjMat, vector<RenderMesh>& meshes)
+{
+	renderTarget->SetColorTexture(0, buffers.colorHDR.Get());
+	renderTarget->SetDepthTexture(buffers.depth.Get());
+	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+	{
+		_pCoreRender->Clear();
+
+		drawMeshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::FORWARD);
+	}
+	_pCoreRender->RestoreDefaultRenderTarget();
+}
+
+void Render::renderEnginePost(RenderBuffers& buffers, const mat4& ViewMat, const mat4& ViewProjMat, vector<RenderMesh>& meshes)
+{
+	INPUT_ATTRUBUTE attribs;
+	_postPlane->GetAttributes(&attribs);
+	IShader *shader = getShader({attribs, RENDER_PASS::ENGINE_POST});
+	_pCoreRender->SetShader(shader);
+
+	setShaderParameters(ViewMat, ViewProjMat, nullptr, RENDER_PASS::ENGINE_POST, shader);
+
+	_pCoreRender->SetTexture(0, buffers.colorHDR.Get());
+
+	_pCoreRender->SetDepthTest(0);	
+
+	renderTarget->SetColorTexture(0, buffers.color.Get());
+	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
+	{
+		_pCoreRender->Draw(_postPlane.Get());
+	}
+	_pCoreRender->RestoreDefaultRenderTarget();
+
+
+	_pCoreRender->UnbindAllTextures();
+	_pCoreRender->SetDepthTest(1);
+}
+
 void Render::_update()
 {
 	auto before = _texture_pool.size();
@@ -26,7 +64,7 @@ void Render::_update()
 	//	LOG_FORMATTED("Render::_update() textures removed. was = %i, now = %i", before, _texture_pool.size());
 }
 
-IShader* Render::_get_shader(const ShaderRequirement &req)
+IShader* Render::getShader(const ShaderRequirement &req)
 {
 	IShader *pShader = nullptr;
 
@@ -43,7 +81,7 @@ IShader* Render::_get_shader(const ShaderRequirement &req)
 		{
 			simplecpp::DUI dui;
 
-			if (_is_opengl())
+			if (isOpenGL())
 				dui.defines.push_back("ENG_OPENGL");
 			else
 				dui.defines.push_back("ENG_DIRECTX11");
@@ -80,11 +118,11 @@ IShader* Render::_get_shader(const ShaderRequirement &req)
 			auto size = out.size();
 
 			// Workaround for opengl because C preprocessor eats up unknown derictive "#version 420"
-			if (_is_opengl())
+			if (isOpenGL())
 				size += 13;
 
 			char *tmp = new char[size + 1];
-			if (_is_opengl())
+			if (isOpenGL())
 			{
 				strncpy(tmp + 0, "#version 420\n", 13);
 				strncpy(tmp + 13, out.c_str(), size - 13);
@@ -129,18 +167,17 @@ IShader* Render::_get_shader(const ShaderRequirement &req)
 		else
 			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(pShader));
 	}
-
 	return pShader;
 }
 
-bool Render::_is_opengl()
+bool Render::isOpenGL()
 {
 	const char *gapi;
 	_pCoreRender->GetName(&gapi);
 	return (strcmp("GLCoreRender", gapi) == 0);	
 }
 
-void Render::_get_render_mesh_vec(vector<RenderMesh>& meshes_vec)
+void Render::getRenderMeshes(vector<RenderMesh>& meshes_vec)
 {
 	SceneManager *sm = (SceneManager*)_pSceneMan;	
 
@@ -191,27 +228,27 @@ void Render::setShaderParameters(const mat4& V, const mat4& VP,RenderMesh *mesh,
 		shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
 	} else if (pass == RENDER_PASS::ENGINE_POST)
 	{
-		uint w, h;
-		_pCoreRender->GetViewport(&w, &h);
-		shader->SetUintParameter("width", w);
-		shader->SetUintParameter("height", h);
-		float invW = 1.0f / w;
-		float invH = 1.0f / h;
-		shader->SetFloatParameter("invWidth", invW);
-		shader->SetFloatParameter("invHeight", invH);
+		//uint w, h;
+		//_pCoreRender->GetViewport(&w, &h);
+		//shader->SetUintParameter("width", w);
+		//shader->SetUintParameter("height", h);
+		//float invW = 1.0f / w;
+		//float invH = 1.0f / h;
+		//shader->SetFloatParameter("invWidth", invW);
+		//shader->SetFloatParameter("invHeight", invH);
 	}
 
 	shader->FlushParameters();
 }
 
-void Render::_draw_meshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass)
+void Render::drawMeshes(const mat4& V, const mat4& VP, vector<RenderMesh>& meshes, RENDER_PASS pass)
 {
 	for(RenderMesh &renderMesh : meshes)
 	{
 		INPUT_ATTRUBUTE attribs;
 		renderMesh.mesh->GetAttributes(&attribs);		
 
-		IShader *shader = _get_shader({attribs, pass});
+		IShader *shader = getShader({attribs, pass});
 
 		if (!shader)
 			continue;
@@ -225,7 +262,7 @@ void Render::_draw_meshes(const mat4& V, const mat4& VP, vector<RenderMesh>& mes
 	}
 }
 
-ITexture* Render::_get_render_target_texture_2d(uint width, uint height, TEXTURE_FORMAT format)
+ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORMAT format)
 {
 	for (TexturePoolable &tex : _texture_pool)
 	{
@@ -249,7 +286,7 @@ ITexture* Render::_get_render_target_texture_2d(uint width, uint height, TEXTURE
 
 	return tex;
 }
-void Render::_release_texture_2d(ITexture *tex)
+void Render::releaseTexture2d(ITexture *tex)
 {
 	for (TexturePoolable &tp : _texture_pool)
 	{
@@ -264,27 +301,26 @@ RenderBuffers Render::initBuffers(uint w, uint h)
 
 	ret.width = w;
 	ret.height = h;
-
-	ret.color = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGBA8);
-	ret.colorHDR = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGBA16F);
-	ret.depth = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::D24S8);
-	ret.directLight = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB16F);
-	ret.normal = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB8);
-	ret.shading = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::RGB8);
-	ret.id = _get_render_target_texture_2d(w, h, TEXTURE_FORMAT::R32UI);
+	ret.color = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA8);
+	ret.colorHDR = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA16F);
+	ret.depth = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::D24S8);
+	ret.directLight = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB16F);
+	ret.normal = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB8);
+	ret.shading = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB8);
+	ret.id = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::R32UI);
 
 	return ret;
 }
 
 void Render::releaseBuffers(RenderBuffers& buffers)
 {
-	_release_texture_2d(buffers.color.Get());		buffers.color = nullptr;
-	_release_texture_2d(buffers.colorHDR.Get());	buffers.colorHDR = nullptr;
-	_release_texture_2d(buffers.depth.Get());		buffers.depth = nullptr;
-	_release_texture_2d(buffers.directLight.Get());	buffers.directLight = nullptr;
-	_release_texture_2d(buffers.normal.Get());		buffers.normal = nullptr;
-	_release_texture_2d(buffers.shading.Get());		buffers.shading = nullptr;
-	_release_texture_2d(buffers.id.Get());			buffers.id = nullptr;
+	releaseTexture2d(buffers.color.Get());		buffers.color = nullptr;
+	releaseTexture2d(buffers.colorHDR.Get());	buffers.colorHDR = nullptr;
+	releaseTexture2d(buffers.depth.Get());		buffers.depth = nullptr;
+	releaseTexture2d(buffers.directLight.Get());	buffers.directLight = nullptr;
+	releaseTexture2d(buffers.normal.Get());		buffers.normal = nullptr;
+	releaseTexture2d(buffers.shading.Get());		buffers.shading = nullptr;
+	releaseTexture2d(buffers.id.Get());			buffers.id = nullptr;
 }
 
 Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
@@ -346,19 +382,15 @@ void Render::Init()
 	tex->AddRef();
 	tex->Release();
 
-
 	LOG("Render initialized");
 }
 
 void Render::Free()
 {
 	_postPlane.Reset();
-
 	renderTarget.Reset();
-
 	_forwardShader.Reset();
 	_idShader.Reset();
-
 	_texture_pool.clear();
 	_shaders_pool.clear();	
 }
@@ -376,52 +408,17 @@ void Render::RenderFrame(const ICamera *pCamera)
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
 
 	vector<RenderMesh> meshes;
-	_get_render_mesh_vec(meshes);
+	getRenderMeshes(meshes);
 
 	RenderBuffers buffers = initBuffers(w, h);
 
-	///////////////////////////////////
 	// Forward pass
-	///////////////////////////////////
-	
-	renderTarget->SetColorTexture(0, buffers.colorHDR.Get());
-	renderTarget->SetDepthTexture(buffers.depth.Get());
-	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
-	{
-		_pCoreRender->Clear();
+	//
+	renderForward(buffers, ViewMat, ViewProjMat, meshes);
 
-		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::FORWARD);
-	}
-	_pCoreRender->RestoreDefaultRenderTarget();
-
-
-	///////////////////////////////////
-	// Post pass
-	///////////////////////////////////	
-
-	INPUT_ATTRUBUTE attribs;
-	_postPlane->GetAttributes(&attribs);
-	IShader *shader = _get_shader({attribs, RENDER_PASS::ENGINE_POST});
-	_pCoreRender->SetShader(shader);
-
-	setShaderParameters(ViewMat, ViewProjMat, nullptr, RENDER_PASS::ENGINE_POST, shader);
-
-	_pCoreRender->SetTexture(0, buffers.colorHDR.Get());
-
-	_pCoreRender->SetDepthTest(0);	
-	
-
-	renderTarget->SetColorTexture(0, buffers.color.Get());
-	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
-	{
-		_pCoreRender->Draw(_postPlane.Get());
-	}
-	_pCoreRender->RestoreDefaultRenderTarget();
-
-
-	_pCoreRender->UnbindAllTextures();
-	_pCoreRender->SetDepthTest(1);	
-	
+	// Engine post pass
+	//
+	renderEnginePost(buffers, ViewMat, ViewProjMat, meshes);
 
 #if 0
 	///////////////////////////////
@@ -488,7 +485,7 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
 	
 	vector<RenderMesh> meshes;
-	_get_render_mesh_vec(meshes);
+	getRenderMeshes(meshes);
 
 	renderTarget->SetColorTexture(0, tex);
 	renderTarget->SetDepthTexture(depthTex);
@@ -497,7 +494,7 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	{
 		_pCoreRender->Clear();
 
-		_draw_meshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
+		drawMeshes(ViewMat, ViewProjMat, meshes, RENDER_PASS::ID);
 	}
 	_pCoreRender->RestoreDefaultRenderTarget();
 
@@ -508,14 +505,14 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 
 API Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format)
 {
-	ITexture *tex = _get_render_target_texture_2d(width, height, format);
+	ITexture *tex = getRenderTargetTexture2d(width, height, format);
 	*texOut = tex;
 	return S_OK;
 }
 
 API Render::ReleaseRenderTexture2D(ITexture *texIn)
 {
-	_release_texture_2d(texIn);
+	releaseTexture2d(texIn);
 	return S_OK;
 }
 
@@ -531,7 +528,7 @@ API Render::ShadersReload()
 
 API Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
 {
-	*pShader = _get_shader(*shaderReq);
+	*pShader = getShader(*shaderReq);
 	return S_OK;
 }
 
