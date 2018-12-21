@@ -36,7 +36,7 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 	_pCoreRender->SetShader(shader);
 	setShaderPostParameters(RENDER_PASS::ENGINE_POST, shader);
 
-	_pCoreRender->SetTexture(0, buffers.colorHDR.Get());
+	_pCoreRender->BindTexture(0, buffers.colorHDR.Get());
 
 	_pCoreRender->SetDepthTest(0);	
 

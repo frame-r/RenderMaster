@@ -150,12 +150,11 @@ public:
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
 
-	API ClearState() override;
 	API PushStates() override;
 	API PopStates() override;
 	API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) override;
 	API RestoreDefaultRenderTarget() override;
-	API SetTexture(uint slot, ITexture* texture) override;
+	API BindTexture(uint slot, ITexture* texture) override;
 	API UnbindAllTextures() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;

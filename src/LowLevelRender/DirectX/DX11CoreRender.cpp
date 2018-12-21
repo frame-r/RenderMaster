@@ -649,14 +649,6 @@ API DX11CoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 	return S_OK;
 }
 
-API DX11CoreRender::ClearState()
-{
-	_state = State();
-	// TODO: filling field by default states
-	_context->ClearState();
-	return S_OK;
-}
-
 API DX11CoreRender::PushStates()
 {
 	_statesStack.push(_state);
@@ -739,29 +731,46 @@ API DX11CoreRender::SetMesh(IMesh* mesh)
 	if (_state.mesh.Get() == mesh)
 		return S_OK;
 
-	_state.mesh = ComPtr<IMesh>(mesh);
-
-	const DX11Mesh *dxMesh = getDX11Mesh(mesh);
-
-	_context->IASetInputLayout(dxMesh->inputLayout());
-
-	ID3D11Buffer *vb = dxMesh->vertexBuffer();
-	UINT offset = 0;
-	UINT stride = dxMesh->stride();
-
-	_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-
-	if (dxMesh->indexBuffer())
-		_context->IASetIndexBuffer(dxMesh->indexBuffer(), (dxMesh->indexFormat() == MESH_INDEX_FORMAT::INT16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT), 0);
 	
-	_context->IASetPrimitiveTopology(dxMesh->topology() == VERTEX_TOPOLOGY::TRIANGLES? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST : D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
+	if (mesh)
+	{
+		_state.mesh = ComPtr<IMesh>(mesh);
+
+		const DX11Mesh *dxMesh = getDX11Mesh(mesh);
+
+		_context->IASetInputLayout(dxMesh->inputLayout());
+
+		ID3D11Buffer *vb = dxMesh->vertexBuffer();
+		UINT offset = 0;
+		UINT stride = dxMesh->stride();
+
+		_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+
+		if (dxMesh->indexBuffer())
+			_context->IASetIndexBuffer(dxMesh->indexBuffer(), (dxMesh->indexFormat() == MESH_INDEX_FORMAT::INT16 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT), 0);
+	
+		_context->IASetPrimitiveTopology(dxMesh->topology() == VERTEX_TOPOLOGY::TRIANGLES? D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST : D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	} else
+	{
+		_state.mesh = nullptr;
+
+		_context->IASetInputLayout(nullptr);
+
+		ID3D11Buffer *vb = nullptr;
+		UINT offset = 0;
+		UINT stride = 0;
+		_context->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+
+		_context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);	
+		_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	}
 	return S_OK;
 }
 
-API DX11CoreRender::SetTexture(uint slot, ITexture *texture)
+API DX11CoreRender::BindTexture(uint slot, ITexture *texture)
 {
-	assert(slot < 16 && "DX11CoreRender::SetTexture(): slot must be 0...15");
+	assert(slot < 16 && "DX11CoreRender::BindTexture(): slot must be 0...15");
 
 	if (_state.texShaderBindings[slot].Get() == texture)
 		return S_OK;

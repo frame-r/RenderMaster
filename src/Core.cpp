@@ -306,7 +306,10 @@ API Core::ReleaseEngine()
 
 	_pSceneManager->Free();
 	_pRender->Free();
-	_pCoreRender->ClearState();
+	_pCoreRender->UnbindAllTextures();
+	_pCoreRender->SetShader(nullptr);
+	_pCoreRender->SetMesh(nullptr);
+	// TODO: unbind all rendertargets
 	_pResMan->Free();
 	_pCoreRender->Free();
 

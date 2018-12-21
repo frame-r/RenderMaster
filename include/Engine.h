@@ -427,10 +427,9 @@ namespace RENDER_MASTER
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
 
-		virtual API ClearState() = 0;
 		virtual API PushStates() = 0;
 		virtual API PopStates() = 0;		
-		virtual API SetTexture(uint slot, ITexture* texture) = 0;
+		virtual API BindTexture(uint slot, ITexture* texture) = 0;
 		virtual API UnbindAllTextures() = 0;
 		virtual API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) = 0;
 		virtual API RestoreDefaultRenderTarget() = 0;

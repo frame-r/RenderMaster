@@ -677,12 +677,6 @@ API GLCoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 
 	return S_OK;
 }
-API GLCoreRender::ClearState()
-{
-	_state = State();
-	// TODO: actualy clear state
-	return S_OK;
-}
 
 API GLCoreRender::PushStates()
 {
@@ -876,7 +870,7 @@ API GLCoreRender::SetMesh(IMesh* mesh)
 	return S_OK;
 }
 
-API GLCoreRender::SetTexture(uint slot, ITexture *texture)
+API GLCoreRender::BindTexture(uint slot, ITexture *texture)
 {
 	assert(slot < 16);
 
@@ -905,7 +899,7 @@ API GLCoreRender::UnbindAllTextures()
 {
 	CHECK_GL_ERRORS();
 
-	GLuint zeroTex[16] = {};
+	static const GLuint zeroTex[16] = {};
 	glBindTextures(0, 16, zeroTex);
 
 	for (int i = 0; i < 16; i++)
