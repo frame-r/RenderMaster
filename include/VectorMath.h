@@ -716,6 +716,23 @@ struct quat
 	quat(const vec3& euler) : quat(euler.x, euler.y, euler.z) {}
 
 	//
+	// Creates rotation from Rotation Matrix
+	//
+	quat(const Matrix3x3& rotMat)
+	{
+		w = sqrt(1.0f + rotMat.el_2D[0][0] + rotMat.el_2D[1][1] + rotMat.el_2D[2][2]) / 2.0f;
+		float w4 = 4.0f * w;
+		x = (rotMat.el_2D[2][1] - rotMat.el_2D[1][2]) / w4;
+		y = (rotMat.el_2D[0][2] - rotMat.el_2D[2][0]) / w4;
+		z = (rotMat.el_2D[1][0] - rotMat.el_2D[0][1]) / w4;
+	}
+
+	//
+	// Creates rotation from Rotation Matrix
+	//
+	quat(const Matrix4x4& rotMat) : quat(Matrix3x3(rotMat)) {}
+
+	//
 	// Converts to Euler Angles
 	// Rotation Order:	X -> Y -> Z around local axes, i.e
 	//					Z -> Y -> X around global axes
