@@ -748,6 +748,23 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
 			return E_ABORT;
+	}else if (!strcmp(pMeshPath, "std#quad_lines"))
+	{
+		vec4 vertex[8];
+		vertex[0] = vec4(0.0f, 0.0f, 0.0f, 1.0f); vertex[1] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		vertex[2] = vec4(1.0f, 0.0f, 0.0f, 1.0f); vertex[3] = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+		vertex[4] = vec4(1.0f, 1.0f, 0.0f, 1.0f); vertex[5] = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+		vertex[6] = vec4(0.0f, 1.0f, 0.0f, 1.0f); vertex[7] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+		MeshIndexDesc indexEmpty;
+
+		MeshDataDesc descGrid;
+		descGrid.pData = reinterpret_cast<uint8*>(vertex);
+		descGrid.numberOfVertex = 8;
+		descGrid.positionStride = 16;
+
+		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
+			return E_ABORT;
 	}
 
 	if (stdCoreMesh)
