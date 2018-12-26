@@ -160,6 +160,7 @@ public:
 	API SetMesh(IMesh* mesh) override;
 	API Draw(IMesh *mesh) override;
 	API SetDepthTest(int enabled) override;
+	API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) override;
 	API SetViewport(uint wIn, uint hIn) override;
 	API GetViewport(OUT uint* wOut, OUT uint* hOut) override;
 	API Clear() override;

@@ -10,6 +10,7 @@
 #define DEGTORAD (3.141592654f / 180.0f)
 #define RADTODEG (180.0f / 3.141592654f)
 
+struct Vector2;
 struct Vector3;
 struct Vector4;
 struct Matrix3x3;
@@ -45,7 +46,8 @@ struct Vector4
 		return Vector4(x / len, y / len, z / len, w / len);
 	}
 
-	Vector3 Vec3();
+	operator Vector3() const;
+	operator Vector2() const;
 };
 
 struct Vector3
@@ -308,9 +310,14 @@ inline Vector4& Vector4::operator/(float value) const
 	return Vector4(*this) /= value;
 }
 
-inline Vector3 Vector4::Vec3()
+inline Vector4::operator Vector3() const
 {
 	return Vector3(x, y, z);
+}
+
+inline Vector4::operator Vector2() const
+{
+	return Vector2(x, y);
 }
 
 struct Matrix4x4

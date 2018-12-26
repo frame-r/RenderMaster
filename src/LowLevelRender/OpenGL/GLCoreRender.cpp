@@ -956,6 +956,51 @@ API GLCoreRender::SetDepthTest(int enabled)
 	return S_OK;
 }
 
+API GLCoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
+{
+	bool enabled = src != BLEND_FACTOR::NONE && dest != BLEND_FACTOR::NONE;
+
+	if (_state.blending != enabled)
+	{
+		_state.blending = enabled;
+		if (enabled)
+			glEnable(GL_BLEND);
+		else
+			glDisable(GL_BLEND);
+	}
+
+	auto getGLBlend = [](BLEND_FACTOR f) -> GLenum
+	{
+		switch(f)
+		{
+			case BLEND_FACTOR::NONE:
+			case BLEND_FACTOR::ZERO:				return GL_ZERO;
+			case BLEND_FACTOR::ONE:					return GL_ONE;
+			case BLEND_FACTOR::SRC_COLOR:			return GL_SRC_COLOR;
+			case BLEND_FACTOR::ONE_MINUS_SRC_COLOR:	return GL_ONE_MINUS_SRC_COLOR;
+			case BLEND_FACTOR::SRC_ALPHA:			return GL_SRC_ALPHA;
+			case BLEND_FACTOR::ONE_MINUS_SRC_ALPHA:	return GL_ONE_MINUS_SRC_ALPHA;
+			case BLEND_FACTOR::DEST_ALPHA:			return GL_DST_ALPHA;
+			case BLEND_FACTOR::ONE_MINUS_DEST_ALPHA:return GL_ONE_MINUS_DST_ALPHA;
+			case BLEND_FACTOR::DEST_COLOR:			return GL_DST_COLOR;
+			case BLEND_FACTOR::ONE_MINUS_DEST_COLOR:return GL_ONE_MINUS_DST_COLOR;
+		}
+		return GL_ZERO;
+	};
+
+	GLenum src_ = getGLBlend(src);
+	GLenum dest_ = getGLBlend(dest);
+
+	if (_state.srcBlend != src_ || _state.dstBlend != dest_)
+	{
+		glBlendFunc(src_, dest_);
+		_state.srcBlend = src_;
+		_state.dstBlend = dest_;
+	}
+
+	return S_OK;
+}
+
 API GLCoreRender::SetViewport(uint wNew, uint hNew)
 {
 	if (wNew == _state.viewportWidth && hNew == _state.viewportHeigth) 

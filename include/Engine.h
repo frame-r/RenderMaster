@@ -412,6 +412,21 @@ namespace RENDER_MASTER
 		virtual API FlushParameters() = 0;		
 	};
 
+	enum class BLEND_FACTOR
+	{
+		NONE = 0,
+		ZERO,
+		ONE,
+		SRC_COLOR,
+		ONE_MINUS_SRC_COLOR,
+		SRC_ALPHA,
+		ONE_MINUS_SRC_ALPHA,
+		DEST_ALPHA,
+		ONE_MINUS_DEST_ALPHA,
+		DEST_COLOR,
+		ONE_MINUS_DEST_COLOR,
+	};
+
 	class ICoreRender : public ISubSystem
 	{
 	public:
@@ -437,6 +452,7 @@ namespace RENDER_MASTER
 		virtual API SetMesh(IMesh* mesh) = 0;
 		virtual API Draw(IMesh *mesh) = 0;
 		virtual API SetDepthTest(int enabled) = 0;
+		virtual API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
 		virtual API GetViewport(OUT uint* w, OUT uint* h) = 0;
 		virtual API Clear() = 0;

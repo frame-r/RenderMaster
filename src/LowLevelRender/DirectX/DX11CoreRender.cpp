@@ -22,6 +22,8 @@ vector<ConstantBuffer> ConstantBufferPool;
 	#define SHADER_COMPILE_FLAGS (D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_OPTIMIZATION_LEVEL3)
 #endif
 
+const float zero[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
 const char *get_shader_profile(SHADER_TYPE type);
 const char *get_main_function(SHADER_TYPE type);
 const char* dgxgi_to_hlsl_type(DXGI_FORMAT f);
@@ -846,6 +848,30 @@ API DX11CoreRender::SetDepthTest(int enabled)
 		_state.depthStencilDesc.DepthEnable = enabled;
 		_state.depthStencilState = _depthStencilStatePool.FetchState(_state.depthStencilDesc);
 		_context->OMSetDepthStencilState(_state.depthStencilState.Get(), 0);
+	}
+
+	return S_OK;
+}
+
+API DX11CoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
+{
+	D3D11_BLEND_DESC blend_desc{};
+	blend_desc.AlphaToCoverageEnable = FALSE;
+	blend_desc.IndependentBlendEnable = 0;
+	blend_desc.RenderTarget[0].BlendEnable = src != BLEND_FACTOR::NONE && dest != BLEND_FACTOR::NONE;
+	blend_desc.RenderTarget[0].SrcBlend = static_cast<D3D11_BLEND>(src);
+	blend_desc.RenderTarget[0].DestBlend = static_cast<D3D11_BLEND>(dest);
+	blend_desc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
+	blend_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend_desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	if (memcmp(&_state.blendStateDesc, &blend_desc, sizeof(D3D11_BLEND_DESC)))
+	{
+		_state.blendStateDesc = blend_desc;
+		_state.blendState = _blendStatePool.FetchState(_state.blendStateDesc);
+		_context->OMSetBlendState(_state.blendState.Get(), zero, ~0u);
 	}
 
 	return S_OK;
