@@ -237,7 +237,7 @@ std::list<string> get_file_content(const string& filename)
 
 	if (!filseExist)
 	{
-		LOG_WARNING_FORMATTED("ResourceManager::LoadShaderFile(): File doesn't exist '%s'", shader_path.c_str());
+		LOG_WARNING_FORMATTED("ResourceManager::LoadTextFile(): File doesn't exist '%s'", shader_path.c_str());
 		return std::list<string>();
 	}
 

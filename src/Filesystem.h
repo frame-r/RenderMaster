@@ -9,7 +9,6 @@ class FileSystem final: public IFileSystem
 	string _dataPath;
 
 public:
-
 	FileSystem();
 	virtual ~FileSystem(){}
 
@@ -21,14 +20,14 @@ public:
 	API GetName(OUT const char **pName) override;
 };
 
+
 class File final : public IFile
 {
 	std::fstream _file;
-	fs::path _fs_full_path;
+	fs::path _fsPath;
 
 public:
-
-	File(std::ios_base::openmode& fileMode, const fs::path& fullPath);
+	File(const std::ios_base::openmode& fileMode, const fs::path& path);
 
 	API Read(OUT uint8 *pMem, uint bytes) override;
 	API ReadStr(OUT char *pStr, OUT uint *bytes) override;

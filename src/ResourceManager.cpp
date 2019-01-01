@@ -6,7 +6,6 @@
 #include "Mesh.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "ShaderFile.h"
 #include "RenderTarget.h"
 #include "Camera.h"
 #include "Console.h"
@@ -380,13 +379,13 @@ ResourceManager::~ResourceManager()
 {
 }
 
-void ResourceManager::ReloadShaderFile(IShaderFile *shaderText)
+void ResourceManager::ReloadTextFile(ITextFile *shaderText)
 {
 	const char *pShaderName;
 	shaderText->GetFile(&pShaderName);
 
 	DEBUG_LOG_FORMATTED("Reloading shader %s ...", pShaderName);
-	const char *t = load_shader(pShaderName);
+	const char *t = load_text_file(pShaderName);
 
 	shaderText->SetText(t);
 }
@@ -423,10 +422,10 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	PRINT_RUNTIME_RESOURCES("GameObjects:", _runtimeGameobjects);
 	PRINT_RUNTIME_RESOURCES("Shaders:", _runtimeShaders);
 
-	LOG_FORMATTED("========= Shared resources: %i =============", _sharedMeshes.size() + _sharedTextures.size() + _sharedShaderTexts.size());
+	LOG_FORMATTED("========= Shared resources: %i =============", _sharedMeshes.size() + _sharedTextures.size() + _sharedTextFiles.size());
 	LOG_FORMATTED("Shared Meshes: %i", _sharedMeshes.size());
 	LOG_FORMATTED("Shared Textures: %i", _sharedTextures.size());
-	LOG_FORMATTED("Shared Shader Texts: %i", _sharedShaderTexts.size());
+	LOG_FORMATTED("Shared Shader Texts: %i", _sharedTextFiles.size());
 
 	#define PRINT_SHARED_RESOURCES(TITLE, MAP, INTERFACE) \
 	LOG(TITLE); \
@@ -442,7 +441,7 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	
 	PRINT_SHARED_RESOURCES("Shared Meshes:", _sharedMeshes, IMesh);
 	PRINT_SHARED_RESOURCES("Shared Textures:", _sharedTextures, ITexture);
-	PRINT_SHARED_RESOURCES("Shared ShaderFiles:", _sharedShaderTexts, IShaderFile);
+	PRINT_SHARED_RESOURCES("Shared TextFiles:", _sharedTextFiles, ITextFile);
 
 	return S_OK;
 }
@@ -520,7 +519,7 @@ vector<IMesh*> ResourceManager::find_loaded_meshes(const char* pRelativeModelPat
 	return std::move(out);
 }
 
-const char* ResourceManager::load_shader(const char *pShaderName)
+const char* ResourceManager::load_text_file(const char *pShaderName)
 {
 	IFile *pFile = nullptr;
 	uint fileSize = 0;
@@ -826,17 +825,17 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	return S_OK;
 }
 
-API ResourceManager::LoadShaderFile(OUT IShaderFile **pShader, const char *pShaderName)
+API ResourceManager::LoadTextFile(OUT ITextFile **pShader, const char *pShaderName)
 {
-	const char *t = load_shader(pShaderName);
+	const char *t = load_text_file(pShaderName);
 
 	#ifdef PROFILE_RESOURCES
-		DEBUG_LOG_FORMATTED("ResourceManager::LoadShaderFile() new ShaderFile");
+		DEBUG_LOG_FORMATTED("ResourceManager::LoadTextFile() new TextFile");
 	#endif
 	string paths = pShaderName;
 
-	ShaderFile *text = new ShaderFile(t, paths);
-	_sharedShaderTexts.emplace(paths, text);
+	TextFile *text = new TextFile(t, paths);
+	_sharedTextFiles.emplace(paths, text);
 
 	*pShader = text;
 
@@ -990,6 +989,34 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 	_runtimeRenderTargets.emplace(rt);
 
 	*pRenderTargetOut = rt;
+
+	return S_OK;
+}
+
+
+///////////////////////
+// Text File
+//////////////////////
+
+SHARED_ONLY_RESOURCE_IMPLEMENTATION(TextFile, _pCore, RemoveSharedTextFile)
+
+TextFile::~TextFile()
+{
+	delete[] text;
+}
+
+API TextFile::SetText(const char * textIn)
+{
+	if (text) delete[] text;
+	text = textIn;
+	return S_OK;
+}
+
+API TextFile::Reload()
+{
+	IResourceManager *irm = getResourceManager(_pCore);
+	ResourceManager *rm = static_cast<ResourceManager*>(irm);
+	rm->ReloadTextFile(this);
 
 	return S_OK;
 }

@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include "Events.h"
 
 class MainWindow;
 class FileSystem;

@@ -7,7 +7,6 @@
 #include "GLCoreRender.h"
 #include "MainWindow.h"
 #include "Console.h"
-#include "Events.h"
 #include "Render.h"
 #include "SceneManager.h"
 #include "Input.h"

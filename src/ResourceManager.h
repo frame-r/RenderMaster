@@ -5,6 +5,21 @@
 #include <fbxsdk.h>
 #endif
 
+class TextFile : public ITextFile
+{
+	const char *text = nullptr;
+
+public:
+	TextFile(const char *textIn, const string& filePath) :
+		text(textIn), _file(filePath)	{}
+
+	virtual ~TextFile();
+
+	API GetText(OUT const char **textOut) override { *textOut = text; return S_OK; }
+	API SetText(const char *textIn) override;
+
+	SHARED_ONLY_RESOURCE_HEADER
+};
 
 class ResourceManager final : public IResourceManager
 {
@@ -20,7 +35,7 @@ class ResourceManager final : public IResourceManager
 	// Maps "file name" -> "pointer"
 	std::unordered_map<string, ITexture*> _sharedTextures;	
 	std::unordered_map<string, IMesh*> _sharedMeshes;
-	std::unordered_map<string, IShaderFile*> _sharedShaderTexts;		
+	std::unordered_map<string, ITextFile*> _sharedTextFiles;		
 		
 	ICoreRender *_pCoreRender = nullptr;
 	IFileSystem *_pFilesystem = nullptr;
@@ -46,7 +61,7 @@ class ResourceManager final : public IResourceManager
 	string construct_full_path(const string& file);
 	bool error_if_path_not_exist(const string& fullPath);
 	vector<IMesh*> find_loaded_meshes(const char* pRelativeModelPath, const char *pMeshID);
-	const char *load_shader(const char *fileName);
+	const char *load_text_file(const char *fileName);
 
 public:
 
@@ -58,18 +73,18 @@ public:
 	void RemoveRuntimeTexture(ITexture *tex) { _runtimeTextures.erase(tex); }
 	void RemoveSharedTexture(const string& file) { _sharedTextures.erase(file); }
 	void RemoveRuntimeGameObject(IGameObject *g) { _runtimeGameobjects.erase(g); }
-	void RemoveSharedShaderFile(const string& file) { _sharedShaderTexts.erase(file); }
+	void RemoveSharedTextFile(const string& file) { _sharedTextFiles.erase(file); }
 	void RemoveRuntimeShader(IShader *s) { _runtimeShaders.erase(s); }
 	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtimeRenderTargets.erase(rt); }
 
-	void ReloadShaderFile(IShaderFile *shaderText);
+	void ReloadTextFile(ITextFile *shaderText);
 
 	void Init();
 
 	API LoadModel(OUT IModel **pModel, const char *pModelPath) override;
 	API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) override;
 	API LoadTexture(OUT ITexture **pTexture, const char *pTexturePath, TEXTURE_CREATE_FLAGS flags) override;
-	API LoadShaderFile(OUT IShaderFile **pShader, const char *pShaderName) override;
+	API LoadTextFile(OUT ITextFile **pShader, const char *pShaderName) override;
 
 	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;

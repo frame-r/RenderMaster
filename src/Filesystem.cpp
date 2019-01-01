@@ -95,11 +95,11 @@ API FileSystem::GetName(OUT const char **pName)
 	return S_OK;
 }
 
-File::File(ios_base::openmode& cpp_mode, const fs::path& fullPath)
+File::File(const ios_base::openmode& cpp_mode, const fs::path& path)
 {
-	_fs_full_path = fullPath;	
-	mstring mFUllPath = UTF8ToNative(fullPath.u8string());
-	_file.open(mFUllPath, cpp_mode);
+	_fsPath = path;	
+	mstring mPath = UTF8ToNative(path.u8string());
+	_file.open(mPath, cpp_mode);
 }
 
 API File::Read(OUT uint8 *pMem, uint bytes)
@@ -118,11 +118,11 @@ API File::Read(OUT uint8 *pMem, uint bytes)
 
 API File::ReadStr(OUT char *pStr, OUT uint *bytes)
 {
-	uint file_size = 0;
+	uint fileSize = 0;
 
-	FileSize(&file_size);
+	FileSize(&fileSize);
 
-	_file.read(pStr, file_size);
+	_file.read(pStr, fileSize);
 
 	auto read_bytes = _file.gcount();
 
@@ -153,7 +153,7 @@ API File::WriteStr(const char *pStr)
 
 API File::FileSize(OUT uint *size)
 {
-	*size = (uint)file_size(_fs_full_path);
+	*size = (uint)file_size(_fsPath);
 	return S_OK;
 }
 

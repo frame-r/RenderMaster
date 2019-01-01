@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include "Events.h"
 
 template <typename T>
 class GameObjectBase : public T

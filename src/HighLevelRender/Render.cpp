@@ -248,7 +248,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 
 		const char *text;
 
-		WRL::ComPtr<IShaderFile> targetShader;
+		WRL::ComPtr<ITextFile> targetShader;
 
 		switch (req.pass)
 		{
@@ -441,16 +441,16 @@ void Render::Init()
 	_pCore->AddUpdateCallback(std::bind(&Render::_update, this));
 
 	// Shaders
-	IShaderFile *shader;
+	ITextFile *shader;
 
-	_pResMan->LoadShaderFile(&shader, "mesh.shader");
-	_forwardShader =  WRL::ComPtr<IShaderFile>(shader);
+	_pResMan->LoadTextFile(&shader, "mesh.shader");
+	_forwardShader =  WRL::ComPtr<ITextFile>(shader);
 
-	_pResMan->LoadShaderFile(&shader, "id.shader");
-	_idShader =  WRL::ComPtr<IShaderFile>(shader);
+	_pResMan->LoadTextFile(&shader, "id.shader");
+	_idShader =  WRL::ComPtr<ITextFile>(shader);
 
-	_pResMan->LoadShaderFile(&shader, "post\\engine_post.shader");
-	_postShader =  WRL::ComPtr<IShaderFile>(shader);
+	_pResMan->LoadTextFile(&shader, "post\\engine_post.shader");
+	_postShader =  WRL::ComPtr<ITextFile>(shader);
 
 	// Render Targets
 	IRenderTarget *RT;

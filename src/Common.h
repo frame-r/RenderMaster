@@ -13,6 +13,54 @@ using std::string;
 
 #define SHADER_DIR "src\\shaders"
 
+/////////////////////
+// Events
+/////////////////////
+
+template <typename IDerived, typename ISubscriber, typename... Arguments>
+class EventTemplate : public IDerived
+{
+	vector<ISubscriber *> _subscribers;
+
+public:
+
+	void Fire(Arguments ... args)
+	{
+		if (!_subscribers.empty())
+			for (auto it = _subscribers.begin(); it != _subscribers.end(); it++)
+				(*it)->Call(args...);
+	}
+
+	API Subscribe(ISubscriber* pSubscriber) override
+	{		
+		auto it = std::find_if(_subscribers.begin(), _subscribers.end(), [pSubscriber](ISubscriber *sbr) -> bool { return pSubscriber == sbr; });
+ 
+		if (it == _subscribers.end()) 
+			_subscribers.push_back(pSubscriber); 
+ 
+		return S_OK; 
+	} 
+
+	API Unsubscribe(ISubscriber* pSubscriber) override
+	{
+		auto it = std::find_if(_subscribers.begin(), _subscribers.end(), [pSubscriber](ISubscriber *sbr) -> bool { return pSubscriber == sbr; }); 
+ 
+		if (it != _subscribers.end()) 
+			_subscribers.erase(it); 
+ 
+		return S_OK; 
+	}
+};
+
+
+typedef EventTemplate<ILogEvent, ILogEventSubscriber, const char *, LOG_TYPE> LogEvent;
+typedef EventTemplate<IPositionEvent, IPositionEventSubscriber, OUT vec3*> PositionEvent;
+typedef EventTemplate<IRotationEvent, IRotationEventSubscriber, OUT quat*> RotationEvent;
+typedef EventTemplate<IStringEvent, IStringEventSubscriber, const char *> StringEvent;
+typedef EventTemplate<IGameObjectEvent, IGameObjectEventSubscriber, OUT IGameObject*> GameObjectEvent;
+
+
+
 enum class WINDOW_MESSAGE
 {
 	SIZE,

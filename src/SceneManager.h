@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include "Events.h"
 #include "Serialization.h"
 
 class SceneManager : public ISceneManager

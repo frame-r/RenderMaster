@@ -30,7 +30,6 @@
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Shader.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Texture.h" />
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLTexture.h" />
-    <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\GameObject.h" />
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLCoreRender.h" />
@@ -48,13 +47,12 @@
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Serialization.h" />
     <ClInclude Include="..\src\HighLevelRender\Shader.h" />
-    <ClInclude Include="..\src\ShaderFile.h" />
     <ClInclude Include="..\src\Shaders\common\common.h" />
     <ClInclude Include="..\src\Shaders\common\common_post.h" />
     <ClInclude Include="..\src\Shaders\common\language.h" />
     <ClInclude Include="..\src\Shaders\common\language_dx11.h" />
     <ClInclude Include="..\src\Shaders\common\language_gl.h" />
-    <ClInclude Include="..\src\simplecpp.h" />
+    <ClInclude Include="..\src\SimpleCpp.h" />
     <ClInclude Include="..\src\HighLevelRender\Texture.h" />
     <ClInclude Include="..\src\Tree.h" />
     <ClInclude Include="..\src\MainWindow.h" />
@@ -69,7 +67,6 @@
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Shader.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Texture.cpp" />
     <ClCompile Include="..\src\LowLevelRender\OpenGL\GLTexture.cpp" />
-    <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\LowLevelRender\OpenGL\GLCoreRender.cpp" />
     <ClCompile Include="..\src\GameObject.cpp" />
@@ -94,8 +91,7 @@
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
     <ClCompile Include="..\src\HighLevelRender\Shader.cpp" />
-    <ClCompile Include="..\src\ShaderFile.cpp" />
-    <ClCompile Include="..\src\simplecpp.cpp" />
+    <ClCompile Include="..\src\SimpleCpp.cpp" />
     <ClCompile Include="..\src\HighLevelRender\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>

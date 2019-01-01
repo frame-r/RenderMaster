@@ -31,9 +31,9 @@ class Render : public IRender
 	ISceneManager *_pSceneMan{nullptr};
 	IFileSystem *_fsystem{nullptr};
 
-	WRL::ComPtr<IShaderFile> _forwardShader;
-	WRL::ComPtr<IShaderFile> _postShader;
-	WRL::ComPtr<IShaderFile> _idShader;	
+	WRL::ComPtr<ITextFile> _forwardShader;
+	WRL::ComPtr<ITextFile> _postShader;
+	WRL::ComPtr<ITextFile> _idShader;	
 	WRL::ComPtr<IMesh> _postPlane;
 	WRL::ComPtr<IRenderTarget> renderTarget;
 

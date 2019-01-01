@@ -8,7 +8,6 @@
     <ClInclude Include="..\include\Engine.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Events.h" />
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Model.h">
@@ -50,7 +49,6 @@
     <ClInclude Include="..\src\Shaders\common\language_gl.h">
       <Filter>Shaders\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\ShaderFile.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11CoreRender.h">
       <Filter>LowLevelRender\DirectX</Filter>
     </ClInclude>
@@ -95,7 +93,6 @@
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
     <ClCompile Include="..\src\Console.cpp" />
-    <ClCompile Include="..\src\Events.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\SceneManager.cpp" />
@@ -117,7 +114,6 @@
       <Filter>GameObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\src\simplecpp.cpp" />
-    <ClCompile Include="..\src\ShaderFile.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11CoreRender.cpp">
       <Filter>LowLevelRender\DirectX</Filter>
     </ClCompile>
@@ -200,6 +196,8 @@
     <None Include="..\src\Shaders\post\engine_post.shader">
       <Filter>Shaders\post</Filter>
     </None>
-    <None Include="..\src\LowLevelRender\DirectX\states_pools.inl" />
+    <None Include="..\src\LowLevelRender\DirectX\states_pools.inl">
+      <Filter>LowLevelRender\DirectX</Filter>
+    </None>
   </ItemGroup>
 </Project>
