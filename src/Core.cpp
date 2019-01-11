@@ -130,13 +130,17 @@ API Core::Update()
 
 API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera)
 {
-	_pCoreRender->MakeCurrent(extern_handle);
+	if (FAILED(_pCoreRender->MakeCurrent(extern_handle)))
+		return E_FAIL;
 
 #ifdef WIN32
 	RECT r;
 	GetWindowRect(*extern_handle, &r);
 	int w = r.right - r.left;
 	int h = r.bottom - r.top;
+
+	if (w < 1 || h < 1)
+		return E_FAIL;
 #else
 	assert(false); // not impl
 #endif // WIN32

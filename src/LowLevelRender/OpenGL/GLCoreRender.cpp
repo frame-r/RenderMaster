@@ -382,6 +382,9 @@ API GLCoreRender::MakeCurrent(const WindowHandle* handle)
 {
 	HDC new_hdc = GetDC(*handle);
 
+	if (new_hdc == 0)
+		return E_FAIL;
+
 	int new_dc_pixel_format = GetPixelFormat(new_hdc);
 
 	if (new_dc_pixel_format != _pixel_format)

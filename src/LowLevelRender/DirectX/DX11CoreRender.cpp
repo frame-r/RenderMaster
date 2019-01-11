@@ -257,7 +257,7 @@ API DX11CoreRender::Free()
 
 API DX11CoreRender::MakeCurrent(const WindowHandle* handle)
 {
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 API DX11CoreRender::SwapBuffers()
