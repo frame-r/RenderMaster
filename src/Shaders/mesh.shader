@@ -30,7 +30,7 @@
 		#endif
 
 		#ifdef ENG_INPUT_TEXCOORD
-			vec4 tex = TEXTURE(TEX_ALBEDO, GET_ATRRIBUTE(TexCoord));
+			vec4 tex = TEXTURE(0, GET_ATRRIBUTE(TexCoord));
 			tex = pow(tex, vec4(0.45f, 0.45f, 0.45f, 1.0f));
 			diffuse = diffuse * tex;
 		#endif

@@ -180,6 +180,7 @@ inline mstring UTF8ToNative(const string& str)
 std::list<string> get_file_content(const string& filename);
 int is_relative(const char *pPath);
 string make_absolute(const char *pRelDataPath, const char *pWorkingPath);
+string fileExtension(const string& path);
 
 // lines manipulation
 std::list<string> make_lines_list(const char **text);
@@ -275,8 +276,8 @@ int get_msaa_samples(INIT_FLAGS flags);
 string msaa_to_string(int samples);
 
 // texture formats
-bool is_color_format(TEXTURE_FORMAT format);
-bool is_compressed_format(TEXTURE_FORMAT format);
+bool isColorFormat(TEXTURE_FORMAT format);
+bool isCompressedFormat(TEXTURE_FORMAT format);
 
 #define BASE_RESOURCE_HEADER \
 private: \
@@ -467,4 +468,8 @@ inline ICoreRenderTarget *getCoreRenderTarget(IRenderTarget *rt)
 	rt->GetCoreRenderTarget(&r);
 	return r;
 }
+
+size_t bytesPerPixel(TEXTURE_FORMAT format);
+size_t calculateImageSize(TEXTURE_FORMAT format, uint width, uint height);
+size_t blockSize(TEXTURE_FORMAT compressedFormat);
 

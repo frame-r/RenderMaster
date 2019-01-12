@@ -2,6 +2,7 @@
 #include "ResourceManager.h"
 #include "Filesystem.h"
 #include "Core.h"
+#include "Render.h"
 #include "Model.h"
 #include "Mesh.h"
 #include "Shader.h"
@@ -10,6 +11,7 @@
 #include "Camera.h"
 #include "Console.h"
 #include "SceneManager.h"
+#include <memory>
 
 
 using namespace std;
@@ -210,7 +212,8 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 	struct Vertex
 	{
 		float x, y, z, w;
-		float n_x, n_y, n_z, n_zero;
+		float nx, ny, nz, n_;
+		float tx, ty;
 	};
 
 	vector<Vertex> vertecies;
@@ -218,6 +221,8 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 
 	FbxVector4* control_points_array = pMesh->GetControlPoints();
 	FbxGeometryElementNormal* pNormals = pMesh->GetElementNormal(0);
+
+	FbxGeometryElementUV *pUV = pMesh->GetElementUV(0);
 
 	int vertex_counter = 0;
 
@@ -257,14 +262,15 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 								case FbxGeometryElement::eDirect:
 									normal_fbx = pNormals->GetDirectArray().GetAt(ctrl_point_idx);
 								break;
+
 								case FbxGeometryElement::eIndexToDirect:
 								{
 									int id = pNormals->GetIndexArray().GetAt(ctrl_point_idx);
 									normal_fbx = pNormals->GetDirectArray().GetAt(id);
 								}
 								break;
-								default:
-								break;
+
+								default: break;
 							}
 						}
 						break;
@@ -276,16 +282,16 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 							case FbxGeometryElement::eDirect:
 								normal_fbx = pNormals->GetDirectArray().GetAt(vertex_counter + local_vert_idx);
 								break;
+
 							case FbxGeometryElement::eIndexToDirect:
 							{
 								int id = pNormals->GetIndexArray().GetAt(vertex_counter + local_vert_idx);
 								normal_fbx = pNormals->GetDirectArray().GetAt(id);
 							}
 							break;
-							default:
-								break;
-							}
 
+							default: break;
+							}
 						}
 						break;
 
@@ -293,10 +299,64 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 							break;
 					}
 					
-					v.n_x = (float)normal_fbx[0];
-					v.n_y = (float)normal_fbx[1];
-					v.n_z = (float)normal_fbx[2];
-					v.n_zero = 0.0f;
+					v.nx = (float)normal_fbx[0];
+					v.ny = (float)normal_fbx[1];
+					v.nz = (float)normal_fbx[2];
+					v.n_ = 0.0f;
+				}
+
+				if (uv_layer_count) // TODO
+				{
+					FbxVector2 uv_fbx;
+
+					switch (pUV->GetMappingMode())
+					{
+					case FbxGeometryElement::eByControlPoint:
+					{
+						switch (pUV->GetReferenceMode())
+						{
+						case FbxGeometryElement::eDirect:
+							uv_fbx = pUV->GetDirectArray().GetAt(ctrl_point_idx);
+							break;
+
+						case FbxGeometryElement::eIndexToDirect:
+						{
+							int id = pUV->GetIndexArray().GetAt(ctrl_point_idx);
+							uv_fbx = pUV->GetDirectArray().GetAt(id);
+						}
+						break;
+
+						default: break;
+						}
+					}
+					break;
+
+					case FbxGeometryElement::eByPolygonVertex:
+					{
+						switch (pUV->GetReferenceMode())
+						{
+						case FbxGeometryElement::eDirect:
+							uv_fbx = pUV->GetDirectArray().GetAt(vertex_counter + local_vert_idx);
+							break;
+
+						case FbxGeometryElement::eIndexToDirect:
+						{
+							int id = pUV->GetIndexArray().GetAt(vertex_counter + local_vert_idx);
+							uv_fbx = pUV->GetDirectArray().GetAt(id);
+						}
+						break;
+
+						default: break;
+						}
+					}
+					break;
+
+					default: assert(false);
+						break;
+					}
+
+					v.tx = (float)uv_fbx[0];
+					v.ty = (float)uv_fbx[1];
 				}
 				
 				vertecies.push_back(v);
@@ -305,8 +365,6 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 		vertex_counter += polygon_size;
 	}
 
-	
-	
 	MeshDataDesc vertDesc;
 	vertDesc.pData = reinterpret_cast<uint8*>(&vertecies[0]);
 	vertDesc.numberOfVertex = (uint)vertecies.size();
@@ -315,6 +373,9 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 	vertDesc.normalsPresented = normal_element_count > 0;
 	vertDesc.normalOffset = (normal_element_count > 0) * 16;
 	vertDesc.normalStride = (normal_element_count > 0) * sizeof(Vertex);
+	vertDesc.texCoordPresented = uv_layer_count > 0;
+	vertDesc.texCoordOffset = (uv_layer_count > 0) * 32;
+	vertDesc.texCoordStride = (uv_layer_count > 0) * sizeof(Vertex);
 
 	MeshIndexDesc indexDesc;
 	indexDesc.pData = nullptr;
@@ -366,6 +427,12 @@ vector<IMesh*> ResourceManager::_FBX_load_meshes(const char *pFullPath, const ch
 }
 #endif
 
+Render* getRender()
+{
+	IRender *ret;
+	_pCore->GetSubSystem((ISubSystem**)&ret, SUBSYSTEM_TYPE::RENDER);
+	return static_cast<Render*>(ret);
+}
 
 ResourceManager::ResourceManager()
 {
@@ -385,7 +452,7 @@ void ResourceManager::ReloadTextFile(ITextFile *shaderText)
 	shaderText->GetFile(&pShaderName);
 
 	DEBUG_LOG_FORMATTED("Reloading shader %s ...", pShaderName);
-	const char *t = load_text_file(pShaderName);
+	const char *t = loadTextFile(pShaderName);
 
 	shaderText->SetText(t);
 }
@@ -446,7 +513,7 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	return S_OK;
 }
 
-string ResourceManager::construct_full_path(const string& file)
+string ResourceManager::constructFullPath(const string& file)
 {
 	const char *pDataPath;
 	_pCore->GetDataDir(&pDataPath);
@@ -454,7 +521,7 @@ string ResourceManager::construct_full_path(const string& file)
 	return dataPath + '\\' + file;
 }
 
-bool ResourceManager::error_if_path_not_exist(const string& fullPath)
+bool ResourceManager::errorIfPathNotExist(const string& fullPath)
 {
 	int exist;
 	_pFilesystem->FileExist(fullPath.c_str(), &exist);
@@ -494,7 +561,7 @@ void split_mesh_path(const string& meshPath, string& relativeModelPath, string& 
 	}
 }
 
-vector<IMesh*> ResourceManager::find_loaded_meshes(const char* pRelativeModelPath, const char *pMeshID)
+vector<IMesh*> ResourceManager::findLoadedMeshes(const char* pRelativeModelPath, const char *pMeshID)
 {
 	vector<IMesh*> out;
 
@@ -519,7 +586,7 @@ vector<IMesh*> ResourceManager::find_loaded_meshes(const char* pRelativeModelPat
 	return std::move(out);
 }
 
-const char* ResourceManager::load_text_file(const char *pShaderName)
+const char* ResourceManager::loadTextFile(const char *pShaderName)
 {
 	IFile *pFile = nullptr;
 	uint fileSize = 0;
@@ -529,7 +596,7 @@ const char* ResourceManager::load_text_file(const char *pShaderName)
 	string installedDir = string(pString);
 	string shader_path = installedDir + '\\' + SHADER_DIR + '\\' + pShaderName;
 
-	if (!error_if_path_not_exist(shader_path))
+	if (!errorIfPathNotExist(shader_path))
 		return nullptr;
 	
 	_pFilesystem->OpenFile(&pFile, shader_path.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
@@ -545,23 +612,353 @@ const char* ResourceManager::load_text_file(const char *pShaderName)
 	return tmp;
 }
 
+#pragma pack(push,1)
+
+const uint32_t DDS_MAGIC = 0x20534444; // "DDS "
+
+struct DDS_PIXELFORMAT
+{
+	uint32_t size;
+	uint32_t flags;
+	uint32_t fourCC;
+	uint32_t RGBBitCount;
+	uint32_t RBitMask;
+	uint32_t GBitMask;
+	uint32_t BBitMask;
+	uint32_t ABitMask;
+};
+
+#define DDS_FOURCC      0x00000004  // DDPF_FOURCC
+#define DDS_RGB         0x00000040  // DDPF_RGB
+#define DDS_LUMINANCE   0x00020000  // DDPF_LUMINANCE
+#define DDS_ALPHA       0x00000002  // DDPF_ALPHA
+#define DDS_BUMPDUDV    0x00080000  // DDPF_BUMPDUDV
+
+#define DDS_HEADER_FLAGS_VOLUME 0x00800000  // DDSD_DEPTH
+
+#define DDS_HEIGHT 0x00000002 // DDSD_HEIGHT
+#define DDS_WIDTH  0x00000004 // DDSD_WIDTH
+
+#define DDS_CUBEMAP_POSITIVEX 0x00000600 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEX
+#define DDS_CUBEMAP_NEGATIVEX 0x00000a00 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEX
+#define DDS_CUBEMAP_POSITIVEY 0x00001200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEY
+#define DDS_CUBEMAP_NEGATIVEY 0x00002200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEY
+#define DDS_CUBEMAP_POSITIVEZ 0x00004200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEZ
+#define DDS_CUBEMAP_NEGATIVEZ 0x00008200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEZ
+
+#define DDS_CUBEMAP_ALLFACES ( DDS_CUBEMAP_POSITIVEX | DDS_CUBEMAP_NEGATIVEX |\
+                               DDS_CUBEMAP_POSITIVEY | DDS_CUBEMAP_NEGATIVEY |\
+                               DDS_CUBEMAP_POSITIVEZ | DDS_CUBEMAP_NEGATIVEZ )
+
+#define DDS_CUBEMAP 0x00000200 // DDSCAPS2_CUBEMAP
+
+enum DDS_MISC_FLAGS2
+{
+	DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 0x7L,
+};
+
+struct DDS_HEADER
+{
+	uint32_t        size;
+	uint32_t        flags;
+	uint32_t        height;
+	uint32_t        width;
+	uint32_t        pitchOrLinearSize;
+	uint32_t        depth; // only if DDS_HEADER_FLAGS_VOLUME is set in flags
+	uint32_t        mipMapCount;
+	uint32_t        reserved1[11];
+	DDS_PIXELFORMAT ddspf;
+	uint32_t        caps;
+	uint32_t        caps2;
+	uint32_t        caps3;
+	uint32_t        caps4;
+	uint32_t        reserved2;
+};
+
+struct DDS_HEADER_DXT10
+{
+	DXGI_FORMAT     dxgiFormat;
+	uint32_t        resourceDimension;
+	uint32_t        miscFlag; // see D3D11_RESOURCE_MISC_FLAG
+	uint32_t        arraySize;
+	uint32_t        miscFlags2;
+};
+
+#pragma pack(pop)
+
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
+                ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
+                ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
+#endif
+
+#define ISBITMASK( r,g,b,a ) ( ddpf.RBitMask == r && ddpf.GBitMask == g && ddpf.BBitMask == b && ddpf.ABitMask == a )
+
+TEXTURE_FORMAT DDSToEngFormat(const DDS_PIXELFORMAT& ddpf)
+{
+	if (ddpf.flags & DDS_RGB)
+	{
+		// Note that sRGB formats are written using the "DX10" extended header
+
+		switch (ddpf.RGBBitCount)
+		{
+		case 32:
+			if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
+			{
+				return TEXTURE_FORMAT::RGBA8;
+			}
+
+			if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000))
+			{
+				//return DXGI_FORMAT_B8G8R8A8_UNORM;
+				break;
+			}
+
+			if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
+			{
+				//return DXGI_FORMAT_B8G8R8X8_UNORM;
+				break;
+			}
+
+			// No DXGI format maps to ISBITMASK(0x000000ff,0x0000ff00,0x00ff0000,0x00000000) aka D3DFMT_X8B8G8R8
+
+			// Note that many common DDS reader/writers (including D3DX) swap the
+			// the RED/BLUE masks for 10:10:10:2 formats. We assume
+			// below that the 'backwards' header mask is being used since it is most
+			// likely written by D3DX. The more robust solution is to use the 'DX10'
+			// header extension and specify the DXGI_FORMAT_R10G10B10A2_UNORM format directly
+
+			// For 'correct' writers, this should be 0x000003ff,0x000ffc00,0x3ff00000 for RGB data
+			if (ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000))
+			{
+				//return DXGI_FORMAT_R10G10B10A2_UNORM;
+				break;
+			}
+
+			// No DXGI format maps to ISBITMASK(0x000003ff,0x000ffc00,0x3ff00000,0xc0000000) aka D3DFMT_A2R10G10B10
+
+			if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+			{
+				//return DXGI_FORMAT_R16G16_UNORM;
+				break;
+			}
+
+			if (ISBITMASK(0xffffffff, 0x00000000, 0x00000000, 0x00000000))
+			{
+				// Only 32-bit color channel format in D3D9 was R32F
+				//return DXGI_FORMAT_R32_FLOAT; // D3DX writes this out as a FourCC of 114
+				return TEXTURE_FORMAT::R32F;
+			}
+			break;
+
+		case 24:
+			// No 24bpp DXGI formats aka D3DFMT_R8G8B8
+
+		case 16:
+			if (ISBITMASK(0x7c00, 0x03e0, 0x001f, 0x8000))
+			{
+				//return DXGI_FORMAT_B5G5R5A1_UNORM;
+				break;
+			}
+			if (ISBITMASK(0xf800, 0x07e0, 0x001f, 0x0000))
+			{
+				//return DXGI_FORMAT_B5G6R5_UNORM;
+				break;
+			}
+
+			// No DXGI format maps to ISBITMASK(0x7c00,0x03e0,0x001f,0x0000) aka D3DFMT_X1R5G5B5
+
+			if (ISBITMASK(0x0f00, 0x00f0, 0x000f, 0xf000))
+			{
+				//return DXGI_FORMAT_B4G4R4A4_UNORM;
+				break;
+			}
+
+			// No DXGI format maps to ISBITMASK(0x0f00,0x00f0,0x000f,0x0000) aka D3DFMT_X4R4G4B4
+
+			// No 3:3:2, 3:3:2:8, or paletted DXGI formats aka D3DFMT_A8R3G3B2, D3DFMT_R3G3B2, D3DFMT_P8, D3DFMT_A8P8, etc.
+			break;
+		}
+	}
+	else if (ddpf.flags & DDS_LUMINANCE)
+	{
+		if (8 == ddpf.RGBBitCount)
+		{
+			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x00000000))
+			{
+				return TEXTURE_FORMAT::R8; // D3DX10/11 writes this out as DX10 extension
+			}
+
+			// No DXGI format maps to ISBITMASK(0x0f,0x00,0x00,0xf0) aka D3DFMT_A4L4
+
+			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+			{
+				return TEXTURE_FORMAT::RG8; // Some DDS writers assume the bitcount should be 8 instead of 16
+			}
+		}
+
+		if (16 == ddpf.RGBBitCount)
+		{
+			if (ISBITMASK(0x0000ffff, 0x00000000, 0x00000000, 0x00000000))
+			{
+				//return DXGI_FORMAT_R16_UNORM; // D3DX10/11 writes this out as DX10 extension
+			}
+			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+			{
+				return TEXTURE_FORMAT::RG8; // D3DX10/11 writes this out as DX10 extension
+			}
+		}
+	}
+	else if (ddpf.flags & DDS_ALPHA)
+	{
+		if (8 == ddpf.RGBBitCount)
+		{
+			//return DXGI_FORMAT_A8_UNORM;
+		}
+	}
+	else if (ddpf.flags & DDS_BUMPDUDV)
+	{
+		if (16 == ddpf.RGBBitCount)
+		{
+			if (ISBITMASK(0x00ff, 0xff00, 0x0000, 0x0000))
+			{
+				//return DXGI_FORMAT_R8G8_SNORM; // D3DX10/11 writes this out as DX10 extension
+			}
+		}
+
+		if (32 == ddpf.RGBBitCount)
+		{
+			if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
+			{
+				//return DXGI_FORMAT_R8G8B8A8_SNORM; // D3DX10/11 writes this out as DX10 extension
+			}
+			if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+			{
+				//return DXGI_FORMAT_R16G16_SNORM; // D3DX10/11 writes this out as DX10 extension
+			}
+
+			// No DXGI format maps to ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000) aka D3DFMT_A2W10V10U10
+		}
+	}
+	else if (ddpf.flags & DDS_FOURCC)
+	{
+		if (MAKEFOURCC('D', 'X', 'T', '1') == ddpf.fourCC)
+		{
+			return TEXTURE_FORMAT::DXT1;
+		}
+		if (MAKEFOURCC('D', 'X', 'T', '3') == ddpf.fourCC)
+		{
+			return TEXTURE_FORMAT::DXT3;
+		}
+		if (MAKEFOURCC('D', 'X', 'T', '5') == ddpf.fourCC)
+		{
+			return TEXTURE_FORMAT::DXT5;
+		}
+
+		// While pre-multiplied alpha isn't directly supported by the DXGI formats,
+		// they are basically the same as these BC formats so they can be mapped
+		if (MAKEFOURCC('D', 'X', 'T', '2') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_BC2_UNORM;
+		}
+		if (MAKEFOURCC('D', 'X', 'T', '4') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_BC3_UNORM;
+		}
+
+		if (MAKEFOURCC('A', 'T', 'I', '1') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_BC4_UNORM;
+		}
+		if (MAKEFOURCC('B', 'C', '4', 'U') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_BC4_UNORM;
+		}
+		if (MAKEFOURCC('B', 'C', '4', 'S') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_BC4_SNORM;
+		}
+
+		if (MAKEFOURCC('A', 'T', 'I', '2') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_BC5_UNORM;
+		}
+		if (MAKEFOURCC('B', 'C', '5', 'U') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_BC5_UNORM;
+		}
+		if (MAKEFOURCC('B', 'C', '5', 'S') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_BC5_SNORM;
+		}
+
+		// BC6H and BC7 are written using the "DX10" extended header
+
+		if (MAKEFOURCC('R', 'G', 'B', 'G') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_R8G8_B8G8_UNORM;
+		}
+		if (MAKEFOURCC('G', 'R', 'G', 'B') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_G8R8_G8B8_UNORM;
+		}
+
+		if (MAKEFOURCC('Y', 'U', 'Y', '2') == ddpf.fourCC)
+		{
+			//return DXGI_FORMAT_YUY2;
+		}
+
+		// Check for D3DFORMAT enums being set here
+		switch (ddpf.fourCC)
+		{
+		case 36: // D3DFMT_A16B16G16R16
+			//return DXGI_FORMAT_R16G16B16A16_UNORM;
+			break;
+
+		case 110: // D3DFMT_Q16W16V16U16
+			//return DXGI_FORMAT_R16G16B16A16_SNORM;
+			break;
+
+		case 111: // D3DFMT_R16F
+			return TEXTURE_FORMAT::R16F;
+
+		case 112: // D3DFMT_G16R16F
+			return TEXTURE_FORMAT::RG16F;
+
+		case 113: // D3DFMT_A16B16G16R16F
+			return TEXTURE_FORMAT::RGBA16F;
+
+		case 114: // D3DFMT_R32F
+			return TEXTURE_FORMAT::R32F;
+
+		case 115: // D3DFMT_G32R32F
+			return TEXTURE_FORMAT::RG32F;
+
+		case 116: // D3DFMT_A32B32G32R32F
+			return TEXTURE_FORMAT::RGBA32F;
+		}
+	}
+
+	return TEXTURE_FORMAT::UNKNOWN;
+}
+
 API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 {
 	assert(is_relative(pModelPath) && "ResourceManager::LoadModel(): fileName must be relative");
 
-	auto fullPath = construct_full_path(pModelPath);
+	auto fullPath = constructFullPath(pModelPath);
 
-	if (!error_if_path_not_exist(fullPath))
+	if (!errorIfPathNotExist(fullPath))
 	{
 		*pModel = nullptr;
 		return E_FAIL;
 	}
 
-	vector<IMesh*> loaded_meshes = find_loaded_meshes(pModelPath, nullptr);
+	vector<IMesh*> loaded_meshes = findLoadedMeshes(pModelPath, nullptr);
 
 	IModel *model = nullptr;
 
-	const string file_ext = ToLowerCase(fs::path(pModelPath).extension().string().erase(0, 1));
+	const string file_ext = fileExtension(pModelPath);
 
 	if (loaded_meshes.size())
 	{
@@ -620,7 +1017,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 	string meshID;
 	split_mesh_path(pMeshPath, relativeModelPath, meshID);
 
-	vector<IMesh*> loaded_meshes = find_loaded_meshes(relativeModelPath.c_str(), meshID.c_str());
+	vector<IMesh*> loaded_meshes = findLoadedMeshes(relativeModelPath.c_str(), meshID.c_str());
 
 	if (loaded_meshes.size())
 	{
@@ -784,7 +1181,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 		//auto fullPath = constructFullPath(relativeModelPath);
 
-		//if (!error_if_path_not_exist(fullPath))
+		//if (!errorIfPathNotExist(fullPath))
 		//{
 		//	*pMesh = nullptr;
 		//	return E_FAIL;
@@ -827,30 +1224,173 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 API ResourceManager::LoadTextFile(OUT ITextFile **pShader, const char *pShaderName)
 {
-	const char *t = load_text_file(pShaderName);
+	const char *text = loadTextFile(pShaderName);
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadTextFile() new TextFile");
 	#endif
-	string paths = pShaderName;
 
-	TextFile *text = new TextFile(t, paths);
-	_sharedTextFiles.emplace(paths, text);
+	TextFile *textFile = new TextFile(text, pShaderName);
+	_sharedTextFiles.emplace(pShaderName, textFile);
 
-	*pShader = text;
+	*pShader = textFile;
 
 	return S_OK;
 }
 
-API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags)
+ICoreTexture* ResourceManager::loadWhiteTexture()
 {
-	*pTexture = nullptr;
-	return E_NOTIMPL;
+	uint8 data[4] = { 255u, 255u, 255u, 255u };
+	TEXTURE_CREATE_FLAGS flags{};
+	ICoreTexture *tex;
+	assert(_pCoreRender->CreateTexture(&tex, data, 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, flags, false) == S_OK);
+	return tex;
+}
+
+ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_FLAGS flags)
+{
+	IFile *pFile = nullptr;
+	uint fileSize = 0;
+
+	const char *pString;
+	_pCore->GetDataDir(&pString);
+	string dataDir = string(pString);
+	string fullPath = dataDir + '\\' + pTexturePath;
+
+	if (!errorIfPathNotExist(fullPath))
+		return nullptr;
+
+	_pFilesystem->OpenFile(&pFile, fullPath.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+
+	pFile->FileSize(&fileSize);
+
+	unique_ptr<uint8[]> fileData = std::make_unique<uint8[]>(fileSize);
+
+	pFile->Read((uint8 *)fileData.get(), fileSize);
+	pFile->CloseAndFree();
+
+	// Check magic
+	uint32_t dwMagicNumber = *reinterpret_cast<const uint32_t*>(fileData.get());
+	if (dwMagicNumber != DDS_MAGIC)
+	{
+		LOG_WARNING("ResourceManager::loadDDS(): Wrong magic");
+		return nullptr;
+	}
+
+	const DDS_HEADER* header = reinterpret_cast<const DDS_HEADER*>(fileData.get() + sizeof(uint32_t));
+
+	// Check header sizes
+	if (header->size != sizeof(DDS_HEADER) || header->ddspf.size != sizeof(DDS_PIXELFORMAT))
+	{
+		LOG_WARNING("ResourceManager::loadDDS(): Wrong header sizes");
+		return nullptr;
+	}
+
+	// Check for DX10 extension
+	bool bDXT10Header = (header->ddspf.flags & DDS_FOURCC) && (MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.fourCC);
+
+	ptrdiff_t offset = sizeof(uint32_t) + sizeof(DDS_HEADER) + (bDXT10Header ? sizeof(DDS_HEADER_DXT10) : 0);
+	uint8 *imageData = fileData.get() + offset;
+	size_t imageSize = fileSize - offset;
+
+	// -DXT10 extension
+	// -volume
+	// -cubemaps
+	// not supported
+	if (bDXT10Header ||
+		header->flags & DDS_HEADER_FLAGS_VOLUME ||
+		header->caps2 & DDS_CUBEMAP)
+	{
+		LOG_WARNING("ResourceManager::loadDDS(): type not supported");
+		return nullptr;
+	}
+
+	// format
+	TEXTURE_FORMAT format = DDSToEngFormat(header->ddspf);
+	if (format == TEXTURE_FORMAT::UNKNOWN)
+	{
+		LOG_WARNING("ResourceManager::loadDDS(): format not supported");
+		return nullptr;
+	}
+	// TODO conversions:
+	// BGRA -> RGBA
+	// RGB -> RGBA
+
+	// type
+	TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D;
+
+	// mipmaps
+	bool mipmapsPresented = header->mipMapCount > 1;
+
+	ICoreTexture *tex = nullptr;
+	if (FAILED(_pCoreRender->CreateTexture(&tex, imageData, header->width, header->height, type, format, flags, mipmapsPresented)))
+	{
+		LOG_WARNING("ResourceManager::loadDDS(): failed to create texture");
+		return nullptr;
+	}
+
+	return tex;
+}
+
+API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pTexturePath, TEXTURE_CREATE_FLAGS flags)
+{
+	ICoreTexture *coreTex;
+
+	if (!strcmp(pTexturePath, "std#white_texture"))
+	{
+		coreTex = loadWhiteTexture();
+	}
+	else
+	{
+		if (pTexturePath == NULL || strlen(pTexturePath) == 0)
+		{
+			*pTexture = getRender()->WhiteTexture();
+			return E_INVALIDARG;
+		}
+
+		if (!errorIfPathNotExist(pTexturePath))
+		{
+			*pTexture = getRender()->WhiteTexture();
+			return E_INVALIDARG;
+		}
+
+		const string file_ext = fileExtension(pTexturePath);
+
+		if (file_ext == "dds")
+		{
+			coreTex = loadDDS(pTexturePath, flags);
+			if (!coreTex)
+			{
+				LOG_WARNING("ResourceManager::LoadTexture(): some error occured");
+				*pTexture = getRender()->WhiteTexture();
+				return E_INVALIDARG;
+			}
+		}
+		else
+		{
+			LOG_WARNING_FORMATTED("Extension %s is not supported", file_ext.c_str());
+			*pTexture = getRender()->WhiteTexture();
+			return E_INVALIDARG;
+		}
+	}
+
+	ITexture *tex = new Texture(coreTex, pTexturePath);
+
+	#ifdef PROFILE_RESOURCES
+		DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
+	#endif
+
+	_sharedTextures.emplace(pTexturePath, tex);
+	*pTexture = tex;
+
+	return S_OK;
 }
 
 API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 {
-	DEBUG_LOG_FORMATTED("ResourceManager::CreateGameObject() new GameObject");
+	#ifdef PROFILE_RESOURCES
+		DEBUG_LOG_FORMATTED("ResourceManager::CreateGameObject() new GameObject");
+	#endif
 
 	IGameObject *g = new GameObject;
 
@@ -865,10 +1405,11 @@ API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 
 API ResourceManager::CreateModel(OUT IModel **pModel)
 {
+	IModel *g = new Model;
+
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateModel() new Model");
 	#endif
-	IModel *g = new Model;
 
 	_runtimeGameobjects.emplace(g);
 	*pModel = g;
@@ -881,10 +1422,11 @@ API ResourceManager::CreateModel(OUT IModel **pModel)
 
 API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 {
+	ICamera *g = new Camera;
+
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateCamera() new Camera");
 	#endif
-	ICamera *g = new Camera;
 
 	_runtimeGameobjects.emplace(g);
 	*pCamera = g;
@@ -911,8 +1453,8 @@ API ResourceManager::CreateTexture(OUT ITexture **pTextureOut, uint width, uint 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
 	#endif
-	_runtimeTextures.emplace(tex);
 
+	_runtimeTextures.emplace(tex);
 	*pTextureOut = tex;
 
 	return S_OK;
@@ -928,15 +1470,13 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 	if (!compiled)
 	{
 		*pShaderOut = nullptr;
-		
-
 		const char *shaderText;
 
 		switch (hr)
 		{
-		case E_VERTEX_SHADER_FAILED_COMPILE: shaderText = vert; break;
-		case E_GEOM_SHADER_FAILED_COMPILE: shaderText = geom; break;
-		case E_FRAGMENT_SHADER_FAILED_COMPILE: shaderText = frag; break;
+			case E_VERTEX_SHADER_FAILED_COMPILE: shaderText = vert; break;
+			case E_GEOM_SHADER_FAILED_COMPILE: shaderText = geom; break;
+			case E_FRAGMENT_SHADER_FAILED_COMPILE: shaderText = frag; break;
 		};
 
 		IFile *pFile;
@@ -961,7 +1501,6 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 	#endif
 
 	_runtimeShaders.emplace(s);
-
 	*pShaderOut = s;
 
 	return S_OK;
@@ -987,7 +1526,6 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 	#endif
 
 	_runtimeRenderTargets.emplace(rt);
-
 	*pRenderTargetOut = rt;
 
 	return S_OK;
@@ -1017,7 +1555,6 @@ API TextFile::Reload()
 	IResourceManager *irm = getResourceManager(_pCore);
 	ResourceManager *rm = static_cast<ResourceManager*>(irm);
 	rm->ReloadTextFile(this);
-
 	return S_OK;
 }
 

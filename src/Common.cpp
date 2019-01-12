@@ -30,6 +30,11 @@ string make_absolute(const char *pRelDataPath, const char *pBasePath)
 	return p.u8string();
 }
 
+string fileExtension(const string& path)
+{
+	return ToLowerCase(fs::path(path).extension().string().erase(0, 1));
+}
+
 void split_by_eol(const char **&textOut, int &numLinesOut, const string& textIn)
 {
 	char **ret;
@@ -279,19 +284,58 @@ string msaa_to_string(int samples)
 	return std::to_string(samples) + "x";
 }
 
-bool is_color_format(TEXTURE_FORMAT format)
+bool isColorFormat(TEXTURE_FORMAT format)
 {
 	if (format == TEXTURE_FORMAT::D24S8)
 		return false;
 	return true;
 }
 
-bool is_compressed_format(TEXTURE_FORMAT format)
+bool isCompressedFormat(TEXTURE_FORMAT format)
 {
 	if (format == TEXTURE_FORMAT::DXT1 || format == TEXTURE_FORMAT::DXT3 || format == TEXTURE_FORMAT::DXT5)
 		return true;
 	return false;
-
+}
+size_t bytesPerPixel(TEXTURE_FORMAT format)
+{
+	switch (format)
+	{
+		case TEXTURE_FORMAT::R8:		return 1;
+		case TEXTURE_FORMAT::RG8:		return 2;
+		case TEXTURE_FORMAT::RGBA8:		return 4;
+		case TEXTURE_FORMAT::R16F:		return 1;
+		case TEXTURE_FORMAT::RG16F:		return 2;
+		case TEXTURE_FORMAT::RGBA16F:	return 4;
+		case TEXTURE_FORMAT::R32F:		return 4;
+		case TEXTURE_FORMAT::RG32F:		return 8;
+		case TEXTURE_FORMAT::RGBA32F:	return 16;
+		case TEXTURE_FORMAT::R32UI:		return 4;
+		case TEXTURE_FORMAT::D24S8:		return 4;
+		default: assert(false); // no sense
+	}
+	return 1;
 }
 
+size_t blockSize(TEXTURE_FORMAT compressedFormat)
+{
+	assert(compressedFormat == TEXTURE_FORMAT::DXT1 || compressedFormat == TEXTURE_FORMAT::DXT3 || compressedFormat == TEXTURE_FORMAT::DXT5);
+	if (compressedFormat == TEXTURE_FORMAT::DXT1)
+		return 8u;
+	return 16u;
+}
 
+size_t calculateImageSize(TEXTURE_FORMAT format, uint width, uint height)
+{
+	//TODO: support align
+	if (isCompressedFormat(format))
+	{
+		size_t bs = blockSize(format);
+		if (width < 4 || height < 4)
+			return bs;
+
+		return ((width + 3) / 4) * ((height + 3) / 4) * bs;
+	}
+
+	return width * height * bytesPerPixel(format);
+}

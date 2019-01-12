@@ -291,11 +291,11 @@ bool Render::isOpenGL()
 
 void Render::getRenderMeshes(vector<RenderMesh>& meshes_vec)
 {
-	SceneManager *sm = (SceneManager*)_pSceneMan;	
+	SceneManager *sm = (SceneManager*)_pSceneMan;
 
 	for (tree<IGameObject*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
 	{
-		IGameObject *go = *it;		
+		IGameObject *go = *it;
 		IModel *model = dynamic_cast<IModel*>(go);
 		if (model)
 		{
@@ -348,7 +348,7 @@ void Render::drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass)
 	for(RenderMesh &renderMesh : meshes)
 	{
 		INPUT_ATTRUBUTE attribs;
-		renderMesh.mesh->GetAttributes(&attribs);		
+		renderMesh.mesh->GetAttributes(&attribs);
 
 		IShader *shader = getShader({attribs, pass});
 
@@ -356,9 +356,15 @@ void Render::drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass)
 			continue;
 		
 		_pCoreRender->SetShader(shader);
-		setShaderMeshParameters(pass, &renderMesh, shader);		
+		setShaderMeshParameters(pass, &renderMesh, shader);
+
+		if (bool(attribs & INPUT_ATTRUBUTE::TEX_COORD))
+			_pCoreRender->BindTexture(0, whiteTexture.Get());
 
 		_pCoreRender->Draw(renderMesh.mesh);
+
+		if (bool(attribs & INPUT_ATTRUBUTE::TEX_COORD))
+			_pCoreRender->BindTexture(0, nullptr);
 	}
 }
 
@@ -404,9 +410,9 @@ RenderBuffers Render::initBuffers(uint w, uint h)
 	ret.color = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA8);
 	ret.colorHDR = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA16F);
 	ret.depth = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::D24S8);
-	ret.directLight = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB16F);
-	ret.normal = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB8);
-	ret.shading = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGB8);
+	ret.directLight = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA16F);
+	ret.normal = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA8);
+	ret.shading = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::RGBA8);
 	ret.id = getRenderTargetTexture2d(w, h, TEXTURE_FORMAT::R32UI);
 
 	return ret;
@@ -482,11 +488,16 @@ void Render::Init()
 	tex->AddRef();
 	tex->Release();
 
+	TEXTURE_CREATE_FLAGS flags = {};
+	_pResMan->LoadTexture(&tex, "std#white_texture", flags);
+	whiteTexture = WRL::ComPtr<ITexture>(tex);
+
 	LOG("Render initialized");
 }
 
 void Render::Free()
 {
+	whiteTexture.Reset();
 	_postPlane.Reset();
 	renderTarget.Reset();
 	_forwardShader.Reset();

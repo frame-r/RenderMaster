@@ -464,15 +464,12 @@ DXGI_FORMAT resource_format(TEXTURE_FORMAT format)
 	{
 		case TEXTURE_FORMAT::R8:		return DXGI_FORMAT_R8_UNORM;
 		case TEXTURE_FORMAT::RG8:		return DXGI_FORMAT_R8G8_UNORM;
-		case TEXTURE_FORMAT::RGB8:
 		case TEXTURE_FORMAT::RGBA8:		return DXGI_FORMAT_R8G8B8A8_UNORM;
 		case TEXTURE_FORMAT::R16F:		return DXGI_FORMAT_R16_FLOAT;
 		case TEXTURE_FORMAT::RG16F:		return DXGI_FORMAT_R16G16_FLOAT;
-		case TEXTURE_FORMAT::RGB16F:
 		case TEXTURE_FORMAT::RGBA16F:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
 		case TEXTURE_FORMAT::R32F:		return DXGI_FORMAT_R32_FLOAT;
 		case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
-		case TEXTURE_FORMAT::RGB32F:
 		case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
 		case TEXTURE_FORMAT::R32UI:		return DXGI_FORMAT_R32_UINT;
 		case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
@@ -491,15 +488,12 @@ DXGI_FORMAT srv_format(TEXTURE_FORMAT format)
 	{
 	case TEXTURE_FORMAT::R8:		return DXGI_FORMAT_R8_UNORM;
 	case TEXTURE_FORMAT::RG8:		return DXGI_FORMAT_R8G8_UNORM;
-	case TEXTURE_FORMAT::RGB8:
 	case TEXTURE_FORMAT::RGBA8:		return DXGI_FORMAT_R8G8B8A8_UNORM;
 	case TEXTURE_FORMAT::R16F:		return DXGI_FORMAT_R16_FLOAT;
 	case TEXTURE_FORMAT::RG16F:		return DXGI_FORMAT_R16G16_FLOAT;
-	case TEXTURE_FORMAT::RGB16F:
 	case TEXTURE_FORMAT::RGBA16F:	return DXGI_FORMAT_R16G16B16A16_FLOAT;
 	case TEXTURE_FORMAT::R32F:		return DXGI_FORMAT_R32_FLOAT;
 	case TEXTURE_FORMAT::RG32F:		return DXGI_FORMAT_R32G32_FLOAT;
-	case TEXTURE_FORMAT::RGB32F:
 	case TEXTURE_FORMAT::RGBA32F:	return DXGI_FORMAT_R32G32B32A32_FLOAT;
 	case TEXTURE_FORMAT::R32UI:		return DXGI_FORMAT_R32_UINT;
 	case TEXTURE_FORMAT::DXT1:		return DXGI_FORMAT_BC1_UNORM;
@@ -527,12 +521,12 @@ UINT bind_flags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 {
 	UINT bind_flags = D3D11_BIND_SHADER_RESOURCE;
 
-	//if (is_color_format(format))
+	//if (isColorFormat(format))
 	//	bind_flags = D3D11_BIND_SHADER_RESOURCE;
 
 	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
 	{
-		if (is_color_format(format))
+		if (isColorFormat(format))
 			bind_flags |= D3D11_BIND_RENDER_TARGET;
 		else
 			bind_flags |= D3D11_BIND_DEPTH_STENCIL;
@@ -562,6 +556,32 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 		LOG_FATAL("DX11CoreRender::CreateTexture(): can't create texture\n");
 		*pTexture = nullptr;
 		return E_FAIL;
+	}
+
+	if (pData)
+	{
+		size_t rowBytes;
+		size_t numBytes;
+
+		if (isCompressedFormat(format))
+		{
+			size_t bpb = blockSize(format);
+			size_t numBlocksWide = std::max<uint64_t>(1u, (uint64_t(width) + 3u) / 4u);
+			size_t numBlocksHigh = std::max<uint64_t>(1u, (uint64_t(height) + 3u) / 4u);
+			rowBytes = numBlocksWide * bpb;
+			numBytes = rowBytes * numBlocksHigh;
+		} else
+		{
+			size_t bpp = bytesPerPixel(format);
+			rowBytes = /*(*/uint64_t(width) * bpp/* + 7u) / 8u*/; // from https://github.com/Microsoft/DirectXTex/blob/master/DDSTextureLoader/DDSTextureLoader.cpp
+			numBytes = rowBytes * height;
+		}
+
+
+		assert(rowBytes < std::numeric_limits<UINT>::max());
+		assert(numBytes < std::numeric_limits<UINT>::max());
+
+		_context->UpdateSubresource(tex, 0, nullptr, pData, static_cast<UINT>(rowBytes), static_cast<UINT>(numBytes));
 	}
 
 	// Create the sample
@@ -605,7 +625,7 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 
 	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
 	{
-		if (is_color_format(format))
+		if (isColorFormat(format))
 		{
 			D3D11_RENDER_TARGET_VIEW_DESC render_target_view_desc;
 			render_target_view_desc.Format = texture_desc.Format;

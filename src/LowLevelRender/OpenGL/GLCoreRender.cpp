@@ -445,7 +445,6 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 	if (dataDesc->colorPresented)
 		attribs = attribs | INPUT_ATTRUBUTE::COLOR;
 
-
 	CHECK_GL_ERRORS();
 
 	glGenVertexArrays(1, &vao);
@@ -546,21 +545,18 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, 
 	return S_OK;
 }
 
-void get_gl_formats(TEXTURE_FORMAT format, GLint& VRAMFormat, GLenum& sourceFormat, GLenum& sourceType)
+void getGLFormats(TEXTURE_FORMAT format, GLint& VRAMFormat, GLenum& sourceFormat, GLenum& sourceType)
 {
 	switch (format)
 	{
 	case TEXTURE_FORMAT::R8:		VRAMFormat = GL_R8;		sourceFormat = GL_RED;			sourceType = GL_UNSIGNED_BYTE; return;
 	case TEXTURE_FORMAT::RG8:		VRAMFormat = GL_RG8;	sourceFormat = GL_RG;			sourceType = GL_UNSIGNED_BYTE; return;
-	case TEXTURE_FORMAT::RGB8:		VRAMFormat = GL_RGB8;	sourceFormat = GL_RGB;			sourceType = GL_UNSIGNED_BYTE; return;
 	case TEXTURE_FORMAT::RGBA8:		VRAMFormat = GL_RGBA8;	sourceFormat = GL_RGBA;			sourceType = GL_UNSIGNED_BYTE; return;
 	case TEXTURE_FORMAT::R16F:		VRAMFormat = GL_R16F;	sourceFormat = GL_RED;			sourceType = GL_HALF_FLOAT; return;
 	case TEXTURE_FORMAT::RG16F:		VRAMFormat = GL_RG16F;	sourceFormat = GL_RG;			sourceType = GL_HALF_FLOAT; return;
-	case TEXTURE_FORMAT::RGB16F:	VRAMFormat = GL_RGB16F;	sourceFormat = GL_RGB;			sourceType = GL_HALF_FLOAT; return;
 	case TEXTURE_FORMAT::RGBA16F:	VRAMFormat = GL_RGBA16F;sourceFormat = GL_RGBA;			sourceType = GL_HALF_FLOAT; return;
 	case TEXTURE_FORMAT::R32F:		VRAMFormat = GL_R32F;	sourceFormat = GL_R;			sourceType = GL_FLOAT; return;
 	case TEXTURE_FORMAT::RG32F:		VRAMFormat = GL_RG32F;	sourceFormat = GL_RG;			sourceType = GL_FLOAT; return;
-	case TEXTURE_FORMAT::RGB32F:	VRAMFormat = GL_RGB32F;	sourceFormat = GL_RGB;			sourceType = GL_FLOAT; return;
 	case TEXTURE_FORMAT::RGBA32F:	VRAMFormat = GL_RGBA32F;sourceFormat = GL_RGBA;			sourceType = GL_FLOAT; return;
 	case TEXTURE_FORMAT::R32UI:		VRAMFormat = GL_R32UI;	sourceFormat = GL_RED_INTEGER;	sourceType = GL_UNSIGNED_INT; return;
 	case TEXTURE_FORMAT::DXT1:		VRAMFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;	/* no sense */ return;
@@ -570,47 +566,6 @@ void get_gl_formats(TEXTURE_FORMAT format, GLint& VRAMFormat, GLenum& sourceForm
 	}
 
 	LOG_WARNING("get_gl_formats(): unknown format\n");
-}
-
-int byte_per_pixel(TEXTURE_FORMAT format)
-{
-	switch(format)
-	{
-		case TEXTURE_FORMAT::R8:		return 1;
-		case TEXTURE_FORMAT::RG8:		return 2;
-		case TEXTURE_FORMAT::RGB8:		return 3;
-		case TEXTURE_FORMAT::RGBA8:		return 4;
-		case TEXTURE_FORMAT::R16F:		return 1;
-		case TEXTURE_FORMAT::RG16F:		return 2;
-		case TEXTURE_FORMAT::RGB16F:	return 3;
-		case TEXTURE_FORMAT::RGBA16F:	return 4;
-		case TEXTURE_FORMAT::R32F:		return 4;
-		case TEXTURE_FORMAT::RG32F:		return 8;
-		case TEXTURE_FORMAT::RGB32F:	return 12;
-		case TEXTURE_FORMAT::RGBA32F:	return 16;
-		case TEXTURE_FORMAT::R32UI:		return 4;
-		case TEXTURE_FORMAT::D24S8:		return 4;
-		default: assert(false); // no sense
-	}
-	return 1;
-}
-
-int calculate_data_size(TEXTURE_FORMAT format, uint width, uint height)
-{
-	//TODO: support align
-	if (is_compressed_format(format))
-	{
-		int blockSize;
-		if (format == TEXTURE_FORMAT::DXT1)
-			blockSize = 8;
-		else
-			blockSize = 16;
-		if (width < 4 || height < 4) return blockSize;
-		return (width / 4) * (height / 4) * blockSize;
-	}
-
-	int n = width * height * byte_per_pixel(format);
-	return n;
 }
 
 API GLCoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
@@ -647,15 +602,15 @@ API GLCoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint 
 	GLint internalFormat;
 	GLenum sourceFormat;
 	GLenum sourceType;
-	get_gl_formats(format, internalFormat, sourceFormat, sourceType);		
+	getGLFormats(format, internalFormat, sourceFormat, sourceType);
 
-	if (is_compressed_format(format))
+	if (isCompressedFormat(format))
 	{
-		int dataSize = calculate_data_size(format, width, height);
+		GLsizei dataSize = static_cast<GLsizei>(calculateImageSize(format, width, height));
 		glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataSize, pData);
 	}
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, sourceFormat, sourceType, pData);		
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, sourceFormat, sourceType, pData);
 
 	CHECK_GL_ERRORS();
 
@@ -881,16 +836,23 @@ API GLCoreRender::BindTexture(uint slot, ITexture *texture)
 
 	if (_state.texShaderBindings[slot].Get() != texture)
 	{
-		// texture -> slot
-		GLTexture *glTex = getGLTexture(texture);
-		glBindTextureUnit(slot, glTex->textureID());
-
-		// shader variable -> slot
 		GLShader *glShader = getGLShader(_state.shader.Get());
 		GLint location = glGetUniformLocation(glShader->programID(), (TEXTURE_NAME + std::to_string(slot)).c_str());
-		glUniform1i(location, slot);
+		if (location > -1)
+		{
+			// shader variable -> slot
+			glUniform1i(location, slot);
 
-		_state.texShaderBindings[slot] = texture;
+			// texture -> slot
+			if (texture)
+			{
+				GLTexture *glTex = getGLTexture(texture);
+				glBindTextureUnit(slot, glTex->textureID());
+			} else
+				glBindTextureUnit(slot, 0);
+
+			_state.texShaderBindings[slot] = texture;
+		}
 	}
 
 	CHECK_GL_ERRORS();
@@ -1050,14 +1012,14 @@ API GLCoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readPi
 	GLint internalFormat;
 	GLenum sourceFormat;
 	GLenum sourceType;
-	get_gl_formats(format, internalFormat, sourceFormat, sourceType);
+	getGLFormats(format, internalFormat, sourceFormat, sourceType);
 
 	uint w, h;
 	glTex->GetWidth(&w);
 	glTex->GetHeight(&h);
 
-	int pixelBytes = byte_per_pixel(format);
-	int allBytes = w * h * pixelBytes;
+	size_t pixelBytes = bytesPerPixel(format);
+	GLsizei allBytes = static_cast<GLsizei>(w * h * pixelBytes);
 
 	uint8 *p = new uint8[allBytes];
 
@@ -1070,7 +1032,7 @@ API GLCoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readPi
 	uint8 *p_read  = p + (y * w + x) * pixelBytes; 
 
 	memcpy(out, p_read, pixelBytes);
-	*readPixel = pixelBytes;
+	*readPixel = (uint)pixelBytes;
 
 	delete[] p;
 

@@ -33,9 +33,10 @@ class Render : public IRender
 
 	WRL::ComPtr<ITextFile> _forwardShader;
 	WRL::ComPtr<ITextFile> _postShader;
-	WRL::ComPtr<ITextFile> _idShader;	
+	WRL::ComPtr<ITextFile> _idShader;
 	WRL::ComPtr<IMesh> _postPlane;
 	WRL::ComPtr<IRenderTarget> renderTarget;
+	WRL::ComPtr<ITexture> whiteTexture;
 
 	struct TexturePoolable
 	{
@@ -46,7 +47,7 @@ class Render : public IRender
 		TEXTURE_FORMAT format;
 		WRL::ComPtr<ITexture> tex;
 	};
-	vector<TexturePoolable> _texture_pool;		
+	vector<TexturePoolable> _texture_pool;
 
 	std::unordered_map<ShaderRequirement, WRL::ComPtr<IShader>, ShaderRequirement> _shaders_pool;
 	
@@ -87,6 +88,7 @@ public:
 	void Init();
 	void Free();
 	void RenderFrame(const ICamera *pCamera);
+	ITexture *WhiteTexture() { return whiteTexture.Get(); }
 
 	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
 	API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) override;

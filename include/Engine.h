@@ -345,17 +345,14 @@ namespace RENDER_MASTER
 		// normalized
 		R8,
 		RG8,
-		RGB8,
 		RGBA8,
 
 		// float
 		R16F,
 		RG16F,
-		RGB16F,
 		RGBA16F,
 		R32F,
 		RG32F,
-		RGB32F,
 		RGBA32F,
 
 		// integer
@@ -367,7 +364,9 @@ namespace RENDER_MASTER
 		DXT5,
 
 		// depth/stencil
-		D24S8
+		D24S8,
+
+		UNKNOWN
 	};
 
 	class ICoreTexture

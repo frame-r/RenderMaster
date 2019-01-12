@@ -33,9 +33,9 @@ class ResourceManager final : public IResourceManager
 
 	// Shared resources
 	// Maps "file name" -> "pointer"
-	std::unordered_map<string, ITexture*> _sharedTextures;	
+	std::unordered_map<string, ITexture*> _sharedTextures;
 	std::unordered_map<string, IMesh*> _sharedMeshes;
-	std::unordered_map<string, ITextFile*> _sharedTextFiles;		
+	std::unordered_map<string, ITextFile*> _sharedTextFiles;
 		
 	ICoreRender *_pCoreRender = nullptr;
 	IFileSystem *_pFilesystem = nullptr;
@@ -43,7 +43,7 @@ class ResourceManager final : public IResourceManager
 	CRITICAL_SECTION _cs{};
 
 	#ifdef USE_FBX
-	const int fbxDebug = 0;
+	const int fbxDebug = 1;
 
 	void _FBX_initialize_SDK_objects(FbxManager*& pManager, FbxScene*& pScene);
 	void _FBX_destroy_SDK_objects(FbxManager* pManager, bool pExitStatus);
@@ -58,10 +58,13 @@ class ResourceManager final : public IResourceManager
 
 	API resources_list(const char **args, uint argsNumber);
 
-	string construct_full_path(const string& file);
-	bool error_if_path_not_exist(const string& fullPath);
-	vector<IMesh*> find_loaded_meshes(const char* pRelativeModelPath, const char *pMeshID);
-	const char *load_text_file(const char *fileName);
+	string constructFullPath(const string& file);
+	bool errorIfPathNotExist(const string& fullPath);
+	vector<IMesh*> findLoadedMeshes(const char* pRelativeModelPath, const char *pMeshID);
+	const char *loadTextFile(const char *fileName);
+	ICoreTexture *loadDDS(const char *pTexturePath, TEXTURE_CREATE_FLAGS flags);
+
+	ICoreTexture *loadWhiteTexture();
 
 public:
 
