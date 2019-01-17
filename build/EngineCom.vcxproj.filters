@@ -4,21 +4,18 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
-    <ClInclude Include="..\src\Console.h" />
     <ClInclude Include="..\include\Engine.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Input.h" />
-    <ClInclude Include="..\src\tree.h" />
     <ClInclude Include="..\src\pch.h" />
     <ClInclude Include="..\include\VectorMath.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\src\MainWindow.h" />
     <ClInclude Include="..\src\Serialization.h" />
-    <ClInclude Include="..\src\simplecpp.h" />
     <ClInclude Include="..\src\Shaders\common\common.h">
       <Filter>Shaders\common</Filter>
     </ClInclude>
@@ -61,20 +58,6 @@
     <ClInclude Include="..\src\HighLevelRender\Render.h">
       <Filter>HighLevelRender</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\Mesh.h">
-      <Filter>HighLevelRender</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\Texture.h">
-      <Filter>HighLevelRender</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\Shader.h">
-      <Filter>HighLevelRender</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\RenderTarget.h">
-      <Filter>HighLevelRender</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLEW\glew.h" />
-    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLEW\wglew.h" />
     <ClInclude Include="..\src\GameObjects\GameObject.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
@@ -84,11 +67,35 @@
     <ClInclude Include="..\src\GameObjects\Model.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\ConsoleWindow.h" />
+    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLEW\glew.h">
+      <Filter>LowLevelRender\OpenGL\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ThirdParty\Tree\Tree.h">
+      <Filter>ThirdParty\Tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ThirdParty\SimpleCpp\SimpleCpp.h">
+      <Filter>ThirdParty\SimpleCpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLEW\wglew.h">
+      <Filter>LowLevelRender\OpenGL\GLEW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\HighLevelRender\Objects\Texture.h">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\HighLevelRender\Objects\Shader.h">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\HighLevelRender\Objects\RenderTarget.h">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\HighLevelRender\Objects\Mesh.h">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
-    <ClCompile Include="..\src\Console.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\SceneManager.cpp" />
@@ -97,7 +104,6 @@
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
-    <ClCompile Include="..\src\simplecpp.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11CoreRender.cpp">
       <Filter>LowLevelRender\DirectX</Filter>
     </ClCompile>
@@ -125,19 +131,6 @@
     <ClCompile Include="..\src\HighLevelRender\Render.cpp">
       <Filter>HighLevelRender</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Mesh.cpp">
-      <Filter>HighLevelRender</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Texture.cpp">
-      <Filter>HighLevelRender</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Shader.cpp">
-      <Filter>HighLevelRender</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\RenderTarget.cpp">
-      <Filter>HighLevelRender</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\LowLevelRender\OpenGL\GLEW\glew.c" />
     <ClCompile Include="..\src\GameObjects\GameObject.cpp">
       <Filter>GameObjects</Filter>
     </ClCompile>
@@ -146,6 +139,25 @@
     </ClCompile>
     <ClCompile Include="..\src\GameObjects\Model.cpp">
       <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ConsoleWindow.cpp" />
+    <ClCompile Include="..\src\LowLevelRender\OpenGL\GLEW\glew.c">
+      <Filter>LowLevelRender\OpenGL\GLEW</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ThirdParty\SimpleCpp\SimpleCpp.cpp">
+      <Filter>ThirdParty\SimpleCpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\HighLevelRender\Objects\Texture.cpp">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\HighLevelRender\Objects\Shader.cpp">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\HighLevelRender\Objects\RenderTarget.cpp">
+      <Filter>HighLevelRender\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\HighLevelRender\Objects\Mesh.cpp">
+      <Filter>HighLevelRender\Obects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,6 +190,18 @@
     </Filter>
     <Filter Include="HighLevelRender">
       <UniqueIdentifier>{a3b7c9c2-d4ea-439d-97ef-cf1b84ebd28e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty">
+      <UniqueIdentifier>{dc8f4f7e-377e-4532-bc8b-08ad81edc416}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Tree">
+      <UniqueIdentifier>{f8408bdc-4e95-47e0-8e73-1d699260f0df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\SimpleCpp">
+      <UniqueIdentifier>{29262a25-334f-438e-9015-34dd3cd24f9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HighLevelRender\Obects">
+      <UniqueIdentifier>{3c82bcf8-ab20-4f5a-bce4-7a183b854bb9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
