@@ -1,5 +1,5 @@
-#include "pch.h"
-#include "Console.h"
+#include "Pch.h"
+#include "ConsoleWindow.h"
 #include "Core.h"
 
 using namespace std;

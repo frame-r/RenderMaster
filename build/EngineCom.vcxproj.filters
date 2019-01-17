@@ -10,26 +10,11 @@
     </ClInclude>
     <ClInclude Include="..\src\Filesystem.h" />
     <ClInclude Include="..\src\SceneManager.h" />
-    <ClInclude Include="..\src\Model.h">
-      <Filter>GameObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GameObject.h">
-      <Filter>GameObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Camera.h">
-      <Filter>GameObjects</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Input.h" />
     <ClInclude Include="..\src\tree.h" />
     <ClInclude Include="..\src\pch.h" />
     <ClInclude Include="..\include\VectorMath.h">
       <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GLEW\glew.h">
-      <Filter>LowLevelRender\OpenGL\GLEW</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\GLEW\wglew.h">
-      <Filter>LowLevelRender\OpenGL\GLEW</Filter>
     </ClInclude>
     <ClInclude Include="..\src\MainWindow.h" />
     <ClInclude Include="..\src\Serialization.h" />
@@ -88,6 +73,17 @@
     <ClInclude Include="..\src\HighLevelRender\RenderTarget.h">
       <Filter>HighLevelRender</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLEW\glew.h" />
+    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLEW\wglew.h" />
+    <ClInclude Include="..\src\GameObjects\GameObject.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameObjects\Camera.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GameObjects\Model.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />
@@ -96,23 +92,11 @@
     <ClCompile Include="..\src\Filesystem.cpp" />
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\SceneManager.cpp" />
-    <ClCompile Include="..\src\Model.cpp">
-      <Filter>GameObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Camera.cpp">
-      <Filter>GameObjects</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\pch.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
-    <ClCompile Include="..\src\GLEW\glew.c">
-      <Filter>LowLevelRender\OpenGL\GLEW</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\GameObject.cpp">
-      <Filter>GameObjects</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\simplecpp.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11CoreRender.cpp">
       <Filter>LowLevelRender\DirectX</Filter>
@@ -152,6 +136,16 @@
     </ClCompile>
     <ClCompile Include="..\src\HighLevelRender\RenderTarget.cpp">
       <Filter>HighLevelRender</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LowLevelRender\OpenGL\GLEW\glew.c" />
+    <ClCompile Include="..\src\GameObjects\GameObject.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameObjects\Camera.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\GameObjects\Model.cpp">
+      <Filter>GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "Pch.h"
 #include "DX11Shader.h"
 #include "DX11CoreRender.h"
 #include "Core.h"

@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "Pch.h"
 #include "GLCoreRender.h"
 #include "Core.h"
 #include "ResourceManager.h"

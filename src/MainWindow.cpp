@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "Pch.h"
 #include "MainWindow.h"
 #include "Core.h"
 

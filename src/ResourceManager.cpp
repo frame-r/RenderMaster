@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "Pch.h"
 #include "ResourceManager.h"
 #include "Filesystem.h"
 #include "Core.h"
@@ -9,7 +9,7 @@
 #include "Texture.h"
 #include "RenderTarget.h"
 #include "Camera.h"
-#include "Console.h"
+#include "ConsoleWindow.h"
 #include "SceneManager.h"
 #include <memory>
 
@@ -612,336 +612,6 @@ const char* ResourceManager::loadTextFile(const char *pShaderName)
 	return tmp;
 }
 
-#pragma pack(push,1)
-
-const uint32_t DDS_MAGIC = 0x20534444; // "DDS "
-
-struct DDS_PIXELFORMAT
-{
-	uint32_t size;
-	uint32_t flags;
-	uint32_t fourCC;
-	uint32_t RGBBitCount;
-	uint32_t RBitMask;
-	uint32_t GBitMask;
-	uint32_t BBitMask;
-	uint32_t ABitMask;
-};
-
-#define DDS_FOURCC      0x00000004  // DDPF_FOURCC
-#define DDS_RGB         0x00000040  // DDPF_RGB
-#define DDS_LUMINANCE   0x00020000  // DDPF_LUMINANCE
-#define DDS_ALPHA       0x00000002  // DDPF_ALPHA
-#define DDS_BUMPDUDV    0x00080000  // DDPF_BUMPDUDV
-
-#define DDS_HEADER_FLAGS_VOLUME 0x00800000  // DDSD_DEPTH
-
-#define DDS_HEIGHT 0x00000002 // DDSD_HEIGHT
-#define DDS_WIDTH  0x00000004 // DDSD_WIDTH
-
-#define DDS_CUBEMAP_POSITIVEX 0x00000600 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEX
-#define DDS_CUBEMAP_NEGATIVEX 0x00000a00 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEX
-#define DDS_CUBEMAP_POSITIVEY 0x00001200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEY
-#define DDS_CUBEMAP_NEGATIVEY 0x00002200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEY
-#define DDS_CUBEMAP_POSITIVEZ 0x00004200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEZ
-#define DDS_CUBEMAP_NEGATIVEZ 0x00008200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEZ
-
-#define DDS_CUBEMAP_ALLFACES ( DDS_CUBEMAP_POSITIVEX | DDS_CUBEMAP_NEGATIVEX |\
-                               DDS_CUBEMAP_POSITIVEY | DDS_CUBEMAP_NEGATIVEY |\
-                               DDS_CUBEMAP_POSITIVEZ | DDS_CUBEMAP_NEGATIVEZ )
-
-#define DDS_CUBEMAP 0x00000200 // DDSCAPS2_CUBEMAP
-
-enum DDS_MISC_FLAGS2
-{
-	DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 0x7L,
-};
-
-struct DDS_HEADER
-{
-	uint32_t        size;
-	uint32_t        flags;
-	uint32_t        height;
-	uint32_t        width;
-	uint32_t        pitchOrLinearSize;
-	uint32_t        depth; // only if DDS_HEADER_FLAGS_VOLUME is set in flags
-	uint32_t        mipMapCount;
-	uint32_t        reserved1[11];
-	DDS_PIXELFORMAT ddspf;
-	uint32_t        caps;
-	uint32_t        caps2;
-	uint32_t        caps3;
-	uint32_t        caps4;
-	uint32_t        reserved2;
-};
-
-struct DDS_HEADER_DXT10
-{
-	DXGI_FORMAT     dxgiFormat;
-	uint32_t        resourceDimension;
-	uint32_t        miscFlag; // see D3D11_RESOURCE_MISC_FLAG
-	uint32_t        arraySize;
-	uint32_t        miscFlags2;
-};
-
-#pragma pack(pop)
-
-#ifndef MAKEFOURCC
-#define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
-                ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
-                ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
-#endif
-
-#define ISBITMASK( r,g,b,a ) ( ddpf.RBitMask == r && ddpf.GBitMask == g && ddpf.BBitMask == b && ddpf.ABitMask == a )
-
-TEXTURE_FORMAT DDSToEngFormat(const DDS_PIXELFORMAT& ddpf)
-{
-	if (ddpf.flags & DDS_RGB)
-	{
-		// Note that sRGB formats are written using the "DX10" extended header
-
-		switch (ddpf.RGBBitCount)
-		{
-		case 32:
-			if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
-			{
-				return TEXTURE_FORMAT::RGBA8;
-			}
-
-			if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000))
-			{
-				//return DXGI_FORMAT_B8G8R8A8_UNORM;
-				break;
-			}
-
-			if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
-			{
-				//return DXGI_FORMAT_B8G8R8X8_UNORM;
-				break;
-			}
-
-			// No DXGI format maps to ISBITMASK(0x000000ff,0x0000ff00,0x00ff0000,0x00000000) aka D3DFMT_X8B8G8R8
-
-			// Note that many common DDS reader/writers (including D3DX) swap the
-			// the RED/BLUE masks for 10:10:10:2 formats. We assume
-			// below that the 'backwards' header mask is being used since it is most
-			// likely written by D3DX. The more robust solution is to use the 'DX10'
-			// header extension and specify the DXGI_FORMAT_R10G10B10A2_UNORM format directly
-
-			// For 'correct' writers, this should be 0x000003ff,0x000ffc00,0x3ff00000 for RGB data
-			if (ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000))
-			{
-				//return DXGI_FORMAT_R10G10B10A2_UNORM;
-				break;
-			}
-
-			// No DXGI format maps to ISBITMASK(0x000003ff,0x000ffc00,0x3ff00000,0xc0000000) aka D3DFMT_A2R10G10B10
-
-			if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
-			{
-				//return DXGI_FORMAT_R16G16_UNORM;
-				break;
-			}
-
-			if (ISBITMASK(0xffffffff, 0x00000000, 0x00000000, 0x00000000))
-			{
-				// Only 32-bit color channel format in D3D9 was R32F
-				//return DXGI_FORMAT_R32_FLOAT; // D3DX writes this out as a FourCC of 114
-				return TEXTURE_FORMAT::R32F;
-			}
-			break;
-
-		case 24:
-			// No 24bpp DXGI formats aka D3DFMT_R8G8B8
-
-		case 16:
-			if (ISBITMASK(0x7c00, 0x03e0, 0x001f, 0x8000))
-			{
-				//return DXGI_FORMAT_B5G5R5A1_UNORM;
-				break;
-			}
-			if (ISBITMASK(0xf800, 0x07e0, 0x001f, 0x0000))
-			{
-				//return DXGI_FORMAT_B5G6R5_UNORM;
-				break;
-			}
-
-			// No DXGI format maps to ISBITMASK(0x7c00,0x03e0,0x001f,0x0000) aka D3DFMT_X1R5G5B5
-
-			if (ISBITMASK(0x0f00, 0x00f0, 0x000f, 0xf000))
-			{
-				//return DXGI_FORMAT_B4G4R4A4_UNORM;
-				break;
-			}
-
-			// No DXGI format maps to ISBITMASK(0x0f00,0x00f0,0x000f,0x0000) aka D3DFMT_X4R4G4B4
-
-			// No 3:3:2, 3:3:2:8, or paletted DXGI formats aka D3DFMT_A8R3G3B2, D3DFMT_R3G3B2, D3DFMT_P8, D3DFMT_A8P8, etc.
-			break;
-		}
-	}
-	else if (ddpf.flags & DDS_LUMINANCE)
-	{
-		if (8 == ddpf.RGBBitCount)
-		{
-			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x00000000))
-			{
-				return TEXTURE_FORMAT::R8; // D3DX10/11 writes this out as DX10 extension
-			}
-
-			// No DXGI format maps to ISBITMASK(0x0f,0x00,0x00,0xf0) aka D3DFMT_A4L4
-
-			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
-			{
-				return TEXTURE_FORMAT::RG8; // Some DDS writers assume the bitcount should be 8 instead of 16
-			}
-		}
-
-		if (16 == ddpf.RGBBitCount)
-		{
-			if (ISBITMASK(0x0000ffff, 0x00000000, 0x00000000, 0x00000000))
-			{
-				//return DXGI_FORMAT_R16_UNORM; // D3DX10/11 writes this out as DX10 extension
-			}
-			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
-			{
-				return TEXTURE_FORMAT::RG8; // D3DX10/11 writes this out as DX10 extension
-			}
-		}
-	}
-	else if (ddpf.flags & DDS_ALPHA)
-	{
-		if (8 == ddpf.RGBBitCount)
-		{
-			//return DXGI_FORMAT_A8_UNORM;
-		}
-	}
-	else if (ddpf.flags & DDS_BUMPDUDV)
-	{
-		if (16 == ddpf.RGBBitCount)
-		{
-			if (ISBITMASK(0x00ff, 0xff00, 0x0000, 0x0000))
-			{
-				//return DXGI_FORMAT_R8G8_SNORM; // D3DX10/11 writes this out as DX10 extension
-			}
-		}
-
-		if (32 == ddpf.RGBBitCount)
-		{
-			if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
-			{
-				//return DXGI_FORMAT_R8G8B8A8_SNORM; // D3DX10/11 writes this out as DX10 extension
-			}
-			if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
-			{
-				//return DXGI_FORMAT_R16G16_SNORM; // D3DX10/11 writes this out as DX10 extension
-			}
-
-			// No DXGI format maps to ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000) aka D3DFMT_A2W10V10U10
-		}
-	}
-	else if (ddpf.flags & DDS_FOURCC)
-	{
-		if (MAKEFOURCC('D', 'X', 'T', '1') == ddpf.fourCC)
-		{
-			return TEXTURE_FORMAT::DXT1;
-		}
-		if (MAKEFOURCC('D', 'X', 'T', '3') == ddpf.fourCC)
-		{
-			return TEXTURE_FORMAT::DXT3;
-		}
-		if (MAKEFOURCC('D', 'X', 'T', '5') == ddpf.fourCC)
-		{
-			return TEXTURE_FORMAT::DXT5;
-		}
-
-		// While pre-multiplied alpha isn't directly supported by the DXGI formats,
-		// they are basically the same as these BC formats so they can be mapped
-		if (MAKEFOURCC('D', 'X', 'T', '2') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_BC2_UNORM;
-		}
-		if (MAKEFOURCC('D', 'X', 'T', '4') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_BC3_UNORM;
-		}
-
-		if (MAKEFOURCC('A', 'T', 'I', '1') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_BC4_UNORM;
-		}
-		if (MAKEFOURCC('B', 'C', '4', 'U') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_BC4_UNORM;
-		}
-		if (MAKEFOURCC('B', 'C', '4', 'S') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_BC4_SNORM;
-		}
-
-		if (MAKEFOURCC('A', 'T', 'I', '2') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_BC5_UNORM;
-		}
-		if (MAKEFOURCC('B', 'C', '5', 'U') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_BC5_UNORM;
-		}
-		if (MAKEFOURCC('B', 'C', '5', 'S') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_BC5_SNORM;
-		}
-
-		// BC6H and BC7 are written using the "DX10" extended header
-
-		if (MAKEFOURCC('R', 'G', 'B', 'G') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_R8G8_B8G8_UNORM;
-		}
-		if (MAKEFOURCC('G', 'R', 'G', 'B') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_G8R8_G8B8_UNORM;
-		}
-
-		if (MAKEFOURCC('Y', 'U', 'Y', '2') == ddpf.fourCC)
-		{
-			//return DXGI_FORMAT_YUY2;
-		}
-
-		// Check for D3DFORMAT enums being set here
-		switch (ddpf.fourCC)
-		{
-		case 36: // D3DFMT_A16B16G16R16
-			//return DXGI_FORMAT_R16G16B16A16_UNORM;
-			break;
-
-		case 110: // D3DFMT_Q16W16V16U16
-			//return DXGI_FORMAT_R16G16B16A16_SNORM;
-			break;
-
-		case 111: // D3DFMT_R16F
-			return TEXTURE_FORMAT::R16F;
-
-		case 112: // D3DFMT_G16R16F
-			return TEXTURE_FORMAT::RG16F;
-
-		case 113: // D3DFMT_A16B16G16R16F
-			return TEXTURE_FORMAT::RGBA16F;
-
-		case 114: // D3DFMT_R32F
-			return TEXTURE_FORMAT::R32F;
-
-		case 115: // D3DFMT_G32R32F
-			return TEXTURE_FORMAT::RG32F;
-
-		case 116: // D3DFMT_A32B32G32R32F
-			return TEXTURE_FORMAT::RGBA32F;
-		}
-	}
-
-	return TEXTURE_FORMAT::UNKNOWN;
-}
-
 API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 {
 	assert(is_relative(pModelPath) && "ResourceManager::LoadModel(): fileName must be relative");
@@ -1238,6 +908,335 @@ API ResourceManager::LoadTextFile(OUT ITextFile **pShader, const char *pShaderNa
 	return S_OK;
 }
 
+#pragma pack(push,1)
+
+const uint32_t DDS_MAGIC = 0x20534444; // "DDS "
+
+struct DDS_PIXELFORMAT
+{
+	uint32_t size;
+	uint32_t flags;
+	uint32_t fourCC;
+	uint32_t RGBBitCount;
+	uint32_t RBitMask;
+	uint32_t GBitMask;
+	uint32_t BBitMask;
+	uint32_t ABitMask;
+};
+
+#define DDS_FOURCC      0x00000004  // DDPF_FOURCC
+#define DDS_RGB         0x00000040  // DDPF_RGB
+#define DDS_LUMINANCE   0x00020000  // DDPF_LUMINANCE
+#define DDS_ALPHA       0x00000002  // DDPF_ALPHA
+#define DDS_BUMPDUDV    0x00080000  // DDPF_BUMPDUDV
+
+#define DDS_HEADER_FLAGS_VOLUME 0x00800000  // DDSD_DEPTH
+
+#define DDS_HEIGHT 0x00000002 // DDSD_HEIGHT
+#define DDS_WIDTH  0x00000004 // DDSD_WIDTH
+
+#define DDS_CUBEMAP_POSITIVEX 0x00000600 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEX
+#define DDS_CUBEMAP_NEGATIVEX 0x00000a00 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEX
+#define DDS_CUBEMAP_POSITIVEY 0x00001200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEY
+#define DDS_CUBEMAP_NEGATIVEY 0x00002200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEY
+#define DDS_CUBEMAP_POSITIVEZ 0x00004200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_POSITIVEZ
+#define DDS_CUBEMAP_NEGATIVEZ 0x00008200 // DDSCAPS2_CUBEMAP | DDSCAPS2_CUBEMAP_NEGATIVEZ
+
+#define DDS_CUBEMAP_ALLFACES ( DDS_CUBEMAP_POSITIVEX | DDS_CUBEMAP_NEGATIVEX |\
+                               DDS_CUBEMAP_POSITIVEY | DDS_CUBEMAP_NEGATIVEY |\
+                               DDS_CUBEMAP_POSITIVEZ | DDS_CUBEMAP_NEGATIVEZ )
+
+#define DDS_CUBEMAP 0x00000200 // DDSCAPS2_CUBEMAP
+
+enum DDS_MISC_FLAGS2
+{
+	DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 0x7L,
+};
+
+struct DDS_HEADER
+{
+	uint32_t        size;
+	uint32_t        flags;
+	uint32_t        height;
+	uint32_t        width;
+	uint32_t        pitchOrLinearSize;
+	uint32_t        depth; // only if DDS_HEADER_FLAGS_VOLUME is set in flags
+	uint32_t        mipMapCount;
+	uint32_t        reserved1[11];
+	DDS_PIXELFORMAT ddspf;
+	uint32_t        caps;
+	uint32_t        caps2;
+	uint32_t        caps3;
+	uint32_t        caps4;
+	uint32_t        reserved2;
+};
+
+struct DDS_HEADER_DXT10
+{
+	DXGI_FORMAT     dxgiFormat;
+	uint32_t        resourceDimension;
+	uint32_t        miscFlag; // see D3D11_RESOURCE_MISC_FLAG
+	uint32_t        arraySize;
+	uint32_t        miscFlags2;
+};
+
+#pragma pack(pop)
+
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(ch0, ch1, ch2, ch3)                              \
+                ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |       \
+                ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24 ))
+#endif
+
+#define ISBITMASK( r,g,b,a ) ( ddpf.RBitMask == r && ddpf.GBitMask == g && ddpf.BBitMask == b && ddpf.ABitMask == a )
+
+TEXTURE_FORMAT DDSToEngFormat(const DDS_PIXELFORMAT& ddpf)
+{
+	if (ddpf.flags & DDS_RGB)
+	{
+		// Note that sRGB formats are written using the "DX10" extended header
+
+		switch (ddpf.RGBBitCount)
+		{
+		case 32:
+			if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
+			{
+				return TEXTURE_FORMAT::RGBA8;
+			}
+
+			//if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000))
+			//{
+			//	//return DXGI_FORMAT_B8G8R8A8_UNORM;
+			//	break;
+			//}
+
+			//if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
+			//{
+			//	//return DXGI_FORMAT_B8G8R8X8_UNORM;
+			//	break;
+			//}
+
+			// No DXGI format maps to ISBITMASK(0x000000ff,0x0000ff00,0x00ff0000,0x00000000) aka D3DFMT_X8B8G8R8
+
+			// Note that many common DDS reader/writers (including D3DX) swap the
+			// the RED/BLUE masks for 10:10:10:2 formats. We assume
+			// below that the 'backwards' header mask is being used since it is most
+			// likely written by D3DX. The more robust solution is to use the 'DX10'
+			// header extension and specify the DXGI_FORMAT_R10G10B10A2_UNORM format directly
+
+			// For 'correct' writers, this should be 0x000003ff,0x000ffc00,0x3ff00000 for RGB data
+			//if (ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000))
+			//{
+			//	//return DXGI_FORMAT_R10G10B10A2_UNORM;
+			//	break;
+			//}
+
+			//// No DXGI format maps to ISBITMASK(0x000003ff,0x000ffc00,0x3ff00000,0xc0000000) aka D3DFMT_A2R10G10B10
+
+			//if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+			//{
+			//	//return DXGI_FORMAT_R16G16_UNORM;
+			//	break;
+			//}
+
+			if (ISBITMASK(0xffffffff, 0x00000000, 0x00000000, 0x00000000))
+			{
+				// Only 32-bit color channel format in D3D9 was R32F
+				return TEXTURE_FORMAT::R32F;
+			}
+			break;
+
+		case 24:
+			// No 24bpp DXGI formats aka D3DFMT_R8G8B8
+
+		case 16:
+			//if (ISBITMASK(0x7c00, 0x03e0, 0x001f, 0x8000))
+			//{
+			//	//return DXGI_FORMAT_B5G5R5A1_UNORM;
+			//	break;
+			//}
+			//if (ISBITMASK(0xf800, 0x07e0, 0x001f, 0x0000))
+			//{
+			//	//return DXGI_FORMAT_B5G6R5_UNORM;
+			//	break;
+			//}
+
+			//// No DXGI format maps to ISBITMASK(0x7c00,0x03e0,0x001f,0x0000) aka D3DFMT_X1R5G5B5
+
+			//if (ISBITMASK(0x0f00, 0x00f0, 0x000f, 0xf000))
+			//{
+			//	//return DXGI_FORMAT_B4G4R4A4_UNORM;
+			//	break;
+			//}
+
+			// No DXGI format maps to ISBITMASK(0x0f00,0x00f0,0x000f,0x0000) aka D3DFMT_X4R4G4B4
+
+			// No 3:3:2, 3:3:2:8, or paletted DXGI formats aka D3DFMT_A8R3G3B2, D3DFMT_R3G3B2, D3DFMT_P8, D3DFMT_A8P8, etc.
+			break;
+		}
+	}
+	else if (ddpf.flags & DDS_LUMINANCE)
+	{
+		if (8 == ddpf.RGBBitCount)
+		{
+			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x00000000))
+			{
+				return TEXTURE_FORMAT::R8; // D3DX10/11 writes this out as DX10 extension
+			}
+
+			// No DXGI format maps to ISBITMASK(0x0f,0x00,0x00,0xf0) aka D3DFMT_A4L4
+
+			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+			{
+				return TEXTURE_FORMAT::RG8; // Some DDS writers assume the bitcount should be 8 instead of 16
+			}
+		}
+
+		if (16 == ddpf.RGBBitCount)
+		{
+			//if (ISBITMASK(0x0000ffff, 0x00000000, 0x00000000, 0x00000000))
+			//{
+			//	//return DXGI_FORMAT_R16_UNORM; // D3DX10/11 writes this out as DX10 extension
+			//}
+			if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+			{
+				return TEXTURE_FORMAT::RG8; // D3DX10/11 writes this out as DX10 extension
+			}
+		}
+	}
+	//else if (ddpf.flags & DDS_ALPHA)
+	//{
+	//	if (8 == ddpf.RGBBitCount)
+	//	{
+	//		//return DXGI_FORMAT_A8_UNORM;
+	//	}
+	//}
+	else if (ddpf.flags & DDS_BUMPDUDV)
+	{
+		//if (16 == ddpf.RGBBitCount)
+		//{
+		//	if (ISBITMASK(0x00ff, 0xff00, 0x0000, 0x0000))
+		//	{
+		//		//return DXGI_FORMAT_R8G8_SNORM; // D3DX10/11 writes this out as DX10 extension
+		//	}
+		//}
+
+		//if (32 == ddpf.RGBBitCount)
+		//{
+		//	if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
+		//	{
+		//		//return DXGI_FORMAT_R8G8B8A8_SNORM; // D3DX10/11 writes this out as DX10 extension
+		//	}
+		//	if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+		//	{
+		//		//return DXGI_FORMAT_R16G16_SNORM; // D3DX10/11 writes this out as DX10 extension
+		//	}
+
+		//	// No DXGI format maps to ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000) aka D3DFMT_A2W10V10U10
+		//}
+	}
+	else if (ddpf.flags & DDS_FOURCC)
+	{
+		if (MAKEFOURCC('D', 'X', 'T', '1') == ddpf.fourCC)
+		{
+			return TEXTURE_FORMAT::DXT1;
+		}
+		if (MAKEFOURCC('D', 'X', 'T', '3') == ddpf.fourCC)
+		{
+			return TEXTURE_FORMAT::DXT3;
+		}
+		if (MAKEFOURCC('D', 'X', 'T', '5') == ddpf.fourCC)
+		{
+			return TEXTURE_FORMAT::DXT5;
+		}
+
+		// While pre-multiplied alpha isn't directly supported by the DXGI formats,
+		// they are basically the same as these BC formats so they can be mapped
+		//if (MAKEFOURCC('D', 'X', 'T', '2') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_BC2_UNORM;
+		//}
+		//if (MAKEFOURCC('D', 'X', 'T', '4') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_BC3_UNORM;
+		//}
+
+		//if (MAKEFOURCC('A', 'T', 'I', '1') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_BC4_UNORM;
+		//}
+		//if (MAKEFOURCC('B', 'C', '4', 'U') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_BC4_UNORM;
+		//}
+		//if (MAKEFOURCC('B', 'C', '4', 'S') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_BC4_SNORM;
+		//}
+
+		//if (MAKEFOURCC('A', 'T', 'I', '2') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_BC5_UNORM;
+		//}
+		//if (MAKEFOURCC('B', 'C', '5', 'U') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_BC5_UNORM;
+		//}
+		//if (MAKEFOURCC('B', 'C', '5', 'S') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_BC5_SNORM;
+		//}
+
+		// BC6H and BC7 are written using the "DX10" extended header
+
+		//if (MAKEFOURCC('R', 'G', 'B', 'G') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_R8G8_B8G8_UNORM;
+		//}
+		//if (MAKEFOURCC('G', 'R', 'G', 'B') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_G8R8_G8B8_UNORM;
+		//}
+
+		//if (MAKEFOURCC('Y', 'U', 'Y', '2') == ddpf.fourCC)
+		//{
+		//	//return DXGI_FORMAT_YUY2;
+		//}
+
+		// Check for D3DFORMAT enums being set here
+		switch (ddpf.fourCC)
+		{
+		case 36: // D3DFMT_A16B16G16R16
+			//return DXGI_FORMAT_R16G16B16A16_UNORM;
+			break;
+
+		case 110: // D3DFMT_Q16W16V16U16
+			return TEXTURE_FORMAT::RGBA16F;
+
+		case 111: // D3DFMT_R16F
+			return TEXTURE_FORMAT::R16F;
+
+		case 112: // D3DFMT_G16R16F
+			return TEXTURE_FORMAT::RG16F;
+
+		case 113: // D3DFMT_A16B16G16R16F
+			//return TEXTURE_FORMAT::RGBA16F;
+
+		case 114: // D3DFMT_R32F
+			return TEXTURE_FORMAT::R32F;
+
+		case 115: // D3DFMT_G32R32F
+			return TEXTURE_FORMAT::RG32F;
+
+		case 116: // D3DFMT_A32B32G32R32F
+			//return TEXTURE_FORMAT::RGBA32F;
+			break;
+		}
+	}
+
+	return TEXTURE_FORMAT::UNKNOWN;
+}
+
 ICoreTexture* ResourceManager::loadWhiteTexture()
 {
 	uint8 data[4] = { 255u, 255u, 255u, 255u };
@@ -1293,10 +1292,10 @@ ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_
 	uint8 *imageData = fileData.get() + offset;
 	size_t imageSize = fileSize - offset;
 
+	// Not supported:
 	// -DXT10 extension
 	// -volume
 	// -cubemaps
-	// not supported
 	if (bDXT10Header ||
 		header->flags & DDS_HEADER_FLAGS_VOLUME ||
 		header->caps2 & DDS_CUBEMAP)
@@ -1316,10 +1315,8 @@ ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_
 	// BGRA -> RGBA
 	// RGB -> RGBA
 
-	// type
-	TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D;
+	const TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D;
 
-	// mipmaps
 	bool mipmapsPresented = header->mipMapCount > 1;
 
 	ICoreTexture *tex = nullptr;
