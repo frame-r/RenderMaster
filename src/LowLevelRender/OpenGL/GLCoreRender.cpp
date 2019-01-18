@@ -13,6 +13,8 @@ DEFINE_LOG_HELPERS(_pCore)
 #define TEXTURE_NAME "_texture_"
 #define DONT_CHECK_GL_ERRORS 1
 
+const static unsigned MAX_TEXTURE_SLOTS = 16;
+
 vector<UBO> UBOpool;
 
 
@@ -709,7 +711,7 @@ API GLCoreRender::PopStates()
 	{
 		GLShader *glShader = getGLShader(_state.shader.Get());
 
-		for (int i = 0; i < 16; i++)
+		for (int i = 0; i < MAX_TEXTURE_SLOTS; i++)
 		{
 			if (state.texShaderBindings[i].Get() != _state.texShaderBindings[i].Get())
 			{
@@ -830,7 +832,7 @@ API GLCoreRender::SetMesh(IMesh* mesh)
 
 API GLCoreRender::BindTexture(uint slot, ITexture *texture)
 {
-	assert(slot < 16);
+	assert(slot < MAX_TEXTURE_SLOTS);
 
 	CHECK_GL_ERRORS();
 
@@ -864,10 +866,10 @@ API GLCoreRender::UnbindAllTextures()
 {
 	CHECK_GL_ERRORS();
 
-	static const GLuint zeroTex[16] = {};
-	glBindTextures(0, 16, zeroTex);
+	static const GLuint zeroTex[MAX_TEXTURE_SLOTS] = {};
+	glBindTextures(0, MAX_TEXTURE_SLOTS, zeroTex);
 
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < MAX_TEXTURE_SLOTS; i++)
 		_state.texShaderBindings[i] = nullptr;
 
 	CHECK_GL_ERRORS();

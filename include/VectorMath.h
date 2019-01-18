@@ -32,6 +32,9 @@ struct Vector4
 	Vector4(float xIn, float yIn, float zIn, float wIn);
 	Vector4(const Vector3& v3);
 
+	Vector4 &operator+=(const Vector4 &point);
+	Vector4 operator+(const Vector4 &point) const;
+
 	Vector4& operator/=(float value);
 	Vector4& operator/(float value) const;
 
@@ -308,6 +311,20 @@ inline Vector4& Vector4::operator/=(float value)
 inline Vector4& Vector4::operator/(float value) const
 {
 	return Vector4(*this) /= value;
+}
+
+inline Vector4& Vector4::operator+=(const Vector4 &point)
+{
+	x += point.x;
+	y += point.y;
+	z += point.z;
+	w += point.w;
+	return *this;
+}
+
+inline Vector4 Vector4::operator+(const Vector4 &point) const
+{
+	return Vector4(*this) += point;
 }
 
 inline Vector4::operator Vector3() const
