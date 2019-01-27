@@ -6,28 +6,26 @@ namespace WRL = Microsoft::WRL;
 struct ConstantBuffer
 {
 	string name;
-	uint bytes = 0;	
+	size_t bytes = 0u;
+	bool needFlush = true;
+	WRL::ComPtr<ID3D11Buffer> buffer;
+	unique_ptr<uint8[]> data;
 
-	struct ConstantBufferParameter
+	struct Parameter
 	{
 		string name;
-		uint offset = 0;
-		uint bytes = 0;
-		uint elements = 1; // number of elements in array (if parameter is array)
+		size_t offset = 0u;
+		size_t bytes = 0u;
+		size_t elements = 1u; // number of elements in array (if parameter is array)
 	};
-	vector<ConstantBufferParameter> parameters;
-
-	std::unique_ptr<uint8[]> data;
-	bool needFlush = true;
-
-	WRL::ComPtr<ID3D11Buffer> dxBuffer;
+	vector<Parameter> parameters;
 
 public:
-	ConstantBuffer(WRL::ComPtr<ID3D11Buffer> dxBufferIn, uint bytesIn, const string& nameIn, const vector<ConstantBufferParameter>& paramsIn) :
-		dxBuffer(dxBufferIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
+	ConstantBuffer(WRL::ComPtr<ID3D11Buffer> dxBufferIn, uint bytesIn, const string& nameIn, const vector<Parameter>& paramsIn) :
+		buffer(dxBufferIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
 	{
 		data = std::make_unique<uint8[]>(bytesIn);
-		memset(data.get(), '\0', bytesIn);
+		memset(data.get(), 0, bytesIn);
 	}
 	ConstantBuffer(const ConstantBuffer& r) = delete;
 	ConstantBuffer(ConstantBuffer&& r)
@@ -35,8 +33,8 @@ public:
 		name = r.name;
 		bytes = r.bytes;
 		parameters = std::move(r.parameters);
-		dxBuffer = r.dxBuffer;
-		r.dxBuffer = nullptr;
+		buffer = r.buffer;
+		r.buffer = nullptr;
 		data = std::move(r.data);
 		needFlush = r.needFlush;
 	}
@@ -45,8 +43,8 @@ public:
 		name = r.name;
 		bytes = r.bytes;
 		parameters = std::move(r.parameters);
-		dxBuffer = r.dxBuffer;
-		r.dxBuffer = nullptr;
+		buffer = r.buffer;
+		r.buffer = nullptr;
 		data = std::move(r.data);
 		needFlush = r.needFlush;
 	}
@@ -55,11 +53,11 @@ public:
 
 class DX11RenderTarget : public ICoreRenderTarget
 {
-	WRL::ComPtr<ITexture> _colors[8];
-	WRL::ComPtr<ITexture> _depth;
+	TexturePtr _colors[8];
+	TexturePtr _depth;
 
-	void _get_colors(ID3D11RenderTargetView **arrayOut, uint& targetsNum);
-	void _get_depth(ID3D11DepthStencilView **depth);
+	void _getColors(ID3D11RenderTargetView **arrayOut, uint& targetsNum);
+	void _getDepth(ID3D11DepthStencilView **depth);
 
 public:
 
@@ -94,7 +92,7 @@ class DX11CoreRender final : public ICoreRender
 	#include "states_pools.inl"
 	BlendStatePool _blendStatePool{*this};
 	RasterizerStatePool _rasterizerStatePool{*this};
-	DepthStencilStatePool _depthStencilStatePool{*this};	
+	DepthStencilStatePool _depthStencilStatePool{*this};
 
 	struct State
 	{
@@ -113,20 +111,25 @@ class DX11CoreRender final : public ICoreRender
 		D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 		WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
 
+		// Viewport
+		//
+		GLint x = 0, y = 0;
+		GLint width = 0, heigth = 0;
+
 		// Shader
 		//
-		WRL::ComPtr<IShader> shader;
+		ShaderPtr shader;
 
 		// Mesh
 		//
-		WRL::ComPtr<IMesh> mesh;
+		MeshPtr mesh;
 
 		// Textures
 		//
-		WRL::ComPtr<ITexture> texShaderBindings[16]; // slot -> texture
+		TexturePtr texShaderBindings[16]; // slot -> texture
 
 		// Framebuffer
-		WRL::ComPtr<IRenderTarget> renderTarget;
+		RenderTargetPtr renderTarget;
 
 		// Clear
 		//
@@ -143,11 +146,11 @@ class DX11CoreRender final : public ICoreRender
 	int _MSAASamples = 1;
 	int _VSyncOn = 1;
 
-	bool create_default_buffers(uint w, uint h);
-	void destroy_default_buffers();
+	bool createDefaultBuffers(uint w, uint h);
+	void destroyDefaultBuffers();
 
-	WRL::ComPtr<ID3DBlob> create_shader_by_src(ID3D11DeviceChild *&poiterOut, SHADER_TYPE type, const char *src, HRESULT& err);
-	UINT msaa_quality(DXGI_FORMAT format, int MSAASamples);
+	WRL::ComPtr<ID3DBlob> createShader(ID3D11DeviceChild *&poiterOut, SHADER_TYPE type, const char *src, HRESULT& err);
+	UINT MSAAquality(DXGI_FORMAT format, int MSAASamples);
 	
 public:
 
@@ -166,6 +169,7 @@ public:
 	API CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
+	API CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize) override;
 
 	API PushStates() override;
 	API PopStates() override;
@@ -175,7 +179,8 @@ public:
 	API RestoreDefaultRenderTarget() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
-	API Draw(IMesh *mesh) override;
+	API SetStructuredBufer(uint slot, IStructuredBuffer* buffer) override;
+	API Draw(IMesh *mesh, uint instances) override;
 	API SetDepthTest(int enabled) override;
 	API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) override;
 	API SetViewport(uint w, uint h) override;

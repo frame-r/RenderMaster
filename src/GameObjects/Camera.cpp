@@ -21,7 +21,7 @@ void Camera::_update()
 	int mouse_pressed{};
 	vec2 dM;
 
-	float dt = _pCore->getDt();
+	float dt = _pCore->deltaTime();
 
 	_pInput->IsKeyPressed(&left_pressd, KEYBOARD_KEY_CODES::KEY_A);
 	_pInput->IsKeyPressed(&right_pressd, KEYBOARD_KEY_CODES::KEY_D);

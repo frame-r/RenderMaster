@@ -21,7 +21,7 @@ public:
 	SHARED_ONLY_RESOURCE_HEADER
 };
 
-class ResourceManager final : public IResourceManager
+class ResourceManager final : public IResourceManager, IProfilerCallback
 {
 	// Rintime resources
 	// No files associated with these resources
@@ -30,6 +30,7 @@ class ResourceManager final : public IResourceManager
 	std::unordered_set<IGameObject*> _runtimeGameobjects;
 	std::unordered_set<IShader*> _runtimeShaders;
 	std::unordered_set<IRenderTarget*> _runtimeRenderTargets;
+	std::unordered_set<IStructuredBuffer*> _runtimeStructuredBuffers;
 
 	// Shared resources
 	// Maps "file name" -> "pointer"
@@ -41,6 +42,8 @@ class ResourceManager final : public IResourceManager
 	IFileSystem *_pFilesystem = nullptr;
 
 	CRITICAL_SECTION _cs{};
+
+	ITexture *whiteTetxure = nullptr;
 
 	#ifdef USE_FBX
 	const int fbxDebug = 1;
@@ -58,13 +61,16 @@ class ResourceManager final : public IResourceManager
 
 	API resources_list(const char **args, uint argsNumber);
 
+	uint getNumLines() override;
+	string getString(uint i) override;
+
 	string constructFullPath(const string& file);
 	bool errorIfPathNotExist(const string& fullPath);
 	vector<IMesh*> findLoadedMeshes(const char* pRelativeModelPath, const char *pMeshID);
 	const char *loadTextFile(const char *fileName);
 	ICoreTexture *loadDDS(const char *pTexturePath, TEXTURE_CREATE_FLAGS flags);
-
-	ICoreTexture *loadWhiteTexture();
+	size_t sharedResources();
+	size_t runtimeResources();
 
 public:
 
@@ -72,26 +78,28 @@ public:
 	virtual ~ResourceManager();
 
 	void RemoveRuntimeMesh(IMesh *mesh) { _runtimeMeshes.erase(mesh); }
-	void RemoveSharedMesh(const string& file) { _sharedMeshes.erase(file); }
+	void RemoveSharedMesh(const string& path) { _sharedMeshes.erase(path); }
 	void RemoveRuntimeTexture(ITexture *tex) { _runtimeTextures.erase(tex); }
-	void RemoveSharedTexture(const string& file) { _sharedTextures.erase(file); }
+	void RemoveSharedTexture(const string& path) { _sharedTextures.erase(path); }
 	void RemoveRuntimeGameObject(IGameObject *g) { _runtimeGameobjects.erase(g); }
-	void RemoveSharedTextFile(const string& file) { _sharedTextFiles.erase(file); }
+	void RemoveSharedTextFile(const string& path) { _sharedTextFiles.erase(path); }
 	void RemoveRuntimeShader(IShader *s) { _runtimeShaders.erase(s); }
 	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtimeRenderTargets.erase(rt); }
+	void RemoveRuntimeStructuredBuffer(IStructuredBuffer *b) { _runtimeStructuredBuffers.erase(b); }
 
 	void ReloadTextFile(ITextFile *shaderText);
 
 	void Init();
 
-	API LoadModel(OUT IModel **pModel, const char *pModelPath) override;
-	API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) override;
-	API LoadTexture(OUT ITexture **pTexture, const char *pTexturePath, TEXTURE_CREATE_FLAGS flags) override;
-	API LoadTextFile(OUT ITextFile **pShader, const char *pShaderName) override;
+	API LoadModel(OUT IModel **pModel, const char *path) override;
+	API LoadMesh(OUT IMesh **pMesh, const char *path) override;
+	API LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) override;
+	API LoadTextFile(OUT ITextFile **pShader, const char *path) override;
 
 	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
 	API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) override;
+	API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint size, uint elementSize) override;
 	API CreateGameObject(OUT IGameObject **pGameObject) override;
 	API CreateModel(OUT IModel **pModel) override;
 	API CreateCamera(OUT ICamera **pCamera) override;
@@ -100,4 +108,3 @@ public:
 
 	API GetName(OUT const char **pTxt) override;
 };
-

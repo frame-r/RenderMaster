@@ -55,9 +55,6 @@
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLShader.h">
       <Filter>LowLevelRender\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\Render.h">
-      <Filter>HighLevelRender</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\GameObjects\GameObject.h">
       <Filter>GameObjects</Filter>
     </ClInclude>
@@ -80,17 +77,29 @@
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLEW\wglew.h">
       <Filter>LowLevelRender\OpenGL\GLEW</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\Objects\Texture.h">
-      <Filter>HighLevelRender\Obects</Filter>
+    <ClInclude Include="..\src\LowLevelRender\DirectX\DX11StructuredBuffer.h">
+      <Filter>LowLevelRender\DirectX</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\Objects\Shader.h">
-      <Filter>HighLevelRender\Obects</Filter>
+    <ClInclude Include="..\src\Render\Render.h">
+      <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\Objects\RenderTarget.h">
-      <Filter>HighLevelRender\Obects</Filter>
+    <ClInclude Include="..\src\Render\Objects\Mesh.h">
+      <Filter>Render\Obects</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\HighLevelRender\Objects\Mesh.h">
-      <Filter>HighLevelRender\Obects</Filter>
+    <ClInclude Include="..\src\Render\Objects\RenderTarget.h">
+      <Filter>Render\Obects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Render\Objects\Shader.h">
+      <Filter>Render\Obects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Render\Objects\Texture.h">
+      <Filter>Render\Obects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Render\Objects\StructuredBuffer.h">
+      <Filter>Render\Obects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLSSBO.h">
+      <Filter>LowLevelRender\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -128,9 +137,6 @@
     <ClCompile Include="..\src\LowLevelRender\OpenGL\GLTexture.cpp">
       <Filter>LowLevelRender\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Render.cpp">
-      <Filter>HighLevelRender</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\GameObjects\GameObject.cpp">
       <Filter>GameObjects</Filter>
     </ClCompile>
@@ -147,17 +153,29 @@
     <ClCompile Include="..\src\ThirdParty\SimpleCpp\SimpleCpp.cpp">
       <Filter>ThirdParty\SimpleCpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Objects\Texture.cpp">
-      <Filter>HighLevelRender\Obects</Filter>
+    <ClCompile Include="..\src\LowLevelRender\DirectX\DX11StructuredBuffer.cpp">
+      <Filter>LowLevelRender\DirectX</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Objects\Shader.cpp">
-      <Filter>HighLevelRender\Obects</Filter>
+    <ClCompile Include="..\src\Render\Render.cpp">
+      <Filter>Render</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Objects\RenderTarget.cpp">
-      <Filter>HighLevelRender\Obects</Filter>
+    <ClCompile Include="..\src\Render\Objects\Mesh.cpp">
+      <Filter>Render\Obects</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Objects\Mesh.cpp">
-      <Filter>HighLevelRender\Obects</Filter>
+    <ClCompile Include="..\src\Render\Objects\RenderTarget.cpp">
+      <Filter>Render\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Render\Objects\Shader.cpp">
+      <Filter>Render\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Render\Objects\Texture.cpp">
+      <Filter>Render\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Render\Objects\StructuredBuffer.cpp">
+      <Filter>Render\Obects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\LowLevelRender\OpenGL\GLSSBO.cpp">
+      <Filter>LowLevelRender\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -188,9 +206,6 @@
     <Filter Include="LowLevelRender\DirectX">
       <UniqueIdentifier>{eefc4c78-49b5-4fb9-9fe0-2b1c8eab1dd7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HighLevelRender">
-      <UniqueIdentifier>{a3b7c9c2-d4ea-439d-97ef-cf1b84ebd28e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ThirdParty">
       <UniqueIdentifier>{dc8f4f7e-377e-4532-bc8b-08ad81edc416}</UniqueIdentifier>
     </Filter>
@@ -200,7 +215,10 @@
     <Filter Include="ThirdParty\SimpleCpp">
       <UniqueIdentifier>{29262a25-334f-438e-9015-34dd3cd24f9d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HighLevelRender\Obects">
+    <Filter Include="Render">
+      <UniqueIdentifier>{a3b7c9c2-d4ea-439d-97ef-cf1b84ebd28e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\Obects">
       <UniqueIdentifier>{3c82bcf8-ab20-4f5a-bce4-7a183b854bb9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -217,5 +235,9 @@
     <None Include="..\src\LowLevelRender\DirectX\states_pools.inl">
       <Filter>LowLevelRender\DirectX</Filter>
     </None>
+    <None Include="..\src\Shaders\font.shader">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

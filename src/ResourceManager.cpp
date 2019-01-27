@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "RenderTarget.h"
+#include "StructuredBuffer.h"
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "SceneManager.h"
@@ -439,7 +440,9 @@ ResourceManager::ResourceManager()
 	const char *pString = nullptr;
 	_pCore->GetSubSystem((ISubSystem**)&_pFilesystem, SUBSYSTEM_TYPE::FILESYSTEM);
 
-	_pCore->getConsoole()->addCommand("resources_list", std::bind(&ResourceManager::resources_list, this, std::placeholders::_1, std::placeholders::_2));
+	_pCore->consoleWindow()->addCommand("resources_list", std::bind(&ResourceManager::resources_list, this, std::placeholders::_1, std::placeholders::_2));
+
+	_pCore->AddProfilerCallback(this);
 }
 
 ResourceManager::~ResourceManager()
@@ -466,9 +469,19 @@ void ResourceManager::Init()
 	LOG("Resource Manager initalized");
 }
 
+size_t ResourceManager::sharedResources()
+{
+	return _sharedMeshes.size() + _sharedTextures.size() + _sharedTextFiles.size();
+}
+
+size_t ResourceManager::runtimeResources()
+{
+	return _runtimeTextures.size() + _runtimeMeshes.size() + _runtimeGameobjects.size() + _runtimeRenderTargets.size() + _runtimeStructuredBuffers.size();
+}
+
 API ResourceManager::resources_list(const char **args, uint argsNumber)
 {
-	LOG_FORMATTED("========= Runtime resources: %i =============", _runtimeTextures.size() + _runtimeMeshes.size() + _runtimeGameobjects.size());
+	LOG_FORMATTED("========= Runtime resources: %i =============", runtimeResources());
 
 	LOG_FORMATTED("Runtime Meshes: %i", _runtimeMeshes.size());
 	LOG_FORMATTED("Runtime Textures: %i", _runtimeTextures.size());
@@ -489,7 +502,7 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	PRINT_RUNTIME_RESOURCES("GameObjects:", _runtimeGameobjects);
 	PRINT_RUNTIME_RESOURCES("Shaders:", _runtimeShaders);
 
-	LOG_FORMATTED("========= Shared resources: %i =============", _sharedMeshes.size() + _sharedTextures.size() + _sharedTextFiles.size());
+	LOG_FORMATTED("========= Shared resources: %i =============", sharedResources());
 	LOG_FORMATTED("Shared Meshes: %i", _sharedMeshes.size());
 	LOG_FORMATTED("Shared Textures: %i", _sharedTextures.size());
 	LOG_FORMATTED("Shared Shader Texts: %i", _sharedTextFiles.size());
@@ -511,6 +524,24 @@ API ResourceManager::resources_list(const char **args, uint argsNumber)
 	PRINT_SHARED_RESOURCES("Shared TextFiles:", _sharedTextFiles, ITextFile);
 
 	return S_OK;
+}
+
+uint ResourceManager::getNumLines()
+{
+	return 4;
+}
+
+string ResourceManager::getString(uint i)
+{
+	switch (i)
+	{
+		case 0: return "===== Resource Manager =====";
+		case 1: return "Shared resources: " + std::to_string(sharedResources());
+		case 2: return "Runtime resources: " + std::to_string(runtimeResources());
+		case 3: return "";
+	};
+	assert(0);
+	return "";
 }
 
 string ResourceManager::constructFullPath(const string& file)
@@ -540,11 +571,14 @@ API ResourceManager::GetName(OUT const char **pName)
 
 API ResourceManager::Free()
 {
-	assert(_sharedMeshes.size() == 0 && "ResourceManager::Free: _sharedMeshes.size() != 0. You should release all meshes before free resource manager");
-	assert(_runtimeMeshes.size() == 0 && "ResourceManager::Free: _runtimeMeshes.size() != 0. You should release all meshes before free resource manager");
-	assert(_sharedTextures.size() == 0 && "ResourceManager::Free: _sharedTextures.size() != 0. You should release all textures before free resource manager");
-	assert(_runtimeTextures.size() == 0 && "ResourceManager::Free: _runtimeTextures.size() != 0. You should release all textures before free resource manager");
-	assert(_runtimeGameobjects.size() == 0 && "ResourceManager::Free: _runtimeGameobjects.size() != 0. You should release all gameobjects before free resource manager");
+	whiteTetxure->Release();
+	whiteTetxure = nullptr;
+
+	assert(_sharedMeshes.size() == 0 &&			"ResourceManager::Free: _sharedMeshes.size() != 0. You should release all meshes before free resource manager");
+	assert(_runtimeMeshes.size() == 0 &&		"ResourceManager::Free: _runtimeMeshes.size() != 0. You should release all meshes before free resource manager");
+	assert(_sharedTextures.size() == 0 &&		"ResourceManager::Free: _sharedTextures.size() != 0. You should release all textures before free resource manager");
+	assert(_runtimeTextures.size() == 0 &&		"ResourceManager::Free: _runtimeTextures.size() != 0. You should release all textures before free resource manager");
+	assert(_runtimeGameobjects.size() == 0 &&	"ResourceManager::Free: _runtimeGameobjects.size() != 0. You should release all gameobjects before free resource manager");
 
 	return S_OK;
 }
@@ -580,7 +614,7 @@ vector<IMesh*> ResourceManager::findLoadedMeshes(const char* pRelativeModelPath,
 		{
 			if (relativeModelPath == pRelativeModelPath && meshID == pMeshID)
 				out.push_back(it->second);
-		}			
+		}
 	}
 
 	return std::move(out);
@@ -612,11 +646,11 @@ const char* ResourceManager::loadTextFile(const char *pShaderName)
 	return tmp;
 }
 
-API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
+API ResourceManager::LoadModel(OUT IModel **pModel, const char *path)
 {
-	assert(is_relative(pModelPath) && "ResourceManager::LoadModel(): fileName must be relative");
+	assert(is_relative(path) && "ResourceManager::LoadModel(): fileName must be relative");
 
-	auto fullPath = constructFullPath(pModelPath);
+	auto fullPath = constructFullPath(path);
 
 	if (!errorIfPathNotExist(fullPath))
 	{
@@ -624,11 +658,11 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 		return E_FAIL;
 	}
 
-	vector<IMesh*> loaded_meshes = findLoadedMeshes(pModelPath, nullptr);
+	vector<IMesh*> loaded_meshes = findLoadedMeshes(path, nullptr);
 
 	IModel *model = nullptr;
 
-	const string file_ext = fileExtension(pModelPath);
+	const string file_ext = fileExtension(path);
 
 	if (loaded_meshes.size())
 	{
@@ -648,7 +682,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 #ifdef USE_FBX
 	if (file_ext == "fbx")
 	{
-		loaded_meshes = _FBX_load_meshes(fullPath.c_str(), pModelPath);
+		loaded_meshes = _FBX_load_meshes(fullPath.c_str(), path);
 		for (IMesh *m : loaded_meshes)
 		{
 			const char *meshName;
@@ -681,11 +715,11 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *pModelPath)
 	return S_OK;
 }
 
-API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
+API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 {
 	string relativeModelPath;
 	string meshID;
-	split_mesh_path(pMeshPath, relativeModelPath, meshID);
+	split_mesh_path(path, relativeModelPath, meshID);
 
 	vector<IMesh*> loaded_meshes = findLoadedMeshes(relativeModelPath.c_str(), meshID.c_str());
 
@@ -695,21 +729,18 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		return S_OK;
 	}
 
-	// check if standard mesh
-	// then create new one
-
 	ICoreMesh *stdCoreMesh = nullptr;
 
-	if (!strcmp(pMeshPath, "std#plane"))
+	if (!strcmp(path, "std#plane"))
 	{
-		float vertexPlane[16] =
+		float vertex[24] =
 		{
-			-1.0f, 1.0f, 0.0f, 1.0f,
-			 1.0f,-1.0f, 0.0f, 1.0f,
-			 1.0f, 1.0f, 0.0f, 1.0f,
-			-1.0f,-1.0f, 0.0f, 1.0f
+			-1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 1.0f,
+			 1.0f,-1.0f, 0.0f, 1.0f,	1.0f, 0.0f,
+			 1.0f, 1.0f, 0.0f, 1.0f,	1.0f, 1.0f,
+			-1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f
 		};
-
+		
 		unsigned short indexPlane[6]
 		{
 			0, 2, 1,
@@ -717,19 +748,21 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		};
 
 		MeshDataDesc desc;
-		desc.pData = reinterpret_cast<uint8*>(vertexPlane);
+		desc.pData = reinterpret_cast<uint8*>(vertex);
 		desc.numberOfVertex = 4;
-		desc.positionStride = 16;
+		desc.positionStride = 24;
+		desc.texCoordPresented = true;
+		desc.texCoordOffset = 16;
+		desc.texCoordStride = 24;
 
 		MeshIndexDesc indexDesc;
 		indexDesc.pData = reinterpret_cast<uint8*>(indexPlane);
 		indexDesc.number = 6;
 		indexDesc.format = MESH_INDEX_FORMAT::INT16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES)))
-			return E_ABORT;
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES));
 
-	} else if (!strcmp(pMeshPath, "std#axes"))
+	} else if (!strcmp(path, "std#axes"))
 	{
 		float vertexAxes[] = {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 
@@ -740,10 +773,9 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		descAxes.numberOfVertex = 2;
 		descAxes.positionStride = 16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-			return E_ABORT;
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descAxes, &indexEmpty, VERTEX_TOPOLOGY::LINES));
 
-	} else if (!strcmp(pMeshPath, "std#axes_arrows"))
+	} else if (!strcmp(path, "std#axes_arrows"))
 	{
 		// Layout: position, color, position, color, ...
 		const float arrowRadius = 0.052f;
@@ -787,10 +819,9 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		descArrows.numberOfVertex = numberOfVeretex;
 		descArrows.positionStride = 16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES)))
-			return E_ABORT;
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES));
 
-	} else if (!strcmp(pMeshPath, "std#grid"))
+	} else if (!strcmp(path, "std#grid"))
 	{
 		const float linesInterval = 5.0f;
 		const int linesNumber = 31;
@@ -812,9 +843,9 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		descGrid.numberOfVertex = 4 * linesNumber;
 		descGrid.positionStride = 16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-			return E_ABORT;
-	}else if (!strcmp(pMeshPath, "std#quad_lines"))
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES));
+	}
+	else if (!strcmp(path, "std#quad_lines"))
 	{
 		vec4 vertex[8];
 		vertex[0] = vec4(0.0f, 0.0f, 0.0f, 1.0f); vertex[1] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -829,19 +860,18 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		descGrid.numberOfVertex = 8;
 		descGrid.positionStride = 16;
 
-		if (FAILED(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES)))
-			return E_ABORT;
+		ThrowIfFailed(_pCoreRender->CreateMesh((ICoreMesh**)&stdCoreMesh, &descGrid, &indexEmpty, VERTEX_TOPOLOGY::LINES));
 	}
 
 	if (stdCoreMesh)
 	{
-		Mesh *m = new Mesh(stdCoreMesh, pMeshPath);
+		Mesh *m = new Mesh(stdCoreMesh, path);
 
 		#ifdef PROFILE_RESOURCES
 			DEBUG_LOG_FORMATTED("ResourceManager::LoadMesh() new Mesh %#010x", m);
 		#endif
 		*pMesh = m;
-		_sharedMeshes.emplace(pMeshPath, m);
+		_sharedMeshes.emplace(path, m);
 		return S_OK;
 	}
 
@@ -857,8 +887,8 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 		//	return E_FAIL;
 		//}
 
-		//const string file_ext = ToLowerCase(fs::path(relativeModelPath).extension().string().erase(0, 1));
-		//if (file_ext == "fbx")
+		//const string ext = ToLowerCase(fs::path(relativeModelPath).extension().string().erase(0, 1));
+		//if (ext == "fbx")
 		//{
 		//	loaded_meshes = _FBXLoadMeshes(fullPath.c_str(), relativeModelPath.c_str());
 
@@ -885,23 +915,23 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *pMeshPath)
 
 	#endif
 		//{
-		//	LOG_FATAL_FORMATTED("ResourceManager::LoadMesh unsupported format \"%s\"", file_ext.c_str());
+		//	LOG_FATAL_FORMATTED("ResourceManager::LoadMesh unsupported format \"%s\"", ext.c_str());
 		//	return E_FAIL;
 		//}
 
 	return S_OK;
 }
 
-API ResourceManager::LoadTextFile(OUT ITextFile **pShader, const char *pShaderName)
+API ResourceManager::LoadTextFile(OUT ITextFile **pShader, const char *path)
 {
-	const char *text = loadTextFile(pShaderName);
+	const char *text = loadTextFile(path);
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::LoadTextFile() new TextFile");
 	#endif
 
-	TextFile *textFile = new TextFile(text, pShaderName);
-	_sharedTextFiles.emplace(pShaderName, textFile);
+	TextFile *textFile = new TextFile(text, path);
+	_sharedTextFiles.emplace(path, textFile);
 
 	*pShader = textFile;
 
@@ -1237,16 +1267,7 @@ TEXTURE_FORMAT DDSToEngFormat(const DDS_PIXELFORMAT& ddpf)
 	return TEXTURE_FORMAT::UNKNOWN;
 }
 
-ICoreTexture* ResourceManager::loadWhiteTexture()
-{
-	uint8 data[4] = { 255u, 255u, 255u, 255u };
-	TEXTURE_CREATE_FLAGS flags{};
-	ICoreTexture *tex;
-	assert(_pCoreRender->CreateTexture(&tex, data, 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, flags, false) == S_OK);
-	return tex;
-}
-
-ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_FLAGS flags)
+ICoreTexture* ResourceManager::loadDDS(const char *path, TEXTURE_CREATE_FLAGS flags)
 {
 	IFile *pFile = nullptr;
 	uint fileSize = 0;
@@ -1254,7 +1275,7 @@ ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_
 	const char *pString;
 	_pCore->GetDataDir(&pString);
 	string dataDir = string(pString);
-	string fullPath = dataDir + '\\' + pTexturePath;
+	string fullPath = dataDir + '\\' + path;
 
 	if (!errorIfPathNotExist(fullPath))
 		return nullptr;
@@ -1304,22 +1325,46 @@ ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_
 		return nullptr;
 	}
 
+	unique_ptr<uint8[]> imageDataRempped;
+
 	// format
 	TEXTURE_FORMAT format = DDSToEngFormat(header->ddspf);
+
+	// Special case: RGB -> RGBA
+	if ((header->ddspf.flags & DDS_RGB) && header->ddspf.RGBBitCount == 24)
+	{
+		assert(imageSize % 3 == 0);
+		size_t alphaChannelSize = imageSize / 3;
+		size_t elements = header->width * header->height;
+
+		imageDataRempped = std::move(std::make_unique<uint8[]>(imageSize + alphaChannelSize));
+
+		uint8* ptr_src = imageData;
+		uint8* ptr_dst = imageDataRempped.get();
+
+		for (size_t i = 0u; i < elements; ++i)
+		{
+			memcpy(ptr_dst, ptr_dst, 3);
+			memset((ptr_dst + 3), 255, 1);
+
+			ptr_dst += 4;
+			ptr_src += 3;
+		}
+
+		imageData = imageDataRempped.get();
+		format = TEXTURE_FORMAT::RGBA8;
+	}
+
 	if (format == TEXTURE_FORMAT::UNKNOWN)
 	{
 		LOG_WARNING("ResourceManager::loadDDS(): format not supported");
 		return nullptr;
 	}
-	// TODO conversions:
-	// BGRA -> RGBA
-	// RGB -> RGBA
 
 	const TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D;
-
 	bool mipmapsPresented = header->mipMapCount > 1;
-
 	ICoreTexture *tex = nullptr;
+
 	if (FAILED(_pCoreRender->CreateTexture(&tex, imageData, header->width, header->height, type, format, flags, mipmapsPresented)))
 	{
 		LOG_WARNING("ResourceManager::loadDDS(): failed to create texture");
@@ -1329,55 +1374,66 @@ ICoreTexture* ResourceManager::loadDDS(const char *pTexturePath, TEXTURE_CREATE_
 	return tex;
 }
 
-API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *pTexturePath, TEXTURE_CREATE_FLAGS flags)
+API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags)
 {
 	ICoreTexture *coreTex;
 
-	if (!strcmp(pTexturePath, "std#white_texture"))
+	if (!strcmp(path, "std#white_texture"))
 	{
-		coreTex = loadWhiteTexture();
+		if (!whiteTetxure)
+		{
+			uint8 data[4] = { 255u, 255u, 255u, 255u };
+			ThrowIfFailed(_pCoreRender->CreateTexture(&coreTex, data, 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS(), false));
+
+			ITexture *tex = new Texture(coreTex, path);
+
+			#ifdef PROFILE_RESOURCES
+				DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
+			#endif
+
+			_sharedTextures.emplace(path, tex);
+
+			*pTexture = tex;
+			whiteTetxure = tex;
+			whiteTetxure->AddRef();
+
+			return S_OK;
+		}
 	}
 	else
 	{
-		if (pTexturePath == NULL || strlen(pTexturePath) == 0)
+		if (path == NULL || strlen(path) == 0 || !errorIfPathNotExist(path))
 		{
-			*pTexture = getRender()->WhiteTexture();
+			*pTexture = nullptr;
 			return E_INVALIDARG;
 		}
 
-		if (!errorIfPathNotExist(pTexturePath))
+		const string ext = fileExtension(path);
+
+		if (ext != "dds")
 		{
-			*pTexture = getRender()->WhiteTexture();
+			LOG_WARNING_FORMATTED("Extension %s is not supported", ext.c_str());
+			*pTexture = nullptr;
 			return E_INVALIDARG;
 		}
 
-		const string file_ext = fileExtension(pTexturePath);
+		coreTex = loadDDS(path, flags);
 
-		if (file_ext == "dds")
+		if (!coreTex)
 		{
-			coreTex = loadDDS(pTexturePath, flags);
-			if (!coreTex)
-			{
-				LOG_WARNING("ResourceManager::LoadTexture(): some error occured");
-				*pTexture = getRender()->WhiteTexture();
-				return E_INVALIDARG;
-			}
-		}
-		else
-		{
-			LOG_WARNING_FORMATTED("Extension %s is not supported", file_ext.c_str());
-			*pTexture = getRender()->WhiteTexture();
+			LOG_FATAL("ResourceManager::LoadTexture(): some error occured");
+			*pTexture = nullptr;
 			return E_INVALIDARG;
 		}
 	}
 
-	ITexture *tex = new Texture(coreTex, pTexturePath);
+	ITexture *tex = new Texture(coreTex, path);
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
 	#endif
 
-	_sharedTextures.emplace(pTexturePath, tex);
+	_sharedTextures.emplace(path, tex);
 	*pTexture = tex;
 
 	return S_OK;
@@ -1524,6 +1580,31 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 
 	_runtimeRenderTargets.emplace(rt);
 	*pRenderTargetOut = rt;
+
+	return S_OK;
+}
+
+API ResourceManager::CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint bytes, uint elementSize)
+{
+	ICoreStructuredBuffer *coreStructuredBuffer = nullptr;
+
+	bool created = SUCCEEDED(_pCoreRender->CreateStructuredBuffer(&coreStructuredBuffer, bytes, elementSize)) && coreStructuredBuffer != nullptr;
+
+	if (!created)
+	{
+		*pBufOut = nullptr;
+		LOG_WARNING("ResourceManager::CreateStructuredBuffer(): failed to create constnt buffer");
+		return E_FAIL;
+	}
+
+	StructuredBuffer *b = new StructuredBuffer(coreStructuredBuffer);
+
+#ifdef PROFILE_RESOURCES
+	DEBUG_LOG_FORMATTED("ResourceManager::CreateStructuredBuffer() new StructuredBuffer %#010x", b);
+#endif
+
+	_runtimeStructuredBuffers.emplace(b);
+	*pBufOut = b;
 
 	return S_OK;
 }

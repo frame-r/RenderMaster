@@ -31,6 +31,13 @@
 
 #define TEXTURE(SLOT, UV) texture(_texture_ ## SLOT, UV)
 
+// Structured Buffer
+#define STRUCTURED_BUFFER_IN(SLOT, NAME, TYPE)\
+	layout(std430, binding=SLOT) readonly buffer ssbo_ ## NUM { TYPE NAME[]; };
+
+#define INSTANCE_IN
+#define INSTANCE gl_InstanceID
+
 // Vertex in/out
 #define IN_ATTRIBUTE(NAME) NAME
 #define INIT_POSITION

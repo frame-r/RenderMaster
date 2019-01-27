@@ -11,13 +11,13 @@ RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(Model, _pCore, RemoveRuntimeGameObject)
 Model::Model(const vector<IMesh*>& meshes) 
 {
 	for (IMesh *m : meshes)
-		_meshes.push_back(WRL::ComPtr<IMesh>(m));
+		_meshes.push_back(MeshPtr(m));
 	//_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
 }
 
 API Model::GetMesh(OUT IMesh **pMesh, uint idx)
 {
-	WRL::ComPtr<IMesh>& m = _meshes[idx];
+	MeshPtr& m = _meshes[idx];
 	*pMesh = m.Get();
 	return S_OK;
 }

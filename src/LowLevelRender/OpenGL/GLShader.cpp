@@ -34,21 +34,21 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 
 		glGetActiveUniformBlockiv(_programID, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indicesArray);
 
-		vector<UBO::UBOParameter> parametersUBO;
+		vector<UBO::Parameter> parametersUBO;
 
 		// active UBO parameters
 		for (int j = 0; j < numIndices; j++)
 		{
 			GLuint index = (GLuint)indicesArray[j];
 
-			uint bytesVariable;
+			size_t bytesVariable;
 
 			GLint elementsNum;
 			GLenum typeVariable;
 			char nameVariable[1024];
 			glGetActiveUniform(_programID, index, sizeof(nameVariable), NULL, &elementsNum, &typeVariable, nameVariable);
 			
-			GLint offsetVariable;						
+			GLint offsetVariable;
 			glGetActiveUniformsiv(_programID, 1, &index, GL_UNIFORM_OFFSET, &offsetVariable);
 
 			char *s = strchr(nameVariable, '[');
@@ -84,7 +84,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 			}
 
 
-			UBO::UBOParameter p;
+			UBO::Parameter p;
 			p.name = nameVariable;
 			p.bytes = bytesVariable;
 			p.offset = offsetVariable;
@@ -95,7 +95,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 
 		// sort by offset for pretty view
 		#ifdef _DEBUG
-			std::sort(parametersUBO.begin(), parametersUBO.end(), [](const UBO::UBOParameter& a, const UBO::UBOParameter& b) -> bool
+			std::sort(parametersUBO.begin(), parametersUBO.end(), [](const UBO::Parameter& a, const UBO::Parameter& b) -> bool
 			{ 
 				return a.offset < b.offset; 
 			});
@@ -137,7 +137,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 		{
 			_bufferIndicies.push_back(indexFound);
 
-			for (int i = 0; i < parametersUBO.size(); i++)
+			for (size_t i = 0; i < parametersUBO.size(); i++)
 			{
 				_parameters[parametersUBO[i].name] = {(int)indexFound, (int)i};
 			}
@@ -158,7 +158,7 @@ GLShader::GLShader(GLuint programID, GLuint vertID, GLuint geomID, GLuint fragID
 				_parameters[parametersUBO[i].name] = {(int)UBOpool.size(), (int)i};
 			}
 
-			UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));			
+			UBOpool.emplace_back(std::move(UBO(id, bytesUBO, nameUBO, parametersUBO)));
 		}
 	}
 }
@@ -186,7 +186,7 @@ void GLShader::setParameter(const char *name, const void *data)
 		return;
 
 	UBO &ubo = UBOpool[p.bufferIndex];
-	UBO::UBOParameter &pUBO = ubo.parameters[p.parameterIndex];
+	UBO::Parameter &pUBO = ubo.parameters[p.parameterIndex];
 	uint8 *pointer = ubo.data.get() + pUBO.offset;
 	if (memcmp(pointer, data, pUBO.bytes))
 	{
@@ -201,7 +201,7 @@ void GLShader::bind()
 	for (int i = 0; i < _bufferIndicies.size(); i++)
 	{
 		UBO &ubo = UBOpool[_bufferIndicies[i]];
-		glBindBufferBase(GL_UNIFORM_BUFFER, i, ubo._ID);
+		glBindBufferBase(GL_UNIFORM_BUFFER, i, ubo.ID);
 		glUniformBlockBinding(_programID, i, i);
 	}
 }
@@ -237,7 +237,7 @@ API GLShader::FlushParameters()
 		UBO &ubo = UBOpool[idx];
 		if (ubo.needFlush)
 		{
-			glNamedBufferSubData(ubo._ID, 0, ubo.bytes, ubo.data.get());
+			glNamedBufferSubData(ubo.ID, 0, ubo.bytes, ubo.data.get());
 			ubo.needFlush = false;
 		}
 	}

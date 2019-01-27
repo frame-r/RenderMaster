@@ -10,15 +10,14 @@ class GLShader : public ICoreShader
 
 	// all buffers need to bind for work with shader
 	// slot -> index of UBO in UBOpool array
-	std::vector<size_t> _bufferIndicies; 
+	std::vector<size_t> _bufferIndicies;
 
 	struct Parameter
 	{
 		int bufferIndex = -1; // index of UBO in UBOpool
 		int parameterIndex = -1; // index in UBO::parameters
 	};
-	std::unordered_map<string, Parameter> _parameters; // all shader parameters
-	
+	std::unordered_map<string, Parameter> _parameters; // all shader parameters	
 
 	void setParameter(const char *name, const void *data);
 

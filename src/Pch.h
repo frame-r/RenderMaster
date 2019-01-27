@@ -28,11 +28,15 @@
 #include <Unknwn.h>
 #include <initguid.h>
 
+#include "Engine.h"
+
 #include <GLEW\glew.h>
 #include <GLEW\wglew.h>
 
+#ifdef DIRECTX_11_INCLUDED
 #include <d3d11_2.h>
 #include <d3dcompiler.h>
 #include <wrl/client.h>
+#endif
 
 #include "Tree.h"

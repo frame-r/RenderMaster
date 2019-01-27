@@ -9,10 +9,15 @@
 // print all resources allocation and deallocation 
 //#define PROFILE_RESOURCES
 
+#define DIRECTX_11_INCLUDED
+
 #include "VectorMath.h"
 
+#ifdef _WIN32
 #include <windows.h>
 #include <Unknwn.h>
+#include <wrl/client.h>
+#endif
 
 #define API HRESULT __stdcall
 
@@ -65,6 +70,7 @@ namespace RENDER_MASTER
 	class IRenderTarget;
 	class IMesh;
 	class IConstantBuffer;
+	class IStructuredBuffer;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
 
@@ -382,7 +388,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ICoreRenderTarget() = default;
-
 		virtual API SetColorTexture(uint slot, ITexture *tex) = 0;
 		virtual API SetDepthTexture(ITexture *tex) = 0;
 		virtual API UnbindColorTexture(uint slot) = 0;
@@ -393,7 +398,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ICoreMesh() = default;
-
 		virtual API GetNumberOfVertex(OUT uint *number) = 0;
 		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
 		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
@@ -402,13 +406,21 @@ namespace RENDER_MASTER
 	class ICoreShader
 	{
 	public:
-		virtual ~ICoreShader(){}
-		
+		virtual ~ICoreShader() = default;
 		virtual API SetFloatParameter(const char* name, float value) = 0;
 		virtual API SetVec4Parameter(const char* name, const vec4 *value) = 0;
 		virtual API SetMat4Parameter(const char* name, const mat4 *value) = 0;
 		virtual API SetUintParameter(const char* name, uint value) = 0;
-		virtual API FlushParameters() = 0;		
+		virtual API FlushParameters() = 0;
+	};
+
+	class ICoreStructuredBuffer
+	{
+	public:
+		virtual ~ICoreStructuredBuffer() = default;
+		virtual API SetData(uint8 *data, size_t size) = 0;
+		virtual API GetSize(OUT uint *size) = 0;
+		virtual API GetElementSize(OUT uint *size) = 0;
 	};
 
 	enum class BLEND_FACTOR
@@ -440,16 +452,18 @@ namespace RENDER_MASTER
 		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
 		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
 		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
+		virtual API CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize) = 0;
 
 		virtual API PushStates() = 0;
-		virtual API PopStates() = 0;		
+		virtual API PopStates() = 0;
 		virtual API BindTexture(uint slot, ITexture* texture) = 0;
 		virtual API UnbindAllTextures() = 0;
 		virtual API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) = 0;
 		virtual API RestoreDefaultRenderTarget() = 0;
 		virtual API SetShader(IShader *pShader) = 0;
 		virtual API SetMesh(IMesh* mesh) = 0;
-		virtual API Draw(IMesh *mesh) = 0;
+		virtual API SetStructuredBufer(uint slot, IStructuredBuffer* buffer) = 0;
+		virtual API Draw(IMesh *mesh, uint instances = 1u) = 0;
 		virtual API SetDepthTest(int enabled) = 0;
 		virtual API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) = 0;
 		virtual API SetViewport(uint w, uint h) = 0;
@@ -469,6 +483,7 @@ namespace RENDER_MASTER
 		FORWARD = 0,
 		ID,
 		ENGINE_POST,
+		FONT,
 		PASS_NUMBER
 	};
 	
@@ -489,17 +504,16 @@ namespace RENDER_MASTER
 		}
 	};
 
-
 	class IRender : public ISubSystem
 	{
 	public:
 		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
 		virtual API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) = 0;
+		virtual API RenderPassGUI() = 0;
 		virtual API GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) = 0;
 		virtual API ReleaseRenderTexture2D(ITexture *texIn) = 0;
 		virtual API ShadersReload() = 0;
 	};
-
 
 	// Axis aligned bound box
 	// All values specified in local game object coordinates
@@ -521,7 +535,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IGameObject() = default;
-
 		virtual API GetID(OUT uint *id) = 0;
 		virtual API SetID(uint *id) = 0;
 		virtual API GetName(OUT const char **pName) = 0;
@@ -604,7 +617,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ITextFile() = default;
-
 		virtual API GetText(OUT const char **textOut) = 0;
 		virtual API SetText(const char *textIn) = 0;
 
@@ -615,7 +627,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IShader() = default;
-
 		virtual API GetCoreShader(ICoreShader **shaderOut) = 0;
 		virtual API GetVert(OUT const char **textOut) = 0;
 		virtual API GetGeom(OUT const char **textOut) = 0;
@@ -626,6 +637,15 @@ namespace RENDER_MASTER
 		virtual API SetUintParameter(const char* name, uint value) = 0;
 		virtual API FlushParameters() = 0;
 
+		RUNTIME_ONLY_RESOURCE_INTERFACE
+	};
+
+	class IStructuredBuffer : public IUnknown
+	{
+	public:
+		virtual ~IStructuredBuffer() = default;
+		virtual API GetCoreBuffer(ICoreStructuredBuffer **bufOut) = 0;
+		virtual API SetData(uint8 *data, size_t size) = 0;
 
 		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
@@ -662,14 +682,15 @@ namespace RENDER_MASTER
 	class IResourceManager : public ISubSystem
 	{
 	public:
-		virtual API LoadModel(OUT IModel **pModel, const char *pModelPath) = 0;
-		virtual API LoadMesh(OUT IMesh **pMesh, const char *pMeshPath) = 0;
-		virtual API LoadTexture(OUT ITexture **pTexture, const char *pMeshPath, TEXTURE_CREATE_FLAGS flags) = 0;
-		virtual API LoadTextFile(OUT ITextFile **pShader, const char *pShaderName) = 0;
+		virtual API LoadModel(OUT IModel **pModel, const char *path) = 0;
+		virtual API LoadMesh(OUT IMesh **pMesh, const char *path) = 0;
+		virtual API LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) = 0;
+		virtual API LoadTextFile(OUT ITextFile **pShader, const char *path) = 0;
 
 		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
 		virtual API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) = 0;
+		virtual API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint size, uint elementSize) = 0;
 		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
 		virtual API CreateModel(OUT IModel **pModel) = 0;
 		virtual API CreateCamera(OUT ICamera **pCamera) = 0;
@@ -695,7 +716,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IFile() = default;
-
 		virtual API Read(OUT uint8 *pMem, uint bytes) = 0;
 		virtual API ReadStr(OUT char *pStr, OUT uint *str_bytes) = 0;
 		virtual API IsEndOfFile(OUT int *eof) = 0;
@@ -870,7 +890,6 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IConsoleCommand() = default;
-
 		virtual API GetName(OUT const char **pName) = 0;
 		virtual API Execute(const char **arguments, uint argumentsNum) = 0;
 	};
@@ -980,5 +999,15 @@ namespace RENDER_MASTER
 		//Shuting down COM;
 		CoUninitialize();
 	}
+
+#ifdef _WIN32
+	using TexturePtr = Microsoft::WRL::ComPtr<ITexture>;
+	using MeshPtr = Microsoft::WRL::ComPtr<IMesh>;
+	using ShaderPtr = Microsoft::WRL::ComPtr<IShader>;
+	using RenderTargetPtr = Microsoft::WRL::ComPtr<IRenderTarget>;
+	using StructuredBufferPtr = Microsoft::WRL::ComPtr<IStructuredBuffer>;
+
+	using ModelPtr = Microsoft::WRL::ComPtr<IModel>;
+#endif
 
 }

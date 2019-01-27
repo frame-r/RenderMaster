@@ -12,6 +12,26 @@ using std::vector;
 using std::string;
 
 #define SHADER_DIR "src\\shaders"
+#define MAX_TEXTURE_SLOTS 16
+#define MAX_RENDER_TARGETS 8
+
+#ifdef DIRECTX_11_INCLUDED
+inline void ThrowIfFailed(HRESULT hr)
+{
+	if (FAILED(hr))
+	{
+		// Set a breakpoint on this line to catch DirectX API errors
+		throw std::exception();
+	}
+}
+#endif
+
+class IProfilerCallback
+{
+public:
+	virtual uint getNumLines() = 0;
+	virtual string getString(uint i) = 0;
+};
 
 /////////////////////
 // Events
@@ -250,6 +270,7 @@ mat4 perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar);
 int getRandomInt();
 
 // subsystem
+
 inline IResourceManager *getResourceManager(ICore *core)
 {
 	IResourceManager *ret;

@@ -7,14 +7,14 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-extern vector<ConstantBuffer> ConstantBufferPool;
-
-ID3D11DeviceContext* getContext(Core *core)
+static ID3D11DeviceContext* getContext(Core *core)
 {
 	ICoreRender *coreRender = getCoreRender(_pCore);
 	DX11CoreRender *dxRender = static_cast<DX11CoreRender*>(coreRender);
 	return dxRender->getContext();
 }
+
+extern vector<ConstantBuffer> ConstantBufferPool;
 
 void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 {
@@ -33,7 +33,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 
 	// each Constant Buffer
 	for(unsigned int i = 0; i < shaderDesc.ConstantBuffers; ++i)
-	{			
+	{
 		ID3D11ShaderReflectionConstantBuffer* buffer = reflection->GetConstantBufferByIndex(i);
 
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
@@ -49,7 +49,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 				registerIndex = ibdesc.BindPoint;
 		}
 
-		vector<ConstantBuffer::ConstantBufferParameter> cbParameters;
+		vector<ConstantBuffer::Parameter> cbParameters;
 
 		// each parameters
 		for (uint j = 0; j < bufferDesc.Variables; j++)
@@ -60,11 +60,11 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 
 			uint bytesVariable = varDesc.Size;
 
-			ConstantBuffer::ConstantBufferParameter p;
+			ConstantBuffer::Parameter p;
 			p.name = varDesc.Name;
 			p.bytes = varDesc.Size;
 			p.offset = varDesc.StartOffset;
-			p.elements = 1; // TODO: arrays		
+			p.elements = 1; // TODO: arrays
 
 			cbParameters.push_back(p);
 		}
@@ -101,18 +101,18 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			}
 		}
 
-		vector<size_t> *_b;
+		vector<size_t> *buf;
 
 		switch (type)
 		{
-			case SHADER_TYPE::SHADER_VERTEX:	_b = &v._bufferIndicies; break;
-			case SHADER_TYPE::SHADER_GEOMETRY:	_b = &g._bufferIndicies; break;
-			case SHADER_TYPE::SHADER_FRAGMENT:	_b = &f._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_VERTEX:	buf = &v._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_GEOMETRY:	buf = &g._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_FRAGMENT:	buf = &f._bufferIndicies; break;
 		};
 
 		if (indexFound != -1) // buffer found
 		{
-			_b->push_back(indexFound);
+			buf->push_back(indexFound);
 
 			for (int i = 0; i < cbParameters.size(); i++)
 			{
@@ -127,24 +127,25 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			if (size % 16 != 0)
 				size = 16 * ((size / 16) + 1);
 		
-			D3D11_BUFFER_DESC bd{};
-			bd.Usage = D3D11_USAGE_DEFAULT;
-			bd.ByteWidth = size;
-			bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			bd.CPUAccessFlags = 0;
+			D3D11_BUFFER_DESC desc{};
+			desc.Usage = D3D11_USAGE_DYNAMIC;
+			desc.ByteWidth = size;
+			desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 			ICoreRender *coreRender = getCoreRender(_pCore);
 			DX11CoreRender *dxRender = static_cast<DX11CoreRender*>(coreRender);
-			auto hr = dxRender->getDevice()->CreateBuffer(&bd, nullptr, dxBuffer.GetAddressOf());		
 
-			_b->push_back(ConstantBufferPool.size());
+			ThrowIfFailed(dxRender->getDevice()->CreateBuffer(&desc, nullptr, dxBuffer.GetAddressOf()));
+
+			buf->push_back(ConstantBufferPool.size());
 
 			for (int k = 0; k < cbParameters.size(); k++)
 			{
 				_parameters[cbParameters[k].name] = {(int)ConstantBufferPool.size(), (int)k};
 			}
 
-			ConstantBufferPool.emplace_back(std::move(ConstantBuffer(dxBuffer, size, bufferDesc.Name, cbParameters)));			
+			ConstantBufferPool.emplace_back(std::move(ConstantBuffer(dxBuffer, size, bufferDesc.Name, cbParameters)));
 		}
 	}
 }
@@ -182,7 +183,7 @@ void DX11Shader::bind()
 			for (size_t i = 0; i < IDX_VEC.size(); i++) \
 			{ \
 				ConstantBuffer& cb = ConstantBufferPool[IDX_VEC[i]]; \
-				pointers[i] = cb.dxBuffer.Get(); \
+				pointers[i] = cb.buffer.Get(); \
 			} \
 			ctx->PREFIX##SetConstantBuffers(0, (uint)IDX_VEC.size(), pointers); \
 		}
@@ -209,7 +210,7 @@ void DX11Shader::setParameter(const char *name, const void *data)
 		return;
 
 	ConstantBuffer &cb = ConstantBufferPool[p.bufferIndex];
-	ConstantBuffer::ConstantBufferParameter &pCB = cb.parameters[p.parameterIndex];
+	ConstantBuffer::Parameter &pCB = cb.parameters[p.parameterIndex];
 	uint8 *pointer = cb.data.get() + pCB.offset;
 	if (memcmp(pointer, data, pCB.bytes))
 	{
@@ -253,7 +254,13 @@ API DX11Shader::FlushParameters()
 			ConstantBuffer& cb = ConstantBufferPool[idx];
 			if (cb.needFlush)
 			{
-				ctx->UpdateSubresource(cb.dxBuffer.Get(), 0, nullptr, cb.data.get(), 0, 0);
+				D3D11_MAPPED_SUBRESOURCE mappedResource{};
+				ctx->Map(cb.buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+
+				memcpy(mappedResource.pData, cb.data.get(), cb.bytes);
+
+				ctx->Unmap(cb.buffer.Get(), 0);
+
 				cb.needFlush = false;
 			}
 		}

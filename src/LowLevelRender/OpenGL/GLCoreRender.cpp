@@ -5,6 +5,7 @@
 #include "GLShader.h"
 #include "GLMesh.h"
 #include "GLTexture.h"
+#include "GLSSBO.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -12,8 +13,6 @@ DEFINE_LOG_HELPERS(_pCore)
 
 #define TEXTURE_NAME "_texture_"
 #define DONT_CHECK_GL_ERRORS 1
-
-const static unsigned MAX_TEXTURE_SLOTS = 16;
 
 vector<UBO> UBOpool;
 
@@ -72,7 +71,7 @@ void CHECK_GL_ERRORS()
 #endif
 }
 
-bool GLCoreRender::check_shader_errors(int id, GLenum constant)
+bool GLCoreRender::checkShaderErrors(int id, GLenum constant)
 {
 	int status = GL_TRUE;
 
@@ -107,20 +106,20 @@ bool GLCoreRender::check_shader_errors(int id, GLenum constant)
 	return true;
 }
 
-bool GLCoreRender::create_shader(GLuint& id, GLenum type, const char* pText, GLuint programID)
+bool GLCoreRender::createShader(GLuint& id, GLenum type, const char* pText, GLuint programID)
 {
 	GLuint _fileID = glCreateShader(type);
 	glShaderSource(_fileID, 1, (const GLchar **)&pText, nullptr);
 	glCompileShader(_fileID);
 
-	if (!check_shader_errors(_fileID, GL_COMPILE_STATUS))
+	if (!checkShaderErrors(_fileID, GL_COMPILE_STATUS))
 	{
 		glDeleteShader(_fileID);
 		return false;
 	}
 	glAttachShader(programID, _fileID);
 	glLinkProgram(programID);
-	if (!check_shader_errors(programID, GL_LINK_STATUS))
+	if (!checkShaderErrors(programID, GL_LINK_STATUS))
 		return false;
 
 	id = _fileID;
@@ -164,15 +163,15 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 
 	if (!msaa)
 	{
-		_pixel_format = ChoosePixelFormat(_hdc, &pfd);
+		_pixelFormat = ChoosePixelFormat(_hdc, &pfd);
 
-		if (_pixel_format == 0)
+		if (_pixelFormat == 0)
 		{
 			LOG_FATAL("Wrong ChoosePixelFormat() result");
 			return E_FAIL;
 		}
 
-		if (!SetPixelFormat(_hdc, _pixel_format, &pfd))
+		if (!SetPixelFormat(_hdc, _pixelFormat, &pfd))
 		{
 			LOG_FATAL("Wrong SetPixelFormat() result");
 			return E_FAIL;
@@ -238,13 +237,13 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 			};
 
 			int numFormats = 0;
-			int chosen = wglChoosePixelFormatARB(_hdc, iPixelFormatAttribList, NULL, 1, &_pixel_format, (UINT*)&numFormats);
+			int chosen = wglChoosePixelFormatARB(_hdc, iPixelFormatAttribList, NULL, 1, &_pixelFormat, (UINT*)&numFormats);
 			if (chosen && numFormats > 0) break;
 
 			samples /= 2;
 		}
 
-		if (_pixel_format == 0)
+		if (_pixelFormat == 0)
 		{
 			LOG_FATAL("Wrong wglChoosePixelFormatARB() result");
 			return E_FAIL;
@@ -263,7 +262,7 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 		DestroyWindow(hwnd_fake);
 	}
 
-	if (!SetPixelFormat(_hdc, _pixel_format, &pfd))
+	if (!SetPixelFormat(_hdc, _pixelFormat, &pfd))
 	{
 		LOG_FATAL("Wrong SetPixelFormat() result");
 		return E_FAIL;
@@ -346,10 +345,10 @@ API GLCoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 
 	GLint vp[4];
 	glGetIntegerv(GL_VIEWPORT, vp);
-	_state.viewportX = vp[0];
-	_state.viewportY = vp[1];
-	_state.viewportWidth = vp[2];
-	_state.viewportHeigth = vp[3];
+	_state.x = vp[0];
+	_state.y = vp[1];
+	_state.width = vp[2];
+	_state.heigth = vp[3];
 
 	//vsync
 	if (VSyncOn)
@@ -382,31 +381,31 @@ API GLCoreRender::Free()
 
 API GLCoreRender::MakeCurrent(const WindowHandle* handle)
 {
-	HDC new_hdc = GetDC(*handle);
+	HDC newHdc = GetDC(*handle);
 
-	if (new_hdc == 0)
+	if (newHdc == 0)
 		return E_FAIL;
 
-	int new_dc_pixel_format = GetPixelFormat(new_hdc);
+	int newDCpixelFormat = GetPixelFormat(newHdc);
 
-	if (new_dc_pixel_format != _pixel_format)
+	if (newDCpixelFormat != _pixelFormat)
 	{
-		int closest_pixel_format = ChoosePixelFormat(new_hdc, &pfd);
+		int closestPixelFormat = ChoosePixelFormat(newHdc, &pfd);
 
-		if (closest_pixel_format == 0)
+		if (closestPixelFormat == 0)
 		{
 			LOG_FATAL("Wrong ChoosePixelFormat() result");
 			return S_FALSE;
 		}
 
-		if (!SetPixelFormat(new_hdc, closest_pixel_format, &pfd))
+		if (!SetPixelFormat(newHdc, closestPixelFormat, &pfd))
 		{
 			LOG_FATAL("Wrong SetPixelFormat() result");
 			return S_FALSE;
 		}
 	}
 
-	if (!wglMakeCurrent(new_hdc, _hRC))
+	if (!wglMakeCurrent(newHdc, _hRC))
 	{
 		LOG_FATAL("Couldn't perform wglMakeCurrent(_hdc, _hRC);");
 		return S_FALSE;
@@ -415,7 +414,7 @@ API GLCoreRender::MakeCurrent(const WindowHandle* handle)
 	CHECK_GL_ERRORS();
 
 	_hWnd = *handle;
-	_hdc = new_hdc;
+	_hdc = newHdc;
 
 	return S_OK;
 }
@@ -423,9 +422,7 @@ API GLCoreRender::MakeCurrent(const WindowHandle* handle)
 API GLCoreRender::SwapBuffers()
 {
 	CHECK_GL_ERRORS();
-
 	::SwapBuffers(_hdc);
-
 	CHECK_GL_ERRORS();
 	return S_OK;
 }
@@ -437,7 +434,8 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 	const int texCoords = dataDesc->texCoordPresented;
 	const int colors = dataDesc->colorPresented;
 	const int bytes = (16 + 16 * normals + 8 * texCoords + 16 * colors) * dataDesc->numberOfVertex;
-	GLuint vao = 0, vbo = 0, ibo = 0;
+
+	GLuint vao = 0u, vbo = 0u, ibo = 0u;
 
 	INPUT_ATTRUBUTE attribs = INPUT_ATTRUBUTE::POSITION;
 	if (dataDesc->normalsPresented)
@@ -506,15 +504,15 @@ API GLCoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc
 
 API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText)
 {
-	GLuint vertID = 0;
-	GLuint geomID = 0;
-	GLuint fragID = 0;
+	GLuint vertID = 0u;
+	GLuint geomID = 0u;
+	GLuint fragID = 0u;
 
 	CHECK_GL_ERRORS();
 
 	GLuint programID = glCreateProgram();
 	
-	if (!create_shader(vertID, GL_VERTEX_SHADER, vertText, programID))
+	if (!createShader(vertID, GL_VERTEX_SHADER, vertText, programID))
 	{
 		glDeleteProgram(programID);
 		return E_VERTEX_SHADER_FAILED_COMPILE;
@@ -522,7 +520,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, 
 	
 	if (geomText != nullptr)
 	{
-		if (!create_shader(geomID, GL_GEOMETRY_SHADER, geomText, programID))
+		if (!createShader(geomID, GL_GEOMETRY_SHADER, geomText, programID))
 		{
 			glDeleteProgram(programID);
 			glDeleteShader(vertID);
@@ -530,7 +528,7 @@ API GLCoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, 
 		}
 	}
 	
-	if (!create_shader(fragID, GL_FRAGMENT_SHADER, fragText, programID))
+	if (!createShader(fragID, GL_FRAGMENT_SHADER, fragText, programID))
 	{
 		glDeleteProgram(programID);
 		glDeleteShader(vertID);
@@ -621,7 +619,7 @@ API GLCoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint 
 	GLTexture *glTex = new GLTexture(id, format);
 	*pTexture = glTex;
 
-	CHECK_GL_ERRORS();	
+	CHECK_GL_ERRORS();
 
 	return S_OK;
 }
@@ -634,6 +632,21 @@ API GLCoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	*pRenderTarget = new GLRenderTarget(id);
+
+	return S_OK;
+}
+
+API GLCoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize)
+{
+	assert(size % 16 == 0);
+
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, size * elementSize, nullptr, GL_DYNAMIC_COPY);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+	*pStructuredBuffer = new GLSSBO(buffer, size, elementSize);
 
 	return S_OK;
 }
@@ -657,7 +670,6 @@ API GLCoreRender::PopStates()
 		else
 			glDisable(GL_BLEND);
 	}
-
 	if (_state.srcBlend != state.srcBlend || _state.dstBlend != state.dstBlend)
 		glBlendFunc(state.srcBlend, state.dstBlend);
 
@@ -674,7 +686,6 @@ API GLCoreRender::PopStates()
 		else
 			glDisable(GL_CULL_FACE);
 	}
-
 	if (state.polygonMode != _state.polygonMode)
 		glPolygonMode(GL_FRONT_AND_BACK, _state.polygonMode);
 
@@ -691,8 +702,9 @@ API GLCoreRender::PopStates()
 
 	// Viewport
 	//
-	if (state.viewportX != _state.viewportX || state.viewportY != _state.viewportY || state.viewportWidth != _state.viewportWidth || state.viewportHeigth != _state.viewportHeigth)
-		glViewport(state.viewportX, state.viewportY, state.viewportWidth, state.viewportHeigth);
+	if (state.x != _state.x || state.y != _state.y ||
+		state.width != _state.width || state.heigth != _state.heigth)
+		glViewport(state.x, state.y, state.width, state.heigth);
 
 	// Shader
 	//
@@ -747,7 +759,7 @@ API GLCoreRender::PopStates()
 
 API GLCoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 {
-	_state.renderTarget = WRL::ComPtr<IRenderTarget>(pRenderTarget);
+	_state.renderTarget = RenderTargetPtr(pRenderTarget);
 
 	GLRenderTarget *glRT = getGLRenderTarget(pRenderTarget);
 	glBindFramebuffer(GL_FRAMEBUFFER, glRT->ID());
@@ -781,7 +793,7 @@ API GLCoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 
 API GLCoreRender::RestoreDefaultRenderTarget()
 {
-	_state.renderTarget = WRL::ComPtr<IRenderTarget>();
+	_state.renderTarget = RenderTargetPtr();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return S_OK;
 }
@@ -791,9 +803,9 @@ API GLCoreRender::SetShader(IShader* pShader)
 	if (_state.shader.Get() == pShader)
 		return S_OK;
 
-	_state.shader = WRL::ComPtr<IShader>(pShader);
+	_state.shader = ShaderPtr(pShader);
 
-	CHECK_GL_ERRORS();	
+	CHECK_GL_ERRORS();
 	
 	if (pShader == nullptr)
 		glUseProgram(0);
@@ -804,7 +816,7 @@ API GLCoreRender::SetShader(IShader* pShader)
 	}
 
 	CHECK_GL_ERRORS();
-			
+
 	return S_OK;
 }
 
@@ -815,7 +827,7 @@ API GLCoreRender::SetMesh(IMesh* mesh)
 
 	CHECK_GL_ERRORS();
 
-	_state.mesh = WRL::ComPtr<IMesh>(mesh);
+	_state.mesh = MeshPtr(mesh);
 
 	if (mesh == nullptr)
 		glBindVertexArray(0);
@@ -826,6 +838,20 @@ API GLCoreRender::SetMesh(IMesh* mesh)
 	}
 
 	CHECK_GL_ERRORS();
+
+	return S_OK;
+}
+
+API GLCoreRender::SetStructuredBufer(uint slot, IStructuredBuffer *buffer)
+{
+	if (buffer)
+	{
+		ICoreStructuredBuffer *coreBuffer;
+		buffer->GetCoreBuffer(&coreBuffer);
+		GLSSBO *glBuffer = static_cast<GLSSBO*>(coreBuffer);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, slot, glBuffer->ID());
+	} else
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, slot, 0);
 
 	return S_OK;
 }
@@ -877,7 +903,7 @@ API GLCoreRender::UnbindAllTextures()
 	return S_OK;
 }
 
-API GLCoreRender::Draw(IMesh *mesh)
+API GLCoreRender::Draw(IMesh *mesh, uint instances)
 {
 	assert(_state.shader.Get() && "GLCoreRender::Draw(): shader not set");
 
@@ -894,11 +920,27 @@ API GLCoreRender::Draw(IMesh *mesh)
 
 	GLMesh *glMesh = getGLMesh(mesh);
 
+	GLenum mode = (topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES;
+
+	GLsizei count;
 	if (glMesh->Indexes())
-		glDrawElements((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, glMesh->Indexes(), ((glMesh->Indexes() > 65535) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT), nullptr);
+		count = (glMesh->Indexes() > 65535) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+
+	if (instances > 1)
+	{
+		if (glMesh->Indexes())
+			glDrawElementsInstanced(mode, glMesh->Indexes(), count, nullptr, instances);
+		else
+			glDrawArraysInstanced(mode, 0, vertecies, instances);
+	}
 	else
-		glDrawArrays((topology == VERTEX_TOPOLOGY::TRIANGLES) ? GL_TRIANGLES : GL_LINES, 0, vertecies);	
-	
+	{
+		if (glMesh->Indexes())
+			glDrawElements(mode, glMesh->Indexes(), count, nullptr);
+		else
+			glDrawArrays(mode, 0, vertecies);
+	}
+
 	CHECK_GL_ERRORS();
 	
 	return S_OK;
@@ -929,14 +971,14 @@ API GLCoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
 
 	if (_state.blending != enabled)
 	{
-		_state.blending = enabled;
 		if (enabled)
 			glEnable(GL_BLEND);
 		else
 			glDisable(GL_BLEND);
+		_state.blending = enabled;
 	}
 
-	auto getGLBlend = [](BLEND_FACTOR f) -> GLenum
+	auto EngToGLBlend = [](BLEND_FACTOR f) -> GLenum
 	{
 		switch(f)
 		{
@@ -955,8 +997,8 @@ API GLCoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
 		return GL_ZERO;
 	};
 
-	GLenum src_ = getGLBlend(src);
-	GLenum dest_ = getGLBlend(dest);
+	GLenum src_ = EngToGLBlend(src);
+	GLenum dest_ = EngToGLBlend(dest);
 
 	if (_state.srcBlend != src_ || _state.dstBlend != dest_)
 	{
@@ -970,34 +1012,28 @@ API GLCoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
 
 API GLCoreRender::SetViewport(uint wNew, uint hNew)
 {
-	if (wNew == _state.viewportWidth && hNew == _state.viewportHeigth) 
+	if (wNew == _state.width && hNew == _state.heigth) 
 		return S_OK;
 
 	glViewport(0, 0, wNew, hNew);
 
-	_state.viewportWidth = wNew;
-	_state.viewportHeigth = hNew;
+	_state.width = wNew;
+	_state.heigth = hNew;
 
 	return S_OK;
 }
 
 API GLCoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 {
-	CHECK_GL_ERRORS();
-
-	*wOut = _state.viewportWidth;
-	*hOut = _state.viewportHeigth;
-
-	CHECK_GL_ERRORS();
+	*wOut = _state.width;
+	*hOut = _state.heigth;
 	return S_OK;
 }
 
 API GLCoreRender::Clear()
 {
 	CHECK_GL_ERRORS();
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
 	CHECK_GL_ERRORS();
 	return S_OK;
 }
@@ -1031,9 +1067,9 @@ API GLCoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readPi
 	// Reverese by Y for for conformity directx
 	y = h - y;
 
-	uint8 *p_read  = p + (y * w + x) * pixelBytes; 
+	uint8 *src  = p + (y * w + x) * pixelBytes; 
 
-	memcpy(out, p_read, pixelBytes);
+	memcpy(out, src, pixelBytes);
 	*readPixel = (uint)pixelBytes;
 
 	delete[] p;
@@ -1049,10 +1085,7 @@ API GLCoreRender::BlitRenderTargetToDefault(IRenderTarget *pRenderTarget)
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, glRT->ID());
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-	uint w = _state.viewportWidth;
-	uint h = _state.viewportHeigth;
-	glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, _state.width, _state.heigth, 0, 0, _state.width, _state.heigth, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 	CHECK_GL_ERRORS();
 
@@ -1061,7 +1094,7 @@ API GLCoreRender::BlitRenderTargetToDefault(IRenderTarget *pRenderTarget)
 
 GLRenderTarget::GLRenderTarget(GLuint idIn) : _ID(idIn)
 {
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < MAX_RENDER_TARGETS; i++)
 		_colors[i] = 0u;
 }
 
@@ -1069,9 +1102,9 @@ void GLRenderTarget::bind()
 {
 	CHECK_GL_ERRORS();
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < MAX_RENDER_TARGETS; i++)
 	{
-		if (!_colors[i]) // if 0 then break
+		if (!_colors[i]) // attach all first textures until not zero 
 			break;
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, _colors[i], 0);
 	}
@@ -1086,7 +1119,7 @@ void GLRenderTarget::bind()
 
 API GLRenderTarget::SetColorTexture(uint slot, ITexture *tex)
 {
-	assert(slot < 8 && "GLRenderTarget::SetColorTexture() slot must be 0..7");
+	assert(slot < MAX_RENDER_TARGETS && "GLRenderTarget::SetColorTexture() slot must be 0..7");
 
 	if (tex)
 	{
@@ -1133,7 +1166,7 @@ API GLRenderTarget::SetDepthTexture(ITexture *tex)
 
 API GLRenderTarget::UnbindColorTexture(uint slot)
 {
-	assert(slot < 8 && "GLRenderTarget::UnbindColorTexture() slot must be 0..7");
+	assert(slot < MAX_RENDER_TARGETS && "GLRenderTarget::UnbindColorTexture() slot must be 0..7");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, _ID);
 	_colors[slot] = 0;
@@ -1148,7 +1181,7 @@ API GLRenderTarget::UnbindColorTexture(uint slot)
 API GLRenderTarget::UnbindAll()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, _ID);
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < MAX_RENDER_TARGETS; i++)
 	{
 		_colors[i] = 0;
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);

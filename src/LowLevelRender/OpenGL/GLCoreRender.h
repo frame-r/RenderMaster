@@ -1,61 +1,66 @@
 #pragma once
 #include "Common.h"
 
-struct UBO
+struct UBO final
 {
 	string name;
-	uint bytes = 0;	
+	size_t bytes = 0u;
+	bool needFlush = true;
+	GLuint ID = 0u;
+	unique_ptr<uint8[]> data;
 
-	struct UBOParameter
+	struct Parameter
 	{
 		string name;
-		uint offset = 0;
-		uint bytes = 0;
-		uint elements = 1; // number of elements in array (if parameter is array)
+		size_t offset = 0u;
+		size_t bytes = 0u;
+		size_t elements = 1u; // number of elements in array (if parameter is array)
 	};
-	vector<UBOParameter> parameters;
-
-	std::unique_ptr<uint8[]> data;
-	bool needFlush = true;
-
-	GLuint _ID = 0u;
+	vector<Parameter> parameters;
 
 public:
-	UBO(GLuint IDIn, uint bytesIn, const string& nameIn, const vector<UBOParameter>& paramsIn) :
-		_ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
+
+	UBO(GLuint IDIn, size_t bytesIn, const string& nameIn, const vector<Parameter>& paramsIn) :
+		ID(IDIn), bytes(bytesIn), name(nameIn), parameters(paramsIn)
 	{
 		data = std::make_unique<uint8[]>(bytesIn);
-		memset(data.get(), '\0', bytesIn);
+		memset(data.get(), 0, bytesIn);
 	}
+
 	UBO(const UBO& r) = delete;
+
 	UBO(UBO&& r)
 	{
 		name = r.name;
 		bytes = r.bytes;
 		parameters = std::move(r.parameters);
-		_ID = r._ID;
-		r._ID = 0;
+		ID = r.ID;
+		r.ID = 0u;
 		data = std::move(r.data);
 		needFlush = r.needFlush;
 	}
+
 	UBO& operator=(UBO&& r)
 	{
 		name = r.name;
 		bytes = r.bytes;
 		parameters = std::move(r.parameters);
-		_ID = r._ID;
-		r._ID = 0;
+		ID = r.ID;
+		r.ID = 0u;
 		data = std::move(r.data);
 		needFlush = r.needFlush;
 	}
+
 	UBO& operator=(const UBO& r) = delete;
+
 	~UBO()
 	{
-		if (_ID) { glDeleteBuffers(1, &_ID); _ID = 0; }
+		if (ID) { glDeleteBuffers(1, &ID);
+		ID = 0u; }
 	}
 };
 
-class GLRenderTarget : public ICoreRenderTarget
+class GLRenderTarget final : public ICoreRenderTarget
 {
 	GLuint _ID = 0u;
 	GLuint _colors[8];
@@ -81,7 +86,7 @@ class GLCoreRender final : public ICoreRender
 	HDC _hdc{};
 	HGLRC _hRC{};
 	HWND _hWnd{};
-	int _pixel_format = 0;
+	int _pixelFormat = 0;
 	IResourceManager *_pResMan = nullptr;
 
 	struct State
@@ -105,24 +110,24 @@ class GLCoreRender final : public ICoreRender
 
 		// Viewport
 		//
-		GLint viewportX = 0, viewportY = 0;
-		GLint viewportWidth = 0, viewportHeigth = 0;
+		GLint x = 0, y = 0;
+		GLint width = 0, heigth = 0;
 
 		// Shader
 		//
-		WRL::ComPtr<IShader> shader;
+		ShaderPtr shader;
 
 		// Mesh
 		//
-		WRL::ComPtr<IMesh> mesh;
+		MeshPtr mesh;
 
 		// Textures
 		//
-		WRL::ComPtr<ITexture> texShaderBindings[16]; // slot -> texture
+		TexturePtr texShaderBindings[16]; // slot -> texture
 
 		// Framebuffer
 		//
-		WRL::ComPtr<IRenderTarget> renderTarget;
+		RenderTargetPtr renderTarget;
 
 		// Clear
 		//
@@ -132,8 +137,8 @@ class GLCoreRender final : public ICoreRender
 	State _state;
 	std::stack<State> _statesStack;
 	
-	bool check_shader_errors(int id, GLenum constant);
-	bool create_shader(GLuint &id, GLenum type, const char* pText, GLuint programID);
+	bool checkShaderErrors(int id, GLenum constant);
+	bool createShader(GLuint &id, GLenum type, const char* pText, GLuint programID);
 
 public:
 
@@ -149,6 +154,7 @@ public:
 	API CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText) override;
 	API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) override;
 	API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) override;
+	API CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize) override;
 
 	API PushStates() override;
 	API PopStates() override;
@@ -158,7 +164,8 @@ public:
 	API UnbindAllTextures() override;
 	API SetShader(IShader *pShader) override;
 	API SetMesh(IMesh* mesh) override;
-	API Draw(IMesh *mesh) override;
+	API SetStructuredBufer(uint slot, IStructuredBuffer* buffer) override;
+	API Draw(IMesh *mesh, uint instances) override;
 	API SetDepthTest(int enabled) override;
 	API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) override;
 	API SetViewport(uint wIn, uint hIn) override;

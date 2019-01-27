@@ -1,8 +1,10 @@
 #include "Pch.h"
 #include "Render.h"
 #include "Core.h"
+#include "ConsoleWindow.h"
 #include "SceneManager.h"
 #include "simplecpp.h"
+#include <memory>
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -11,6 +13,304 @@ DEFINE_LOG_HELPERS(_pCore)
 /////////////////////////
 // Render
 /////////////////////////
+
+uint widths[256] = {
+8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,0
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,8
+,4
+,4
+,5
+,8
+,7
+,11
+,10
+,3
+,4
+,4
+,5
+,9
+,3
+,5
+,3
+,5
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,3
+,3
+,9
+,8
+,9
+,6
+,12
+,9
+,8
+,8
+,9
+,8
+,7
+,9
+,10
+,3
+,7
+,8
+,8
+,12
+,10
+,10
+,8
+,10
+,9
+,9
+,8
+,9
+,9
+,13
+,8
+,9
+,7
+,4
+,5
+,4
+,9
+,5
+,3
+,7
+,8
+,6
+,8
+,7
+,4
+,8
+,7
+,3
+,3
+,6
+,3
+,11
+,7
+,8
+,8
+,8
+,4
+,6
+,4
+,7
+,6
+,9
+,6
+,6
+,6
+,4
+,3
+,4
+,9
+,8
+,7
+,8
+,3
+,7
+,5
+,9
+,5
+,5
+,5
+,16
+,7
+,4
+,12
+,8
+,7
+,8
+,8
+,3
+,3
+,5
+,5
+,5
+,7
+,13
+,4
+,10
+,6
+,4
+,12
+,8
+,6
+,7
+,4
+,4
+,7
+,7
+,7
+,7
+,3
+,6
+,5
+,12
+,5
+,7
+,9
+,5
+,12
+,5
+,5
+,9
+,5
+,5
+,4
+,8
+,6
+,3
+,3
+,5
+,6
+,7
+,12
+,12
+,12
+,6
+,8
+,8
+,8
+,8
+,8
+,8
+,11
+,8
+,7
+,7
+,7
+,7
+,3
+,3
+,3
+,3
+,9
+,10
+,10
+,10
+,10
+,10
+,10
+,9
+,10
+,9
+,9
+,9
+,9
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,7
+,11
+,6
+,7
+,7
+,7
+,7
+,3
+,3
+,3
+,3
+,7
+,7
+,8
+,8
+,8
+,8
+,8
+,9
+,8
+,7
+,7
+,7
+,7
+,6
+,8
+,6
+};
+
+Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
+{
+	_pCore->GetSubSystem((ISubSystem**)&_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	_pCore->GetSubSystem((ISubSystem**)&_fsystem, SUBSYSTEM_TYPE::FILESYSTEM);
+
+	_pCore->consoleWindow()->addCommand("shaders_reload", std::bind(&Render::shaders_reload, this, std::placeholders::_1, std::placeholders::_2));
+	
+	_pCore->AddProfilerCallback(this);
+}
+
+Render::~Render()
+{
+}
+
+API Render::shaders_reload(const char ** args, uint argsNumber)
+{
+	return ShadersReload();
+}
+
+uint Render::getNumLines()
+{
+	return 5;
+}
+
+string Render::getString(uint i)
+{
+	switch (i)
+	{
+		case 0: return "==== Render ====";
+		case 1: return "FPS: " + std::to_string(_pCore->FPSlazy());
+		case 2: return "Runtime Shaders: " + std::to_string(_shaders_pool.size());
+		case 3: return "Texture pool: " + std::to_string(_texture_pool.size());
+		case 4: return "";
+	}
+	assert(false);
+	return "";
+}
 
 void Render::renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes)
 {
@@ -34,11 +334,10 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 
 	IShader *shader = getShader({attribs, RENDER_PASS::ENGINE_POST});
 	_pCoreRender->SetShader(shader);
-	setShaderPostParameters(RENDER_PASS::ENGINE_POST, shader);
 
 	_pCoreRender->BindTexture(0, buffers.colorHDR.Get());
 
-	_pCoreRender->SetDepthTest(0);	
+	_pCoreRender->SetDepthTest(0);
 
 	renderTarget->SetColorTexture(0, buffers.color.Get());
 	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
@@ -74,6 +373,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 	// Engine post pass
 	//
 	renderEnginePost(buffers);
+
 
 #if 0
 	///////////////////////////////
@@ -158,8 +458,89 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	return S_OK;
 }
 
-void Render::setShaderPostParameters(RENDER_PASS pass, IShader *shader)
+API Render::RenderPassGUI()
 {
+	INPUT_ATTRUBUTE attribs;
+	_postPlane->GetAttributes(&attribs);
+
+	IShader *shader = getShader({ attribs, RENDER_PASS::FONT });
+	if (!shader)
+		return S_OK;
+
+	_pCoreRender->SetShader(shader);
+
+	uint w, h;
+	_pCoreRender->GetViewport(&w, &h);
+
+	shader->SetFloatParameter("invHeight2", 2.0f / h);
+	shader->SetFloatParameter("invWidth2", 2.0f / w);
+	shader->FlushParameters();
+
+	_pCoreRender->BindTexture(0, fontTexture.Get());
+
+	_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
+	_pCoreRender->SetDepthTest(0);
+
+	//string fps = "FPS=" + std::to_string(_pCore->FPSlazy());
+
+	float offsetVert = 0.0f;
+	for (int i = 0; i < _pCore->ProfilerRecords(); i++)
+	{
+		if (i >= _records.size())
+			_records.push_back(RenderProfileRecord());
+
+		RenderProfileRecord &r = _records[i];
+
+		string fps = _pCore->GetProfilerRecord(i);
+
+		if (fps.size() > 0)
+		{
+			if (!r.buffer || r.length < fps.size())
+			{
+				r.length = fps.size();
+
+				IStructuredBuffer *sb;
+				_pResMan->CreateStructuredBuffer(&sb, r.length * sizeof(charr), sizeof(charr));
+				r.buffer = StructuredBufferPtr(sb);
+
+				r.bufferData = unique_ptr<charr[]>(new charr[r.length]);
+			}
+
+			float offset = 0.0f;
+			for (size_t i = 0u; i < fps.size(); i++)
+			{
+				float w = static_cast<float>(widths[fps[i]]);
+				r.bufferData[i].data[0] = w;
+				r.bufferData[i].data[1] = offset;
+				r.bufferData[i].data[2] = offsetVert;
+				r.bufferData[i].id = static_cast<uint>(fps[i]);
+				offset += w;
+			}
+
+			std::hash<string> hashFn;
+			size_t newHash = hashFn(fps);
+			if (newHash != r.txtHash)
+			{
+				r.txtHash = newHash;
+				r.buffer->SetData(reinterpret_cast<uint8*>(&r.bufferData[0].data[0]), fps.size() * sizeof(charr));
+			}
+
+			_pCoreRender->SetStructuredBufer(1, r.buffer.Get());
+
+			_pCoreRender->Draw(_postPlane.Get(), (uint)fps.size());
+		}
+
+		offsetVert -= 17.0f;
+	}
+
+
+	_pCoreRender->UnbindAllTextures();
+	_pCoreRender->SetStructuredBufer(1, nullptr);
+
+	_pCoreRender->SetDepthTest(1);
+	_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
+
+	return S_OK;
 }
 
 void Render::_update()
@@ -172,8 +553,8 @@ void Render::_update()
 	}),
     _texture_pool.end());
 
-	//if (before != _texture_pool.size())
-	//	LOG_FORMATTED("Render::_update() textures removed. was = %i, now = %i", before, _texture_pool.size());
+	//if (before != _texture_pool.length())
+	//	LOG_FORMATTED("Render::_update() textures removed. was = %i, now = %i", before, _texture_pool.length());
 }
 
 IShader* Render::getShader(const ShaderRequirement &req)
@@ -184,7 +565,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 
 	if (it != _shaders_pool.end())
 	{
-		WRL::ComPtr<IShader>& shaderPtr = it->second;
+		ShaderPtr& shaderPtr = it->second;
 		return shaderPtr.Get();
 	}
 	else
@@ -255,6 +636,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 			case RENDER_PASS::ID: targetShader = _idShader; break;
 			case RENDER_PASS::FORWARD: targetShader = _forwardShader; break;
 			case RENDER_PASS::ENGINE_POST: targetShader = _postShader; break;
+			case RENDER_PASS::FONT: targetShader = _fontShader; break;
 		}
 
 		targetShader->GetText(&text);
@@ -274,10 +656,10 @@ IShader* Render::getShader(const ShaderRequirement &req)
 		if (!compiled)
 		{
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
-			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(nullptr));
+			_shaders_pool.emplace(req, ShaderPtr(nullptr));
 		}
 		else
-			_shaders_pool.emplace(req, WRL::ComPtr<IShader>(pShader));
+			_shaders_pool.emplace(req, ShaderPtr(pShader));
 	}
 	return pShader;
 }
@@ -334,7 +716,8 @@ void Render::setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader
 	if (pass == RENDER_PASS::ID)
 	{
 		shader->SetUintParameter("model_id", mesh->model_id);
-	} else if (pass == RENDER_PASS::FORWARD)
+	}
+	else if (pass == RENDER_PASS::FORWARD)
 	{
 		shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
@@ -388,7 +771,7 @@ ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORM
 	ITexture *tex;
 	_pResMan->CreateTexture(&tex, width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
 
-	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, WRL::ComPtr<ITexture>(tex)});
+	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, TexturePtr(tex)});
 
 	return tex;
 }
@@ -423,21 +806,10 @@ void Render::releaseBuffers(RenderBuffers& buffers)
 	releaseTexture2d(buffers.color.Get());		buffers.color = nullptr;
 	releaseTexture2d(buffers.colorHDR.Get());	buffers.colorHDR = nullptr;
 	releaseTexture2d(buffers.depth.Get());		buffers.depth = nullptr;
-	releaseTexture2d(buffers.directLight.Get());	buffers.directLight = nullptr;
+	releaseTexture2d(buffers.directLight.Get());buffers.directLight = nullptr;
 	releaseTexture2d(buffers.normal.Get());		buffers.normal = nullptr;
-	releaseTexture2d(buffers.shading.Get());		buffers.shading = nullptr;
+	releaseTexture2d(buffers.shading.Get());	buffers.shading = nullptr;
 	releaseTexture2d(buffers.id.Get());			buffers.id = nullptr;
-}
-
-Render::Render(ICoreRender *pCoreRender) : _pCoreRender(pCoreRender)
-{
-	_pCore->GetSubSystem((ISubSystem**)&_pSceneMan, SUBSYSTEM_TYPE::SCENE_MANAGER);
-	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
-	_pCore->GetSubSystem((ISubSystem**)&_fsystem, SUBSYSTEM_TYPE::FILESYSTEM);
-}
-
-Render::~Render()
-{
 }
 
 void Render::Init()
@@ -458,52 +830,62 @@ void Render::Init()
 	_pResMan->LoadTextFile(&shader, "post\\engine_post.shader");
 	_postShader =  WRL::ComPtr<ITextFile>(shader);
 
+	_pResMan->LoadTextFile(&shader, "font.shader");
+	_fontShader =  WRL::ComPtr<ITextFile>(shader);
+
 	// Render Targets
 	IRenderTarget *RT;
 	_pResMan->CreateRenderTarget(&RT);
-	renderTarget = WRL::ComPtr<IRenderTarget>(RT);
+	renderTarget = RenderTargetPtr(RT);
 
 	// Meshes
 	// get all default meshes and release only for test
-	WRL::ComPtr<IMesh> axesMesh;
-	WRL::ComPtr<IMesh> axesArrowMesh;
-	WRL::ComPtr<IMesh> gridMesh;
+	MeshPtr axesMesh;
+	MeshPtr axesArrowMesh;
+	MeshPtr gridMesh;
 	IMesh *mesh;
 
 	_pResMan->LoadMesh(&mesh, "std#axes");
-	axesMesh = WRL::ComPtr<IMesh>(mesh);
+	axesMesh = MeshPtr(mesh);
 
 	_pResMan->LoadMesh(&mesh, "std#axes_arrows");
-	axesArrowMesh = WRL::ComPtr<IMesh>(mesh);
+	axesArrowMesh = MeshPtr(mesh);
 
 	_pResMan->LoadMesh(&mesh, "std#grid");
-	gridMesh = WRL::ComPtr<IMesh>(mesh);
+	gridMesh = MeshPtr(mesh);
 
 	_pResMan->LoadMesh(&mesh, "std#plane");
-	_postPlane = WRL::ComPtr<IMesh>(mesh);
+	_postPlane = MeshPtr(mesh);
 
 	// Create texture for test
 	ITexture *tex;
 	_pResMan->CreateTexture(&tex, 300, 300, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::R32UI, TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT);
 	tex->AddRef();
 	tex->Release();
+	
+	_pResMan->LoadTexture(&tex, "std#white_texture", TEXTURE_CREATE_FLAGS());
+	whiteTexture = TexturePtr(tex);
 
-	TEXTURE_CREATE_FLAGS flags = {};
-	_pResMan->LoadTexture(&tex, "std#white_texture", flags);
-	whiteTexture = WRL::ComPtr<ITexture>(tex);
+	_pResMan->LoadTexture(&tex, "ExportedFont.dds", TEXTURE_CREATE_FLAGS());
+	fontTexture = TexturePtr(tex);
 
 	LOG("Render initialized");
 }
 
 void Render::Free()
 {
+	for (auto &r : _records)
+		r.buffer.Reset();
+
+	fontTexture.Reset();
 	whiteTexture.Reset();
 	_postPlane.Reset();
 	renderTarget.Reset();
+	_fontShader.Reset();
 	_forwardShader.Reset();
 	_idShader.Reset();
 	_texture_pool.clear();
-	_shaders_pool.clear();	
+	_shaders_pool.clear();
 }
 
 API Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format)
@@ -525,6 +907,7 @@ API Render::ShadersReload()
 	_idShader->Reload();
 	_forwardShader->Reload();
 	_postShader->Reload();
+	_fontShader->Reload();
 	_shaders_pool.clear();
 	return S_OK;
 }

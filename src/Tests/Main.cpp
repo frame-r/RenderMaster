@@ -14,21 +14,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 			IResourceManager *resMan;
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-			IModel *pModel;
-			resMan->LoadModel(&pModel, "box.fbx");
-			pModel->AddRef();
+			{
+				IModel* m;
 
-			IModel *m2;
-			resMan->LoadModel(&m2, "box.fbx");
-			m2->AddRef();
+				resMan->LoadModel(&m, "box.fbx");
+				ModelPtr model1(m);
 
-			vec3 p = {11.0f, 0.0f, 0.0f};
-			m2->SetPosition(&p);
+				resMan->LoadModel(&m, "box.fbx");
+				ModelPtr model2(m);
+				model2->SetPosition(&vec3{ 11.0f, 0.0f, 0.0f });
 
-			pCore->Start(); // Begin main loop
-
-			pModel->Release();
-			m2->Release();
+				pCore->Start(); // Begin main loop
+			}
 
 			pCore->ReleaseEngine();
 		}

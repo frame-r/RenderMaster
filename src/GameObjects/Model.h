@@ -6,7 +6,7 @@
 
 class Model : public GameObjectBase<IModel>
 {
-	vector<WRL::ComPtr<IMesh>> _meshes;
+	vector<MeshPtr> _meshes;
 	AABB _aabb;
 
 	//friend YAML::Emitter& operator<<(YAML::Emitter& out, IResource* g);

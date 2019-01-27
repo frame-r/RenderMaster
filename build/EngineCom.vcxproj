@@ -25,9 +25,12 @@
     <ClInclude Include="..\src\Common.h" />
     <ClInclude Include="..\src\ConsoleWindow.h" />
     <ClInclude Include="..\src\Core.h" />
+    <ClInclude Include="..\src\LowLevelRender\OpenGL\GLSSBO.h" />
+    <ClInclude Include="..\src\Render\Objects\StructuredBuffer.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11CoreRender.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Mesh.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Shader.h" />
+    <ClInclude Include="..\src\LowLevelRender\DirectX\DX11StructuredBuffer.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Texture.h" />
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLTexture.h" />
     <ClInclude Include="..\src\Filesystem.h" />
@@ -38,22 +41,22 @@
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLMesh.h" />
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLShader.h" />
     <ClInclude Include="..\src\Input.h" />
-    <ClInclude Include="..\src\HighLevelRender\Objects\Mesh.h" />
+    <ClInclude Include="..\src\Render\Objects\Mesh.h" />
     <ClInclude Include="..\src\GameObjects\Model.h" />
     <ClInclude Include="..\src\Pch.h" />
-    <ClInclude Include="..\src\HighLevelRender\Render.h" />
-    <ClInclude Include="..\src\HighLevelRender\Objects\RenderTarget.h" />
+    <ClInclude Include="..\src\Render\Render.h" />
+    <ClInclude Include="..\src\Render\Objects\RenderTarget.h" />
     <ClInclude Include="..\src\ResourceManager.h" />
     <ClInclude Include="..\src\SceneManager.h" />
     <ClInclude Include="..\src\Serialization.h" />
-    <ClInclude Include="..\src\HighLevelRender\Objects\Shader.h" />
+    <ClInclude Include="..\src\Render\Objects\Shader.h" />
     <ClInclude Include="..\src\Shaders\common\common.h" />
     <ClInclude Include="..\src\Shaders\common\common_post.h" />
     <ClInclude Include="..\src\Shaders\common\language.h" />
     <ClInclude Include="..\src\Shaders\common\language_dx11.h" />
     <ClInclude Include="..\src\Shaders\common\language_gl.h" />
     <ClInclude Include="..\src\ThirdParty\SimpleCpp\SimpleCpp.h" />
-    <ClInclude Include="..\src\HighLevelRender\Objects\Texture.h" />
+    <ClInclude Include="..\src\Render\Objects\Texture.h" />
     <ClInclude Include="..\src\ThirdParty\Tree\Tree.h" />
     <ClInclude Include="..\src\MainWindow.h" />
   </ItemGroup>
@@ -62,9 +65,12 @@
     <ClCompile Include="..\src\Common.cpp" />
     <ClCompile Include="..\src\ConsoleWindow.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
+    <ClCompile Include="..\src\LowLevelRender\OpenGL\GLSSBO.cpp" />
+    <ClCompile Include="..\src\Render\Objects\StructuredBuffer.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Mesh.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Shader.cpp" />
+    <ClCompile Include="..\src\LowLevelRender\DirectX\DX11StructuredBuffer.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Texture.cpp" />
     <ClCompile Include="..\src\LowLevelRender\OpenGL\GLTexture.cpp" />
     <ClCompile Include="..\src\Filesystem.cpp" />
@@ -77,28 +83,30 @@
     <ClCompile Include="..\src\LowLevelRender\OpenGL\GLShader.cpp" />
     <ClCompile Include="..\src\LowLevelRender\OpenGL\GLMesh.cpp" />
     <ClCompile Include="..\src\Main.cpp" />
-    <ClCompile Include="..\src\HighLevelRender\Objects\Mesh.cpp" />
+    <ClCompile Include="..\src\Render\Objects\Mesh.cpp" />
     <ClCompile Include="..\src\GameObjects\Model.cpp" />
     <ClCompile Include="..\src\Pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\src\HighLevelRender\Render.cpp" />
-    <ClCompile Include="..\src\HighLevelRender\Objects\RenderTarget.cpp" />
+    <ClCompile Include="..\src\Render\Render.cpp" />
+    <ClCompile Include="..\src\Render\Objects\RenderTarget.cpp" />
     <ClCompile Include="..\src\ResourceManager.cpp" />
     <ClCompile Include="..\src\SceneManager.cpp" />
     <ClCompile Include="..\src\Input.cpp" />
     <ClCompile Include="..\src\MainWindow.cpp" />
     <ClCompile Include="..\src\Serialization.cpp" />
-    <ClCompile Include="..\src\HighLevelRender\Objects\Shader.cpp" />
+    <ClCompile Include="..\src\Render\Objects\Shader.cpp" />
     <ClCompile Include="..\src\ThirdParty\SimpleCpp\SimpleCpp.cpp" />
-    <ClCompile Include="..\src\HighLevelRender\Objects\Texture.cpp" />
+    <ClCompile Include="..\src\Render\Objects\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\LowLevelRender\DirectX\states_pools.inl" />
+    <None Include="..\src\Shaders\font.shader" />
     <None Include="..\src\Shaders\id.shader" />
     <None Include="..\src\Shaders\mesh.shader" />
     <None Include="..\src\Shaders\post\engine_post.shader" />
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="yaml-cpp\yaml-cpp.vcxproj">
@@ -187,7 +195,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\HighLevelRender\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\HighLevelRender</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\Render</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -205,7 +213,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\HighLevelRender\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\HighLevelRender</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\Render</AdditionalIncludeDirectories>
       <ShowIncludes>false</ShowIncludes>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
@@ -238,7 +246,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\HighLevelRender\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\HighLevelRender</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\Render</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -260,7 +268,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\HighLevelRender\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\HighLevelRender</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\Render</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
