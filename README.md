@@ -3,19 +3,16 @@
 Graphic engine.
 
 ## Features
+* DirectX 11, OpenGL 4.5.
+* Stable ABI. I.e engine binaries are stable across different compiler that supports COM.
 * [Editor](https://github.com/fra-zz-mer/RenderMasterEditor)
-* Multi-render: DirectX 11, OpenGL 4.5
-* Stable ABI (Application Binary Interface). I.e engine binaries stable across different compiler that supports COM and different release of one compiler. No need recompile engine if you migrate to new compiler.
 
 Planned:
-* Deferred Shading
-* Physically Based Shading
-* TAA
-* SSAO, SSR
-* Some indirect light solution
+* PBR
+* Deferred or Forward+
 
 ## Building and installation engine
-Clone repositiory. Build solution Engine.sln located in build/ directory. I use Visual Studio 2017 (15.8.2), but I'm sure that the engine is compiled with VS 2015. Then you should register Engine.dll in Windows Registry. Just run cmd.exe as Administrator, navigate to build/ directory and type "install.bat release" for release build or "install.bat debug" for debug build. Now everything is ready to work with the engine. See example build/Test.vcxproj for more details.
+Clone repositiory. Build solution Engine.sln located in build/ directory. I use Visual Studio 2017 (15.8.2). Then you should register Engine.dll in Windows Registry. Just run cmd.exe as Administrator, navigate to build/ directory and type "install.bat release" for release build or "install.bat debug" for debug build. See build/Example.vcxproj for more details.
 
 ## Example
 ```cpp
@@ -30,18 +27,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 	if (GetCore(&pCore))
 	{
-		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::DIRECTX11 | INIT_FLAGS::MSAA_8X, L"resources", nullptr)))
+		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::OPENGL45, L"resources", nullptr)))
 		{
 			IResourceManager *resMan;
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
-			IModel *pModel;
-			resMan->LoadModel(&pModel, "box.fbx");
-			pModel->AddRef();
+			{
+				IModel* m;
+				resMan->LoadModel(&m, "box.fbx");
+				ModelPtr model1(m);
 
-			pCore->Start(); // Begin main loop
-
-			pModel->Release();
+				pCore->Start(); // Begin main loop
+			}
 
 			pCore->ReleaseEngine();
 		}
@@ -53,10 +50,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 
 	return 0;
 }
-
-
-
-
 ```
 ![Alt text](box.png?raw=true "Test")
 
