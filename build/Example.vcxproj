@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Tests\main.cpp" />
+    <ClCompile Include="..\src\Example\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="EngineCom.vcxproj">
@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3456A1AE-45CA-4252-963F-066BFF62E21A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Test</RootNamespace>
+    <RootNamespace>Example</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -80,22 +80,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\Test\</IntDir>
+    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\Example\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\Test\</IntDir>
+    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\Example\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\Test\</IntDir>
+    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\Example\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\Test\</IntDir>
+    <IntDir>..\bin\$(Platform)\$(Configuration)\obj\Example\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
