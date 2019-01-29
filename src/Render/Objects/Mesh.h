@@ -3,12 +3,11 @@
 
 class Mesh : public IMesh
 {
-	ICoreMesh *_coreMesh = nullptr;
+	unique_ptr<ICoreMesh> _coreMesh;
 
 public:
-	Mesh(ICoreMesh *m) : _coreMesh(m) {}
-	Mesh(ICoreMesh *m, const string& filePath) : _coreMesh(m),_file(filePath) {}
-	virtual ~Mesh(); 
+	Mesh(unique_ptr<ICoreMesh> m);
+	Mesh(unique_ptr<ICoreMesh> m, const string& filePath);
 
 	API GetCoreMesh(OUT ICoreMesh **meshOut) override;
 	API GetNumberOfVertex(OUT uint *number) override;

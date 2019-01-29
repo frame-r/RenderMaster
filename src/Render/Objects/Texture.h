@@ -3,12 +3,11 @@
 
 class Texture : public ITexture
 {
-	ICoreTexture *_coreTexture = nullptr;
+	unique_ptr<ICoreTexture> _coreTexture;
 
 public:
-	Texture(ICoreTexture *tex) : _coreTexture(tex) {}
-	Texture(ICoreTexture *tex, const string& filePath) : _coreTexture(tex), _file(filePath) {}
-	virtual ~Texture();
+	Texture(unique_ptr<ICoreTexture> tex);
+	Texture(unique_ptr<ICoreTexture> tex, const string& path);
 
 	API GetCoreTexture(ICoreTexture **texOut) override;
 	API GetWidth(OUT uint *w) override;

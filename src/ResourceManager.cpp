@@ -386,7 +386,7 @@ void ResourceManager::_FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, Fbx
 	_pCoreRender->CreateMesh((ICoreMesh**)&pCoreMesh, &vertDesc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 
 	if (pCoreMesh)
-		meshes.push_back(new Mesh(pCoreMesh, path));
+		meshes.push_back(new Mesh(unique_ptr<ICoreMesh>(pCoreMesh), path));
 	else
 		LOG_FATAL("ResourceManager::_FBX_load_mesh(): Can not create mesh");
 }
@@ -865,13 +865,13 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 
 	if (stdCoreMesh)
 	{
-		Mesh *m = new Mesh(stdCoreMesh, path);
+		Mesh *mesh = new Mesh(unique_ptr<ICoreMesh>(stdCoreMesh), path);
 
 		#ifdef PROFILE_RESOURCES
 			DEBUG_LOG_FORMATTED("ResourceManager::LoadMesh() new Mesh %#010x", m);
 		#endif
-		*pMesh = m;
-		_sharedMeshes.emplace(path, m);
+		*pMesh = mesh;
+		_sharedMeshes.emplace(path, mesh);
 		return S_OK;
 	}
 
@@ -1385,7 +1385,7 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXT
 			uint8 data[4] = { 255u, 255u, 255u, 255u };
 			ThrowIfFailed(_pCoreRender->CreateTexture(&coreTex, data, 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS(), false));
 
-			ITexture *tex = new Texture(coreTex, path);
+			ITexture *tex = new Texture(unique_ptr<ICoreTexture>(coreTex), path);
 
 			#ifdef PROFILE_RESOURCES
 				DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
@@ -1427,7 +1427,7 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXT
 		}
 	}
 
-	ITexture *tex = new Texture(coreTex, path);
+	ITexture *tex = new Texture(unique_ptr<ICoreTexture>(coreTex), path);
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
@@ -1501,7 +1501,7 @@ API ResourceManager::CreateTexture(OUT ITexture **pTextureOut, uint width, uint 
 		return E_FAIL;
 	}
 
-	Texture *tex = new Texture(pCoreTex);
+	Texture *tex = new Texture(unique_ptr<ICoreTexture>(pCoreTex));
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateTexture() new Texture %#010x", tex);
@@ -1547,7 +1547,7 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 		return E_FAIL;
 	}
 
-	IShader *s = new Shader(coreShader, vert, geom, frag);
+	IShader *s = new Shader(unique_ptr<ICoreShader>(coreShader), unique_ptr<const char>(vert), unique_ptr<const char>(geom), unique_ptr<const char>(frag));
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateShader() new Shader %#010x", s);
@@ -1572,7 +1572,7 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 		return E_FAIL;
 	}
 
-	IRenderTarget *rt = new RenderTarget(coreRenderTarget);
+	IRenderTarget *rt = new RenderTarget(unique_ptr<ICoreRenderTarget>(coreRenderTarget));
 
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateRenderTarget() new RenderTarget %#010x", rt);
@@ -1597,7 +1597,7 @@ API ResourceManager::CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uin
 		return E_FAIL;
 	}
 
-	StructuredBuffer *b = new StructuredBuffer(coreStructuredBuffer);
+	StructuredBuffer *b = new StructuredBuffer(unique_ptr<ICoreStructuredBuffer>(coreStructuredBuffer));
 
 #ifdef PROFILE_RESOURCES
 	DEBUG_LOG_FORMATTED("ResourceManager::CreateStructuredBuffer() new StructuredBuffer %#010x", b);

@@ -226,7 +226,7 @@ namespace RENDER_MASTER
 
 	enum class INPUT_ATTRUBUTE
 	{
-		CUSTOM		= 0,
+		UNKNOWN		= 0,
 		POSITION	= 1 << 0,
 		NORMAL		= 1 << 1,
 		TEX_COORD	= 1 << 2,
@@ -489,7 +489,7 @@ namespace RENDER_MASTER
 	
 	struct ShaderRequirement
 	{
-		INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::CUSTOM};
+		INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::UNKNOWN};
 		RENDER_PASS pass{RENDER_PASS::FORWARD};
 
 		size_t operator()(const ShaderRequirement& k) const

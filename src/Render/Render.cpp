@@ -500,7 +500,7 @@ API Render::RenderPassGUI()
 				r.length = fps.size();
 
 				IStructuredBuffer *sb;
-				_pResMan->CreateStructuredBuffer(&sb, r.length * sizeof(charr), sizeof(charr));
+				_pResMan->CreateStructuredBuffer(&sb, (uint)r.length * sizeof(charr), sizeof(charr));
 				r.buffer = StructuredBufferPtr(sb);
 
 				r.bufferData = unique_ptr<charr[]>(new charr[r.length]);

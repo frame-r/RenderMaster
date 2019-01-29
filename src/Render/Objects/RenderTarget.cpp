@@ -10,14 +10,13 @@ DEFINE_LOG_HELPERS(_pCore)
 
 RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(RenderTarget, _pCore, RemoveRuntimeRenderTarget)
 
-API RenderTarget::GetCoreRenderTarget(ICoreRenderTarget **renderTargetOut)
+RenderTarget::RenderTarget(unique_ptr<ICoreRenderTarget> renderTaget)
 {
-	*renderTargetOut = _coreRenderTarget;
-	return S_OK;
+	_coreRenderTarget = std::move(renderTaget);
 }
 
-RenderTarget::~RenderTarget()
+API RenderTarget::GetCoreRenderTarget(ICoreRenderTarget **renderTargetOut)
 {
-	delete _coreRenderTarget;
-	_coreRenderTarget = nullptr;
+	*renderTargetOut = _coreRenderTarget.get();
+	return S_OK;
 }

@@ -239,5 +239,11 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="cpp.hint" />
+    <None Include="..\src\LowLevelRender\DirectX\dx_objects.inl">
+      <Filter>LowLevelRender\DirectX</Filter>
+    </None>
+    <None Include="..\src\LowLevelRender\OpenGL\gl_objects.inl">
+      <Filter>LowLevelRender\OpenGL</Filter>
+    </None>
   </ItemGroup>
 </Project>

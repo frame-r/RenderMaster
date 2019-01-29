@@ -3,11 +3,10 @@
 
 class RenderTarget : public IRenderTarget
 {
-	ICoreRenderTarget *_coreRenderTarget = nullptr;
+	unique_ptr<ICoreRenderTarget> _coreRenderTarget;
 
 public:
-	RenderTarget(ICoreRenderTarget *renderTaget) { _coreRenderTarget = renderTaget; }
-	virtual ~RenderTarget();
+	RenderTarget(unique_ptr<ICoreRenderTarget> renderTaget);
 
 	API GetCoreRenderTarget(ICoreRenderTarget **renderTargetOut) override;
 	API SetColorTexture(uint slot, ITexture *tex) override { _coreRenderTarget->SetColorTexture(slot, tex); return S_OK; }

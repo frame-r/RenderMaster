@@ -12,14 +12,19 @@ BASE_RESOURCE_IMPLEMENTATION(Mesh, _pCore, RemoveRuntimeMesh, RemoveSharedMesh)
 
 API Mesh::GetCoreMesh(OUT ICoreMesh ** coreMeshOut)
 {
-	*coreMeshOut = _coreMesh;
+	*coreMeshOut = _coreMesh.get();
 	return S_OK;
 }
 
-Mesh::~Mesh()
+Mesh::Mesh(unique_ptr<ICoreMesh> m)
 {
-	delete _coreMesh;
-	_coreMesh = nullptr;
+	_coreMesh = std::move(m);
+}
+
+Mesh::Mesh(unique_ptr<ICoreMesh> m, const string& filePath)
+{
+	_coreMesh = std::move(m);
+	_file = filePath;
 }
 
 API Mesh::GetNumberOfVertex(OUT uint *number)

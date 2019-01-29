@@ -12,14 +12,19 @@ BASE_RESOURCE_IMPLEMENTATION(Texture, _pCore, RemoveRuntimeTexture, RemoveShared
 
 API Texture::GetCoreTexture(ICoreTexture **texOut)
 {
-	*texOut = _coreTexture;
+	*texOut = _coreTexture.get();
 	return S_OK;
 }
 
-Texture::~Texture()
+Texture::Texture(unique_ptr<ICoreTexture> tex)
 {
-	delete _coreTexture;
-	_coreTexture = nullptr;
+	_coreTexture = std::move(tex);
+}
+
+Texture::Texture(unique_ptr<ICoreTexture> tex, const string& filePath)
+{
+	_coreTexture = std::move(tex);
+	_file = filePath;
 }
 
 API Texture::GetWidth(OUT uint * w)

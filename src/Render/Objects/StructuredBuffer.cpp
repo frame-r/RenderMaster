@@ -10,15 +10,14 @@ DEFINE_LOG_HELPERS(_pCore)
 
 RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(StructuredBuffer, _pCore, RemoveRuntimeStructuredBuffer)
 
-StructuredBuffer::~StructuredBuffer()
+StructuredBuffer::StructuredBuffer(unique_ptr<ICoreStructuredBuffer> buf)
 {
-	delete _coreStructuredBuffer;
-	_coreStructuredBuffer = nullptr;
+	_coreStructuredBuffer = std::move(buf);
 }
 
 API StructuredBuffer::GetCoreBuffer(ICoreStructuredBuffer **bufOut)
 {
-	*bufOut = _coreStructuredBuffer;
+	*bufOut = _coreStructuredBuffer.get();
 	return S_OK;
 }
 

@@ -1,18 +1,15 @@
 #pragma once
 #include "Common.h"
 
-class Shader : public IShader
+class Shader final : public IShader
 {
-	ICoreShader *_coreShader = nullptr;
-
-	const char *vertText = nullptr;
-	const char *geomText = nullptr;
-	const char *fragText = nullptr;
+	unique_ptr<ICoreShader> _coreShader;
+	unique_ptr<const char> _vertFullText;
+	unique_ptr<const char> _geomFullText;
+	unique_ptr<const char> _fragFullText;
 
 public:
-	Shader(ICoreShader *s, const char *vertIn, const char *geomIn, const char *fragIn) :
-		_coreShader(s), vertText(vertIn), geomText(geomIn), fragText(fragIn) {}
-	virtual ~Shader();
+	Shader(unique_ptr<ICoreShader> s, unique_ptr<const char> vertIn, unique_ptr<const char> geomIn, unique_ptr<const char> fragIn);
 
 	API GetCoreShader(ICoreShader **shaderOut) override;
 	API GetVert(OUT const char **textOut) override;

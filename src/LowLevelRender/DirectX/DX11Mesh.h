@@ -11,7 +11,7 @@ class DX11Mesh : public ICoreMesh
 	uint _number_of_indicies = 0;
 	MESH_INDEX_FORMAT _index_format = MESH_INDEX_FORMAT::NOTHING;
 	VERTEX_TOPOLOGY _topology = VERTEX_TOPOLOGY::TRIANGLES;
-	INPUT_ATTRUBUTE _attributes = INPUT_ATTRUBUTE::CUSTOM;
+	INPUT_ATTRUBUTE _attributes = INPUT_ATTRUBUTE::UNKNOWN;
 	int _bytesWidth = 0;
 
 public:

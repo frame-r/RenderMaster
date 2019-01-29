@@ -10,37 +10,36 @@ DEFINE_LOG_HELPERS(_pCore)
 
 RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(Shader, _pCore, RemoveRuntimeShader)
 
-Shader::~Shader()
-{
-	delete _coreShader;
-	_coreShader = nullptr;
 
-	delete[] vertText;
-	delete[] geomText;
-	delete[] fragText;
+Shader::Shader(unique_ptr<ICoreShader> s, unique_ptr<const char> vertIn, unique_ptr<const char> geomIn, unique_ptr<const char> fragIn)
+{
+	_coreShader = std::move(s);
+	_vertFullText = std::move(vertIn);
+	_geomFullText = std::move(geomIn);
+	_fragFullText = std::move(fragIn);
 }
 
 API Shader::GetCoreShader(ICoreShader **shaderOut)
 {
-	*shaderOut = _coreShader;
+	*shaderOut = _coreShader.get();
 	return S_OK;
 }
 
 API Shader::GetVert(OUT const char **textOut)
 {
-	*textOut = vertText;
+	*textOut = _vertFullText.get();
 	return S_OK;
 }
 
 API Shader::GetGeom(OUT const char **textOut)
 {
-	*textOut = geomText;
+	*textOut = _geomFullText.get();
 	return S_OK;
 }
 
 API Shader::GetFrag(OUT const char **textOut)
 {
-	*textOut = fragText;
+	*textOut = _fragFullText.get();
 	return S_OK;
 }
 
