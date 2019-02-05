@@ -4,7 +4,7 @@
 #include "ResourceManager.h"
 #include "Serialization.h"
 
-class Model : public GameObjectBase<IModel>
+class Model : public BaseResource<GameObjectBase<IModel>>
 {
 	vector<MeshPtr> _meshes;
 	AABB _aabb;
@@ -22,6 +22,4 @@ public:
 	API GetNumberOfMesh(OUT uint *number) override;
 	API GetAABB(OUT AABB *aabb) override;
 	API Copy(OUT IModel *copy) override;
-
-	RUNTIME_ONLY_RESOURCE_HEADER
 };

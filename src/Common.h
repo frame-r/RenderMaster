@@ -300,17 +300,6 @@ string msaa_to_string(int samples);
 bool isColorFormat(TEXTURE_FORMAT format);
 bool isCompressedFormat(TEXTURE_FORMAT format);
 
-#define BASE_RESOURCE_HEADER \
-private: \
-	string _file; \
-	int _refs = 0; \
-public: \
-	API GetReferences(int *refsOut) override; \
-	API GetFile(OUT const char **file) override; \
-	STDMETHODIMP_(ULONG) AddRef() override; \
-	STDMETHODIMP_(ULONG) Release() override; \
-	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
-
 
 #ifdef PROFILE_RESOURCES
 #define PRINT_DELETE_RES DEBUG_LOG_FORMATTED
@@ -318,141 +307,41 @@ public: \
 #define PRINT_DELETE_RES
 #endif
 
-#define BASE_RESOURCE_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD, REMOVE_SHARED_METHOD) \
- \
-	API CLASS::GetReferences(int *refsOut) \
-	{ \
-		*refsOut = _refs; \
-		return S_OK; \
-	} \
-	API CLASS::GetFile(OUT const char **file) \
-	{ \
-		*file = _file.c_str(); \
-		return S_OK; \
-	} \
-	\
-	STDMETHODIMP_(ULONG) CLASS::AddRef() \
-	{ \
-		_refs++; \
-		return S_OK; \
-	} \
-	\
-	STDMETHODIMP_(ULONG) CLASS::Release() \
-	{ \
-		_refs--; \
-		if (_refs < 1) \
-		{ \
-			IResourceManager *irm = getResourceManager(CORE); \
-			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
-			if (!_file.empty()) \
-				rm->REMOVE_SHARED_METHOD(_file); \
-			else \
-				rm->REMOVE_RUNTIME_METHOD(this); \
-			PRINT_DELETE_RES("delete %#010x", this); \
-			delete this; \
-		} \
-		return S_OK;  \
-	} \
- \
-	STDMETHODIMP CLASS::QueryInterface(REFIID riid, void** ppv) \
-	{  \
-		*ppv = nullptr;  \
-		return S_OK;  \
+
+template<class T>
+class BaseResource : public T
+{
+	int refs = 0;
+
+protected:
+	string _file;
+
+public:
+	void AddRef() override 
+	{ 
+		refs++; 
 	}
-
-#define RUNTIME_ONLY_RESOURCE_HEADER \
-private: \
-	int _refs = 0; \
-public: \
-	HRESULT GetReferences(int *refsOut) override; \
-	STDMETHODIMP_(ULONG) AddRef() override; \
-	STDMETHODIMP_(ULONG) Release() override; \
-	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
-
-#define RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(CLASS, CORE, REMOVE_RUNTIME_METHOD) \
-	\
-	HRESULT CLASS::GetReferences(int *refsOut) \
-	{ \
-		*refsOut = _refs; \
-		return S_OK; \
-	} \
-	\
-	STDMETHODIMP_(ULONG) CLASS::AddRef() \
-	{ \
-		_refs++; \
-		return S_OK; \
-	} \
-	\
-	STDMETHODIMP_(ULONG) CLASS::Release() \
-	{ \
-		_refs--; \
-		if (_refs < 1) \
-		{ \
-			IResourceManager *irm = getResourceManager(CORE); \
-			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
-			rm->REMOVE_RUNTIME_METHOD(this); \
-			PRINT_DELETE_RES("delete %#010x", this); \
-			delete this; \
-		} \
-		return S_OK;  \
-	} \
-	\
-	STDMETHODIMP CLASS::QueryInterface(REFIID riid, void** ppv) \
-	{  \
-		*ppv = nullptr;  \
-		return S_OK;  \
+	void Release() override 
+	{ 
+		refs--; 
+		if (refs <= 0)
+		{
+			IResourceManager *irm = getResourceManager(_pCore);
+			ResourceManager *rm = static_cast<ResourceManager*>(irm);
+			rm->RemoveResource(this);
+			delete this;
+		}
 	}
-
-#define SHARED_ONLY_RESOURCE_HEADER \
-private: \
-	string _file; \
-	int _refs = 0; \
-public: \
-	API GetReferences(int *refsOut) override; \
-	API GetFile(OUT const char **file) override; \
-	API Reload() override; \
-	STDMETHODIMP_(ULONG) AddRef() override; \
-	STDMETHODIMP_(ULONG) Release() override; \
-	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
-
-#define SHARED_ONLY_RESOURCE_IMPLEMENTATION(CLASS, CORE, REMOVE_SHARED_METHOD) \
-	\
-	HRESULT CLASS::GetReferences(int *refsOut) \
-	{ \
-		*refsOut = _refs; \
-		return S_OK; \
-	} \
-	\
-	API CLASS::GetFile(OUT const char **file) \
-	{ \
-		*file = _file.c_str(); \
-		return S_OK; \
-	} \
-	STDMETHODIMP_(ULONG) CLASS::AddRef() \
-	{ \
-		_refs++; \
-		return S_OK; \
-	} \
-	\
-	STDMETHODIMP_(ULONG) CLASS::Release() \
-	{ \
-		_refs--; \
-		if (_refs < 1) \
-		{ \
-			IResourceManager *irm = getResourceManager(CORE); \
-			ResourceManager *rm = static_cast<ResourceManager*>(irm); \
-			rm->REMOVE_SHARED_METHOD(_file); \
-			PRINT_DELETE_RES("delete %#010x", this); \
-			delete this; \
-		} \
-		return S_OK;  \
-	} \
-	\
-	STDMETHODIMP CLASS::QueryInterface(REFIID riid, void** ppv) \
-	{  \
-		*ppv = nullptr;  \
-		return S_OK;  \
+	void GetReferences(int *refsOut) override
+	{
+		*refsOut = this->refs;
 	}
+	virtual void GetFile(OUT const char **pathOut) override
+	{
+		*pathOut = _file.c_str();
+	}
+	virtual void Reload() override {};
+};
 
 //
 enum class SHADER_TYPE

@@ -449,6 +449,20 @@ ResourceManager::~ResourceManager()
 {
 }
 
+void ResourceManager::RemoveResource(IBaseResource *res)
+{
+	tryRemoveFromRuntimes<IMesh>(res, _runtimeMeshes);
+	tryRemoveFromRuntimes<ITexture>(res, _runtimeTextures);
+	tryRemoveFromRuntimes<IGameObject>(res, _runtimeGameobjects);
+	tryRemoveFromRuntimes<IShader>(res, _runtimeShaders);
+	tryRemoveFromRuntimes<IRenderTarget>(res, _runtimeRenderTargets);
+	tryRemoveFromRuntimes<IStructuredBuffer>(res, _runtimeStructuredBuffers);
+
+	tryRemoveFromShared<ITexture>(res, _sharedTextures);
+	tryRemoveFromShared<IMesh>(res, _sharedMeshes);
+	tryRemoveFromShared<ITextFile>(res, _sharedTextFiles);
+}
+
 void ResourceManager::ReloadTextFile(ITextFile *shaderText)
 {
 	const char *pShaderName;
@@ -1614,8 +1628,6 @@ API ResourceManager::CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uin
 // Text File
 //////////////////////
 
-SHARED_ONLY_RESOURCE_IMPLEMENTATION(TextFile, _pCore, RemoveSharedTextFile)
-
 TextFile::~TextFile()
 {
 	delete[] text;
@@ -1628,11 +1640,10 @@ API TextFile::SetText(const char * textIn)
 	return S_OK;
 }
 
-API TextFile::Reload()
+void TextFile::Reload()
 {
 	IResourceManager *irm = getResourceManager(_pCore);
 	ResourceManager *rm = static_cast<ResourceManager*>(irm);
 	rm->ReloadTextFile(this);
-	return S_OK;
 }
 

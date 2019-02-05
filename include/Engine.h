@@ -16,8 +16,9 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <Unknwn.h>
-#include <wrl/client.h>
 #endif
+
+#include "intrusive_ptr.h"
 
 #define API HRESULT __stdcall
 
@@ -30,20 +31,6 @@ inline ENUM_NAME operator&(ENUM_NAME a, ENUM_NAME b) \
 { \
 	return static_cast<ENUM_NAME>(static_cast<int>(a) & static_cast<int>(b)); \
 }
-
-#define RUNTIME_ONLY_RESOURCE_INTERFACE \
-	virtual API GetReferences(int *refsOut) = 0;
-
-#define SHARED_ONLY_RESOURCE_INTERFACE \
-	virtual API GetReferences(int *refsOut) = 0; \
-	virtual API GetFile(OUT const char **file) = 0; \
-	virtual API Reload() = 0;
-
-// shared and runtime
-#define BASE_RESOURCE_INTERFACE \
-	virtual API GetReferences(int *refsOut) = 0; \
-	virtual API GetFile(OUT const char **file) = 0;
-
 
 typedef unsigned int uint;
 typedef unsigned char uint8;
@@ -157,6 +144,18 @@ namespace RENDER_MASTER
 		virtual API Update() = 0;
 	};
 	
+	class IBaseResource
+	{
+	public:
+		virtual ~IBaseResource() = default;
+		virtual void AddRef() = 0;
+		virtual void Release() = 0;
+		virtual void GetReferences(int *refs) = 0;
+		virtual void GetFile(OUT const char **path) = 0;
+		virtual void Reload() = 0;
+	};
+
+
 
 	//////////////////////
 	// Events
@@ -531,7 +530,7 @@ namespace RENDER_MASTER
 	// Game Objects
 	//////////////////////
 	
-	class IGameObject : public IUnknown
+	class IGameObject : public IBaseResource
 	{
 	public:
 		virtual ~IGameObject() = default;
@@ -554,8 +553,6 @@ namespace RENDER_MASTER
 		virtual API GetNameEv(OUT IStringEvent **pEvent) = 0;
 		virtual API GetPositionEv(OUT IPositionEvent **pEvent) = 0;
 		virtual API GetRotationEv(OUT IRotationEvent **pEvent) = 0;
-
-		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
 	class ICamera : public IGameObject
@@ -576,7 +573,7 @@ namespace RENDER_MASTER
 		virtual API Copy(OUT IModel *copy) = 0;
 	};
 
-	class IMesh : public IUnknown
+	class IMesh : public IBaseResource
 	{
 	public:
 		virtual ~IMesh() = default;
@@ -584,11 +581,9 @@ namespace RENDER_MASTER
 		virtual API GetNumberOfVertex(OUT uint *number) = 0;
 		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
 		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
-
-		BASE_RESOURCE_INTERFACE
 	};
 
-	class ITexture : public IUnknown
+	class ITexture : public IBaseResource
 	{
 	public:
 		virtual ~ITexture() = default;
@@ -596,11 +591,9 @@ namespace RENDER_MASTER
 		virtual API GetWidth(OUT uint *w) = 0;
 		virtual API GetHeight(OUT uint *h) = 0;
 		virtual API GetFormat(OUT TEXTURE_FORMAT *formatOut) = 0;
-
-		BASE_RESOURCE_INTERFACE
 	};
 
-	class IRenderTarget : public IUnknown
+	class IRenderTarget : public IBaseResource
 	{
 	public:
 		virtual ~IRenderTarget() = default;
@@ -609,21 +602,17 @@ namespace RENDER_MASTER
 		virtual API SetDepthTexture(ITexture *tex) = 0;
 		virtual API UnbindColorTexture(uint slot) = 0;
 		virtual API UnbindAll() = 0;
-
-		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
-	class ITextFile : public IUnknown
+	class ITextFile : public IBaseResource
 	{
 	public:
 		virtual ~ITextFile() = default;
 		virtual API GetText(OUT const char **textOut) = 0;
 		virtual API SetText(const char *textIn) = 0;
-
-		SHARED_ONLY_RESOURCE_INTERFACE
 	};
 
-	class IShader : public IUnknown
+	class IShader : public IBaseResource
 	{
 	public:
 		virtual ~IShader() = default;
@@ -636,18 +625,14 @@ namespace RENDER_MASTER
 		virtual API SetMat4Parameter(const char* name, const mat4 *value) = 0;
 		virtual API SetUintParameter(const char* name, uint value) = 0;
 		virtual API FlushParameters() = 0;
-
-		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
-	class IStructuredBuffer : public IUnknown
+	class IStructuredBuffer : public IBaseResource
 	{
 	public:
 		virtual ~IStructuredBuffer() = default;
 		virtual API GetCoreBuffer(ICoreStructuredBuffer **bufOut) = 0;
 		virtual API SetData(uint8 *data, size_t size) = 0;
-
-		RUNTIME_ONLY_RESOURCE_INTERFACE
 	};
 
 	//////////////////////
@@ -1000,14 +985,10 @@ namespace RENDER_MASTER
 		CoUninitialize();
 	}
 
-#ifdef _WIN32
-	using TexturePtr = Microsoft::WRL::ComPtr<ITexture>;
-	using MeshPtr = Microsoft::WRL::ComPtr<IMesh>;
-	using ShaderPtr = Microsoft::WRL::ComPtr<IShader>;
-	using RenderTargetPtr = Microsoft::WRL::ComPtr<IRenderTarget>;
-	using StructuredBufferPtr = Microsoft::WRL::ComPtr<IStructuredBuffer>;
-
-	using ModelPtr = Microsoft::WRL::ComPtr<IModel>;
-#endif
-
+	using TexturePtr = intrusive_ptr<ITexture>;
+	using MeshPtr = intrusive_ptr<IMesh>;
+	using ShaderPtr = intrusive_ptr<IShader>;
+	using RenderTargetPtr = intrusive_ptr<IRenderTarget>;
+	using StructuredBufferPtr = intrusive_ptr<IStructuredBuffer>;
+	using ModelPtr = intrusive_ptr<IModel>;
 }

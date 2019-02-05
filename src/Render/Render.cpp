@@ -629,7 +629,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 
 		const char *text;
 
-		WRL::ComPtr<ITextFile> targetShader;
+		intrusive_ptr<ITextFile> targetShader;
 
 		switch (req.pass)
 		{
@@ -822,16 +822,16 @@ void Render::Init()
 	ITextFile *shader;
 
 	_pResMan->LoadTextFile(&shader, "mesh.shader");
-	_forwardShader =  WRL::ComPtr<ITextFile>(shader);
+	_forwardShader =  intrusive_ptr<ITextFile>(shader);
 
 	_pResMan->LoadTextFile(&shader, "id.shader");
-	_idShader =  WRL::ComPtr<ITextFile>(shader);
+	_idShader =  intrusive_ptr<ITextFile>(shader);
 
 	_pResMan->LoadTextFile(&shader, "post\\engine_post.shader");
-	_postShader =  WRL::ComPtr<ITextFile>(shader);
+	_postShader =  intrusive_ptr<ITextFile>(shader);
 
 	_pResMan->LoadTextFile(&shader, "font.shader");
-	_fontShader =  WRL::ComPtr<ITextFile>(shader);
+	_fontShader =  intrusive_ptr<ITextFile>(shader);
 
 	// Render Targets
 	IRenderTarget *RT;

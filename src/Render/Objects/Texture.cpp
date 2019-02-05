@@ -8,8 +8,6 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-BASE_RESOURCE_IMPLEMENTATION(Texture, _pCore, RemoveRuntimeTexture, RemoveSharedTexture)
-
 API Texture::GetCoreTexture(ICoreTexture **texOut)
 {
 	*texOut = _coreTexture.get();

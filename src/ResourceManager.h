@@ -5,20 +5,21 @@
 #include <fbxsdk.h>
 #endif
 
-class TextFile : public ITextFile
+class TextFile : public BaseResource<ITextFile>
 {
 	const char *text = nullptr;
 
 public:
-	TextFile(const char *textIn, const string& filePath) :
-		text(textIn), _file(filePath)	{}
+	TextFile(const char *textIn, const string& path) :
+		text(textIn) {
+		_file = path;
+	}
 
 	virtual ~TextFile();
 
 	API GetText(OUT const char **textOut) override { *textOut = text; return S_OK; }
 	API SetText(const char *textIn) override;
-
-	SHARED_ONLY_RESOURCE_HEADER
+	void Reload() override;
 };
 
 class ResourceManager final : public IResourceManager, IProfilerCallback
@@ -72,21 +73,36 @@ class ResourceManager final : public IResourceManager, IProfilerCallback
 	size_t sharedResources();
 	size_t runtimeResources();
 
+	template<class T>
+	void tryRemoveFromRuntimes(IBaseResource *res, std::unordered_set<T*>& runtimes)
+	{
+		if (dynamic_cast<T*>(res))
+		{
+			const char *path;
+			res->GetFile(&path);
+			if (*path == '\0')
+				runtimes.erase(dynamic_cast<T*>(res));
+		}
+	}
+
+	template<class T>
+	void tryRemoveFromShared(IBaseResource *res, std::unordered_map<string, T*>& shared)
+	{
+		if (dynamic_cast<T*>(res))
+		{
+			const char *path;
+			res->GetFile(&path);
+			if (*path != '\0')
+				shared.erase(string(path));
+		}
+	}
+
 public:
 
 	ResourceManager();
 	virtual ~ResourceManager();
 
-	void RemoveRuntimeMesh(IMesh *mesh) { _runtimeMeshes.erase(mesh); }
-	void RemoveSharedMesh(const string& path) { _sharedMeshes.erase(path); }
-	void RemoveRuntimeTexture(ITexture *tex) { _runtimeTextures.erase(tex); }
-	void RemoveSharedTexture(const string& path) { _sharedTextures.erase(path); }
-	void RemoveRuntimeGameObject(IGameObject *g) { _runtimeGameobjects.erase(g); }
-	void RemoveSharedTextFile(const string& path) { _sharedTextFiles.erase(path); }
-	void RemoveRuntimeShader(IShader *s) { _runtimeShaders.erase(s); }
-	void RemoveRuntimeRenderTarget(IRenderTarget *rt) { _runtimeRenderTargets.erase(rt); }
-	void RemoveRuntimeStructuredBuffer(IStructuredBuffer *b) { _runtimeStructuredBuffers.erase(b); }
-
+	void RemoveResource(IBaseResource *res);
 	void ReloadTextFile(ITextFile *shaderText);
 
 	void Init();

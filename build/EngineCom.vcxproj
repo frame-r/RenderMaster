@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Engine.h" />
+    <ClInclude Include="..\include\intrusive_ptr.h" />
     <ClInclude Include="..\include\VectorMath.h" />
     <ClInclude Include="..\src\GameObjects\Camera.h" />
     <ClInclude Include="..\src\Common.h" />
@@ -197,7 +198,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\Render</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\ThirdParty;..\src\Render</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -215,7 +216,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\Render</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\ThirdParty;..\src\Render</AdditionalIncludeDirectories>
       <ShowIncludes>false</ShowIncludes>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>
@@ -248,7 +249,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\Render</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\ThirdParty;..\src\Render</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -270,7 +271,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;ENGINECOM_EXPORTS;GLEW_NO_GLU;GLEW_STATIC;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\Render</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\include;..\src\Render\Objects;..\src\ThirdParty\yaml-cpp\include;..\src\ThirdParty\Tree;..\src\ThirdParty\SimpleCpp;..\src\LowLevelRender\DirectX;..\src\GameObjects;..\src\LowLevelRender\OpenGL;..\src\ThirdParty;..\src\Render</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>Pch.h</PrecompiledHeaderFile>

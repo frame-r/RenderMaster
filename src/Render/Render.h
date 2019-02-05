@@ -29,10 +29,10 @@ class Render : public IRender, IProfilerCallback
 	ISceneManager *_pSceneMan{ nullptr };
 	IFileSystem *_fsystem{ nullptr };
 
-	WRL::ComPtr<ITextFile> _forwardShader;
-	WRL::ComPtr<ITextFile> _postShader;
-	WRL::ComPtr<ITextFile> _idShader;
-	WRL::ComPtr<ITextFile> _fontShader;
+	intrusive_ptr<ITextFile> _forwardShader;
+	intrusive_ptr<ITextFile> _postShader;
+	intrusive_ptr<ITextFile> _idShader;
+	intrusive_ptr<ITextFile> _fontShader;
 
 	MeshPtr _postPlane;
 	RenderTargetPtr renderTarget;

@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 
-class Mesh : public IMesh
+class Mesh : public BaseResource<IMesh>
 {
 	unique_ptr<ICoreMesh> _coreMesh;
 
@@ -13,6 +13,4 @@ public:
 	API GetNumberOfVertex(OUT uint *number) override;
 	API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) override;
 	API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) override;
-
-	BASE_RESOURCE_HEADER
 };

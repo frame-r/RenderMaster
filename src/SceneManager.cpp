@@ -2,6 +2,7 @@
 #include "SceneManager.h"
 #include "Core.h"
 #include "Camera.h"
+#include "ResourceManager.h"
 
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
@@ -180,7 +181,7 @@ void SceneManager::Init()
 	IResourceManager *rm = getResourceManager(_pCore);
 	ICamera *cam;
 	rm->CreateCamera(&cam);
-	camera = WRL::ComPtr<ICamera>(cam);
+	camera = intrusive_ptr<ICamera>(cam);
 	LOG("Scene Manager initialized");
 }
 

@@ -59,12 +59,10 @@ public:
 	API GetRotationEv(OUT IRotationEvent **pEvent) override		{ *pEvent = _rotationEvent.get(); return S_OK; }
 };
 
-class GameObject : public GameObjectBase<IGameObject>
+class GameObject : public BaseResource<GameObjectBase<IGameObject>>
 {
 public:
 	virtual ~GameObject() {}
-
-	RUNTIME_ONLY_RESOURCE_HEADER
 };
 
 // implementation

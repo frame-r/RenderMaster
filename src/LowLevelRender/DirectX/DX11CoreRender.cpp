@@ -751,7 +751,7 @@ API DX11CoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 	if (_state.renderTarget.Get() == pRenderTarget)
 		return S_OK;
 
-	_state.renderTarget = ComPtr<IRenderTarget>(pRenderTarget);
+	_state.renderTarget = intrusive_ptr<IRenderTarget>(pRenderTarget);
 
 	DX11RenderTarget *dxrt = getDX11RenderTarget(pRenderTarget);
 	dxrt->bind(_context.Get(), _defaultDepthStencilView.Get());
@@ -764,7 +764,7 @@ API DX11CoreRender::RestoreDefaultRenderTarget()
 	if (_state.renderTarget.Get() == nullptr)
 		return S_OK;
 
-	_state.renderTarget = ComPtr<IRenderTarget>();
+	_state.renderTarget = intrusive_ptr<IRenderTarget>();
 
 	_context->OMSetRenderTargets(1, _defaultRenderTargetView.GetAddressOf(), _defaultDepthStencilView.Get());
 
@@ -776,7 +776,7 @@ API DX11CoreRender::SetShader(IShader* pShader)
 	if (_state.shader.Get() == pShader)
 		return S_OK;
 
-	_state.shader = ComPtr<IShader>(pShader);
+	_state.shader = intrusive_ptr<IShader>(pShader);
 
 	if (pShader)
 	{

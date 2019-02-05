@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 
-class StructuredBuffer : public IStructuredBuffer
+class StructuredBuffer : public BaseResource<IStructuredBuffer>
 {
 	unique_ptr<ICoreStructuredBuffer> _coreStructuredBuffer;
 
@@ -10,6 +10,4 @@ public:
 
 	API GetCoreBuffer(ICoreStructuredBuffer **bufOut) override;
 	API SetData(uint8 *data, size_t size) override;
-
-	RUNTIME_ONLY_RESOURCE_HEADER
 };

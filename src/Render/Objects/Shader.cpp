@@ -8,8 +8,6 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-RUNTIME_ONLY_RESOURCE_IMPLEMENTATION(Shader, _pCore, RemoveRuntimeShader)
-
 
 Shader::Shader(unique_ptr<ICoreShader> s, unique_ptr<const char> vertIn, unique_ptr<const char> geomIn, unique_ptr<const char> fragIn)
 {

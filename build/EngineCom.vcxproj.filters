@@ -101,6 +101,9 @@
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLSSBO.h">
       <Filter>LowLevelRender\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\intrusive_ptr.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\Core.cpp" />

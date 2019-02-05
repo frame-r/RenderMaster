@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 
-class RenderTarget : public IRenderTarget
+class RenderTarget : public BaseResource<IRenderTarget>
 {
 	unique_ptr<ICoreRenderTarget> _coreRenderTarget;
 
@@ -13,6 +13,4 @@ public:
 	API SetDepthTexture(ITexture *tex) override { _coreRenderTarget->SetDepthTexture(tex); return S_OK; }
 	API UnbindColorTexture(uint slot) override { _coreRenderTarget->UnbindColorTexture(slot); return S_OK; }
 	API UnbindAll() override { _coreRenderTarget->UnbindAll(); return S_OK; }
-
-	RUNTIME_ONLY_RESOURCE_HEADER
 };

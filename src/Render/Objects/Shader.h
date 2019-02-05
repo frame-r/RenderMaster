@@ -1,7 +1,7 @@
 #pragma once
 #include "Common.h"
 
-class Shader final : public IShader
+class Shader final : public BaseResource<IShader>
 {
 	unique_ptr<ICoreShader> _coreShader;
 	unique_ptr<const char> _vertFullText;
@@ -20,7 +20,4 @@ public:
 	API SetMat4Parameter(const char* name, const mat4 *value) override;
 	API SetUintParameter(const char* name, uint value) override;
 	API FlushParameters() override;
-
-
-	RUNTIME_ONLY_RESOURCE_HEADER
 };

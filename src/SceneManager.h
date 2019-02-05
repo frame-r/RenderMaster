@@ -11,7 +11,7 @@ class SceneManager : public ISceneManager
 
 	tree<IGameObject*>::iterator gameobject_to_iterator(IGameObject *pGameObject);
 
-	WRL::ComPtr<ICamera> camera;
+	intrusive_ptr<ICamera> camera;
 
 	friend void loadSceneManager(YAML::Node& n, SceneManager &sm);
 	friend YAML::Emitter& operator<<(YAML::Emitter& out, const SceneManager& sm);
