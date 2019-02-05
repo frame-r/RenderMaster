@@ -98,13 +98,13 @@ Camera::~Camera()
 {
 }
 
-API Camera::GetViewMatrix(OUT mat4 *mat)
+API_RESULT Camera::GetViewMatrix(OUT mat4 *mat)
 {
 	GetInvModelMatrix(mat);
 	return S_OK;
 }
 
-API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
+API_RESULT Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 {
 	mat4 P;
 
@@ -152,19 +152,19 @@ API Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 	return S_OK;
 }
 
-API Camera::GetProjectionMatrix(OUT mat4 *mat, float aspect)
+API_RESULT Camera::GetProjectionMatrix(OUT mat4 *mat, float aspect)
 {
 	*mat = perspectiveRH_ZO(_fovAngle * DEGTORAD, aspect, _zNear, _zFar);
 	return S_OK;
 }
 
-API Camera::GetFovAngle(OUT float *fovInDegrees)
+API_RESULT Camera::GetFovAngle(OUT float *fovInDegrees)
 {
 	*fovInDegrees = _fovAngle;
 	return S_OK;
 }
 
-API Camera::Copy(OUT ICamera *copy)
+API_RESULT Camera::Copy(OUT ICamera *copy)
 {
 	GameObjectBase<ICamera>::Copy(copy);
 

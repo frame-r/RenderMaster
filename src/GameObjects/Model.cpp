@@ -13,27 +13,27 @@ Model::Model(const vector<IMesh*>& meshes)
 	//_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
 }
 
-API Model::GetMesh(OUT IMesh **pMesh, uint idx)
+API_RESULT Model::GetMesh(OUT IMesh **pMesh, uint idx)
 {
 	MeshPtr& m = _meshes[idx];
 	*pMesh = m.Get();
 	return S_OK;
 }
 
-API Model::GetNumberOfMesh(OUT uint *number)
+API_RESULT Model::GetNumberOfMesh(OUT uint *number)
 {
 	*number = (uint)_meshes.size();
 	return S_OK;
 }
 
-API Model::GetAABB(OUT AABB *aabb)
+API_RESULT Model::GetAABB(OUT AABB *aabb)
 {
 	const static AABB _unitAABB = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f};
 	*aabb = _unitAABB;
 	return S_OK;
 }
 
-API Model::Copy(OUT IModel *copy)
+API_RESULT Model::Copy(OUT IModel *copy)
 {
 	GameObjectBase<IModel>::Copy(copy);
 

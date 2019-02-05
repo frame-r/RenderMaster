@@ -22,9 +22,9 @@ public:
 	Input();
 	~Input();
 
-	API IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) override;
-	API IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) override;
-	API GetMouseDeltaPos(OUT vec2 *dPos) override;
-	API GetMousePos(OUT uint *x, OUT uint *y) override;
-	API GetName(OUT const char **pName) override;
+	API_RESULT IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) override;
+	API_RESULT IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) override;
+	API_RESULT GetMouseDeltaPos(OUT vec2 *dPos) override;
+	API_RESULT GetMousePos(OUT uint *x, OUT uint *y) override;
+	API_RESULT GetName(OUT const char **pName) override;
 };

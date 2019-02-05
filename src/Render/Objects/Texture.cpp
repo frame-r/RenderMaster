@@ -8,7 +8,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-API Texture::GetCoreTexture(ICoreTexture **texOut)
+API_RESULT Texture::GetCoreTexture(ICoreTexture **texOut)
 {
 	*texOut = _coreTexture.get();
 	return S_OK;
@@ -25,19 +25,19 @@ Texture::Texture(unique_ptr<ICoreTexture> tex, const string& filePath)
 	_file = filePath;
 }
 
-API Texture::GetWidth(OUT uint * w)
+API_RESULT Texture::GetWidth(OUT uint * w)
 {
 	_coreTexture->GetWidth(w);
 	return S_OK;
 }
 
-API Texture::GetHeight(OUT uint * h)
+API_RESULT Texture::GetHeight(OUT uint * h)
 {
 	_coreTexture->GetHeight(h);
 	return S_OK;
 }
 
-API Texture::GetFormat(OUT TEXTURE_FORMAT * formatOut)
+API_RESULT Texture::GetFormat(OUT TEXTURE_FORMAT * formatOut)
 {
 	return S_OK;
 }

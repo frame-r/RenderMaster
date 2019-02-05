@@ -28,7 +28,7 @@ public:
 	UINT				indexNumber() const { return _number_of_indicies; }
 	VERTEX_TOPOLOGY		topology() const { return _topology; }
 
-	API GetNumberOfVertex(OUT uint *number) override;
-	API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) override;
-	API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) override;
+	API_RESULT GetNumberOfVertex(OUT uint *number) override;
+	API_RESULT GetAttributes(OUT INPUT_ATTRUBUTE *attribs) override;
+	API_RESULT GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) override;
 };

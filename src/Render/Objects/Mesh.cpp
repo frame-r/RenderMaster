@@ -8,7 +8,7 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-API Mesh::GetCoreMesh(OUT ICoreMesh ** coreMeshOut)
+API_RESULT Mesh::GetCoreMesh(OUT ICoreMesh ** coreMeshOut)
 {
 	*coreMeshOut = _coreMesh.get();
 	return S_OK;
@@ -25,17 +25,17 @@ Mesh::Mesh(unique_ptr<ICoreMesh> m, const string& filePath)
 	_file = filePath;
 }
 
-API Mesh::GetNumberOfVertex(OUT uint *number)
+API_RESULT Mesh::GetNumberOfVertex(OUT uint *number)
 {
 	return _coreMesh->GetNumberOfVertex(number);
 }
 
-API Mesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
+API_RESULT Mesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
 {
 	return _coreMesh->GetAttributes(attribs);
 }
 
-API Mesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
+API_RESULT Mesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 {
 	return _coreMesh->GetVertexTopology(topology);
 }

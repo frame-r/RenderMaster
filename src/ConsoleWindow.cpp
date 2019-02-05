@@ -368,7 +368,7 @@ void Console::BringToFront()
 	SetActiveWindow(_hWnd);
 }
 
-API Console::Log(const char *text, LOG_TYPE type)
+API_RESULT Console::Log(const char *text, LOG_TYPE type)
 {
 	OutputTxt(text);
 
@@ -383,7 +383,7 @@ API Console::Log(const char *text, LOG_TYPE type)
 	return S_OK;
 }
 
-API Console::AddCommand(IConsoleCommand *pCommand)
+API_RESULT Console::AddCommand(IConsoleCommand *pCommand)
 {
 	const char *pName;
 	pCommand->GetName(&pName);
@@ -392,7 +392,7 @@ API Console::AddCommand(IConsoleCommand *pCommand)
 	return S_OK;
 }
 
-API Console::ExecuteCommand(const char *name, const char **arguments, uint argumentsNum)
+API_RESULT Console::ExecuteCommand(const char *name, const char **arguments, uint argumentsNum)
 {
 	auto it = _commands.find(string(name));
 
@@ -411,7 +411,7 @@ API Console::ExecuteCommand(const char *name, const char **arguments, uint argum
 		_print_help();
 		return S_OK;
 	}
-	std::function<API(const char** arguments, uint argumentsNum)> f = it->second;
+	std::function<API_RESULT(const char** arguments, uint argumentsNum)> f = it->second;
 
 	f(arguments, argumentsNum);
 
@@ -419,19 +419,19 @@ API Console::ExecuteCommand(const char *name, const char **arguments, uint argum
 	return S_OK;
 }
 
-API Console::GetLogPrintedEv(OUT ILogEvent **pEvent)
+API_RESULT Console::GetLogPrintedEv(OUT ILogEvent **pEvent)
 {
 	*pEvent = _evLog.get();
 	return S_OK;
 }
 
-API Console::GetCommands(OUT uint * number)
+API_RESULT Console::GetCommands(OUT uint * number)
 {
 	*number = (uint) _commands.size();
 	return S_OK;
 }
 
-API Console::GetCommand(OUT const char **name, uint idx)
+API_RESULT Console::GetCommand(OUT const char **name, uint idx)
 {
 	auto it = _commands.begin();
 	for(uint i = 0; i < idx; it++);
@@ -440,7 +440,7 @@ API Console::GetCommand(OUT const char **name, uint idx)
 	return S_OK;
 }
 
-API Console::GetName(OUT const char ** pName)
+API_RESULT Console::GetName(OUT const char ** pName)
 {
 	*pName = "Console";
 	return S_OK;

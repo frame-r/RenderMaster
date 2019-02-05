@@ -15,14 +15,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 			{
-				IModel* m;
+				ModelPtr mdl1 = resMan->LoadModel("box.fbx");
+				ModelPtr mdl2 = resMan->LoadModel("box.fbx");
 
-				resMan->LoadModel(&m, "box.fbx");
-				ModelPtr model1(m);
-
-				resMan->LoadModel(&m, "box.fbx");
-				ModelPtr model2(m);
-				model2->SetPosition(&vec3{ 11.0f, 0.0f, 0.0f });
+				mdl2->SetPosition(&vec3{ 11.0f, 0.0f, 0.0f });
 
 				pCore->Start(); // Begin main loop
 			}

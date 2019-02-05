@@ -19,7 +19,7 @@ tree<IGameObject*>::iterator SceneManager::gameobject_to_iterator(IGameObject *p
 	return _gameobjects.end();
 }
 
-API SceneManager::SaveScene(const char *pRelativeScenePath)
+API_RESULT SceneManager::SaveScene(const char *pRelativeScenePath)
 {
 	IFileSystem *fs;
 	_pCore->GetSubSystem((ISubSystem**)&fs, SUBSYSTEM_TYPE::FILESYSTEM);
@@ -41,7 +41,7 @@ API SceneManager::SaveScene(const char *pRelativeScenePath)
 	return S_OK;
 }
 
-API SceneManager::LoadScene(const char *pRelativeScenePath)
+API_RESULT SceneManager::LoadScene(const char *pRelativeScenePath)
 {
 	// TODO
 
@@ -80,7 +80,7 @@ API SceneManager::LoadScene(const char *pRelativeScenePath)
 	return S_OK;
 }
 
-API SceneManager::CloseScene()
+API_RESULT SceneManager::CloseScene()
 {
 	for (IGameObject *obj : _gameobjects)
 		_gameObjectDeleteEvent->Fire(obj);
@@ -94,7 +94,7 @@ API SceneManager::CloseScene()
 	return S_OK;
 }
 
-API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
+API_RESULT SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 {
 	for (IGameObject *obj : _gameobjects)
 	{
@@ -109,7 +109,7 @@ API SceneManager::GetDefaultCamera(OUT ICamera **pCamera)
 	return S_OK;
 }
 
-API SceneManager::GetNumberOfChilds(OUT uint *number, IGameObject *parent)
+API_RESULT SceneManager::GetNumberOfChilds(OUT uint *number, IGameObject *parent)
 {
 	if (parent)
 	{
@@ -130,7 +130,7 @@ API SceneManager::GetNumberOfChilds(OUT uint *number, IGameObject *parent)
 	return S_OK;
 }
 
-API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx)
+API_RESULT SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, uint idx)
 {
 	uint number;
 	GetNumberOfChilds(&number, parent);
@@ -155,7 +155,7 @@ API SceneManager::GetChild(OUT IGameObject **pGameObject, IGameObject *parent, u
 	return S_OK;
 }
 
-API SceneManager::FindChildById(OUT IGameObject **objectOut, uint idIn)
+API_RESULT SceneManager::FindChildById(OUT IGameObject **objectOut, uint idIn)
 {
 	for (auto it = _gameobjects.begin(); it != _gameobjects.end(); ++it)
 	{
@@ -179,9 +179,7 @@ API SceneManager::FindChildById(OUT IGameObject **objectOut, uint idIn)
 void SceneManager::Init()
 {
 	IResourceManager *rm = getResourceManager(_pCore);
-	ICamera *cam;
-	rm->CreateCamera(&cam);
-	camera = intrusive_ptr<ICamera>(cam);
+	camera = rm->CreateCamera();
 	LOG("Scene Manager initialized");
 }
 
@@ -205,19 +203,19 @@ void SceneManager::addGameObject(IGameObject *go)
 	_gameObjectAddedEvent->Fire(go);
 }
 
-API SceneManager::GetName(OUT const char **pName)
+API_RESULT SceneManager::GetName(OUT const char **pName)
 {
 	*pName = "SceneManager";
 	return S_OK;
 }
 
-API SceneManager::GetGameObjectAddedEvent(IGameObjectEvent** pEvent)
+API_RESULT SceneManager::GetGameObjectAddedEvent(IGameObjectEvent** pEvent)
 {
 	*pEvent = _gameObjectAddedEvent.get();
 	return S_OK;
 }
 
-API SceneManager::GetDeleteGameObjectEvent(IGameObjectEvent ** pEvent)
+API_RESULT SceneManager::GetDeleteGameObjectEvent(IGameObjectEvent ** pEvent)
 {
 	*pEvent = _gameObjectDeleteEvent.get();
 	return S_OK;

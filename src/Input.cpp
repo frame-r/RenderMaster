@@ -97,32 +97,32 @@ Input::~Input()
 {
 }
 
-API Input::IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key)
+API_RESULT Input::IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key)
 {
 	*isPressed = _keys[(int)key] > 0;
 	return S_OK;
 }
 
-API Input::IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type)
+API_RESULT Input::IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type)
 {
 	*isPressed = _mouse[(int)type] > 0;
 	return S_OK;
 }
 
-API Input::GetMouseDeltaPos(OUT vec2 *dPos)
+API_RESULT Input::GetMouseDeltaPos(OUT vec2 *dPos)
 {
 	*dPos = _mouseDeltaPos;
 	return S_OK;
 }
 
-API Input::GetMousePos(OUT uint * x, OUT uint * y)
+API_RESULT Input::GetMousePos(OUT uint * x, OUT uint * y)
 {
 	*x = _cursorX;
 	*y = _cursorY;
 	return S_OK;
 }
 
-API Input::GetName(OUT const char **pName)
+API_RESULT Input::GetName(OUT const char **pName)
 {
 	*pName = "Input";
 	return S_OK;

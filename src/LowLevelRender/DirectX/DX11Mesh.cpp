@@ -19,19 +19,19 @@ DX11Mesh::~DX11Mesh()
 	if (_pInputLayoyt) _pInputLayoyt->Release();
 }
 
-API DX11Mesh::GetNumberOfVertex(OUT uint *vertex)
+API_RESULT DX11Mesh::GetNumberOfVertex(OUT uint *vertex)
 {
 	*vertex = _number_of_vertices;
 	return S_OK;
 }
 
-API DX11Mesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
+API_RESULT DX11Mesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
 {
 	*attribs = _attributes;
 	return S_OK;
 }
 
-API DX11Mesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
+API_RESULT DX11Mesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 {
 	*topology = _topology;
 	return S_OK;

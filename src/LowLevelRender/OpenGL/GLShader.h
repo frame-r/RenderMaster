@@ -29,10 +29,10 @@ public:
 	GLuint programID() const { return _programID; }
 	void bind();
 	
-	API SetFloatParameter(const char* name, float value) override;
-	API SetVec4Parameter(const char* name, const vec4 *value) override;
-	API SetMat4Parameter(const char* name, const mat4 *value) override;
-	API SetUintParameter(const char* name, uint value) override;
-	API FlushParameters() override;
+	API_RESULT SetFloatParameter(const char* name, float value) override;
+	API_RESULT SetVec4Parameter(const char* name, const vec4 *value) override;
+	API_RESULT SetMat4Parameter(const char* name, const mat4 *value) override;
+	API_RESULT SetUintParameter(const char* name, uint value) override;
+	API_RESULT FlushParameters() override;
 };
 

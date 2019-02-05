@@ -21,7 +21,7 @@ class Console : public IConsole
 	int _completion_cmd_idx = -1; // index of _completion_commands 0...vector.size()
 	std::vector<string> _completion_commands;
 
-	std::map<string, std::function<API(const char** arguments, uint argumentsNum)>> _commands;
+	std::map<string, std::function<API_RESULT(const char** arguments, uint argumentsNum)>> _commands;
 
 	void _print_help();
 	void _execute_command(const string& fullText);
@@ -42,17 +42,17 @@ public:
 	int IsVisible() { return _is_visible; }
 	void Hide();
 	void BringToFront();
-	void addCommand(const string name, std::function<API(const char**, uint)>&& calback)
+	void addCommand(const string name, std::function<API_RESULT(const char**, uint)>&& calback)
 	{
-		_commands.emplace(name, std::forward<std::function<API(const char**, uint)>>(calback));
+		_commands.emplace(name, std::forward<std::function<API_RESULT(const char**, uint)>>(calback));
 	}
 
-	virtual API Log(const char* text, LOG_TYPE type) override;
-	virtual API AddCommand(IConsoleCommand *pCommand) override;
-	virtual API ExecuteCommand(const char *name, const char** arguments, uint argumentsNum) override;
-	virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) override;
-	virtual API GetCommands(OUT uint *number) override;
-	virtual API GetCommand(OUT const char **name, uint idx) override;
-	virtual API GetName(OUT const char **pName) override;
+	virtual API_RESULT Log(const char* text, LOG_TYPE type) override;
+	virtual API_RESULT AddCommand(IConsoleCommand *pCommand) override;
+	virtual API_RESULT ExecuteCommand(const char *name, const char** arguments, uint argumentsNum) override;
+	virtual API_RESULT GetLogPrintedEv(OUT ILogEvent **pEvent) override;
+	virtual API_RESULT GetCommands(OUT uint *number) override;
+	virtual API_RESULT GetCommand(OUT const char **name, uint idx) override;
+	virtual API_RESULT GetName(OUT const char **pName) override;
 };
 

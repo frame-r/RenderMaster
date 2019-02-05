@@ -14,7 +14,7 @@ RenderTarget::RenderTarget(unique_ptr<ICoreRenderTarget> renderTaget)
 	_coreRenderTarget = std::move(renderTaget);
 }
 
-API RenderTarget::GetCoreRenderTarget(ICoreRenderTarget **renderTargetOut)
+API_RESULT RenderTarget::GetCoreRenderTarget(ICoreRenderTarget **renderTargetOut)
 {
 	*renderTargetOut = _coreRenderTarget.get();
 	return S_OK;

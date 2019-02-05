@@ -30,7 +30,7 @@ DX11StructuredBuffer::~DX11StructuredBuffer()
 	elementSize = 0u;
 }
 
-API DX11StructuredBuffer::SetData(uint8 *data, size_t size)
+API_RESULT DX11StructuredBuffer::SetData(uint8 *data, size_t size)
 {
 	ID3D11DeviceContext *ctx = getContext(_pCore);
 
@@ -43,13 +43,13 @@ API DX11StructuredBuffer::SetData(uint8 *data, size_t size)
 	return S_OK;
 }
 
-API DX11StructuredBuffer::GetSize(OUT uint *sizeOut)
+API_RESULT DX11StructuredBuffer::GetSize(OUT uint *sizeOut)
 {
 	*sizeOut = size;
 	return S_OK;
 }
 
-API DX11StructuredBuffer::GetElementSize(OUT uint *sizeOut)
+API_RESULT DX11StructuredBuffer::GetElementSize(OUT uint *sizeOut)
 {
 	*sizeOut = elementSize;
 	return S_OK;

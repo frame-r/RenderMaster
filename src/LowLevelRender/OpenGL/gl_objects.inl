@@ -71,8 +71,8 @@ public:
 
 	void bind();
 
-	API SetColorTexture(uint slot, ITexture *tex) override;
-	API SetDepthTexture(ITexture *tex) override;
-	API UnbindColorTexture(uint slot) override;
-	API UnbindAll() override;
+	API_RESULT SetColorTexture(uint slot, ITexture *tex) override;
+	API_RESULT SetDepthTexture(ITexture *tex) override;
+	API_RESULT UnbindColorTexture(uint slot) override;
+	API_RESULT UnbindAll() override;
 };

@@ -61,7 +61,7 @@ DX11RenderTarget *getDX11RenderTarget(IRenderTarget *rt)
 DX11CoreRender::DX11CoreRender(){}
 DX11CoreRender::~DX11CoreRender(){}
 
-API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
+API_RESULT DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncOn)
 {
 	_pCore->GetSubSystem((ISubSystem**)&_pResMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
@@ -231,7 +231,7 @@ API DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSyncO
 	return S_OK;
 }
 
-API DX11CoreRender::Free()
+API_RESULT DX11CoreRender::Free()
 {
 	ConstantBufferPool.clear();
 
@@ -259,18 +259,18 @@ API DX11CoreRender::Free()
 	return S_OK;
 }
 
-API DX11CoreRender::MakeCurrent(const WindowHandle* handle)
+API_RESULT DX11CoreRender::MakeCurrent(const WindowHandle* handle)
 {
 	return S_OK;
 }
 
-API DX11CoreRender::SwapBuffers()
+API_RESULT DX11CoreRender::SwapBuffers()
 {
 	_swapChain->Present(_VSyncOn, 0);
 	return S_OK;
 }
 
-API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
+API_RESULT DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode)
 {
 	assert(dataDesc->colorOffset % 8 == 0 && "");
 	assert(dataDesc->colorStride % 8 == 0 && "");
@@ -393,7 +393,7 @@ API DX11CoreRender::CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDe
 	return S_OK;
 }
 
-API DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText)
+API_RESULT DX11CoreRender::CreateShader(OUT ICoreShader **pShader, const char *vertText, const char *fragText, const char *geomText)
 {
 	HRESULT err;
 	
@@ -508,7 +508,7 @@ UINT bindFlags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 	return bindFlags_;
 }
 
-API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
+API_RESULT DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented)
 {
 	D3D11_TEXTURE2D_DESC texture_desc;
 	texture_desc.Width = width;
@@ -631,13 +631,13 @@ API DX11CoreRender::CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uin
 	return S_OK;
 }
 
-API DX11CoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
+API_RESULT DX11CoreRender::CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget)
 {
 	*pRenderTarget = new DX11RenderTarget();
 	return S_OK;
 }
 
-API DX11CoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize)
+API_RESULT DX11CoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize)
 {
 	assert(size % 16 == 0);
 
@@ -667,13 +667,12 @@ API DX11CoreRender::CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructur
 	return S_OK;
 }
 
-API DX11CoreRender::PushStates()
+API_VOID DX11CoreRender::PushStates()
 {
 	_statesStack.push(_state);
-	return S_OK;
 }
 
-API DX11CoreRender::PopStates()
+API_VOID DX11CoreRender::PopStates()
 {
 	State& state = _statesStack.top();
 
@@ -740,41 +739,35 @@ API DX11CoreRender::PopStates()
 
 	_state = state;
 	_statesStack.pop();
-
-	return S_OK;
 }
 
-API DX11CoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
+API_VOID DX11CoreRender::SetCurrentRenderTarget(IRenderTarget *pRenderTarget)
 {
 	assert(pRenderTarget && "DX11CoreRender::SetCurrentRenderTarget(): pRenderTarget can not be null. To set default framebuffer use DX11CoreRender::RestoreDefaultRenderTarget()");
 
 	if (_state.renderTarget.Get() == pRenderTarget)
-		return S_OK;
+		return;
 
 	_state.renderTarget = intrusive_ptr<IRenderTarget>(pRenderTarget);
 
 	DX11RenderTarget *dxrt = getDX11RenderTarget(pRenderTarget);
 	dxrt->bind(_context.Get(), _defaultDepthStencilView.Get());
-
-	return S_OK;
 }
 
-API DX11CoreRender::RestoreDefaultRenderTarget()
+API_VOID DX11CoreRender::RestoreDefaultRenderTarget()
 {
 	if (_state.renderTarget.Get() == nullptr)
-		return S_OK;
+		return;
 
 	_state.renderTarget = intrusive_ptr<IRenderTarget>();
 
 	_context->OMSetRenderTargets(1, _defaultRenderTargetView.GetAddressOf(), _defaultDepthStencilView.Get());
-
-	return S_OK;
 }
 
-API DX11CoreRender::SetShader(IShader* pShader)
+API_VOID DX11CoreRender::SetShader(IShader* pShader)
 {
 	if (_state.shader.Get() == pShader)
-		return S_OK;
+		return;
 
 	_state.shader = intrusive_ptr<IShader>(pShader);
 
@@ -788,14 +781,12 @@ API DX11CoreRender::SetShader(IShader* pShader)
 		_context->PSSetShader(nullptr, nullptr, 0);
 		_context->GSSetShader(nullptr, nullptr, 0);
 	}
-
-	return S_OK;
 }
 
-API DX11CoreRender::SetMesh(IMesh* mesh)
+API_VOID DX11CoreRender::SetMesh(IMesh* mesh)
 {
 	if (_state.mesh.Get() == mesh)
-		return S_OK;
+		return;
 
 	if (mesh)
 	{
@@ -829,10 +820,9 @@ API DX11CoreRender::SetMesh(IMesh* mesh)
 		_context->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);	
 		_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
-	return S_OK;
 }
 
-API DX11CoreRender::SetStructuredBufer(uint slot, IStructuredBuffer *buffer)
+API_VOID DX11CoreRender::SetStructuredBufer(uint slot, IStructuredBuffer *buffer)
 {
 	if (buffer)
 	{
@@ -849,16 +839,14 @@ API DX11CoreRender::SetStructuredBufer(uint slot, IStructuredBuffer *buffer)
 		_context->VSSetShaderResources(slot, 1, &srv);
 		_context->PSSetShaderResources(slot, 1, &srv);
 	}
-
-	return S_OK;
 }
 
-API DX11CoreRender::BindTexture(uint slot, ITexture *texture)
+API_VOID DX11CoreRender::BindTexture(uint slot, ITexture *texture)
 {
 	assert(slot < MAX_TEXTURE_SLOTS && "DX11CoreRender::BindTexture(): slot must be 0...15");
 
 	if (_state.texShaderBindings[slot].Get() == texture)
-		return S_OK;
+		return;
 
 	_state.texShaderBindings[slot] = texture;
 
@@ -879,11 +867,9 @@ API DX11CoreRender::BindTexture(uint slot, ITexture *texture)
 		ID3D11SamplerState *const pSamplers[1] = { nullptr };
 		_context->PSSetSamplers(slot, 1, pSamplers);
 	}
-
-	return S_OK;
 }
 
-API DX11CoreRender::UnbindAllTextures()
+API_VOID DX11CoreRender::UnbindAllTextures()
 {
 	int to = MAX_TEXTURE_SLOTS - 1;
 	while (to > -1 && _state.texShaderBindings[to].Get() == nullptr)
@@ -912,11 +898,9 @@ API DX11CoreRender::UnbindAllTextures()
 			_state.texShaderBindings[i] = nullptr;
 		}
 	}
-
-	return S_OK;
 }
 
-API DX11CoreRender::Draw(IMesh* mesh, uint instances)
+API_VOID DX11CoreRender::Draw(IMesh* mesh, uint instances)
 {
 	assert(_state.shader.Get() && "DX11CoreRender::Draw(): shader not set");
 
@@ -939,11 +923,9 @@ API DX11CoreRender::Draw(IMesh* mesh, uint instances)
 		else
 			_context->Draw(dxMesh->vertexNumber(), 0);
 	}
-
-	return S_OK;
 }
 
-API DX11CoreRender::SetDepthTest(int enabled)
+API_VOID DX11CoreRender::SetDepthTest(int enabled)
 {
 	if (_state.depthStencilDesc.DepthEnable != enabled)
 	{
@@ -951,11 +933,9 @@ API DX11CoreRender::SetDepthTest(int enabled)
 		_state.depthStencilState = _depthStencilStatePool.FetchState(_state.depthStencilDesc);
 		_context->OMSetDepthStencilState(_state.depthStencilState.Get(), 0);
 	}
-
-	return S_OK;
 }
 
-API DX11CoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
+API_VOID DX11CoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
 {
 	D3D11_BLEND_DESC blend_desc{};
 	blend_desc.AlphaToCoverageEnable = FALSE;
@@ -975,11 +955,9 @@ API DX11CoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest)
 		_state.blendState = _blendStatePool.FetchState(_state.blendStateDesc);
 		_context->OMSetBlendState(_state.blendState.Get(), zero, ~0u);
 	}
-
-	return S_OK;
 }
 
-API DX11CoreRender::SetViewport(uint newWidth, uint newHeight)
+API_VOID DX11CoreRender::SetViewport(uint newWidth, uint newHeight)
 {
 	if (_state.width != newWidth || _state.heigth != newHeight)
 	{
@@ -997,11 +975,9 @@ API DX11CoreRender::SetViewport(uint newWidth, uint newHeight)
 
 		_context->RSSetViewports(1, &dxViewport);
 	}
-
-	return S_OK;
 }
 
-API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
+API_VOID DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 {
 	D3D11_VIEWPORT v;
 	UINT viewportNumber = 1;
@@ -1010,11 +986,9 @@ API DX11CoreRender::GetViewport(OUT uint* wOut, OUT uint* hOut)
 
 	*wOut = (uint)v.Width;
 	*hOut = (uint)v.Height;
-
-	return S_OK;
 }
 
-API DX11CoreRender::Clear()
+API_VOID DX11CoreRender::Clear()
 {
 	if (_state.renderTarget.Get() == nullptr) // default
 	{
@@ -1025,8 +999,6 @@ API DX11CoreRender::Clear()
 		DX11RenderTarget *dxRT = getDX11RenderTarget(_state.renderTarget.Get());
 		dxRT->clear(_context.Get(), _state.clearColor, _state.depthClearColor, _state.stencilClearColor);
 	}
-
-	return S_OK;
 }
 
 void DX11CoreRender::destroyDefaultBuffers()
@@ -1083,7 +1055,7 @@ bool DX11CoreRender::createDefaultBuffers(uint w, uint h)
 	return true;
 }
 
-API DX11CoreRender::GetName(OUT const char **pTxt)
+API_RESULT DX11CoreRender::GetName(OUT const char **pTxt)
 {
 	*pTxt = "DX11CoreRender";
 	return S_OK;
@@ -1138,7 +1110,7 @@ ComPtr<ID3DBlob> DX11CoreRender::createShader(ID3D11DeviceChild *&poiterOut, SHA
 	return shader_buffer;
 }
 
-API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readBytes, uint x, uint y)
+API_VOID DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *readBytes, uint x, uint y)
 {
 	DX11Texture *d3dtex = static_cast<DX11Texture*>(tex);
 	ID3D11Texture2D *d3dtex2d = static_cast<ID3D11Texture2D*>(d3dtex->resource());
@@ -1172,11 +1144,9 @@ API DX11CoreRender::ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint *read
 
 	_context->Unmap(cpuReadTex,0);
 	cpuReadTex->Release();
-
-	return S_OK;
 }
 
-API DX11CoreRender::BlitRenderTargetToDefault(IRenderTarget *pRenderTarget)
+API_VOID DX11CoreRender::BlitRenderTargetToDefault(IRenderTarget *pRenderTarget)
 {
 	DX11RenderTarget *dxrt = getDX11RenderTarget(pRenderTarget);
 
@@ -1185,8 +1155,6 @@ API DX11CoreRender::BlitRenderTargetToDefault(IRenderTarget *pRenderTarget)
 
 	DX11Texture *dxTexDepth = getDX11Texture(dxrt->texDepth());
 	_context->CopyResource(_defaultDepthStencilTex.Get(), dxTexDepth->resource());
-
-	return S_OK;
 }
 
 const char *get_shader_profile(SHADER_TYPE type)
@@ -1296,27 +1264,27 @@ void DX11RenderTarget::clear(ID3D11DeviceContext *ctx, FLOAT* color, FLOAT depth
 	}
 }
 
-API DX11RenderTarget::SetColorTexture(uint slot, ITexture *tex)
+API_RESULT DX11RenderTarget::SetColorTexture(uint slot, ITexture *tex)
 {
 	assert(slot < MAX_RENDER_TARGETS && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
 	_colors[slot] = TexturePtr(tex);
 	return S_OK;
 }
 
-API DX11RenderTarget::SetDepthTexture(ITexture *tex)
+API_RESULT DX11RenderTarget::SetDepthTexture(ITexture *tex)
 {
 	_depth = TexturePtr(tex);
 	return S_OK;
 }
 
-API DX11RenderTarget::UnbindColorTexture(uint slot)
+API_RESULT DX11RenderTarget::UnbindColorTexture(uint slot)
 {
 	assert(slot < MAX_RENDER_TARGETS && "DX11RenderTarget::SetColorTexture() slot must be 0..7");
 	_colors[slot] = TexturePtr();
 	return S_OK;
 }
 
-API DX11RenderTarget::UnbindAll()
+API_RESULT DX11RenderTarget::UnbindAll()
 {
 	for (auto &rtx : _colors)
 		rtx = TexturePtr();

@@ -158,7 +158,7 @@ protected:
 
 protected:
 	void free() { _pool.clear(); }
-	virtual API create_actually_state(const TDesc *pRasterizerDesc, _COM_Outptr_opt_  TState **ppRasterizerState) = 0;
+	virtual API_RESULT create_actually_state(const TDesc *pRasterizerDesc, _COM_Outptr_opt_  TState **ppRasterizerState) = 0;
 
 public:
 	BaseStatePool(DX11CoreRender& parent) : _parent(parent)
@@ -186,7 +186,7 @@ public:
 
 class RasterizerStatePool : public BaseStatePool<D3D11_RASTERIZER_DESC, ID3D11RasterizerState, RasterHash>
 {
-	virtual API create_actually_state(const D3D11_RASTERIZER_DESC *pRasterizerDesc, _COM_Outptr_opt_  ID3D11RasterizerState **ppRasterizerState) override
+	virtual API_RESULT create_actually_state(const D3D11_RASTERIZER_DESC *pRasterizerDesc, _COM_Outptr_opt_  ID3D11RasterizerState **ppRasterizerState) override
 	{
 		return _parent._device->CreateRasterizerState(pRasterizerDesc, ppRasterizerState);
 	}
@@ -221,7 +221,7 @@ public:
 
 class DepthStencilStatePool : public BaseStatePool<D3D11_DEPTH_STENCIL_DESC, ID3D11DepthStencilState, DepthStencilHash>
 {
-	virtual API create_actually_state(const D3D11_DEPTH_STENCIL_DESC *desc, _COM_Outptr_opt_  ID3D11DepthStencilState **ppState) override
+	virtual API_RESULT create_actually_state(const D3D11_DEPTH_STENCIL_DESC *desc, _COM_Outptr_opt_  ID3D11DepthStencilState **ppState) override
 	{
 		return _parent._device->CreateDepthStencilState(desc, ppState);
 	}
@@ -268,7 +268,7 @@ public:
 
 class BlendStatePool : public BaseStatePool<D3D11_BLEND_DESC, ID3D11BlendState, BlendHash>
 {
-	virtual API create_actually_state(const D3D11_BLEND_DESC *desc, _COM_Outptr_opt_  ID3D11BlendState **ppState) override
+	virtual API_RESULT create_actually_state(const D3D11_BLEND_DESC *desc, _COM_Outptr_opt_  ID3D11BlendState **ppState) override
 	{
 		return _parent._device->CreateBlendState(desc, ppState);
 	}

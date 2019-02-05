@@ -20,7 +20,7 @@ inline void ThrowIfFailed(HRESULT hr)
 {
 	if (FAILED(hr))
 	{
-		// Set a breakpoint on this line to catch DirectX API errors
+		// Set a breakpoint on this line to catch DirectX API_RESULT errors
 		throw std::exception();
 	}
 }
@@ -51,7 +51,7 @@ public:
 				(*it)->Call(args...);
 	}
 
-	API Subscribe(ISubscriber* pSubscriber) override
+	API_RESULT Subscribe(ISubscriber* pSubscriber) override
 	{		
 		auto it = std::find_if(_subscribers.begin(), _subscribers.end(), [pSubscriber](ISubscriber *sbr) -> bool { return pSubscriber == sbr; });
  
@@ -61,7 +61,7 @@ public:
 		return S_OK; 
 	} 
 
-	API Unsubscribe(ISubscriber* pSubscriber) override
+	API_RESULT Unsubscribe(ISubscriber* pSubscriber) override
 	{
 		auto it = std::find_if(_subscribers.begin(), _subscribers.end(), [pSubscriber](ISubscriber *sbr) -> bool { return pSubscriber == sbr; }); 
  

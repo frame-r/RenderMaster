@@ -19,19 +19,19 @@ GLMesh::~GLMesh()
 	if (_VAO) {	glDeleteVertexArrays(1, &_VAO); _VAO = 0; }
 }
 
-API GLMesh::GetNumberOfVertex(OUT uint *vertex)
+API_RESULT GLMesh::GetNumberOfVertex(OUT uint *vertex)
 {
 	*vertex = _number_of_vertices;
 	return S_OK;
 }
 
-API GLMesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
+API_RESULT GLMesh::GetAttributes(OUT INPUT_ATTRUBUTE *attribs)
 {
 	*attribs = _attributes;
 	return S_OK;
 }
 
-API GLMesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
+API_RESULT GLMesh::GetVertexTopology(OUT VERTEX_TOPOLOGY *topology)
 {
 	*topology = _topology;
 	return S_OK;

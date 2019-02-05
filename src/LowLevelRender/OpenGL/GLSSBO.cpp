@@ -19,7 +19,7 @@ GLSSBO::~GLSSBO()
 	_elementSize = 0u;
 }
 
-API GLSSBO::SetData(uint8 *data, size_t size)
+API_RESULT GLSSBO::SetData(uint8 *data, size_t size)
 {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, _ID);
 	GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
@@ -29,13 +29,13 @@ API GLSSBO::SetData(uint8 *data, size_t size)
 	return S_OK;
 }
 
-API GLSSBO::GetSize(OUT uint *sizeOut)
+API_RESULT GLSSBO::GetSize(OUT uint *sizeOut)
 {
 	*sizeOut = _size;
 	return S_OK;
 }
 
-API GLSSBO::GetElementSize(OUT uint *sizeOut)
+API_RESULT GLSSBO::GetElementSize(OUT uint *sizeOut)
 {
 	*sizeOut = _elementSize;
 	return S_OK;

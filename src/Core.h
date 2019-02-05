@@ -88,17 +88,17 @@ public:
 	int FPSlazy() const		{ return _fpsLazy; }
 	int64_t frame() const	{ return _frame; }
 
-	API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) override;
-	API Start() override;
-	API Update() override;
-	API RenderFrame(const WindowHandle* externHandle, const ICamera *pCamera) override;
-	API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) override;
-	API GetDataDir(OUT const char **pStr) override;
-	API GetWorkingDir(OUT const char **pStr) override;
-	API GetInstalledDir(OUT const char **pStr) override;
-	API AddInitCallback(IInitCallback *pCallback) override;
-	API AddUpdateCallback(IUpdateCallback *pCallback) override;
-	API ReleaseEngine() override;
+	API_RESULT Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) override;
+	API_RESULT Start() override;
+	API_RESULT Update() override;
+	API_RESULT RenderFrame(const WindowHandle* externHandle, const ICamera *pCamera) override;
+	API_RESULT GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) override;
+	API_RESULT GetDataDir(OUT const char **pStr) override;
+	API_RESULT GetWorkingDir(OUT const char **pStr) override;
+	API_RESULT GetInstalledDir(OUT const char **pStr) override;
+	API_RESULT AddInitCallback(IInitCallback *pCallback) override;
+	API_RESULT AddUpdateCallback(IUpdateCallback *pCallback) override;
+	API_RESULT ReleaseEngine() override;
 
 	STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
 	STDMETHODIMP_(ULONG) AddRef() override;

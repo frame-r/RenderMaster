@@ -14,13 +14,13 @@ StructuredBuffer::StructuredBuffer(unique_ptr<ICoreStructuredBuffer> buf)
 	_coreStructuredBuffer = std::move(buf);
 }
 
-API StructuredBuffer::GetCoreBuffer(ICoreStructuredBuffer **bufOut)
+API_RESULT StructuredBuffer::GetCoreBuffer(ICoreStructuredBuffer **bufOut)
 {
 	*bufOut = _coreStructuredBuffer.get();
 	return S_OK;
 }
 
-API StructuredBuffer::SetData(uint8 * data, size_t size)
+API_RESULT StructuredBuffer::SetData(uint8 * data, size_t size)
 {
 	_coreStructuredBuffer->SetData(data, size);
 	return S_OK;

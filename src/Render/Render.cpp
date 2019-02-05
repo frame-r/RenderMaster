@@ -288,7 +288,7 @@ Render::~Render()
 {
 }
 
-API Render::shaders_reload(const char ** args, uint argsNumber)
+API_RESULT Render::shaders_reload(const char ** args, uint argsNumber)
 {
 	return ShadersReload();
 }
@@ -426,7 +426,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 	releaseBuffers(buffers);
 }
 
-API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
+API_RESULT Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
 {
 	uint w, h;
 	tex->GetWidth(&w);
@@ -458,7 +458,7 @@ API Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *de
 	return S_OK;
 }
 
-API Render::RenderPassGUI()
+API_RESULT Render::RenderPassGUI()
 {
 	INPUT_ATTRUBUTE attribs;
 	_postPlane->GetAttributes(&attribs);
@@ -499,9 +499,7 @@ API Render::RenderPassGUI()
 			{
 				r.length = fps.size();
 
-				IStructuredBuffer *sb;
-				_pResMan->CreateStructuredBuffer(&sb, (uint)r.length * sizeof(charr), sizeof(charr));
-				r.buffer = StructuredBufferPtr(sb);
+				r.buffer = _pResMan->CreateStructuredBuffer((uint)r.length * sizeof(charr), sizeof(charr));
 
 				r.bufferData = unique_ptr<charr[]>(new charr[r.length]);
 			}
@@ -651,7 +649,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 		process_shader(textVertOut, text, fileIn, "out_v.shader", 0);
 		process_shader(textFragOut, text, fileIn, "out_f.shader", 1);
 
-		bool compiled = SUCCEEDED(_pResMan->CreateShader(&pShader, textVertOut, nullptr, textFragOut)) && pShader != nullptr;
+		bool compiled = SUCCEEDED(_pResMan->_CreateShader(&pShader, textVertOut, nullptr, textFragOut)) && pShader != nullptr;
 
 		if (!compiled)
 		{
@@ -768,12 +766,11 @@ ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORM
 
 	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT;
 
-	ITexture *tex;
-	_pResMan->CreateTexture(&tex, width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
+	TexturePtr tex = _pResMan->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
 
-	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, TexturePtr(tex)});
+	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, tex});
 
-	return tex;
+	return tex.Get();
 }
 void Render::releaseTexture2d(ITexture *tex)
 {
@@ -818,56 +815,34 @@ void Render::Init()
 
 	_pCore->AddUpdateCallback(std::bind(&Render::_update, this));
 
-	// Shaders
-	ITextFile *shader;
-
-	_pResMan->LoadTextFile(&shader, "mesh.shader");
-	_forwardShader =  intrusive_ptr<ITextFile>(shader);
-
-	_pResMan->LoadTextFile(&shader, "id.shader");
-	_idShader =  intrusive_ptr<ITextFile>(shader);
-
-	_pResMan->LoadTextFile(&shader, "post\\engine_post.shader");
-	_postShader =  intrusive_ptr<ITextFile>(shader);
-
-	_pResMan->LoadTextFile(&shader, "font.shader");
-	_fontShader =  intrusive_ptr<ITextFile>(shader);
+	_forwardShader = _pResMan->LoadTextFile("mesh.shader");
+	_idShader = _pResMan->LoadTextFile("id.shader");
+	_postShader =_pResMan->LoadTextFile("post\\engine_post.shader");
+	_fontShader = _pResMan->LoadTextFile("font.shader");
 
 	// Render Targets
-	IRenderTarget *RT;
-	_pResMan->CreateRenderTarget(&RT);
-	renderTarget = RenderTargetPtr(RT);
+	renderTarget = _pResMan->CreateRenderTarget();
 
-	// Meshes
-	// get all default meshes and release only for test
-	MeshPtr axesMesh;
-	MeshPtr axesArrowMesh;
-	MeshPtr gridMesh;
-	IMesh *mesh;
+	{
+		// Meshes
+		// get all default meshes and release only for test
 
-	_pResMan->LoadMesh(&mesh, "std#axes");
-	axesMesh = MeshPtr(mesh);
+		MeshPtr axesMesh;
+		MeshPtr axesArrowMesh;
+		MeshPtr gridMesh;
 
-	_pResMan->LoadMesh(&mesh, "std#axes_arrows");
-	axesArrowMesh = MeshPtr(mesh);
+		axesMesh = _pResMan->LoadMesh("std#axes");
+		axesArrowMesh = _pResMan->LoadMesh( "std#axes_arrows");
+		gridMesh = _pResMan->LoadMesh("std#grid");
 
-	_pResMan->LoadMesh(&mesh, "std#grid");
-	gridMesh = MeshPtr(mesh);
+		// Create texture for test
+		auto tex = _pResMan->CreateTexture(300, 300, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::R32UI, TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT);
+	}
 
-	_pResMan->LoadMesh(&mesh, "std#plane");
-	_postPlane = MeshPtr(mesh);
-
-	// Create texture for test
-	ITexture *tex;
-	_pResMan->CreateTexture(&tex, 300, 300, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::R32UI, TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT);
-	tex->AddRef();
-	tex->Release();
-	
-	_pResMan->LoadTexture(&tex, "std#white_texture", TEXTURE_CREATE_FLAGS());
-	whiteTexture = TexturePtr(tex);
-
-	_pResMan->LoadTexture(&tex, "ExportedFont.dds", TEXTURE_CREATE_FLAGS());
-	fontTexture = TexturePtr(tex);
+	_postPlane = _pResMan->LoadMesh("std#plane");
+		
+	whiteTexture = _pResMan->LoadTexture("std#white_texture", TEXTURE_CREATE_FLAGS());
+	fontTexture = _pResMan->LoadTexture("ExportedFont.dds", TEXTURE_CREATE_FLAGS());
 
 	LOG("Render initialized");
 }
@@ -888,20 +863,20 @@ void Render::Free()
 	_shaders_pool.clear();
 }
 
-API Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format)
+API_RESULT Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format)
 {
 	ITexture *tex = getRenderTargetTexture2d(width, height, format);
 	*texOut = tex;
 	return S_OK;
 }
 
-API Render::ReleaseRenderTexture2D(ITexture *texIn)
+API_RESULT Render::ReleaseRenderTexture2D(ITexture *texIn)
 {
 	releaseTexture2d(texIn);
 	return S_OK;
 }
 
-API Render::ShadersReload()
+API_RESULT Render::ShadersReload()
 {
 	LOG("Shaders reloading...");
 	_idShader->Reload();
@@ -912,13 +887,13 @@ API Render::ShadersReload()
 	return S_OK;
 }
 
-API Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
+API_RESULT Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
 {
 	*pShader = getShader(*shaderReq);
 	return S_OK;
 }
 
-API Render::GetName(const char** pName)
+API_RESULT Render::GetName(const char** pName)
 {
 	*pName = "Render";
 	return S_OK;

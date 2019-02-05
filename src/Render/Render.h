@@ -83,7 +83,7 @@ class Render : public IRender, IProfilerCallback
 
 	vector<RenderProfileRecord> _records;
 
-	API shaders_reload(const char **args, uint argsNumber);
+	API_RESULT shaders_reload(const char **args, uint argsNumber);
 
 	uint getNumLines() override;
 	string getString(uint i) override;
@@ -111,12 +111,12 @@ public:
 	void RenderFrame(const ICamera *pCamera);
 	ITexture *WhiteTexture() { return whiteTexture.Get(); }
 
-	API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
-	API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) override;
-	API RenderPassGUI() override;
-	API GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) override;
-	API ReleaseRenderTexture2D(ITexture *texIn) override;
-	API ShadersReload() override;
-	API GetName(OUT const char **pName) override;
+	API_RESULT PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) override;
+	API_RESULT RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) override;
+	API_RESULT RenderPassGUI() override;
+	API_RESULT GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) override;
+	API_RESULT ReleaseRenderTexture2D(ITexture *texIn) override;
+	API_RESULT ShadersReload() override;
+	API_RESULT GetName(OUT const char **pName) override;
 };
 

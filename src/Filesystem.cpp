@@ -17,7 +17,7 @@ void FileSystem::Init(const string& dataPath)
 	_dataPath = dataPath;
 }
 
-API FileSystem::OpenFile(OUT IFile **pFile, const char* pPath, FILE_OPEN_MODE mode)
+API_RESULT FileSystem::OpenFile(OUT IFile **pFile, const char* pPath, FILE_OPEN_MODE mode)
 {
 	const bool read = (mode & FILE_OPEN_MODE::READ) == FILE_OPEN_MODE::READ;
 	const bool write = (mode & FILE_OPEN_MODE::WRITE) == FILE_OPEN_MODE::WRITE;
@@ -63,7 +63,7 @@ API FileSystem::OpenFile(OUT IFile **pFile, const char* pPath, FILE_OPEN_MODE mo
 
 }
 
-API FileSystem::FileExist(const char* fullPath, OUT int *exist)
+API_RESULT FileSystem::FileExist(const char* fullPath, OUT int *exist)
 {
 	wstring wpPath = ConvertFromUtf8ToUtf16(fullPath);
 
@@ -81,7 +81,7 @@ API FileSystem::FileExist(const char* fullPath, OUT int *exist)
 	return S_OK;
 }
 
-API FileSystem::DirectoryExist(const char* fullPath, int* exist)
+API_RESULT FileSystem::DirectoryExist(const char* fullPath, int* exist)
 {
 	wstring wpPath = ConvertFromUtf8ToUtf16(fullPath);
 	fs::path wfsPath(wpPath);
@@ -89,7 +89,7 @@ API FileSystem::DirectoryExist(const char* fullPath, int* exist)
 	return S_OK;
 }
 
-API FileSystem::GetName(OUT const char **pName)
+API_RESULT FileSystem::GetName(OUT const char **pName)
 {
 	*pName = "FileSystem";
 	return S_OK;
@@ -102,7 +102,7 @@ File::File(const ios_base::openmode& cpp_mode, const fs::path& path)
 	_file.open(mPath, cpp_mode);
 }
 
-API File::Read(OUT uint8 *pMem, uint bytes)
+API_RESULT File::Read(OUT uint8 *pMem, uint bytes)
 {
 	_file.read((char *)pMem, bytes);
 
@@ -116,7 +116,7 @@ API File::Read(OUT uint8 *pMem, uint bytes)
 	return S_OK;
 }
 
-API File::ReadStr(OUT char *pStr, OUT uint *bytes)
+API_RESULT File::ReadStr(OUT char *pStr, OUT uint *bytes)
 {
 	uint fileSize = 0;
 
@@ -133,31 +133,31 @@ API File::ReadStr(OUT char *pStr, OUT uint *bytes)
 	return S_OK;
 }
 
-API File::IsEndOfFile(OUT int *eof)
+API_RESULT File::IsEndOfFile(OUT int *eof)
 {
 	*eof = _file.eof();
 	return S_OK;
 }
 
-API File::Write(const uint8 *pMem, uint bytes)
+API_RESULT File::Write(const uint8 *pMem, uint bytes)
 {
 	_file.write((const char *)pMem, bytes);
 	return S_OK;
 }
 
-API File::WriteStr(const char *pStr)
+API_RESULT File::WriteStr(const char *pStr)
 {
 	_file.write(pStr, strlen(pStr));
 	return S_OK;
 }
 
-API File::FileSize(OUT uint *size)
+API_RESULT File::FileSize(OUT uint *size)
 {
 	*size = (uint)file_size(_fsPath);
 	return S_OK;
 }
 
-API File::CloseAndFree()
+API_RESULT File::CloseAndFree()
 {
 	_file.close();
 	delete this;

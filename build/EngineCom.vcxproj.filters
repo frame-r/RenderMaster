@@ -241,7 +241,6 @@
     <None Include="..\src\Shaders\font.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="cpp.hint" />
     <None Include="..\src\LowLevelRender\DirectX\dx_objects.inl">
       <Filter>LowLevelRender\DirectX</Filter>
     </None>

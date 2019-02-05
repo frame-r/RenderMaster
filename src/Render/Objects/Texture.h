@@ -9,8 +9,8 @@ public:
 	Texture(unique_ptr<ICoreTexture> tex);
 	Texture(unique_ptr<ICoreTexture> tex, const string& path);
 
-	API GetCoreTexture(ICoreTexture **texOut) override;
-	API GetWidth(OUT uint *w) override;
-	API GetHeight(OUT uint *h) override;
-	API GetFormat(OUT TEXTURE_FORMAT *formatOut) override;
+	API_RESULT GetCoreTexture(ICoreTexture **texOut) override;
+	API_RESULT GetWidth(OUT uint *w) override;
+	API_RESULT GetHeight(OUT uint *h) override;
+	API_RESULT GetFormat(OUT TEXTURE_FORMAT *formatOut) override;
 };

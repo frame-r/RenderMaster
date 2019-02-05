@@ -17,8 +17,8 @@ public:
 
 	virtual ~TextFile();
 
-	API GetText(OUT const char **textOut) override { *textOut = text; return S_OK; }
-	API SetText(const char *textIn) override;
+	API_RESULT GetText(OUT const char **textOut) override { *textOut = text; return S_OK; }
+	API_RESULT SetText(const char *textIn) override;
 	void Reload() override;
 };
 
@@ -60,7 +60,7 @@ class ResourceManager final : public IResourceManager, IProfilerCallback
 	void _FBX_load_node_transform(FbxNode* pNode, const char *str);
 	#endif
 
-	API resources_list(const char **args, uint argsNumber);
+	API_RESULT resources_list(const char **args, uint argsNumber);
 
 	uint getNumLines() override;
 	string getString(uint i) override;
@@ -107,20 +107,20 @@ public:
 
 	void Init();
 
-	API LoadModel(OUT IModel **pModel, const char *path) override;
-	API LoadMesh(OUT IMesh **pMesh, const char *path) override;
-	API LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) override;
-	API LoadTextFile(OUT ITextFile **pShader, const char *path) override;
+	API_RESULT _LoadModel(OUT IModel **pModel, const char *path) override;
+	API_RESULT _LoadMesh(OUT IMesh **pMesh, const char *path) override;
+	API_RESULT _LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) override;
+	API_RESULT _LoadTextFile(OUT ITextFile **pShader, const char *path) override;
 
-	API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
-	API CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
-	API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) override;
-	API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint size, uint elementSize) override;
-	API CreateGameObject(OUT IGameObject **pGameObject) override;
-	API CreateModel(OUT IModel **pModel) override;
-	API CreateCamera(OUT ICamera **pCamera) override;
+	API_RESULT _CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
+	API_RESULT _CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;
+	API_RESULT _CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) override;
+	API_RESULT _CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint size, uint elementSize) override;
+	API_RESULT _CreateGameObject(OUT IGameObject **pGameObject) override;
+	API_RESULT _CreateModel(OUT IModel **pModel) override;
+	API_RESULT _CreateCamera(OUT ICamera **pCamera) override;
 
-	API Free() override;
+	API_RESULT Free() override;
 
-	API GetName(OUT const char **pTxt) override;
+	API_RESULT GetName(OUT const char **pTxt) override;
 };

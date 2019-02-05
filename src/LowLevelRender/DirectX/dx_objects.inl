@@ -64,8 +64,8 @@ public:
 	ITexture *texColor(uint slot) { return _colors[slot].Get(); }
 	ITexture *texDepth() { return _depth.Get(); }
 
-	API SetColorTexture(uint slot, ITexture *tex) override;
-	API SetDepthTexture(ITexture *tex) override;
-	API UnbindColorTexture(uint slot) override;
-	API UnbindAll() override;
+	API_RESULT SetColorTexture(uint slot, ITexture *tex) override;
+	API_RESULT SetDepthTexture(ITexture *tex) override;
+	API_RESULT UnbindColorTexture(uint slot) override;
+	API_RESULT UnbindAll() override;
 };

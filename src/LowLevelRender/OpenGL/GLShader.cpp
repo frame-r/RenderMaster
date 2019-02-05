@@ -206,31 +206,31 @@ void GLShader::bind()
 	}
 }
 
-API GLShader::SetFloatParameter(const char *name, float value)
+API_RESULT GLShader::SetFloatParameter(const char *name, float value)
 {
 	setParameter(name, &value);
 	return S_OK;
 }
 
-API GLShader::SetVec4Parameter(const char *name, const vec4 *value)
+API_RESULT GLShader::SetVec4Parameter(const char *name, const vec4 *value)
 {
 	setParameter(name, value);
 	return S_OK;
 }
 
-API GLShader::SetMat4Parameter(const char *name, const mat4 *value)
+API_RESULT GLShader::SetMat4Parameter(const char *name, const mat4 *value)
 {
 	setParameter(name, value);
 	return S_OK;
 }
 
-API GLShader::SetUintParameter(const char *name, uint value)
+API_RESULT GLShader::SetUintParameter(const char *name, uint value)
 {
 	setParameter(name, &value);
 	return S_OK;
 }
 
-API GLShader::FlushParameters()
+API_RESULT GLShader::FlushParameters()
 {
 	for (auto& idx : _bufferIndicies)
 	{

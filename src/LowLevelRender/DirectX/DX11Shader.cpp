@@ -219,31 +219,31 @@ void DX11Shader::setParameter(const char *name, const void *data)
 	}
 }
 
-API DX11Shader::SetFloatParameter(const char *name, float value)
+API_RESULT DX11Shader::SetFloatParameter(const char *name, float value)
 {
 	setParameter(name, &value);
 	return S_OK;
 }
 
-API DX11Shader::SetVec4Parameter(const char *name, const vec4 *value)
+API_RESULT DX11Shader::SetVec4Parameter(const char *name, const vec4 *value)
 {
 	setParameter(name, value);
 	return S_OK;
 }
 
-API DX11Shader::SetMat4Parameter(const char *name, const mat4 *value)
+API_RESULT DX11Shader::SetMat4Parameter(const char *name, const mat4 *value)
 {
 	setParameter(name, value);
 	return S_OK;
 }
 
-API DX11Shader::SetUintParameter(const char *name, uint value)
+API_RESULT DX11Shader::SetUintParameter(const char *name, uint value)
 {
 	setParameter(name, &value);
 	return S_OK;
 }
 
-API DX11Shader::FlushParameters()
+API_RESULT DX11Shader::FlushParameters()
 {
 	ID3D11DeviceContext *ctx = getContext(_pCore);
 

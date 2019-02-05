@@ -109,7 +109,6 @@
     <None Include="..\src\Shaders\id.shader" />
     <None Include="..\src\Shaders\mesh.shader" />
     <None Include="..\src\Shaders\post\engine_post.shader" />
-    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="yaml-cpp\yaml-cpp.vcxproj">

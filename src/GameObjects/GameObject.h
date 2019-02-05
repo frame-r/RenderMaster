@@ -21,18 +21,18 @@ public:
 	GameObjectBase(){ _id = getRandomInt(); }
 	virtual ~GameObjectBase() {}
 
-	API GetID(OUT uint *id) override					{ *id = _id; return S_OK; }
-	API SetID(uint *id) override						{ _id = *id; return S_OK; }
-	API GetName(OUT const char **pName) override	{ *pName = _name.c_str(); return S_OK; }
-	API SetName(const char *pName) override;
-	API SetPosition(const vec3 *pos) override;
-	API SetRotation(const quat *rot) override;
-	API SetScale(const vec3 *scale) override		{ _scale = *scale; return S_OK; }
-	API GetPosition(OUT vec3 *pos) override			{ *pos = _pos; return S_OK; }
-	API GetRotation(OUT quat *rot) override			{ *rot = _rot; return S_OK; }
-	API GetScale(OUT vec3 *scale) override			{ *scale = _scale; return S_OK; }
-	API GetAABB(OUT AABB *aabb) override;
-	API Copy(IGameObject *copy) override;
+	API_RESULT GetID(OUT uint *id) override					{ *id = _id; return S_OK; }
+	API_RESULT SetID(uint *id) override						{ _id = *id; return S_OK; }
+	API_RESULT GetName(OUT const char **pName) override	{ *pName = _name.c_str(); return S_OK; }
+	API_RESULT SetName(const char *pName) override;
+	API_RESULT SetPosition(const vec3 *pos) override;
+	API_RESULT SetRotation(const quat *rot) override;
+	API_RESULT SetScale(const vec3 *scale) override		{ _scale = *scale; return S_OK; }
+	API_RESULT GetPosition(OUT vec3 *pos) override			{ *pos = _pos; return S_OK; }
+	API_RESULT GetRotation(OUT quat *rot) override			{ *rot = _rot; return S_OK; }
+	API_RESULT GetScale(OUT vec3 *scale) override			{ *scale = _scale; return S_OK; }
+	API_RESULT GetAABB(OUT AABB *aabb) override;
+	API_RESULT Copy(IGameObject *copy) override;
 
 	//
 	// Model Matrix
@@ -44,7 +44,7 @@ public:
 	// * Translate in world space = last column 
 	// * Columns = (Right, Forward, Up) vectors in world space
 	// * View vector = -M.el_2d.Column3(2).Normalized();
-	API GetModelMatrix(OUT mat4 *mat) override;
+	API_RESULT GetModelMatrix(OUT mat4 *mat) override;
 
 	//
 	// Inverse of Model Matrix
@@ -52,11 +52,11 @@ public:
 	// Transforms world -> local coordinates
 	// p' (local) = mat * p (world)
 	//
-	API GetInvModelMatrix(OUT mat4 *mat) override;
+	API_RESULT GetInvModelMatrix(OUT mat4 *mat) override;
 
-	API GetNameEv(OUT IStringEvent **pEvent) override			{ *pEvent = _nameEvent.get(); return S_OK; }
-	API GetPositionEv(OUT IPositionEvent **pEvent) override		{ *pEvent = _positionEvent.get(); return S_OK; }
-	API GetRotationEv(OUT IRotationEvent **pEvent) override		{ *pEvent = _rotationEvent.get(); return S_OK; }
+	API_RESULT GetNameEv(OUT IStringEvent **pEvent) override			{ *pEvent = _nameEvent.get(); return S_OK; }
+	API_RESULT GetPositionEv(OUT IPositionEvent **pEvent) override		{ *pEvent = _positionEvent.get(); return S_OK; }
+	API_RESULT GetRotationEv(OUT IRotationEvent **pEvent) override		{ *pEvent = _rotationEvent.get(); return S_OK; }
 };
 
 class GameObject : public BaseResource<GameObjectBase<IGameObject>>
@@ -68,7 +68,7 @@ public:
 // implementation
 
 template <typename T>
-inline API GameObjectBase<T>::SetName(const char* pName)
+inline API_RESULT GameObjectBase<T>::SetName(const char* pName)
 {
 	string name = string(pName);
 	if (name != _name)
@@ -80,7 +80,7 @@ inline API GameObjectBase<T>::SetName(const char* pName)
 }
 
 template<typename T>
-inline API GameObjectBase<T>::SetPosition(const vec3 * pos)
+inline API_RESULT GameObjectBase<T>::SetPosition(const vec3 * pos)
 {
 	if (!_pos.Aproximately(*pos))
 	{
@@ -91,7 +91,7 @@ inline API GameObjectBase<T>::SetPosition(const vec3 * pos)
 }
 
 template<typename T>
-inline API GameObjectBase<T>::SetRotation(const quat *rot)
+inline API_RESULT GameObjectBase<T>::SetRotation(const quat *rot)
 {
     if (!_rot.IsSameRotation(*rot))
 	{
@@ -102,7 +102,7 @@ inline API GameObjectBase<T>::SetRotation(const quat *rot)
 }
 
 template <typename T>
-inline API GameObjectBase<T>::GetAABB(OUT AABB* aabb)
+inline API_RESULT GameObjectBase<T>::GetAABB(OUT AABB* aabb)
 {
 	const static AABB _unitAABB = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f};
 	*aabb = _unitAABB;
@@ -110,7 +110,7 @@ inline API GameObjectBase<T>::GetAABB(OUT AABB* aabb)
 }
 
 template<typename T>
-inline API GameObjectBase<T>::Copy(IGameObject *copy)
+inline API_RESULT GameObjectBase<T>::Copy(IGameObject *copy)
 {
 	copy->SetName(_name.c_str());
 	copy->SetPosition(&_pos);
@@ -120,7 +120,7 @@ inline API GameObjectBase<T>::Copy(IGameObject *copy)
 }
 
 template<typename T>
-inline API GameObjectBase<T>::GetModelMatrix(OUT mat4 *mat)
+inline API_RESULT GameObjectBase<T>::GetModelMatrix(OUT mat4 *mat)
 {
 	mat4 R;
 	mat4 T;
@@ -142,7 +142,7 @@ inline API GameObjectBase<T>::GetModelMatrix(OUT mat4 *mat)
 }
 
 template<typename T>
-inline API GameObjectBase<T>::GetInvModelMatrix(OUT mat4 *mat)
+inline API_RESULT GameObjectBase<T>::GetInvModelMatrix(OUT mat4 *mat)
 {
 	mat4 M;
 

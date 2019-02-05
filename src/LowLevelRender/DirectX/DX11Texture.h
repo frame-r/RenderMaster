@@ -18,9 +18,9 @@ public:
 	DX11Texture(ID3D11Resource* pResourceIn, ID3D11SamplerState *pSmpler, ID3D11ShaderResourceView* pShaderViewIn, ID3D11RenderTargetView *pRendertargetView, ID3D11DepthStencilView *pDepthStencilView, TEXTURE_FORMAT formatIn);
 	virtual ~DX11Texture();
 
-	API GetWidth(OUT uint *w) override { *w = _width; return S_OK; }
-	API GetHeight(OUT uint *h) override { *h = _height; return S_OK; }
-	API GetFormat(OUT TEXTURE_FORMAT *formatOut) override { *formatOut = _format; return S_OK; }
+	API_RESULT GetWidth(OUT uint *w) override { *w = _width; return S_OK; }
+	API_RESULT GetHeight(OUT uint *h) override { *h = _height; return S_OK; }
+	API_RESULT GetFormat(OUT TEXTURE_FORMAT *formatOut) override { *formatOut = _format; return S_OK; }
 
 	UINT width() {return _width; }
 	UINT height() {return _height; }

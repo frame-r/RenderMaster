@@ -204,7 +204,7 @@ tree<IGameObject*>::iterator find(tree<IGameObject*>& tree, int idIn)
 //	}
 //	else
 //	{
-//		// TODO: do through SceneManager API!!! else child object won't shown in tree hierarchy
+//		// TODO: do through SceneManager API_RESULT!!! else child object won't shown in tree hierarchy
 //		sm._gameobjects.append_child(it, res);
 //		res->AddRef();
 //	}

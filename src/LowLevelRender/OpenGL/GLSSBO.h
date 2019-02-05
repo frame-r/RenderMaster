@@ -13,8 +13,8 @@ public:
 
 	GLuint ID() const { return _ID; }
 
-	API SetData(uint8 *data, size_t size) override;
-	API GetSize(OUT uint *size) override;
-	API GetElementSize(OUT uint *size) override;
+	API_RESULT SetData(uint8 *data, size_t size) override;
+	API_RESULT GetSize(OUT uint *size) override;
+	API_RESULT GetElementSize(OUT uint *size) override;
 };
 

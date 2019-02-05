@@ -493,7 +493,7 @@ size_t ResourceManager::runtimeResources()
 	return _runtimeTextures.size() + _runtimeMeshes.size() + _runtimeGameobjects.size() + _runtimeRenderTargets.size() + _runtimeStructuredBuffers.size();
 }
 
-API ResourceManager::resources_list(const char **args, uint argsNumber)
+API_RESULT ResourceManager::resources_list(const char **args, uint argsNumber)
 {
 	LOG_FORMATTED("========= Runtime resources: %i =============", runtimeResources());
 
@@ -577,13 +577,13 @@ bool ResourceManager::errorIfPathNotExist(const string& fullPath)
 	return exist;
 }
 
-API ResourceManager::GetName(OUT const char **pName)
+API_RESULT ResourceManager::GetName(OUT const char **pName)
 {
 	*pName = "ResourceManager";
 	return S_OK;
 }
 
-API ResourceManager::Free()
+API_RESULT ResourceManager::Free()
 {
 	whiteTetxure->Release();
 	whiteTetxure = nullptr;
@@ -660,7 +660,7 @@ const char* ResourceManager::loadTextFile(const char *pShaderName)
 	return tmp;
 }
 
-API ResourceManager::LoadModel(OUT IModel **pModel, const char *path)
+API_RESULT ResourceManager::_LoadModel(OUT IModel **pModel, const char *path)
 {
 	assert(is_relative(path) && "ResourceManager::LoadModel(): fileName must be relative");
 
@@ -729,7 +729,7 @@ API ResourceManager::LoadModel(OUT IModel **pModel, const char *path)
 	return S_OK;
 }
 
-API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
+API_RESULT ResourceManager::_LoadMesh(OUT IMesh **pMesh, const char *path)
 {
 	string relativeModelPath;
 	string meshID;
@@ -936,7 +936,7 @@ API ResourceManager::LoadMesh(OUT IMesh **pMesh, const char *path)
 	return S_OK;
 }
 
-API ResourceManager::LoadTextFile(OUT ITextFile **pShader, const char *path)
+API_RESULT ResourceManager::_LoadTextFile(OUT ITextFile **pShader, const char *path)
 {
 	const char *text = loadTextFile(path);
 
@@ -1388,7 +1388,7 @@ ICoreTexture* ResourceManager::loadDDS(const char *path, TEXTURE_CREATE_FLAGS fl
 	return tex;
 }
 
-API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags)
+API_RESULT ResourceManager::_LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags)
 {
 	ICoreTexture *coreTex;
 
@@ -1453,7 +1453,7 @@ API ResourceManager::LoadTexture(OUT ITexture **pTexture, const char *path, TEXT
 	return S_OK;
 }
 
-API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
+API_RESULT ResourceManager::_CreateGameObject(OUT IGameObject **pGameObject)
 {
 	#ifdef PROFILE_RESOURCES
 		DEBUG_LOG_FORMATTED("ResourceManager::CreateGameObject() new GameObject");
@@ -1470,7 +1470,7 @@ API ResourceManager::CreateGameObject(OUT IGameObject **pGameObject)
 	return S_OK;
 }
 
-API ResourceManager::CreateModel(OUT IModel **pModel)
+API_RESULT ResourceManager::_CreateModel(OUT IModel **pModel)
 {
 	IModel *g = new Model;
 
@@ -1487,7 +1487,7 @@ API ResourceManager::CreateModel(OUT IModel **pModel)
 	return S_OK;
 }
 
-API ResourceManager::CreateCamera(OUT ICamera **pCamera)
+API_RESULT ResourceManager::_CreateCamera(OUT ICamera **pCamera)
 {
 	ICamera *g = new Camera;
 
@@ -1504,7 +1504,7 @@ API ResourceManager::CreateCamera(OUT ICamera **pCamera)
 	return S_OK;
 }
 
-API ResourceManager::CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags)
+API_RESULT ResourceManager::_CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags)
 {
 	ICoreTexture *pCoreTex;
 
@@ -1527,7 +1527,7 @@ API ResourceManager::CreateTexture(OUT ITexture **pTextureOut, uint width, uint 
 	return S_OK;
 }
 
-API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag)
+API_RESULT ResourceManager::_CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag)
 {
 	ICoreShader *coreShader = nullptr;
 
@@ -1573,7 +1573,7 @@ API ResourceManager::CreateShader(OUT IShader **pShaderOut, const char *vert, co
 	return S_OK;
 }
 
-API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
+API_RESULT ResourceManager::_CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 {
 	ICoreRenderTarget *coreRenderTarget = nullptr;
 
@@ -1598,7 +1598,7 @@ API ResourceManager::CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut)
 	return S_OK;
 }
 
-API ResourceManager::CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint bytes, uint elementSize)
+API_RESULT ResourceManager::_CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint bytes, uint elementSize)
 {
 	ICoreStructuredBuffer *coreStructuredBuffer = nullptr;
 
@@ -1633,7 +1633,7 @@ TextFile::~TextFile()
 	delete[] text;
 }
 
-API TextFile::SetText(const char * textIn)
+API_RESULT TextFile::SetText(const char * textIn)
 {
 	if (text) delete[] text;
 	text = textIn;

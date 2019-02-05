@@ -37,7 +37,7 @@ Core::~Core()
 {
 }
 
-API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle)
+API_RESULT Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle)
 {
 	_pDataDir = NativeToUTF8(pDataPath);
 
@@ -105,7 +105,7 @@ API Core::Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* ext
 	return S_OK;
 }
 
-API Core::Start()
+API_RESULT Core::Start()
 {
 	for (IInitCallback *callback : _initCallbacks)
 		callback->Init();
@@ -123,13 +123,13 @@ API Core::Start()
 	return S_OK;
 }
 
-API Core::Update()
+API_RESULT Core::Update()
 {
 	_internal_update();
 	return S_OK;
 }
 
-API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera)
+API_RESULT Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera)
 {
 	if (FAILED(_pCoreRender->MakeCurrent(extern_handle)))
 		return E_FAIL;
@@ -152,7 +152,7 @@ API Core::RenderFrame(const WindowHandle* extern_handle, const ICamera *pCamera)
 	return S_OK;
 }
 
-API Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
+API_RESULT Core::GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type)
 {
 	switch(type)
 	{
@@ -284,19 +284,19 @@ void Core::_recreateProfilerRecordsMap()
 	_records = idx;
 }
 
-API Core::GetDataDir(OUT const char **pStr)
+API_RESULT Core::GetDataDir(OUT const char **pStr)
 {
 	*pStr = _pDataDir.c_str();
 	return S_OK;
 }
 
-API Core::GetWorkingDir(OUT const char **pStr)
+API_RESULT Core::GetWorkingDir(OUT const char **pStr)
 {
 	*pStr = _pWorkingDir.c_str();
 	return S_OK;
 }
 
-API Core::GetInstalledDir(OUT const char **pStr)
+API_RESULT Core::GetInstalledDir(OUT const char **pStr)
 {
 	*pStr = _pInstalledDir.c_str();
 	return S_OK;
@@ -330,19 +330,19 @@ string Core::GetProfilerRecord(size_t i)
 	return fn->getString(id);
 }
 
-API Core::AddInitCallback(IInitCallback* pCallback)
+API_RESULT Core::AddInitCallback(IInitCallback* pCallback)
 {
 	_initCallbacks.push_back(pCallback);
 	return S_OK;
 }
 
-API Core::AddUpdateCallback(IUpdateCallback* pCallback)
+API_RESULT Core::AddUpdateCallback(IUpdateCallback* pCallback)
 {
 	_updateCallbacks.push_back(std::bind(&IUpdateCallback::Update, pCallback));
 	return S_OK;
 }
 
-API Core::ReleaseEngine()
+API_RESULT Core::ReleaseEngine()
 {
 	Log("Start closing engine...");
 

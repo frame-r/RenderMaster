@@ -20,7 +20,8 @@
 
 #include "intrusive_ptr.h"
 
-#define API HRESULT __stdcall
+#define API_RESULT HRESULT __stdcall
+#define API_VOID void __stdcall
 
 #define DEFINE_ENUM_OPERATORS(ENUM_NAME) \
 inline ENUM_NAME operator|(ENUM_NAME a, ENUM_NAME b) \
@@ -56,10 +57,22 @@ namespace RENDER_MASTER
 	class IResourceManager;
 	class IRenderTarget;
 	class IMesh;
+	class IModel;
+	class ITextFile;
 	class IConstantBuffer;
 	class IStructuredBuffer;
 	enum class SUBSYSTEM_TYPE;
 	enum class LOG_TYPE;
+
+	using TexturePtr = intrusive_ptr<ITexture>;
+	using MeshPtr = intrusive_ptr<IMesh>;
+	using ShaderPtr = intrusive_ptr<IShader>;
+	using RenderTargetPtr = intrusive_ptr<IRenderTarget>;
+	using StructuredBufferPtr = intrusive_ptr<IStructuredBuffer>;
+	using TextFilePtr = intrusive_ptr<ITextFile>;
+	using ModelPtr = intrusive_ptr<IModel>;
+	using CameraPtr = intrusive_ptr<ICamera>;
+
 
 	//////////////////////
 	// Core
@@ -96,17 +109,17 @@ namespace RENDER_MASTER
 	public:
 		virtual ~ICore() = default;
 
-		virtual API Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) = 0;
-		virtual API Start() = 0;
-		virtual API Update() = 0;
-		virtual API RenderFrame(const WindowHandle *externHandle, const ICamera *pCamera) = 0;
-		virtual API GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) = 0;
-		virtual API GetDataDir(OUT const char **pStr) = 0;
-		virtual API GetWorkingDir(OUT const char **pStr) = 0;
-		virtual API GetInstalledDir(OUT const char **pStr) = 0;
-		virtual API AddInitCallback(IInitCallback *pCallback) = 0;
-		virtual API AddUpdateCallback(IUpdateCallback *pCallback) = 0;
-		virtual API ReleaseEngine() = 0;
+		virtual API_RESULT Init(INIT_FLAGS flags, const mchar *pDataPath, const WindowHandle* externHandle) = 0;
+		virtual API_RESULT Start() = 0;
+		virtual API_RESULT Update() = 0;
+		virtual API_RESULT RenderFrame(const WindowHandle *externHandle, const ICamera *pCamera) = 0;
+		virtual API_RESULT GetSubSystem(OUT ISubSystem **pSubSystem, SUBSYSTEM_TYPE type) = 0;
+		virtual API_RESULT GetDataDir(OUT const char **pStr) = 0;
+		virtual API_RESULT GetWorkingDir(OUT const char **pStr) = 0;
+		virtual API_RESULT GetInstalledDir(OUT const char **pStr) = 0;
+		virtual API_RESULT AddInitCallback(IInitCallback *pCallback) = 0;
+		virtual API_RESULT AddUpdateCallback(IUpdateCallback *pCallback) = 0;
+		virtual API_RESULT ReleaseEngine() = 0;
 	};
 
 
@@ -129,19 +142,19 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ISubSystem() = default;
-		virtual API GetName(OUT const char **pName) = 0;
+		virtual API_RESULT GetName(OUT const char **pName) = 0;
 	};
 
 	class IInitCallback
 	{
 	public:
-		virtual API Init() = 0;
+		virtual API_RESULT Init() = 0;
 	};
 
 	class IUpdateCallback
 	{
 	public:
-		virtual API Update() = 0;
+		virtual API_RESULT Update() = 0;
 	};
 	
 	class IBaseResource
@@ -166,15 +179,15 @@ namespace RENDER_MASTER
 	{ \
 	public: \
 		virtual ~NAME ## Subscriber() = default; \
-		virtual API Call() = 0; \
+		virtual API_RESULT Call() = 0; \
 	}; \
 	\
 	class NAME \
 	{ \
 	public: \
 		virtual ~NAME() = default; \
-		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
-		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API_RESULT Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API_RESULT Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
 
 	#define DEFINE_EVENT1(NAME, ARG) \
@@ -182,7 +195,7 @@ namespace RENDER_MASTER
 	{ \
 	public: \
 		virtual ~NAME ## Subscriber() = default; \
-		virtual API Call(ARG) = 0; \
+		virtual API_RESULT Call(ARG) = 0; \
 	}; \
 	\
 	class NAME \
@@ -190,8 +203,8 @@ namespace RENDER_MASTER
 	public: \
 		\
 		virtual ~NAME() = default; \
-		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
-		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API_RESULT Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API_RESULT Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
 
 	#define DEFINE_EVENT2(NAME, ARG1, ARG2) \
@@ -199,7 +212,7 @@ namespace RENDER_MASTER
 	{ \
 	public: \
 		virtual ~NAME ## Subscriber() = default; \
-		virtual API Call(ARG1, ARG2) = 0; \
+		virtual API_RESULT Call(ARG1, ARG2) = 0; \
 	}; \
 	 \
 	class NAME \
@@ -207,8 +220,8 @@ namespace RENDER_MASTER
 	public: \
 	 \
 		virtual ~NAME() = default; \
-		virtual API Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
-		virtual API Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API_RESULT Subscribe(NAME ## Subscriber *pSubscriber) = 0; \
+		virtual API_RESULT Unsubscribe(NAME ## Subscriber *pSubscriber) = 0; \
 	};
 
 	DEFINE_EVENT(IEvent)
@@ -378,48 +391,48 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~ICoreTexture() = default;
-		virtual API GetWidth(OUT uint *w) = 0;
-		virtual API GetHeight(OUT uint *h) = 0;
-		virtual API GetFormat(OUT TEXTURE_FORMAT *formatOut) = 0;
+		virtual API_RESULT GetWidth(OUT uint *w) = 0;
+		virtual API_RESULT GetHeight(OUT uint *h) = 0;
+		virtual API_RESULT GetFormat(OUT TEXTURE_FORMAT *formatOut) = 0;
 	};
 
 	class ICoreRenderTarget
 	{
 	public:
 		virtual ~ICoreRenderTarget() = default;
-		virtual API SetColorTexture(uint slot, ITexture *tex) = 0;
-		virtual API SetDepthTexture(ITexture *tex) = 0;
-		virtual API UnbindColorTexture(uint slot) = 0;
-		virtual API UnbindAll() = 0;
+		virtual API_RESULT SetColorTexture(uint slot, ITexture *tex) = 0;
+		virtual API_RESULT SetDepthTexture(ITexture *tex) = 0;
+		virtual API_RESULT UnbindColorTexture(uint slot) = 0;
+		virtual API_RESULT UnbindAll() = 0;
 	};
 
 	class ICoreMesh
 	{
 	public:
 		virtual ~ICoreMesh() = default;
-		virtual API GetNumberOfVertex(OUT uint *number) = 0;
-		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
-		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
+		virtual API_RESULT GetNumberOfVertex(OUT uint *number) = 0;
+		virtual API_RESULT GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
+		virtual API_RESULT GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
 	};
 
 	class ICoreShader
 	{
 	public:
 		virtual ~ICoreShader() = default;
-		virtual API SetFloatParameter(const char* name, float value) = 0;
-		virtual API SetVec4Parameter(const char* name, const vec4 *value) = 0;
-		virtual API SetMat4Parameter(const char* name, const mat4 *value) = 0;
-		virtual API SetUintParameter(const char* name, uint value) = 0;
-		virtual API FlushParameters() = 0;
+		virtual API_RESULT SetFloatParameter(const char* name, float value) = 0;
+		virtual API_RESULT SetVec4Parameter(const char* name, const vec4 *value) = 0;
+		virtual API_RESULT SetMat4Parameter(const char* name, const mat4 *value) = 0;
+		virtual API_RESULT SetUintParameter(const char* name, uint value) = 0;
+		virtual API_RESULT FlushParameters() = 0;
 	};
 
 	class ICoreStructuredBuffer
 	{
 	public:
 		virtual ~ICoreStructuredBuffer() = default;
-		virtual API SetData(uint8 *data, size_t size) = 0;
-		virtual API GetSize(OUT uint *size) = 0;
-		virtual API GetElementSize(OUT uint *size) = 0;
+		virtual API_RESULT SetData(uint8 *data, size_t size) = 0;
+		virtual API_RESULT GetSize(OUT uint *size) = 0;
+		virtual API_RESULT GetElementSize(OUT uint *size) = 0;
 	};
 
 	enum class BLEND_FACTOR
@@ -442,35 +455,36 @@ namespace RENDER_MASTER
 	public:
 		virtual ~ICoreRender() = default;
 
-		virtual API Init(const WindowHandle* handle, int MSAASamples, int VSyncOn) = 0;
-		virtual API Free() = 0;
-		virtual API MakeCurrent(const WindowHandle* handle) = 0;
-		virtual API SwapBuffers() = 0;
+		virtual API_RESULT Init(const WindowHandle* handle, int MSAASamples, int VSyncOn) = 0;
+		virtual API_RESULT Free() = 0;
+		virtual API_RESULT MakeCurrent(const WindowHandle* handle) = 0;
+		virtual API_RESULT SwapBuffers() = 0;
 
-		virtual API CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
-		virtual API CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
-		virtual API CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
-		virtual API CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
-		virtual API CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize) = 0;
+		virtual API_RESULT CreateMesh(OUT ICoreMesh **pMesh, const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) = 0;
+		virtual API_RESULT CreateShader(OUT ICoreShader **pShader, const char *vert, const char *frag, const char *geom) = 0;
+		virtual API_RESULT CreateTexture(OUT ICoreTexture **pTexture, uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) = 0;
+		virtual API_RESULT CreateRenderTarget(OUT ICoreRenderTarget **pRenderTarget) = 0;
+		virtual API_RESULT CreateStructuredBuffer(OUT ICoreStructuredBuffer **pStructuredBuffer, uint size, uint elementSize) = 0;
 
-		virtual API PushStates() = 0;
-		virtual API PopStates() = 0;
-		virtual API BindTexture(uint slot, ITexture* texture) = 0;
-		virtual API UnbindAllTextures() = 0;
-		virtual API SetCurrentRenderTarget(IRenderTarget *pRenderTarget) = 0;
-		virtual API RestoreDefaultRenderTarget() = 0;
-		virtual API SetShader(IShader *pShader) = 0;
-		virtual API SetMesh(IMesh* mesh) = 0;
-		virtual API SetStructuredBufer(uint slot, IStructuredBuffer* buffer) = 0;
-		virtual API Draw(IMesh *mesh, uint instances = 1u) = 0;
-		virtual API SetDepthTest(int enabled) = 0;
-		virtual API SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) = 0;
-		virtual API SetViewport(uint w, uint h) = 0;
-		virtual API GetViewport(OUT uint* w, OUT uint* h) = 0;
-		virtual API Clear() = 0;
+		virtual API_VOID PushStates() = 0;
+		virtual API_VOID PopStates() = 0;
 
-		virtual API ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) = 0;
-		virtual API BlitRenderTargetToDefault(IRenderTarget *pRenderTarget) = 0;
+		virtual API_VOID BindTexture(uint slot, ITexture* texture) = 0;
+		virtual API_VOID UnbindAllTextures() = 0;
+		virtual API_VOID SetCurrentRenderTarget(IRenderTarget *pRenderTarget) = 0;
+		virtual API_VOID RestoreDefaultRenderTarget() = 0;
+		virtual API_VOID SetShader(IShader *pShader) = 0;
+		virtual API_VOID SetMesh(IMesh* mesh) = 0;
+		virtual API_VOID SetStructuredBufer(uint slot, IStructuredBuffer* buffer) = 0;
+		virtual API_VOID Draw(IMesh *mesh, uint instances = 1u) = 0;
+		virtual API_VOID SetDepthTest(int enabled) = 0;
+		virtual API_VOID SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) = 0;
+		virtual API_VOID SetViewport(uint w, uint h) = 0;
+		virtual API_VOID GetViewport(OUT uint* w, OUT uint* h) = 0;
+		virtual API_VOID Clear() = 0;
+
+		virtual API_VOID ReadPixel2D(ICoreTexture *tex, OUT void *out, OUT uint* readPixel, uint x, uint y) = 0;
+		virtual API_VOID BlitRenderTargetToDefault(IRenderTarget *pRenderTarget) = 0;
 	};
 
 	//////////////////////
@@ -506,12 +520,12 @@ namespace RENDER_MASTER
 	class IRender : public ISubSystem
 	{
 	public:
-		virtual API PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
-		virtual API RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) = 0;
-		virtual API RenderPassGUI() = 0;
-		virtual API GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) = 0;
-		virtual API ReleaseRenderTexture2D(ITexture *texIn) = 0;
-		virtual API ShadersReload() = 0;
+		virtual API_RESULT PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
+		virtual API_RESULT RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) = 0;
+		virtual API_RESULT RenderPassGUI() = 0;
+		virtual API_RESULT GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) = 0;
+		virtual API_RESULT ReleaseRenderTexture2D(ITexture *texIn) = 0;
+		virtual API_RESULT ShadersReload() = 0;
 	};
 
 	// Axis aligned bound box
@@ -534,105 +548,105 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IGameObject() = default;
-		virtual API GetID(OUT uint *id) = 0;
-		virtual API SetID(uint *id) = 0;
-		virtual API GetName(OUT const char **pName) = 0;
-		virtual API SetName(const char *pName) = 0;
-		virtual API SetPosition(const vec3 *pos) = 0;
-		virtual API SetRotation(const quat *rot) = 0;
-		virtual API SetScale(const vec3 *scale) = 0;
-		virtual API GetPosition(OUT vec3 *pos) = 0;
-		virtual API GetRotation(OUT quat *rot) = 0;
-		virtual API GetScale(OUT vec3 *scale) = 0;
-		virtual API GetModelMatrix(OUT mat4 *mat) = 0;
-		virtual API GetInvModelMatrix(OUT mat4 *mat) = 0;
-		virtual API GetAABB(OUT AABB *aabb) = 0;
-		virtual API Copy(IGameObject *copy) = 0;
+		virtual API_RESULT GetID(OUT uint *id) = 0;
+		virtual API_RESULT SetID(uint *id) = 0;
+		virtual API_RESULT GetName(OUT const char **pName) = 0;
+		virtual API_RESULT SetName(const char *pName) = 0;
+		virtual API_RESULT SetPosition(const vec3 *pos) = 0;
+		virtual API_RESULT SetRotation(const quat *rot) = 0;
+		virtual API_RESULT SetScale(const vec3 *scale) = 0;
+		virtual API_RESULT GetPosition(OUT vec3 *pos) = 0;
+		virtual API_RESULT GetRotation(OUT quat *rot) = 0;
+		virtual API_RESULT GetScale(OUT vec3 *scale) = 0;
+		virtual API_RESULT GetModelMatrix(OUT mat4 *mat) = 0;
+		virtual API_RESULT GetInvModelMatrix(OUT mat4 *mat) = 0;
+		virtual API_RESULT GetAABB(OUT AABB *aabb) = 0;
+		virtual API_RESULT Copy(IGameObject *copy) = 0;
 
 		// Events
-		virtual API GetNameEv(OUT IStringEvent **pEvent) = 0;
-		virtual API GetPositionEv(OUT IPositionEvent **pEvent) = 0;
-		virtual API GetRotationEv(OUT IRotationEvent **pEvent) = 0;
+		virtual API_RESULT GetNameEv(OUT IStringEvent **pEvent) = 0;
+		virtual API_RESULT GetPositionEv(OUT IPositionEvent **pEvent) = 0;
+		virtual API_RESULT GetRotationEv(OUT IRotationEvent **pEvent) = 0;
 	};
 
 	class ICamera : public IGameObject
 	{
 	public:
-		virtual API GetViewMatrix(OUT mat4 *mat) = 0;
-		virtual API GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
-		virtual API GetProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
-		virtual API GetFovAngle(OUT float *fovInDegrees) = 0;
-		virtual API Copy(ICamera *copy) = 0;
+		virtual API_RESULT GetViewMatrix(OUT mat4 *mat) = 0;
+		virtual API_RESULT GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
+		virtual API_RESULT GetProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
+		virtual API_RESULT GetFovAngle(OUT float *fovInDegrees) = 0;
+		virtual API_RESULT Copy(ICamera *copy) = 0;
 	};
 
 	class IModel : public IGameObject
 	{
 	public:
-		virtual API GetMesh(OUT IMesh **pMesh, uint idx) = 0;
-		virtual API GetNumberOfMesh(OUT uint *number) = 0;
-		virtual API Copy(OUT IModel *copy) = 0;
+		virtual API_RESULT GetMesh(OUT IMesh **pMesh, uint idx) = 0;
+		virtual API_RESULT GetNumberOfMesh(OUT uint *number) = 0;
+		virtual API_RESULT Copy(OUT IModel *copy) = 0;
 	};
 
 	class IMesh : public IBaseResource
 	{
 	public:
 		virtual ~IMesh() = default;
-		virtual API GetCoreMesh(OUT ICoreMesh **meshOut) = 0;
-		virtual API GetNumberOfVertex(OUT uint *number) = 0;
-		virtual API GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
-		virtual API GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
+		virtual API_RESULT GetCoreMesh(OUT ICoreMesh **meshOut) = 0;
+		virtual API_RESULT GetNumberOfVertex(OUT uint *number) = 0;
+		virtual API_RESULT GetAttributes(OUT INPUT_ATTRUBUTE *attribs) = 0;
+		virtual API_RESULT GetVertexTopology(OUT VERTEX_TOPOLOGY *topology) = 0;
 	};
 
 	class ITexture : public IBaseResource
 	{
 	public:
 		virtual ~ITexture() = default;
-		virtual API GetCoreTexture(OUT ICoreTexture **textureOut) = 0;
-		virtual API GetWidth(OUT uint *w) = 0;
-		virtual API GetHeight(OUT uint *h) = 0;
-		virtual API GetFormat(OUT TEXTURE_FORMAT *formatOut) = 0;
+		virtual API_RESULT GetCoreTexture(OUT ICoreTexture **textureOut) = 0;
+		virtual API_RESULT GetWidth(OUT uint *w) = 0;
+		virtual API_RESULT GetHeight(OUT uint *h) = 0;
+		virtual API_RESULT GetFormat(OUT TEXTURE_FORMAT *formatOut) = 0;
 	};
 
 	class IRenderTarget : public IBaseResource
 	{
 	public:
 		virtual ~IRenderTarget() = default;
-		virtual API GetCoreRenderTarget(OUT ICoreRenderTarget **renderTargetOut) = 0;
-		virtual API SetColorTexture(uint slot, ITexture *tex) = 0;
-		virtual API SetDepthTexture(ITexture *tex) = 0;
-		virtual API UnbindColorTexture(uint slot) = 0;
-		virtual API UnbindAll() = 0;
+		virtual API_RESULT GetCoreRenderTarget(OUT ICoreRenderTarget **renderTargetOut) = 0;
+		virtual API_RESULT SetColorTexture(uint slot, ITexture *tex) = 0;
+		virtual API_RESULT SetDepthTexture(ITexture *tex) = 0;
+		virtual API_RESULT UnbindColorTexture(uint slot) = 0;
+		virtual API_RESULT UnbindAll() = 0;
 	};
 
 	class ITextFile : public IBaseResource
 	{
 	public:
 		virtual ~ITextFile() = default;
-		virtual API GetText(OUT const char **textOut) = 0;
-		virtual API SetText(const char *textIn) = 0;
+		virtual API_RESULT GetText(OUT const char **textOut) = 0;
+		virtual API_RESULT SetText(const char *textIn) = 0;
 	};
 
 	class IShader : public IBaseResource
 	{
 	public:
 		virtual ~IShader() = default;
-		virtual API GetCoreShader(ICoreShader **shaderOut) = 0;
-		virtual API GetVert(OUT const char **textOut) = 0;
-		virtual API GetGeom(OUT const char **textOut) = 0;
-		virtual API GetFrag(OUT const char **textOut) = 0;
-		virtual API SetFloatParameter(const char* name, float value) = 0;
-		virtual API SetVec4Parameter(const char* name, const vec4 *value) = 0;
-		virtual API SetMat4Parameter(const char* name, const mat4 *value) = 0;
-		virtual API SetUintParameter(const char* name, uint value) = 0;
-		virtual API FlushParameters() = 0;
+		virtual API_RESULT GetCoreShader(ICoreShader **shaderOut) = 0;
+		virtual API_RESULT GetVert(OUT const char **textOut) = 0;
+		virtual API_RESULT GetGeom(OUT const char **textOut) = 0;
+		virtual API_RESULT GetFrag(OUT const char **textOut) = 0;
+		virtual API_RESULT SetFloatParameter(const char* name, float value) = 0;
+		virtual API_RESULT SetVec4Parameter(const char* name, const vec4 *value) = 0;
+		virtual API_RESULT SetMat4Parameter(const char* name, const mat4 *value) = 0;
+		virtual API_RESULT SetUintParameter(const char* name, uint value) = 0;
+		virtual API_RESULT FlushParameters() = 0;
 	};
 
 	class IStructuredBuffer : public IBaseResource
 	{
 	public:
 		virtual ~IStructuredBuffer() = default;
-		virtual API GetCoreBuffer(ICoreStructuredBuffer **bufOut) = 0;
-		virtual API SetData(uint8 *data, size_t size) = 0;
+		virtual API_RESULT GetCoreBuffer(ICoreStructuredBuffer **bufOut) = 0;
+		virtual API_RESULT SetData(uint8 *data, size_t size) = 0;
 	};
 
 	//////////////////////
@@ -642,17 +656,17 @@ namespace RENDER_MASTER
 	class ISceneManager : public ISubSystem
 	{
 	public:
-		virtual API SaveScene(const char *pRelativeScenePath) = 0;
-		virtual API LoadScene(const char *pRelativeScenePath) = 0;
-		virtual API CloseScene() = 0;
-		virtual API GetNumberOfChilds(OUT uint *number, IGameObject *parent) = 0;
-		virtual API GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) = 0;
-		virtual API FindChildById(OUT IGameObject **objectOut, uint id) = 0;
-		virtual API GetDefaultCamera(OUT ICamera **pCamera) = 0;
+		virtual API_RESULT SaveScene(const char *pRelativeScenePath) = 0;
+		virtual API_RESULT LoadScene(const char *pRelativeScenePath) = 0;
+		virtual API_RESULT CloseScene() = 0;
+		virtual API_RESULT GetNumberOfChilds(OUT uint *number, IGameObject *parent) = 0;
+		virtual API_RESULT GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) = 0;
+		virtual API_RESULT FindChildById(OUT IGameObject **objectOut, uint id) = 0;
+		virtual API_RESULT GetDefaultCamera(OUT ICamera **pCamera) = 0;
 
 		//events
-		virtual API GetGameObjectAddedEvent(OUT IGameObjectEvent **pEvent) = 0;
-		virtual API GetDeleteGameObjectEvent(IGameObjectEvent** pEvent) = 0;
+		virtual API_RESULT GetGameObjectAddedEvent(OUT IGameObjectEvent **pEvent) = 0;
+		virtual API_RESULT GetDeleteGameObjectEvent(IGameObjectEvent** pEvent) = 0;
 	};
 
 
@@ -667,20 +681,70 @@ namespace RENDER_MASTER
 	class IResourceManager : public ISubSystem
 	{
 	public:
-		virtual API LoadModel(OUT IModel **pModel, const char *path) = 0;
-		virtual API LoadMesh(OUT IMesh **pMesh, const char *path) = 0;
-		virtual API LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) = 0;
-		virtual API LoadTextFile(OUT ITextFile **pShader, const char *path) = 0;
+		virtual API_RESULT _LoadModel(OUT IModel **pModel, const char *path) = 0;
+		virtual API_RESULT _LoadMesh(OUT IMesh **pMesh, const char *path) = 0;
+		virtual API_RESULT _LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) = 0;
+		virtual API_RESULT _LoadTextFile(OUT ITextFile **pShader, const char *path) = 0;
 
-		virtual API CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
-		virtual API CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
-		virtual API CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) = 0;
-		virtual API CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint size, uint elementSize) = 0;
-		virtual API CreateGameObject(OUT IGameObject **pGameObject) = 0;
-		virtual API CreateModel(OUT IModel **pModel) = 0;
-		virtual API CreateCamera(OUT ICamera **pCamera) = 0;
+		virtual API_RESULT _CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
+		virtual API_RESULT _CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
+		virtual API_RESULT _CreateRenderTarget(OUT IRenderTarget **pRenderTargetOut) = 0;
+		virtual API_RESULT _CreateStructuredBuffer(OUT IStructuredBuffer **pBufOut, uint size, uint elementSize) = 0;
+		virtual API_RESULT _CreateGameObject(OUT IGameObject **pGameObject) = 0;
+		virtual API_RESULT _CreateModel(OUT IModel **pModel) = 0;
+		virtual API_RESULT _CreateCamera(OUT ICamera **pCamera) = 0;
 
-		virtual API Free() = 0;
+		inline ModelPtr LoadModel(const char *path)
+		{
+			IModel *m;
+			_LoadModel(&m, path);
+			return ModelPtr(m);
+		}
+		inline MeshPtr LoadMesh(const char *path)
+		{
+			IMesh *m;
+			_LoadMesh(&m, path);
+			return MeshPtr(m);
+		}
+		inline TexturePtr LoadTexture(const char *path, TEXTURE_CREATE_FLAGS flags)
+		{
+			ITexture *m;
+			_LoadTexture(&m, path, flags);
+			return TexturePtr(m);
+		}
+		inline TextFilePtr LoadTextFile(const char *path)
+		{
+			ITextFile *t;
+			_LoadTextFile(&t, path);
+			return TextFilePtr(t);
+		}
+
+		inline TexturePtr CreateTexture(uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags)
+		{
+			ITexture *t;
+			_CreateTexture(&t, width, height, type, format, flags);
+			return TexturePtr(t);
+		}
+		inline RenderTargetPtr CreateRenderTarget()
+		{
+			IRenderTarget *rt;
+			_CreateRenderTarget(&rt);
+			return RenderTargetPtr(rt);
+		}
+		inline StructuredBufferPtr CreateStructuredBuffer(uint size, uint elementSize)
+		{
+			IStructuredBuffer *s;
+			_CreateStructuredBuffer(&s, size, elementSize);
+			return StructuredBufferPtr(s);
+		}
+		inline CameraPtr CreateCamera()
+		{
+			ICamera *c;
+			_CreateCamera(&c);
+			return CameraPtr(c);
+		}
+
+		virtual API_RESULT Free() = 0;
 	};
 
 	
@@ -701,21 +765,21 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IFile() = default;
-		virtual API Read(OUT uint8 *pMem, uint bytes) = 0;
-		virtual API ReadStr(OUT char *pStr, OUT uint *str_bytes) = 0;
-		virtual API IsEndOfFile(OUT int *eof) = 0;
-		virtual API Write(const uint8 *pMem, uint bytes) = 0;
-		virtual API WriteStr(const char *pStr) = 0;
-		virtual API FileSize(OUT uint *size) = 0;
-		virtual API CloseAndFree() = 0;
+		virtual API_RESULT Read(OUT uint8 *pMem, uint bytes) = 0;
+		virtual API_RESULT ReadStr(OUT char *pStr, OUT uint *str_bytes) = 0;
+		virtual API_RESULT IsEndOfFile(OUT int *eof) = 0;
+		virtual API_RESULT Write(const uint8 *pMem, uint bytes) = 0;
+		virtual API_RESULT WriteStr(const char *pStr) = 0;
+		virtual API_RESULT FileSize(OUT uint *size) = 0;
+		virtual API_RESULT CloseAndFree() = 0;
 	};
 
 	class IFileSystem : public ISubSystem
 	{
 	public:
-		virtual API OpenFile(OUT IFile **pFile, const char *fullPath, FILE_OPEN_MODE mode) = 0;
-		virtual API FileExist(const char *fullPath, OUT int *exist) = 0;
-		virtual API DirectoryExist(const char *fullPath, OUT int *exist) = 0;
+		virtual API_RESULT OpenFile(OUT IFile **pFile, const char *fullPath, FILE_OPEN_MODE mode) = 0;
+		virtual API_RESULT FileExist(const char *fullPath, OUT int *exist) = 0;
+		virtual API_RESULT DirectoryExist(const char *fullPath, OUT int *exist) = 0;
 	};
 
 
@@ -853,10 +917,10 @@ namespace RENDER_MASTER
 	class IInput : public ISubSystem
 	{
 	public:
-		virtual API IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) = 0;
-		virtual API IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) = 0;
-		virtual API GetMouseDeltaPos(OUT vec2 *dPos) = 0;
-		virtual API GetMousePos(OUT uint *x, OUT uint *y) = 0;
+		virtual API_RESULT IsKeyPressed(OUT int *isPressed, KEYBOARD_KEY_CODES key) = 0;
+		virtual API_RESULT IsMoisePressed(OUT int *isPressed, MOUSE_BUTTON type) = 0;
+		virtual API_RESULT GetMouseDeltaPos(OUT vec2 *dPos) = 0;
+		virtual API_RESULT GetMousePos(OUT uint *x, OUT uint *y) = 0;
 	};
 
 
@@ -875,21 +939,21 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IConsoleCommand() = default;
-		virtual API GetName(OUT const char **pName) = 0;
-		virtual API Execute(const char **arguments, uint argumentsNum) = 0;
+		virtual API_RESULT GetName(OUT const char **pName) = 0;
+		virtual API_RESULT Execute(const char **arguments, uint argumentsNum) = 0;
 	};
 
 	class IConsole : public ISubSystem
 	{
 	public:
-		virtual API Log(const char* text, LOG_TYPE type) = 0;
-		virtual API AddCommand(IConsoleCommand *pCommand) = 0;
-		virtual API ExecuteCommand(const char *name, const char** arguments, uint argumentsNum) = 0;
-		virtual API GetCommands(OUT uint *number) = 0;
-		virtual API GetCommand(OUT const char **name, uint idx) = 0;
+		virtual API_RESULT Log(const char* text, LOG_TYPE type) = 0;
+		virtual API_RESULT AddCommand(IConsoleCommand *pCommand) = 0;
+		virtual API_RESULT ExecuteCommand(const char *name, const char** arguments, uint argumentsNum) = 0;
+		virtual API_RESULT GetCommands(OUT uint *number) = 0;
+		virtual API_RESULT GetCommand(OUT const char **name, uint idx) = 0;
 
 		// Events
-		virtual API GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
+		virtual API_RESULT GetLogPrintedEv(OUT ILogEvent **pEvent) = 0;
 	};
 
 
@@ -984,11 +1048,4 @@ namespace RENDER_MASTER
 		//Shuting down COM;
 		CoUninitialize();
 	}
-
-	using TexturePtr = intrusive_ptr<ITexture>;
-	using MeshPtr = intrusive_ptr<IMesh>;
-	using ShaderPtr = intrusive_ptr<IShader>;
-	using RenderTargetPtr = intrusive_ptr<IRenderTarget>;
-	using StructuredBufferPtr = intrusive_ptr<IStructuredBuffer>;
-	using ModelPtr = intrusive_ptr<IModel>;
 }

@@ -27,23 +27,23 @@ public:
 	void addGameObject(IGameObject *go);
 
 	// Scene
-	API SaveScene(const char *pRelativeScenePath) override;
-	API LoadScene(const char *pRelativeScenePath) override;
-	API CloseScene() override;
+	API_RESULT SaveScene(const char *pRelativeScenePath) override;
+	API_RESULT LoadScene(const char *pRelativeScenePath) override;
+	API_RESULT CloseScene() override;
 
 	// GameObjects manipulations
-	API GetNumberOfChilds(OUT uint *number, IGameObject *parent) override;
-	API GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) override;
-	API FindChildById(OUT IGameObject **objectOut, uint id) override;
+	API_RESULT GetNumberOfChilds(OUT uint *number, IGameObject *parent) override;
+	API_RESULT GetChild(OUT IGameObject **pChildOut, IGameObject *parent, uint idx) override;
+	API_RESULT FindChildById(OUT IGameObject **objectOut, uint id) override;
 
 	// Default camera
-	API GetDefaultCamera(OUT ICamera **pCamera) override;
+	API_RESULT GetDefaultCamera(OUT ICamera **pCamera) override;
 	
 	// Events
-	API GetGameObjectAddedEvent(IGameObjectEvent** pEvent) override;
-	API GetDeleteGameObjectEvent(IGameObjectEvent** pEvent) override;
+	API_RESULT GetGameObjectAddedEvent(IGameObjectEvent** pEvent) override;
+	API_RESULT GetDeleteGameObjectEvent(IGameObjectEvent** pEvent) override;
 
 	// ISubSystem
-	API GetName(OUT const char **pName) override;
+	API_RESULT GetName(OUT const char **pName) override;
 };
 
