@@ -12,7 +12,7 @@ Planned:
 * Deferred or Forward+
 
 ## Building and installation engine
-Clone repositiory. Build solution Engine.sln located in build/ directory. I use Visual Studio 2017 (15.8.2). Then you should register Engine.dll in Windows Registry. Just run cmd.exe as Administrator, navigate to build/ directory and type "install.bat release" for release build or "install.bat debug" for debug build. See build/Example.vcxproj for more details.
+Clone repositiory. Build solution Engine.sln located in "build" directory (VS 2017 required). Then you should register Engine.dll in Windows Registry. Just run cmd.exe as Administrator, navigate to "build" directory and type "install.bat release" for release build or "install.bat debug" for debug build.
 
 ## Example
 ```cpp
@@ -33,13 +33,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
 
 			{
-				IModel* m;
-				resMan->LoadModel(&m, "box.fbx");
-				ModelPtr model1(m);
+				ModelPtr mdl = resMan->LoadModel("box.fbx");
 
 				pCore->Start(); // Begin main loop
 			}
-
 			pCore->ReleaseEngine();
 		}
 

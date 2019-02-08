@@ -6,40 +6,27 @@ extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
 
-Model::Model(const vector<IMesh*>& meshes) 
+Model::Model(IMesh* mesh) 
 {
-	for (IMesh *m : meshes)
-		_meshes.push_back(MeshPtr(m));
-	//_pCore->AddUpdateCallback(std::bind(&Model::_update, this));
+	_mesh = MeshPtr(mesh);
 }
 
-API_RESULT Model::GetMesh(OUT IMesh **pMesh, uint idx)
+API_VOID Model::GetMesh(OUT IMesh **pMesh)
 {
-	MeshPtr& m = _meshes[idx];
-	*pMesh = m.Get();
-	return S_OK;
+	*pMesh = _mesh.Get();
 }
 
-API_RESULT Model::GetNumberOfMesh(OUT uint *number)
-{
-	*number = (uint)_meshes.size();
-	return S_OK;
-}
-
-API_RESULT Model::GetAABB(OUT AABB *aabb)
+API_VOID Model::GetAABB(OUT AABB *aabb)
 {
 	const static AABB _unitAABB = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f};
 	*aabb = _unitAABB;
-	return S_OK;
 }
 
-API_RESULT Model::Copy(OUT IModel *copy)
+API_VOID Model::Copy(OUT IModel *copy)
 {
 	GameObjectBase<IModel>::Copy(copy);
 
 	Model *copyModel = static_cast<Model*>(copy);
-	copyModel->_meshes = _meshes;
+	copyModel->_mesh = _mesh;
 	copyModel->_aabb = _aabb;
-
-	return S_OK;
 }

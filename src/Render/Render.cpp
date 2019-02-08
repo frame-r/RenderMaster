@@ -671,30 +671,23 @@ bool Render::isOpenGL()
 
 void Render::getRenderMeshes(vector<RenderMesh>& meshes_vec)
 {
-	SceneManager *sm = (SceneManager*)_pSceneMan;
+	SceneManager *scene = (SceneManager*)_pSceneMan;
 
-	for (tree<IGameObject*>::iterator it = sm->_gameobjects.begin(); it != sm->_gameobjects.end(); ++it)
+	for (tree<IGameObject*>::iterator it = scene->_gameobjects.begin(); it != scene->_gameobjects.end(); ++it)
 	{
-		IGameObject *go = *it;
-		IModel *model = dynamic_cast<IModel*>(go);
+		IModel *model = dynamic_cast<IModel*>(*it);
 		if (model)
 		{
-			uint meshes;
-			model->GetNumberOfMesh(&meshes);
+			uint id;
+			model->GetID(&id);
 
-			for (auto j = 0u; j < meshes; j++)
-			{
-				uint id;
-				model->GetID(&id);
+			IMesh *mesh;
+			model->GetMesh(&mesh);
 
-				IMesh *mesh = nullptr;
-				model->GetMesh(&mesh, j);
+			mat4 mat;
+			model->GetModelMatrix(&mat);
 
-				mat4 mat;
-				model->GetModelMatrix(&mat);
-
-				meshes_vec.push_back({id, mesh, mat});
-			}
+			meshes_vec.emplace_back(RenderMesh{id, mesh, mat});
 		}
 	}
 }

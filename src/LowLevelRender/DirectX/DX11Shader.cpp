@@ -145,7 +145,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 				_parameters[cbParameters[k].name] = {(int)ConstantBufferPool.size(), (int)k};
 			}
 
-			ConstantBufferPool.emplace_back(std::move(ConstantBuffer(dxBuffer, size, bufferDesc.Name, cbParameters)));
+			ConstantBufferPool.emplace_back(dxBuffer, size, bufferDesc.Name, cbParameters);
 		}
 	}
 }

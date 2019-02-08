@@ -31,7 +31,7 @@ public:
 	API_RESULT GetPosition(OUT vec3 *pos) override			{ *pos = _pos; return S_OK; }
 	API_RESULT GetRotation(OUT quat *rot) override			{ *rot = _rot; return S_OK; }
 	API_RESULT GetScale(OUT vec3 *scale) override			{ *scale = _scale; return S_OK; }
-	API_RESULT GetAABB(OUT AABB *aabb) override;
+	API_VOID GetAABB(OUT AABB *aabb) override;
 	API_RESULT Copy(IGameObject *copy) override;
 
 	//
@@ -102,11 +102,10 @@ inline API_RESULT GameObjectBase<T>::SetRotation(const quat *rot)
 }
 
 template <typename T>
-inline API_RESULT GameObjectBase<T>::GetAABB(OUT AABB* aabb)
+inline API_VOID GameObjectBase<T>::GetAABB(OUT AABB* aabb)
 {
 	const static AABB _unitAABB = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f};
 	*aabb = _unitAABB;
-	return S_OK;
 }
 
 template<typename T>

@@ -52,11 +52,18 @@ class ResourceManager final : public IResourceManager, IProfilerCallback
 	void _FBX_initialize_SDK_objects(FbxManager*& pManager, FbxScene*& pScene);
 	void _FBX_destroy_SDK_objects(FbxManager* pManager, bool pExitStatus);
 
-	vector<IMesh*> _FBX_load_meshes(const char *pFullPath, const char *pRelativePath);
+	struct FBXLoadMesh
+	{
+		IMesh *mesh;
+		mat4 transform;
+		vector<FBXLoadMesh*> childs;
+	};
+
+	vector<FBXLoadMesh> _FBX_load_meshes(const char *pFullPath, const char *pRelativePath);
 	bool _FBX_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
-	void _FBX_load_scene_hierarchy(vector<IMesh*>& meshes, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
-	void _FBX_load_node(vector<IMesh*>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
-	void _FBX_load_mesh(vector<IMesh*>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
+	void _FBX_load_scene_hierarchy(vector<FBXLoadMesh>& meshes, FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
+	void _FBX_load_node(vector<FBXLoadMesh>& meshes, FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath);
+	void _FBX_load_mesh(vector<FBXLoadMesh>& meshes, FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
 	void _FBX_load_node_transform(FbxNode* pNode, const char *str);
 	#endif
 
@@ -67,7 +74,7 @@ class ResourceManager final : public IResourceManager, IProfilerCallback
 
 	string constructFullPath(const string& file);
 	bool errorIfPathNotExist(const string& fullPath);
-	vector<IMesh*> findLoadedMeshes(const char* pRelativeModelPath, const char *pMeshID);
+	IMesh* findLoadedMeshes(const char* pRelativeModelPath);
 	const char *loadTextFile(const char *fileName);
 	ICoreTexture *loadDDS(const char *pTexturePath, TEXTURE_CREATE_FLAGS flags);
 	size_t sharedResources();
@@ -108,9 +115,9 @@ public:
 	void Init();
 
 	API_RESULT _LoadModel(OUT IModel **pModel, const char *path) override;
-	API_RESULT _LoadMesh(OUT IMesh **pMesh, const char *path) override;
 	API_RESULT _LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) override;
 	API_RESULT _LoadTextFile(OUT ITextFile **pShader, const char *path) override;
+	API_RESULT _LoadStandardMesh(OUT IMesh **pMesh, const char *id) override;
 
 	API_RESULT _CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API_RESULT _CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;

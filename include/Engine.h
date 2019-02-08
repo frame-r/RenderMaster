@@ -560,7 +560,7 @@ namespace RENDER_MASTER
 		virtual API_RESULT GetScale(OUT vec3 *scale) = 0;
 		virtual API_RESULT GetModelMatrix(OUT mat4 *mat) = 0;
 		virtual API_RESULT GetInvModelMatrix(OUT mat4 *mat) = 0;
-		virtual API_RESULT GetAABB(OUT AABB *aabb) = 0;
+		virtual API_VOID GetAABB(OUT AABB *aabb) = 0;
 		virtual API_RESULT Copy(IGameObject *copy) = 0;
 
 		// Events
@@ -582,9 +582,8 @@ namespace RENDER_MASTER
 	class IModel : public IGameObject
 	{
 	public:
-		virtual API_RESULT GetMesh(OUT IMesh **pMesh, uint idx) = 0;
-		virtual API_RESULT GetNumberOfMesh(OUT uint *number) = 0;
-		virtual API_RESULT Copy(OUT IModel *copy) = 0;
+		virtual API_VOID GetMesh(OUT IMesh **pMesh) = 0;
+		virtual API_VOID Copy(OUT IModel *copy) = 0;
 	};
 
 	class IMesh : public IBaseResource
@@ -681,10 +680,11 @@ namespace RENDER_MASTER
 	class IResourceManager : public ISubSystem
 	{
 	public:
+
 		virtual API_RESULT _LoadModel(OUT IModel **pModel, const char *path) = 0;
-		virtual API_RESULT _LoadMesh(OUT IMesh **pMesh, const char *path) = 0;
 		virtual API_RESULT _LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API_RESULT _LoadTextFile(OUT ITextFile **pShader, const char *path) = 0;
+		virtual API_RESULT _LoadStandardMesh(OUT IMesh **pMesh, const char *id) = 0;
 
 		virtual API_RESULT _CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API_RESULT _CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
@@ -703,7 +703,7 @@ namespace RENDER_MASTER
 		inline MeshPtr LoadMesh(const char *path)
 		{
 			IMesh *m;
-			_LoadMesh(&m, path);
+			_LoadStandardMesh(&m, path);
 			return MeshPtr(m);
 		}
 		inline TexturePtr LoadTexture(const char *path, TEXTURE_CREATE_FLAGS flags)
