@@ -294,7 +294,7 @@ public:
 template <typename T>
 inline T* get_pointer(const intrusive_ptr<T>& intrusivePtr)
 {
-	return intrusivePtr.get();
+	return intrusivePtr.Get();
 }
 
 /// swap
@@ -311,43 +311,43 @@ inline void swap(intrusive_ptr<T>& intrusivePtr1, intrusive_ptr<T>& intrusivePtr
 template <typename T, typename U>
 bool operator==(intrusive_ptr<T> const& iPtr1, intrusive_ptr<U> const& iPtr2)
 {
-	return (iPtr1.get() == iPtr2.get());
+	return (iPtr1.Get() == iPtr2.Get());
 }
 
 template <typename T, typename U>
 bool operator!=(intrusive_ptr<T> const& iPtr1, intrusive_ptr<U> const& iPtr2)
 {
-	return (iPtr1.get() != iPtr2.get());
+	return (iPtr1.Get() != iPtr2.Get());
 }
 
 template <typename T>
 bool operator==(intrusive_ptr<T> const& iPtr1, T* p)
 {
-	return (iPtr1.get() == p);
+	return (iPtr1.Get() == p);
 }
 
 template <typename T>
 bool operator!=(intrusive_ptr<T> const& iPtr1, T* p)
 {
-	return (iPtr1.get() != p);
+	return (iPtr1.Get() != p);
 }
 
 template <typename T>
 bool operator==(T* p, intrusive_ptr<T> const& iPtr2)
 {
-	return (p == iPtr2.get());
+	return (p == iPtr2.Get());
 }
 
 template <typename T>
 bool operator!=(T* p, intrusive_ptr<T> const& iPtr2)
 {
-	return (p != iPtr2.get());
+	return (p != iPtr2.Get());
 }
 
 template <typename T, typename U>
 bool operator<(intrusive_ptr<T> const& iPtr1, intrusive_ptr<U> const& iPtr2)
 {
-	return ((uintptr_t)iPtr1.get() < (uintptr_t)iPtr2.get());
+	return ((uintptr_t)iPtr1.Get() < (uintptr_t)iPtr2.Get());
 }
 
 
@@ -356,7 +356,7 @@ bool operator<(intrusive_ptr<T> const& iPtr1, intrusive_ptr<U> const& iPtr2)
 template <class T, class U>
 intrusive_ptr<T> static_pointer_cast(const intrusive_ptr<U>& intrusivePtr)
 {
-	return static_cast<T*>(intrusivePtr.get());
+	return static_cast<T*>(intrusivePtr.Get());
 }
 
 
@@ -365,6 +365,6 @@ intrusive_ptr<T> static_pointer_cast(const intrusive_ptr<U>& intrusivePtr)
 template <class T, class U>
 intrusive_ptr<T> dynamic_pointer_cast(const intrusive_ptr<U>& intrusivePtr)
 {
-	return dynamic_cast<T*>(intrusivePtr.get());
+	return dynamic_cast<T*>(intrusivePtr.Get());
 }
 

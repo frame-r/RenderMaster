@@ -11,6 +11,9 @@ protected:
 	vec3 _pos;
 	quat _rot;
 	vec3 _scale{1.0f, 1.0f, 1.0f};
+
+	IGameObject *_parent = nullptr;
+	vector<IGameObject*> _childs;
 	
 	std::unique_ptr<PositionEvent> _positionEvent{new PositionEvent};
 	std::unique_ptr<RotationEvent> _rotationEvent{new RotationEvent};
@@ -21,18 +24,17 @@ public:
 	GameObjectBase(){ _id = getRandomInt(); }
 	virtual ~GameObjectBase() {}
 
-	API_RESULT GetID(OUT uint *id) override					{ *id = _id; return S_OK; }
-	API_RESULT SetID(uint *id) override						{ _id = *id; return S_OK; }
-	API_RESULT GetName(OUT const char **pName) override	{ *pName = _name.c_str(); return S_OK; }
-	API_RESULT SetName(const char *pName) override;
-	API_RESULT SetPosition(const vec3 *pos) override;
-	API_RESULT SetRotation(const quat *rot) override;
-	API_RESULT SetScale(const vec3 *scale) override		{ _scale = *scale; return S_OK; }
-	API_RESULT GetPosition(OUT vec3 *pos) override			{ *pos = _pos; return S_OK; }
-	API_RESULT GetRotation(OUT quat *rot) override			{ *rot = _rot; return S_OK; }
-	API_RESULT GetScale(OUT vec3 *scale) override			{ *scale = _scale; return S_OK; }
-	API_VOID GetAABB(OUT AABB *aabb) override;
-	API_RESULT Copy(IGameObject *copy) override;
+	API_VOID GetID(OUT uint *id) override					{ *id = _id; }
+	API_VOID SetID(uint *id) override						{ _id = *id; }
+	API_VOID GetName(OUT const char **pName) override		{ *pName = _name.c_str(); }
+	API_VOID SetName(const char *pName) override;
+	API_VOID SetPosition(const vec3 *pos) override;
+	API_VOID SetRotation(const quat *rot) override;
+	API_VOID SetScale(const vec3 *scale) override			{ _scale = *scale;; }
+	API_VOID GetPosition(OUT vec3 *pos) override			{ *pos = _pos; }
+	API_VOID GetRotation(OUT quat *rot) override			{ *rot = _rot; }
+	API_VOID GetScale(OUT vec3 *scale) override				{ *scale = _scale; }
+	API_VOID GetAABB(OUT AABB *aabb) override				{ *aabb = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f}; }
 
 	//
 	// Model Matrix
@@ -44,7 +46,7 @@ public:
 	// * Translate in world space = last column 
 	// * Columns = (Right, Forward, Up) vectors in world space
 	// * View vector = -M.el_2d.Column3(2).Normalized();
-	API_RESULT GetModelMatrix(OUT mat4 *mat) override;
+	API_VOID GetModelMatrix(OUT mat4 *mat) override;
 
 	//
 	// Inverse of Model Matrix
@@ -52,23 +54,26 @@ public:
 	// Transforms world -> local coordinates
 	// p' (local) = mat * p (world)
 	//
-	API_RESULT GetInvModelMatrix(OUT mat4 *mat) override;
+	API_VOID GetInvModelMatrix(OUT mat4 *mat) override;
 
-	API_RESULT GetNameEv(OUT IStringEvent **pEvent) override			{ *pEvent = _nameEvent.get(); return S_OK; }
-	API_RESULT GetPositionEv(OUT IPositionEvent **pEvent) override		{ *pEvent = _positionEvent.get(); return S_OK; }
-	API_RESULT GetRotationEv(OUT IRotationEvent **pEvent) override		{ *pEvent = _rotationEvent.get(); return S_OK; }
+	API_VOID Copy(IGameObject *copy) override;
+
+	API_VOID GetNameEv(OUT IStringEvent **pEvent) override			{ *pEvent = _nameEvent.get(); }
+	API_VOID GetPositionEv(OUT IPositionEvent **pEvent) override	{ *pEvent = _positionEvent.get(); }
+	API_VOID GetRotationEv(OUT IRotationEvent **pEvent) override	{ *pEvent = _rotationEvent.get(); }
 };
 
 class GameObject : public BaseResource<GameObjectBase<IGameObject>>
 {
 public:
+	GameObject(IGameObject *parent = nullptr) { _parent = parent; }
 	virtual ~GameObject() {}
 };
 
 // implementation
 
 template <typename T>
-inline API_RESULT GameObjectBase<T>::SetName(const char* pName)
+inline API_VOID GameObjectBase<T>::SetName(const char* pName)
 {
 	string name = string(pName);
 	if (name != _name)
@@ -76,50 +81,39 @@ inline API_RESULT GameObjectBase<T>::SetName(const char* pName)
 		_name = name;
 		_nameEvent->Fire(name.c_str());
 	}
-	return S_OK;
 }
 
 template<typename T>
-inline API_RESULT GameObjectBase<T>::SetPosition(const vec3 * pos)
+inline API_VOID GameObjectBase<T>::SetPosition(const vec3 * pos)
 {
 	if (!_pos.Aproximately(*pos))
 	{
 		_pos = *pos;
 		_positionEvent->Fire(&_pos);
 	}
-	return S_OK;
 }
 
 template<typename T>
-inline API_RESULT GameObjectBase<T>::SetRotation(const quat *rot)
+inline API_VOID GameObjectBase<T>::SetRotation(const quat *rot)
 {
     if (!_rot.IsSameRotation(*rot))
 	{
 		_rot = *rot;
 		_rotationEvent->Fire(&_rot);
 	}
-	return S_OK;
-}
-
-template <typename T>
-inline API_VOID GameObjectBase<T>::GetAABB(OUT AABB* aabb)
-{
-	const static AABB _unitAABB = {-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f};
-	*aabb = _unitAABB;
 }
 
 template<typename T>
-inline API_RESULT GameObjectBase<T>::Copy(IGameObject *copy)
+inline API_VOID GameObjectBase<T>::Copy(IGameObject *copy)
 {
 	copy->SetName(_name.c_str());
 	copy->SetPosition(&_pos);
 	copy->SetRotation(&_rot);
 	copy->SetScale(&_scale);
-	return S_OK;
 }
 
 template<typename T>
-inline API_RESULT GameObjectBase<T>::GetModelMatrix(OUT mat4 *mat)
+inline API_VOID GameObjectBase<T>::GetModelMatrix(OUT mat4 *mat)
 {
 	mat4 R;
 	mat4 T;
@@ -136,19 +130,14 @@ inline API_RESULT GameObjectBase<T>::GetModelMatrix(OUT mat4 *mat)
 	S.el_2D[2][2] = _scale.z;
 
 	*mat = T * R * S;
-
-	return S_OK;
 }
 
 template<typename T>
-inline API_RESULT GameObjectBase<T>::GetInvModelMatrix(OUT mat4 *mat)
+inline API_VOID GameObjectBase<T>::GetInvModelMatrix(OUT mat4 *mat)
 {
 	mat4 M;
-
 	GetModelMatrix(&M);
 
 	*mat = M.Inverse();
-
-	return S_OK;
 }
 

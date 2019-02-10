@@ -127,6 +127,8 @@ public:
 	API_RESULT _CreateModel(OUT IModel **pModel) override;
 	API_RESULT _CreateCamera(OUT ICamera **pCamera) override;
 
+	API_RESULT _CloneGameObject(OUT IGameObject **pDest, IGameObject *pSrc) override;
+
 	API_RESULT Free() override;
 
 	API_RESULT GetName(OUT const char **pTxt) override;

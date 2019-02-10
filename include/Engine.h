@@ -70,6 +70,7 @@ namespace RENDER_MASTER
 	using RenderTargetPtr = intrusive_ptr<IRenderTarget>;
 	using StructuredBufferPtr = intrusive_ptr<IStructuredBuffer>;
 	using TextFilePtr = intrusive_ptr<ITextFile>;
+	using GameObjectPtr = intrusive_ptr<IGameObject>;
 	using ModelPtr = intrusive_ptr<IModel>;
 	using CameraPtr = intrusive_ptr<ICamera>;
 
@@ -548,42 +549,41 @@ namespace RENDER_MASTER
 	{
 	public:
 		virtual ~IGameObject() = default;
-		virtual API_RESULT GetID(OUT uint *id) = 0;
-		virtual API_RESULT SetID(uint *id) = 0;
-		virtual API_RESULT GetName(OUT const char **pName) = 0;
-		virtual API_RESULT SetName(const char *pName) = 0;
-		virtual API_RESULT SetPosition(const vec3 *pos) = 0;
-		virtual API_RESULT SetRotation(const quat *rot) = 0;
-		virtual API_RESULT SetScale(const vec3 *scale) = 0;
-		virtual API_RESULT GetPosition(OUT vec3 *pos) = 0;
-		virtual API_RESULT GetRotation(OUT quat *rot) = 0;
-		virtual API_RESULT GetScale(OUT vec3 *scale) = 0;
-		virtual API_RESULT GetModelMatrix(OUT mat4 *mat) = 0;
-		virtual API_RESULT GetInvModelMatrix(OUT mat4 *mat) = 0;
+		virtual API_VOID GetID(OUT uint *id) = 0;
+		virtual API_VOID SetID(uint *id) = 0;
+		virtual API_VOID GetName(OUT const char **pName) = 0;
+		virtual API_VOID SetName(const char *pName) = 0;
+		virtual API_VOID SetPosition(const vec3 *pos) = 0;
+		virtual API_VOID SetRotation(const quat *rot) = 0;
+		virtual API_VOID SetScale(const vec3 *scale) = 0;
+		virtual API_VOID GetPosition(OUT vec3 *pos) = 0;
+		virtual API_VOID GetRotation(OUT quat *rot) = 0;
+		virtual API_VOID GetScale(OUT vec3 *scale) = 0;
+		virtual API_VOID GetModelMatrix(OUT mat4 *mat) = 0;
+		virtual API_VOID GetInvModelMatrix(OUT mat4 *mat) = 0;
 		virtual API_VOID GetAABB(OUT AABB *aabb) = 0;
-		virtual API_RESULT Copy(IGameObject *copy) = 0;
+		virtual API_VOID Copy(IGameObject *copy) = 0;
 
 		// Events
-		virtual API_RESULT GetNameEv(OUT IStringEvent **pEvent) = 0;
-		virtual API_RESULT GetPositionEv(OUT IPositionEvent **pEvent) = 0;
-		virtual API_RESULT GetRotationEv(OUT IRotationEvent **pEvent) = 0;
+		virtual API_VOID GetNameEv(OUT IStringEvent **pEvent) = 0;
+		virtual API_VOID GetPositionEv(OUT IPositionEvent **pEvent) = 0;
+		virtual API_VOID GetRotationEv(OUT IRotationEvent **pEvent) = 0;
 	};
 
 	class ICamera : public IGameObject
 	{
 	public:
-		virtual API_RESULT GetViewMatrix(OUT mat4 *mat) = 0;
-		virtual API_RESULT GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
-		virtual API_RESULT GetProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
-		virtual API_RESULT GetFovAngle(OUT float *fovInDegrees) = 0;
-		virtual API_RESULT Copy(ICamera *copy) = 0;
+		virtual API_VOID GetViewMatrix(OUT mat4 *mat) = 0;
+		virtual API_VOID GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
+		virtual API_VOID GetProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
+		virtual API_VOID GetFovAngle(OUT float *fovInDegrees) = 0;
+		virtual API_VOID Copy(ICamera *copy) = 0;
 	};
 
 	class IModel : public IGameObject
 	{
 	public:
 		virtual API_VOID GetMesh(OUT IMesh **pMesh) = 0;
-		virtual API_VOID Copy(OUT IModel *copy) = 0;
 	};
 
 	class IMesh : public IBaseResource
@@ -694,6 +694,8 @@ namespace RENDER_MASTER
 		virtual API_RESULT _CreateModel(OUT IModel **pModel) = 0;
 		virtual API_RESULT _CreateCamera(OUT ICamera **pCamera) = 0;
 
+		virtual API_RESULT _CloneGameObject(OUT IGameObject **pDest, IGameObject *pSrc) = 0;
+
 		inline ModelPtr LoadModel(const char *path)
 		{
 			IModel *m;
@@ -742,6 +744,12 @@ namespace RENDER_MASTER
 			ICamera *c;
 			_CreateCamera(&c);
 			return CameraPtr(c);
+		}
+		inline GameObjectPtr CloneGameObject(GameObjectPtr src)
+		{
+			IGameObject *g;
+			_CloneGameObject(&g, src.Get());
+			return GameObjectPtr(g);
 		}
 
 		virtual API_RESULT Free() = 0;

@@ -22,7 +22,7 @@ API_VOID Model::GetAABB(OUT AABB *aabb)
 	*aabb = _unitAABB;
 }
 
-API_VOID Model::Copy(OUT IModel *copy)
+API_VOID Model::Copy(OUT IGameObject *copy)
 {
 	GameObjectBase<IModel>::Copy(copy);
 

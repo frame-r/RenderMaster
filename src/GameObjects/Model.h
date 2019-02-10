@@ -16,5 +16,5 @@ public:
 		
 	API_VOID GetMesh(OUT IMesh **pMesh) override;
 	API_VOID GetAABB(OUT AABB *aabb) override;
-	API_VOID Copy(OUT IModel *copy) override;
+	API_VOID Copy(OUT IGameObject *copy) override;
 };

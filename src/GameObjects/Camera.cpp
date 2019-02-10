@@ -98,31 +98,19 @@ Camera::~Camera()
 {
 }
 
-API_RESULT Camera::GetViewMatrix(OUT mat4 *mat)
+API_VOID Camera::GetViewMatrix(OUT mat4 *mat)
 {
 	GetInvModelMatrix(mat);
-	return S_OK;
 }
 
-API_RESULT Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
+API_VOID Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 {
 	mat4 P;
-
-	// OpenGL projection  matrix
-	//const float DEGTORAD = 3.1415926f / 180.0f;
-	//float const tanHalfFovy = tan(DEGTORAD* _fovAngle / 2);
-	//P.el_2D[0][0] = 1.0f / (aspect * tanHalfFovy);
-	//P.el_2D[1][1] = 1.0f / (tanHalfFovy);
-	//P.el_2D[2][2] = -(_zFar + _zNear) / (_zNear - _zFar);
-	//P.el_2D[3][2] = 1.0f;
-	//P.el_2D[2][3] = (2.0f * _zFar * _zNear) / (_zNear - _zFar);
-	//P.el_2D[3][3] = 0.0f;
 
 	P = perspectiveRH_ZO(_fovAngle * DEGTORAD, aspect, _zNear, _zFar);
 
 	mat4 V;
 	GetInvModelMatrix(&V);
-
 	
 	vec4 zf(1.0f, 0.0f, -_zFar, 1.0f);
 	vec4 zn(1.0f, 0.0f, -_zNear, 1.0f);
@@ -133,38 +121,21 @@ API_RESULT Camera::GetViewProjectionMatrix(OUT mat4 *mat, float aspect)
 
 	vec4 rn = P * zn;
 	rn /= rn.w; // -> 0
-/*
-	vec4 rm = P * zm;
-	rm /= rm.w;
-
-	vec4 or(0.0f, 0.0f, 0.0f, 1.0f);
-	vec4 ox (1.0f, 0.0f, 0.0f, 1.0f);
-	
-	vec4 ze = mat * or;
-	ze /= ze.w;
-
-	vec4 z1 = mat * ox;
-	z1 /= z1.w;
-	*/
 
 	*mat = P * V;
-
-	return S_OK;
 }
 
-API_RESULT Camera::GetProjectionMatrix(OUT mat4 *mat, float aspect)
+API_VOID Camera::GetProjectionMatrix(OUT mat4 *mat, float aspect)
 {
 	*mat = perspectiveRH_ZO(_fovAngle * DEGTORAD, aspect, _zNear, _zFar);
-	return S_OK;
 }
 
-API_RESULT Camera::GetFovAngle(OUT float *fovInDegrees)
+API_VOID Camera::GetFovAngle(OUT float *fovInDegrees)
 {
 	*fovInDegrees = _fovAngle;
-	return S_OK;
 }
 
-API_RESULT Camera::Copy(OUT ICamera *copy)
+API_VOID Camera::Copy(OUT ICamera *copy)
 {
 	GameObjectBase<ICamera>::Copy(copy);
 
@@ -172,7 +143,5 @@ API_RESULT Camera::Copy(OUT ICamera *copy)
 	copyCamera->_zNear = _zNear;
 	copyCamera->_zFar = _zFar;
 	copyCamera->_fovAngle = _fovAngle;
-
-	return S_OK;
 }
 

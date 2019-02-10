@@ -1432,6 +1432,35 @@ API_RESULT ResourceManager::_CreateCamera(OUT ICamera **pCamera)
 	return S_OK;
 }
 
+API_RESULT ResourceManager::_CloneGameObject(OUT IGameObject **pDest, IGameObject *pSrc)
+{
+	IGameObject *out;
+
+	if (dynamic_cast<IModel*>(pSrc))
+	{
+		out = new Model;
+	}
+	else if (dynamic_cast<ICamera*>(pSrc))
+	{
+		out = new Camera;
+	}
+	else // GameObject
+	{
+		out = new GameObject;
+	}
+
+	_runtimeGameobjects.emplace(out);
+
+	pSrc->Copy(out);
+
+	SceneManager *scene = static_cast<SceneManager*>(getSceneManager(_pCore));
+	scene->addGameObject(out);
+
+	*pDest = out;
+
+	return S_OK;
+}
+
 API_RESULT ResourceManager::_CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags)
 {
 	ICoreTexture *pCoreTex;

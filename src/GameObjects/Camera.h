@@ -21,9 +21,9 @@ public:
 	Camera();
 	virtual ~Camera();
 
-	API_RESULT GetViewMatrix(OUT mat4 *mat) override;
-	API_RESULT GetViewProjectionMatrix(OUT mat4 *mat, float aspect) override;
-	API_RESULT GetProjectionMatrix(OUT mat4 *mat, float aspect) override;
-	API_RESULT GetFovAngle(OUT float *fovInDegrees) override;
-	API_RESULT Copy(OUT ICamera *copy) override;
+	API_VOID GetViewMatrix(OUT mat4 *mat) override;
+	API_VOID GetViewProjectionMatrix(OUT mat4 *mat, float aspect) override;
+	API_VOID GetProjectionMatrix(OUT mat4 *mat, float aspect) override;
+	API_VOID GetFovAngle(OUT float *fovInDegrees) override;
+	API_VOID Copy(OUT ICamera *copy) override;
 };
