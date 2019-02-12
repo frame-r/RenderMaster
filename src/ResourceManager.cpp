@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "ConsoleWindow.h"
 #include "SceneManager.h"
+#include "Material.h"
 #include <memory>
 
 
@@ -19,7 +20,7 @@ using namespace std;
 
 //#if defined _MSC_VER && _MSC_VER <= 1900
 //// VS 2015 ships filesystem as TS
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 //#else
 // for fully C++17 conformant toolchain
 //namespace fs = std::filesystem;
@@ -476,7 +477,23 @@ void ResourceManager::Init()
 {
 	InitializeCriticalSection(&_cs);
 	_pCore->GetSubSystem((ISubSystem**)&_pCoreRender, SUBSYSTEM_TYPE::CORE_RENDER);
-	LOG("Resource Manager initalized");
+
+	// Load materials
+	//
+	FileSystem *fss = static_cast<FileSystem*>(_pFilesystem);
+	auto files = fss->GetAllFiles();
+
+	for (string &s : files)
+	{
+		if (fileExtension(s) == "mat")
+		{
+			unique_ptr<Material> mat(new Material(s.c_str()));
+			mat->Load();
+			_materials[s] = std::move(mat);
+		}
+	}
+
+	LOG_FORMATTED("Resource Manager initalized. Loaded materials %i\n", _materials.size());
 }
 
 size_t ResourceManager::sharedResources()
@@ -538,7 +555,7 @@ API_RESULT ResourceManager::resources_list(const char **args, uint argsNumber)
 
 uint ResourceManager::getNumLines()
 {
-	return 4;
+	return 5;
 }
 
 string ResourceManager::getString(uint i)
@@ -548,7 +565,8 @@ string ResourceManager::getString(uint i)
 		case 0: return "===== Resource Manager =====";
 		case 1: return "Shared resources: " + std::to_string(sharedResources());
 		case 2: return "Runtime resources: " + std::to_string(runtimeResources());
-		case 3: return "";
+		case 3: return "Materials: " + std::to_string(_materials.size());
+		case 4: return "";
 	};
 	assert(0);
 	return "";
@@ -589,6 +607,8 @@ API_RESULT ResourceManager::Free()
 	assert(_sharedTextures.size() == 0 &&		"ResourceManager::Free: _sharedTextures.size() != 0. You should release all textures before free resource manager");
 	assert(_runtimeTextures.size() == 0 &&		"ResourceManager::Free: _runtimeTextures.size() != 0. You should release all textures before free resource manager");
 	assert(_runtimeGameobjects.size() == 0 &&	"ResourceManager::Free: _runtimeGameobjects.size() != 0. You should release all gameobjects before free resource manager");
+
+	_materials.clear();
 
 	return S_OK;
 }
@@ -861,6 +881,42 @@ API_RESULT ResourceManager::_LoadStandardMesh(OUT IMesh **pMesh, const char *id)
 
 	*pMesh = nullptr;
 	LOG_FATAL_FORMATTED("ResourceManager::LoadStandardMesh unable load mesh with id=\"%s\"", id);
+	return E_FAIL;
+}
+
+API_RESULT ResourceManager::_CreateMaterial(OUT IMaterial **pMat, const char *name)
+{
+	string path = string(name) + ".mat";
+
+	int exist;
+	_pFilesystem->FileExist(path.c_str(), &exist);
+	if (exist)
+	{
+		LOG_FATAL_FORMATTED("ResourceManager::_CreateMaterial() material \"%s\" already exist", path.c_str());
+		*pMat = nullptr;
+		return E_FAIL;
+	}	
+
+	unique_ptr<Material> mat(new Material(path.c_str()));
+	mat->Save();
+
+	*pMat = mat.get();
+
+	_materials[path] = std::move(mat);
+
+	return S_OK;
+}
+
+API_RESULT ResourceManager::_FindMaterial(OUT IMaterial **pMat, const char * name)
+{
+	auto it = _materials.find(name);
+	if (it != _materials.end())
+	{
+		*pMat = it->second.get();
+		return S_OK;
+	} else
+		*pMat = nullptr;
+
 	return E_FAIL;
 }
 

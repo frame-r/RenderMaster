@@ -1,7 +1,8 @@
 #pragma once
 #include "Common.h"
+#include <filesystem>
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 
 class FileSystem final: public IFileSystem
@@ -13,6 +14,7 @@ public:
 	virtual ~FileSystem(){}
 
 	void Init(const string& dataPath);
+	vector<string> GetAllFiles();
 
 	API_RESULT OpenFile(OUT IFile **pFile, const char* path, FILE_OPEN_MODE mode) override;
 	API_RESULT FileExist(const char *fullPath, OUT int *exist) override;

@@ -27,6 +27,7 @@
     <ClInclude Include="..\src\ConsoleWindow.h" />
     <ClInclude Include="..\src\Core.h" />
     <ClInclude Include="..\src\LowLevelRender\OpenGL\GLSSBO.h" />
+    <ClInclude Include="..\src\Render\Objects\Material.h" />
     <ClInclude Include="..\src\Render\Objects\StructuredBuffer.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11CoreRender.h" />
     <ClInclude Include="..\src\LowLevelRender\DirectX\DX11Mesh.h" />
@@ -67,6 +68,7 @@
     <ClCompile Include="..\src\ConsoleWindow.cpp" />
     <ClCompile Include="..\src\Core.cpp" />
     <ClCompile Include="..\src\LowLevelRender\OpenGL\GLSSBO.cpp" />
+    <ClCompile Include="..\src\Render\Objects\Material.cpp" />
     <ClCompile Include="..\src\Render\Objects\StructuredBuffer.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11CoreRender.cpp" />
     <ClCompile Include="..\src\LowLevelRender\DirectX\DX11Mesh.cpp" />
@@ -231,6 +233,7 @@
       <ModuleDefinitionFile>export.def</ModuleDefinitionFile>
       <AdditionalDependencies>yaml-cpp.lib;opengl32.lib;d3d11.lib;d3dcompiler.lib;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\debug\libfbxsdk-md.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\bin\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <ShowProgress>NotSet</ShowProgress>
     </Link>
     <BuildLog>
       <Path>..\bin\$(Platform)\$(Configuration)\$(ProjectName).log</Path>

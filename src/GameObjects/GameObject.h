@@ -104,12 +104,12 @@ inline API_VOID GameObjectBase<T>::SetRotation(const quat *rot)
 }
 
 template<typename T>
-inline API_VOID GameObjectBase<T>::Copy(IGameObject *copy)
+inline API_VOID GameObjectBase<T>::Copy(IGameObject *dst)
 {
-	copy->SetName(_name.c_str());
-	copy->SetPosition(&_pos);
-	copy->SetRotation(&_rot);
-	copy->SetScale(&_scale);
+	dst->SetName(_name.c_str());
+	dst->SetPosition(&_pos);
+	dst->SetRotation(&_rot);
+	dst->SetScale(&_scale);
 }
 
 template<typename T>

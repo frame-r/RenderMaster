@@ -684,10 +684,17 @@ void Render::getRenderMeshes(vector<RenderMesh>& meshes_vec)
 			IMesh *mesh;
 			model->GetMesh(&mesh);
 
-			mat4 mat;
-			model->GetModelMatrix(&mat);
+			mat4 M;
+			model->GetModelMatrix(&M);
 
-			meshes_vec.emplace_back(RenderMesh{id, mesh, mat});
+			IMaterial *mat;
+			model->GetMaterial(&mat);
+
+			vec4 base_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			if (mat)
+				mat->GetBaseColor(&base_color);
+
+			meshes_vec.emplace_back(RenderMesh{id, mesh, mat, base_color, M});
 		}
 	}
 }
@@ -710,7 +717,7 @@ void Render::setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader
 	}
 	else if (pass == RENDER_PASS::FORWARD)
 	{
-		shader->SetVec4Parameter("main_color", &vec4(1.0f, 1.0f, 1.0f, 1.0f));
+		shader->SetVec4Parameter("main_color", &mesh->base_color);
 		shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
 	}
 

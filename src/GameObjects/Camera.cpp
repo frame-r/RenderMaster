@@ -135,13 +135,13 @@ API_VOID Camera::GetFovAngle(OUT float *fovInDegrees)
 	*fovInDegrees = _fovAngle;
 }
 
-API_VOID Camera::Copy(OUT ICamera *copy)
+API_VOID Camera::Copy(OUT IGameObject *dst)
 {
-	GameObjectBase<ICamera>::Copy(copy);
+	GameObjectBase<ICamera>::Copy(dst);
 
-	Camera *copyCamera = static_cast<Camera*>(copy);
-	copyCamera->_zNear = _zNear;
-	copyCamera->_zFar = _zFar;
-	copyCamera->_fovAngle = _fovAngle;
+	Camera *camDst = static_cast<Camera*>(dst);
+	camDst->_zNear = _zNear;
+	camDst->_zFar = _zFar;
+	camDst->_fovAngle = _fovAngle;
 }
 

@@ -38,6 +38,8 @@ class ResourceManager final : public IResourceManager, IProfilerCallback
 	std::unordered_map<string, ITexture*> _sharedTextures;
 	std::unordered_map<string, IMesh*> _sharedMeshes;
 	std::unordered_map<string, ITextFile*> _sharedTextFiles;
+
+	std::unordered_map<string, unique_ptr<IMaterial>> _materials;
 		
 	ICoreRender *_pCoreRender = nullptr;
 	IFileSystem *_pFilesystem = nullptr;
@@ -69,6 +71,7 @@ class ResourceManager final : public IResourceManager, IProfilerCallback
 
 	API_RESULT resources_list(const char **args, uint argsNumber);
 
+	// IProfilerCallback
 	uint getNumLines() override;
 	string getString(uint i) override;
 
@@ -118,6 +121,9 @@ public:
 	API_RESULT _LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) override;
 	API_RESULT _LoadTextFile(OUT ITextFile **pShader, const char *path) override;
 	API_RESULT _LoadStandardMesh(OUT IMesh **pMesh, const char *id) override;
+
+	API_RESULT _CreateMaterial(OUT IMaterial **pMat, const char *name) override;
+	API_RESULT _FindMaterial(OUT IMaterial **pMat, const char *name) override;
 
 	API_RESULT _CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) override;
 	API_RESULT _CreateShader(OUT IShader **pShaderOut, const char *vert, const char *geom, const char *frag) override;

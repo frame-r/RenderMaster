@@ -17,6 +17,23 @@ void FileSystem::Init(const string& dataPath)
 	_dataPath = dataPath;
 }
 
+vector<string> FileSystem::GetAllFiles()
+{
+	vector<string> ret;
+
+	for (const auto & entry : fs::recursive_directory_iterator(_dataPath))
+	{
+		const fs::path base(_dataPath);
+		const fs::path p(entry);
+
+		string str = fs::relative(p, base).generic_string();
+		ret.push_back(std::move(str));
+	}
+
+
+	return ret;
+}
+
 API_RESULT FileSystem::OpenFile(OUT IFile **pFile, const char* pPath, FILE_OPEN_MODE mode)
 {
 	const bool read = (mode & FILE_OPEN_MODE::READ) == FILE_OPEN_MODE::READ;

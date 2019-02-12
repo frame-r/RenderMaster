@@ -25,5 +25,5 @@ public:
 	API_VOID GetViewProjectionMatrix(OUT mat4 *mat, float aspect) override;
 	API_VOID GetProjectionMatrix(OUT mat4 *mat, float aspect) override;
 	API_VOID GetFovAngle(OUT float *fovInDegrees) override;
-	API_VOID Copy(OUT ICamera *copy) override;
+	API_VOID Copy(OUT IGameObject *copy) override;
 };

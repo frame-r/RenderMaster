@@ -56,7 +56,9 @@ class Render : public IRender, IProfilerCallback
 	struct RenderMesh
 	{
 		uint model_id;
-		IMesh *mesh{ nullptr };
+		IMesh *mesh{nullptr};
+		IMaterial *mat{nullptr};
+		vec4 base_color;
 		mat4 modelMat;
 	};
 

@@ -120,7 +120,7 @@ class Exception : public std::runtime_error {
  public:
   Exception(const Mark& mark_, const std::string& msg_)
       : std::runtime_error(build_what(mark_, msg_)), mark(mark_), msg(msg_) {}
-  virtual ~Exception() YAML_CPP_NOEXCEPT;
+  virtual ~Exception() YAML_CPP_NOEXCEPT = default;
 
   Exception(const Exception&) = default;
 
@@ -154,7 +154,7 @@ class  RepresentationException : public Exception {
   RepresentationException(const Mark& mark_, const std::string& msg_)
       : Exception(mark_, msg_) {}
   RepresentationException(const RepresentationException&) = default;
-  virtual ~RepresentationException() YAML_CPP_NOEXCEPT;
+  virtual ~RepresentationException() YAML_CPP_NOEXCEPT = default;
 };
 
 // representation exceptions
@@ -197,7 +197,7 @@ class  InvalidNode : public RepresentationException {
   InvalidNode()
       : RepresentationException(Mark::null_mark(), ErrorMsg::INVALID_NODE) {}
   InvalidNode(const InvalidNode&) = default;
-  virtual ~InvalidNode() YAML_CPP_NOEXCEPT;
+  virtual ~InvalidNode() YAML_CPP_NOEXCEPT = default;
 };
 
 class  BadConversion : public RepresentationException {
@@ -205,7 +205,7 @@ class  BadConversion : public RepresentationException {
   explicit BadConversion(const Mark& mark_)
       : RepresentationException(mark_, ErrorMsg::BAD_CONVERSION) {}
   BadConversion(const BadConversion&) = default;
-  virtual ~BadConversion() YAML_CPP_NOEXCEPT;
+  virtual ~BadConversion() YAML_CPP_NOEXCEPT = default;
 };
 
 template <typename T>
@@ -227,7 +227,7 @@ class  BadSubscript : public RepresentationException {
   BadSubscript()
       : RepresentationException(Mark::null_mark(), ErrorMsg::BAD_SUBSCRIPT) {}
   BadSubscript(const BadSubscript&) = default;
-  virtual ~BadSubscript() YAML_CPP_NOEXCEPT;
+  virtual ~BadSubscript() YAML_CPP_NOEXCEPT = default;
 };
 
 class  BadPushback : public RepresentationException {

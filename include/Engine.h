@@ -58,6 +58,7 @@ namespace RENDER_MASTER
 	class IRenderTarget;
 	class IMesh;
 	class IModel;
+	class IMaterial;
 	class ITextFile;
 	class IConstantBuffer;
 	class IStructuredBuffer;
@@ -577,13 +578,14 @@ namespace RENDER_MASTER
 		virtual API_VOID GetViewProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
 		virtual API_VOID GetProjectionMatrix(OUT mat4 *mat, float aspect) = 0;
 		virtual API_VOID GetFovAngle(OUT float *fovInDegrees) = 0;
-		virtual API_VOID Copy(ICamera *copy) = 0;
 	};
 
 	class IModel : public IGameObject
 	{
 	public:
 		virtual API_VOID GetMesh(OUT IMesh **pMesh) = 0;
+		virtual API_VOID SetMaterial(const char* path) = 0;
+		virtual API_VOID GetMaterial(OUT IMaterial **mat) = 0;
 	};
 
 	class IMesh : public IBaseResource
@@ -623,6 +625,16 @@ namespace RENDER_MASTER
 		virtual ~ITextFile() = default;
 		virtual API_RESULT GetText(OUT const char **textOut) = 0;
 		virtual API_RESULT SetText(const char *textIn) = 0;
+	};
+
+	class IMaterial
+	{
+	public:
+		virtual ~IMaterial() = default;
+		virtual API_VOID GetBaseColor(OUT vec4 *color) = 0;
+		virtual API_VOID SetBaseColor(const vec4 *color) = 0;
+		virtual API_VOID GetPath(OUT const char **path) = 0;
+		virtual API_VOID Save() = 0;
 	};
 
 	class IShader : public IBaseResource
@@ -685,6 +697,9 @@ namespace RENDER_MASTER
 		virtual API_RESULT _LoadTexture(OUT ITexture **pTexture, const char *path, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API_RESULT _LoadTextFile(OUT ITextFile **pShader, const char *path) = 0;
 		virtual API_RESULT _LoadStandardMesh(OUT IMesh **pMesh, const char *id) = 0;
+
+		virtual API_RESULT _CreateMaterial(OUT IMaterial **pMat, const char *path) = 0;
+		virtual API_RESULT _FindMaterial(OUT IMaterial **pMat, const char *path) = 0;
 
 		virtual API_RESULT _CreateTexture(OUT ITexture **pTextureOut, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) = 0;
 		virtual API_RESULT _CreateShader(OUT IShader **pShderOut, const char *vert, const char *geom, const char *frag) = 0;
