@@ -9,11 +9,6 @@
 extern Core *_pCore;
 DEFINE_DEBUG_LOG_HELPERS(_pCore)
 DEFINE_LOG_HELPERS(_pCore)
-
-/////////////////////////
-// Render
-/////////////////////////
-
 uint widths[256] = {
 8
 ,8
@@ -290,7 +285,8 @@ Render::~Render()
 
 API_RESULT Render::shaders_reload(const char ** args, uint argsNumber)
 {
-	return ShadersReload();
+	ShadersReload();
+	return S_OK;
 }
 
 uint Render::getNumLines()
@@ -304,8 +300,8 @@ string Render::getString(uint i)
 	{
 		case 0: return "==== Render ====";
 		case 1: return "FPS: " + std::to_string(_pCore->FPSlazy());
-		case 2: return "Runtime Shaders: " + std::to_string(_shaders_pool.size());
-		case 3: return "Texture pool: " + std::to_string(_texture_pool.size());
+		case 2: return "Runtime Shaders: " + std::to_string(_runtime_shaders.size());
+		case 3: return "Texture pool: " + std::to_string(_render_textures.size());
 		case 4: return "";
 	}
 	assert(false);
@@ -320,7 +316,7 @@ void Render::renderForward(RenderBuffers& buffers, vector<RenderMesh>& meshes)
 	{
 		_pCoreRender->Clear();
 
-		drawMeshes(meshes, RENDER_PASS::FORWARD);
+		drawMeshes(meshes, "mesh.shader", RENDER_PASS::FORWARD);
 	}
 	_pCoreRender->RestoreDefaultRenderTarget();
 }
@@ -330,9 +326,9 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 	//_pCoreRender->PushStates();
 
 	INPUT_ATTRUBUTE attribs;
-	_postPlane->GetAttributes(&attribs);
+	_quad->GetAttributes(&attribs);
 
-	IShader *shader = getShader({attribs, RENDER_PASS::ENGINE_POST});
+	IShader *shader = getShader({"engine_post.shader", attribs});
 	_pCoreRender->SetShader(shader);
 
 	_pCoreRender->BindTexture(0, buffers.colorHDR.Get());
@@ -342,7 +338,7 @@ void Render::renderEnginePost(RenderBuffers& buffers)
 	renderTarget->SetColorTexture(0, buffers.color.Get());
 	_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());_pCoreRender->SetCurrentRenderTarget(renderTarget.Get());
 	{
-		_pCoreRender->Draw(_postPlane.Get());
+		_pCoreRender->Draw(_quad.Get());
 	}
 	_pCoreRender->RestoreDefaultRenderTarget();
 
@@ -361,19 +357,17 @@ void Render::RenderFrame(const ICamera *pCamera)
 	const_cast<ICamera*>(pCamera)->GetViewProjectionMatrix(&ViewProjMat, aspect);
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
 
-	vector<RenderMesh> meshes;
-	getRenderMeshes(meshes);
+	mat4 camModel;
+	const_cast<ICamera*>(pCamera)->GetModelMatrix(&camModel);
+	cameraWorldPos = camModel.Column3(3);
+
+	vector<RenderMesh> meshes = getRenderMeshes();
 
 	RenderBuffers buffers = initBuffers(w, h);
 
-	// Forward pass
-	//
 	renderForward(buffers, meshes);
 
-	// Engine post pass
-	//
 	renderEnginePost(buffers);
-
 
 #if 0
 	///////////////////////////////
@@ -426,7 +420,7 @@ void Render::RenderFrame(const ICamera *pCamera)
 	releaseBuffers(buffers);
 }
 
-API_RESULT Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
+void Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex)
 {
 	uint w, h;
 	tex->GetWidth(&w);
@@ -439,8 +433,7 @@ API_RESULT Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, IText
 	mat4 ViewMat;
 	const_cast<ICamera*>(pCamera)->GetViewMatrix(&ViewMat);
 	
-	vector<RenderMesh> meshes;
-	getRenderMeshes(meshes);
+	vector<RenderMesh> meshes = getRenderMeshes();
 
 	renderTarget->SetColorTexture(0, tex);
 	renderTarget->SetDepthTexture(depthTex);
@@ -449,23 +442,21 @@ API_RESULT Render::RenderPassIDPass(const ICamera *pCamera, ITexture *tex, IText
 	{
 		_pCoreRender->Clear();
 
-		drawMeshes(meshes, RENDER_PASS::ID);
+		drawMeshes(meshes, "id.shader", RENDER_PASS::ID);
 	}
 	_pCoreRender->RestoreDefaultRenderTarget();
 
 	renderTarget->UnbindAll();
-
-	return S_OK;
 }
 
-API_RESULT Render::RenderPassGUI()
+void Render::RenderPassGUI()
 {
 	INPUT_ATTRUBUTE attribs;
-	_postPlane->GetAttributes(&attribs);
+	_quad->GetAttributes(&attribs);
 
-	IShader *shader = getShader({ attribs, RENDER_PASS::FONT });
+	IShader *shader = getShader({"font.shader", attribs});
 	if (!shader)
-		return S_OK;
+		return;
 
 	_pCoreRender->SetShader(shader);
 
@@ -480,8 +471,6 @@ API_RESULT Render::RenderPassGUI()
 
 	_pCoreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 	_pCoreRender->SetDepthTest(0);
-
-	//string fps = "FPS=" + std::to_string(_pCore->FPSlazy());
 
 	float offsetVert = 0.0f;
 	for (int i = 0; i < _pCore->ProfilerRecords(); i++)
@@ -498,9 +487,7 @@ API_RESULT Render::RenderPassGUI()
 			if (!r.buffer || r.length < fps.size())
 			{
 				r.length = fps.size();
-
 				r.buffer = _pResMan->CreateStructuredBuffer((uint)r.length * sizeof(charr), sizeof(charr));
-
 				r.bufferData = unique_ptr<charr[]>(new charr[r.length]);
 			}
 
@@ -524,44 +511,35 @@ API_RESULT Render::RenderPassGUI()
 			}
 
 			_pCoreRender->SetStructuredBufer(1, r.buffer.Get());
-
-			_pCoreRender->Draw(_postPlane.Get(), (uint)fps.size());
+			_pCoreRender->Draw(_quad.Get(), (uint)fps.size());
 		}
 
 		offsetVert -= 17.0f;
 	}
-
-
 	_pCoreRender->UnbindAllTextures();
 	_pCoreRender->SetStructuredBufer(1, nullptr);
 
 	_pCoreRender->SetDepthTest(1);
 	_pCoreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
-
-	return S_OK;
 }
 
 void Render::_update()
 {
-	auto before = _texture_pool.size();
-
-	_texture_pool.erase(std::remove_if(_texture_pool.begin(), _texture_pool.end(), [&](const TexturePoolable& r) -> bool
-	{
-		return r.free == 1 && (_pCore->frame() - r.frame) > 3;
-	}),
-    _texture_pool.end());
-
-	//if (before != _texture_pool.length())
-	//	LOG_FORMATTED("Render::_update() textures removed. was = %i, now = %i", before, _texture_pool.length());
+	_render_textures.erase(std::remove_if(_render_textures.begin(), _render_textures.end(),
+		[&](const RenderTexture& r) -> bool
+		{
+			return r.free == 1 && (_pCore->frame() - r.frame) > 3;
+		}),
+	_render_textures.end());
 }
 
 IShader* Render::getShader(const ShaderRequirement &req)
 {
 	IShader *pShader = nullptr;
 
-	auto it = _shaders_pool.find(req);
+	auto it = _runtime_shaders.find(req);
 
-	if (it != _shaders_pool.end())
+	if (it != _runtime_shaders.end())
 	{
 		ShaderPtr& shaderPtr = it->second;
 		return shaderPtr.Get();
@@ -572,7 +550,11 @@ IShader* Render::getShader(const ShaderRequirement &req)
 		{
 			simplecpp::DUI dui;
 
-			if (isOpenGL())
+			const char *gapi;
+			_pCoreRender->GetName(&gapi);
+			bool is_opengl = (strcmp("GLCoreRender", gapi) == 0);
+
+			if (is_opengl)
 				dui.defines.push_back("ENG_OPENGL");
 			else
 				dui.defines.push_back("ENG_DIRECTX11");
@@ -609,11 +591,11 @@ IShader* Render::getShader(const ShaderRequirement &req)
 			auto size = out.size();
 
 			// Workaround for opengl because C preprocessor eats up unknown derictive "#version 420"
-			if (isOpenGL())
+			if (is_opengl)
 				size += 13;
 
 			char *tmp = new char[size + 1];
-			if (isOpenGL())
+			if (is_opengl)
 			{
 				strncpy(tmp + 0, "#version 420\n", 13);
 				strncpy(tmp + 13, out.c_str(), size - 13);
@@ -627,15 +609,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 
 		const char *text;
 
-		intrusive_ptr<ITextFile> targetShader;
-
-		switch (req.pass)
-		{
-			case RENDER_PASS::ID: targetShader = _idShader; break;
-			case RENDER_PASS::FORWARD: targetShader = _forwardShader; break;
-			case RENDER_PASS::ENGINE_POST: targetShader = _postShader; break;
-			case RENDER_PASS::FONT: targetShader = _fontShader; break;
-		}
+		intrusive_ptr<ITextFile> targetShader = _pResMan->LoadTextFile(req.path);
 
 		targetShader->GetText(&text);
 
@@ -643,7 +617,7 @@ IShader* Render::getShader(const ShaderRequirement &req)
 		targetShader->GetFile(&pFileIn);
 		string fileIn = pFileIn;
 
-		const char *textVertOut; 
+		const char *textVertOut;
 		const char *textFragOut;
 
 		process_shader(textVertOut, text, fileIn, "out_v.shader", 0);
@@ -654,23 +628,17 @@ IShader* Render::getShader(const ShaderRequirement &req)
 		if (!compiled)
 		{
 			LOG_FATAL("Render::_get_shader(): can't compile standard shader\n");
-			_shaders_pool.emplace(req, ShaderPtr(nullptr));
+			_runtime_shaders.emplace(req, ShaderPtr(nullptr));
 		}
 		else
-			_shaders_pool.emplace(req, ShaderPtr(pShader));
+			_runtime_shaders.emplace(req, ShaderPtr(pShader));
 	}
 	return pShader;
 }
 
-bool Render::isOpenGL()
+vector<Render::RenderMesh> Render::getRenderMeshes()
 {
-	const char *gapi;
-	_pCoreRender->GetName(&gapi);
-	return (strcmp("GLCoreRender", gapi) == 0);	
-}
-
-void Render::getRenderMeshes(vector<RenderMesh>& meshes_vec)
-{
+	vector<Render::RenderMesh> meshesVec;
 	SceneManager *scene = (SceneManager*)_pSceneMan;
 
 	for (tree<IGameObject*>::iterator it = scene->_gameobjects.begin(); it != scene->_gameobjects.end(); ++it)
@@ -690,13 +658,20 @@ void Render::getRenderMeshes(vector<RenderMesh>& meshes_vec)
 			IMaterial *mat;
 			model->GetMaterial(&mat);
 
-			vec4 base_color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-			if (mat)
-				mat->GetBaseColor(&base_color);
+			vec4 baseColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			vec4 shading;
 
-			meshes_vec.emplace_back(RenderMesh{id, mesh, mat, base_color, M});
+			if (mat)
+			{
+				mat->GetBaseColor(&baseColor);
+				mat->GetMetallic(&shading.x);
+				mat->GetRoughness(&shading.y);
+			}
+
+			meshesVec.emplace_back(RenderMesh{id, mesh, mat, baseColor, shading, M});
 		}
 	}
+	return meshesVec;
 }
 
 void Render::setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader *shader)
@@ -707,32 +682,38 @@ void Render::setShaderMeshParameters(RENDER_PASS pass, RenderMesh *mesh, IShader
 		shader->SetMat4Parameter("MVP", &MVP);
 
 		mat4 M = mesh->modelMat;
+		shader->SetMat4Parameter("M", &M);
+
 		mat4 NM = M.Inverse().Transpose();
 		shader->SetMat4Parameter("NM", &NM);
 	}
 
 	if (pass == RENDER_PASS::ID)
 	{
-		shader->SetUintParameter("model_id", mesh->model_id);
+		shader->SetUintParameter("model_id", mesh->modelId);
 	}
 	else if (pass == RENDER_PASS::FORWARD)
 	{
-		shader->SetVec4Parameter("main_color", &mesh->base_color);
-		shader->SetVec4Parameter("nL_world", &(vec4(1.0f, -2.0f, 3.0f, 0.0f).Normalized()));
+		const vec4 lightPosition = vec4(1.0f, -2.0f, 3.0f, 0.0f);
+
+		shader->SetVec4Parameter("main_color", &mesh->baseColor);
+		shader->SetVec4Parameter("shading", &mesh->shading);
+		shader->SetVec4Parameter("nL_world", &(lightPosition.Normalized()));
+		shader->SetVec4Parameter("camera_position", &cameraWorldPos);
+		shader->SetVec4Parameter("light_position", &lightPosition);
 	}
 
 	shader->FlushParameters();
 }
 
-void Render::drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass)
+void Render::drawMeshes(vector<RenderMesh>& meshes, const char *s, RENDER_PASS pass)
 {
 	for(RenderMesh &renderMesh : meshes)
 	{
 		INPUT_ATTRUBUTE attribs;
 		renderMesh.mesh->GetAttributes(&attribs);
 
-		IShader *shader = getShader({attribs, pass});
-
+		IShader *shader = getShader({s, attribs});
 		if (!shader)
 			continue;
 		
@@ -751,7 +732,7 @@ void Render::drawMeshes(vector<RenderMesh>& meshes, RENDER_PASS pass)
 
 ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORMAT format)
 {
-	for (TexturePoolable &tex : _texture_pool)
+	for (RenderTexture &tex : _render_textures)
 	{
 		if (tex.free)
 		{
@@ -765,16 +746,15 @@ ITexture* Render::getRenderTargetTexture2d(uint width, uint height, TEXTURE_FORM
 	}
 
 	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT;
-
 	TexturePtr tex = _pResMan->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
 
-	_texture_pool.push_back({_pCore->frame(), 0, width, height, format, tex});
+	_render_textures.push_back({_pCore->frame(), 0, width, height, format, tex});
 
 	return tex.Get();
 }
 void Render::releaseTexture2d(ITexture *tex)
 {
-	for (TexturePoolable &tp : _texture_pool)
+	for (RenderTexture &tp : _render_textures)
 	{
 		if (tp.tex.Get() == tex)
 			tp.free = 1;
@@ -815,11 +795,6 @@ void Render::Init()
 
 	_pCore->AddUpdateCallback(std::bind(&Render::_update, this));
 
-	_forwardShader = _pResMan->LoadTextFile("mesh.shader");
-	_idShader = _pResMan->LoadTextFile("id.shader");
-	_postShader =_pResMan->LoadTextFile("post\\engine_post.shader");
-	_fontShader = _pResMan->LoadTextFile("font.shader");
-
 	// Render Targets
 	renderTarget = _pResMan->CreateRenderTarget();
 
@@ -839,7 +814,7 @@ void Render::Init()
 		auto tex = _pResMan->CreateTexture(300, 300, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::R32UI, TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT);
 	}
 
-	_postPlane = _pResMan->LoadMesh("std#plane");
+	_quad = _pResMan->LoadMesh("std#plane");
 		
 	whiteTexture = _pResMan->LoadTexture("std#white_texture", TEXTURE_CREATE_FLAGS());
 	fontTexture = _pResMan->LoadTexture("ExportedFont.dds", TEXTURE_CREATE_FLAGS());
@@ -854,43 +829,34 @@ void Render::Free()
 
 	fontTexture.Reset();
 	whiteTexture.Reset();
-	_postPlane.Reset();
+	_quad.Reset();
 	renderTarget.Reset();
-	_fontShader.Reset();
-	_forwardShader.Reset();
-	_idShader.Reset();
-	_texture_pool.clear();
-	_shaders_pool.clear();
+
+	_render_textures.clear();
+	_runtime_shaders.clear();
+	_records.clear();
 }
 
-API_RESULT Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format)
+void Render::GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format)
 {
 	ITexture *tex = getRenderTargetTexture2d(width, height, format);
 	*texOut = tex;
-	return S_OK;
 }
 
-API_RESULT Render::ReleaseRenderTexture2D(ITexture *texIn)
+void Render::ReleaseRenderTexture2D(ITexture *texIn)
 {
 	releaseTexture2d(texIn);
-	return S_OK;
 }
 
-API_RESULT Render::ShadersReload()
+void Render::ShadersReload()
 {
 	LOG("Shaders reloading...");
-	_idShader->Reload();
-	_forwardShader->Reload();
-	_postShader->Reload();
-	_fontShader->Reload();
-	_shaders_pool.clear();
-	return S_OK;
+	_runtime_shaders.clear();
 }
 
-API_RESULT Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
+void Render::PreprocessStandardShader(IShader** pShader, const ShaderRequirement* shaderReq)
 {
 	*pShader = getShader(*shaderReq);
-	return S_OK;
 }
 
 API_RESULT Render::GetName(const char** pName)

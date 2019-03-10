@@ -4,6 +4,7 @@
 	// Constant buffer
 	UNIFORM_BUFFER_BEGIN(vertex_transformation_parameters)
 		UNIFORM(mat4, MVP)
+		UNIFORM(mat4, M)
 		UNIFORM(mat4, NM)
 	UNIFORM_BUFFER_END
 
@@ -11,14 +12,15 @@
 	// Iterpolated Attributes
 	STRUCT(VS_OUTPUT)
 		INIT_POSITION
+		ATTRIBUTE(vec3, WorldPosition, TEXCOORD1)
 		#ifdef ENG_INPUT_NORMAL
-			ATTRIBUTE(vec3, Normal, TEXCOORD1)
+			ATTRIBUTE(vec3, Normal, TEXCOORD2)
 		#endif
 		#ifdef ENG_INPUT_TEXCOORD
-			ATTRIBUTE(vec2, TexCoord, TEXCOORD2)
+			ATTRIBUTE(vec2, TexCoord, TEXCOORD3)
 		#endif
 		#ifdef ENG_INPUT_COLOR
-			ATTRIBUTE(vec4, Color, TEXCOORD3)
+			ATTRIBUTE(vec4, Color, TEXCOORD4)
 		#endif
 	END_STRUCT
 
@@ -44,6 +46,9 @@
 	MAIN_VERTEX(VS_INPUT, VS_OUTPUT)
 
 		OUT_POSITION = mul(MVP, IN_ATTRIBUTE(PositionIn));
+		
+		vec4 WorldPosition4 = mul(M, IN_ATTRIBUTE(PositionIn));
+		OUT_ATTRIBUTE(WorldPosition) = WorldPosition4.xyz;
 
 		#ifdef ENG_INPUT_NORMAL
 			OUT_ATTRIBUTE(Normal) = (mul(NM, vec4(IN_ATTRIBUTE(NormalIn).xyz, 0.0f))).xyz;

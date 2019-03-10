@@ -107,10 +107,10 @@
     <None Include="..\src\LowLevelRender\DirectX\dx_objects.inl" />
     <None Include="..\src\LowLevelRender\DirectX\states_pools.inl" />
     <None Include="..\src\LowLevelRender\OpenGL\gl_objects.inl" />
+    <None Include="..\src\Shaders\engine_post.shader" />
     <None Include="..\src\Shaders\font.shader" />
     <None Include="..\src\Shaders\id.shader" />
     <None Include="..\src\Shaders\mesh.shader" />
-    <None Include="..\src\Shaders\post\engine_post.shader" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="yaml-cpp\yaml-cpp.vcxproj">

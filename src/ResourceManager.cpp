@@ -215,6 +215,12 @@ void ResourceManager::_FBX_load_mesh(vector<FBXLoadMesh>& meshes, FbxMesh *pMesh
 		float nx, ny, nz, n_;
 		float tx, ty;
 	};
+	struct VertexPosNorm
+	{
+		float x, y, z, w;
+		float nx, ny, nz, n_;
+	};
+
 
 	vector<Vertex> vertecies;
 	vertecies.reserve(polygon_count * 3);
@@ -364,18 +370,36 @@ void ResourceManager::_FBX_load_mesh(vector<FBXLoadMesh>& meshes, FbxMesh *pMesh
 
 		vertex_counter += polygon_size;
 	}
-
+	
 	MeshDataDesc vertDesc;
-	vertDesc.pData = reinterpret_cast<uint8*>(&vertecies[0]);
-	vertDesc.numberOfVertex = (uint)vertecies.size();
-	vertDesc.positionOffset = 0;
-	vertDesc.positionStride = sizeof(Vertex);
-	vertDesc.normalsPresented = normal_element_count > 0;
-	vertDesc.normalOffset = (normal_element_count > 0) * 16;
-	vertDesc.normalStride = (normal_element_count > 0) * sizeof(Vertex);
-	vertDesc.texCoordPresented = uv_layer_count > 0;
-	vertDesc.texCoordOffset = (uv_layer_count > 0) * 32;
-	vertDesc.texCoordStride = (uv_layer_count > 0) * sizeof(Vertex);
+
+	vector<VertexPosNorm> verteciesPosNorm;
+	if (uv_layer_count == 0)
+	{		
+		verteciesPosNorm.reserve(vertecies.size());
+		for (Vertex &v : vertecies)
+			verteciesPosNorm.emplace_back(VertexPosNorm{v.x, v.y, v.z, v.w, v.nx, v.ny, v.nz, v.n_});
+
+		vertDesc.pData = reinterpret_cast<uint8*>(&verteciesPosNorm[0]);
+		vertDesc.numberOfVertex = (uint)verteciesPosNorm.size();
+		vertDesc.positionOffset = 0;
+		vertDesc.positionStride = sizeof(VertexPosNorm);
+		vertDesc.normalsPresented = normal_element_count > 0;
+		vertDesc.normalOffset = (normal_element_count > 0) * 16;
+		vertDesc.normalStride = (normal_element_count > 0) * sizeof(VertexPosNorm);
+	} else
+	{
+		vertDesc.pData = reinterpret_cast<uint8*>(&vertecies[0]);
+		vertDesc.numberOfVertex = (uint)vertecies.size();
+		vertDesc.positionOffset = 0;
+		vertDesc.positionStride = sizeof(Vertex);
+		vertDesc.normalsPresented = normal_element_count > 0;
+		vertDesc.normalOffset = (normal_element_count > 0) * 16;
+		vertDesc.normalStride = (normal_element_count > 0) * sizeof(Vertex);
+		vertDesc.texCoordPresented = uv_layer_count > 0;
+		vertDesc.texCoordOffset = (uv_layer_count > 0) * 32;
+		vertDesc.texCoordStride = (uv_layer_count > 0) * sizeof(Vertex);
+	}	
 
 	MeshIndexDesc indexDesc;
 	indexDesc.pData = nullptr;

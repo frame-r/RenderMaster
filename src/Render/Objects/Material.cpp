@@ -85,6 +85,26 @@ API_VOID Material::SetBaseColor(const vec4 *color)
 	_color = *color;
 }
 
+API_VOID Material::GetMetallic(OUT float * value)
+{
+	*value = _metallic;
+}
+
+API_VOID Material::SetMetallic(float value)
+{
+	_metallic = value;
+}
+
+API_VOID Material::GetRoughness(OUT float * value)
+{
+	*value = _roughness;
+}
+
+API_VOID Material::SetRoughness(float value)
+{
+	_roughness = value;
+}
+
 API_VOID Material::GetPath(OUT const char ** path)
 {
 	*path = _path.c_str();

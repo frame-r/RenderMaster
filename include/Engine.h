@@ -504,30 +504,34 @@ namespace RENDER_MASTER
 	
 	struct ShaderRequirement
 	{
+		const char *path;
 		INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::UNKNOWN};
-		RENDER_PASS pass{RENDER_PASS::FORWARD};
 
 		size_t operator()(const ShaderRequirement& k) const
 		{
-			int pass_n = (int)k.pass;
+			size_t h = 5381;
+			int c;
+			char *s = const_cast<char*>(k.path);
+			while ((c = *s++))
+				h = ((h << 5) + h) + c;
 			int pass_bumber = (int)RENDER_PASS::PASS_NUMBER;
-			return pass_bumber * (int)k.attributes + pass_n;
+			return pass_bumber * h + (size_t)k.attributes;
 		}
 		bool operator==(const ShaderRequirement &other) const
 		{
-			return attributes == other.attributes && pass == other.pass;
+			return attributes == other.attributes && strcmp(path, other.path) == 0;
 		}
 	};
 
 	class IRender : public ISubSystem
 	{
 	public:
-		virtual API_RESULT PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
-		virtual API_RESULT RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) = 0;
-		virtual API_RESULT RenderPassGUI() = 0;
-		virtual API_RESULT GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) = 0;
-		virtual API_RESULT ReleaseRenderTexture2D(ITexture *texIn) = 0;
-		virtual API_RESULT ShadersReload() = 0;
+		virtual void PreprocessStandardShader(OUT IShader **pShader, const ShaderRequirement *shaderReq) = 0;
+		virtual void RenderPassIDPass(const ICamera *pCamera, ITexture *tex, ITexture *depthTex) = 0;
+		virtual void RenderPassGUI() = 0;
+		virtual void GetRenderTexture2D(OUT ITexture **texOut, uint width, uint height, TEXTURE_FORMAT format) = 0;
+		virtual void ReleaseRenderTexture2D(ITexture *texIn) = 0;
+		virtual void ShadersReload() = 0;
 	};
 
 	// Axis aligned bound box
@@ -633,6 +637,10 @@ namespace RENDER_MASTER
 		virtual ~IMaterial() = default;
 		virtual API_VOID GetBaseColor(OUT vec4 *color) = 0;
 		virtual API_VOID SetBaseColor(const vec4 *color) = 0;
+		virtual API_VOID GetMetallic(OUT float *value) = 0;
+		virtual API_VOID SetMetallic(float value) = 0;
+		virtual API_VOID GetRoughness(OUT float *value) = 0;
+		virtual API_VOID SetRoughness(float value) = 0;
 		virtual API_VOID GetPath(OUT const char **path) = 0;
 		virtual API_VOID Save() = 0;
 	};

@@ -200,9 +200,6 @@
     <Filter Include="Shaders\common">
       <UniqueIdentifier>{5fd1ece3-970f-42da-9331-ea35d5a23c0e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\post">
-      <UniqueIdentifier>{a1de24f7-ff8e-4c76-a775-7f6600afa783}</UniqueIdentifier>
-    </Filter>
     <Filter Include="LowLevelRender">
       <UniqueIdentifier>{3eff1445-f3ae-4f99-a286-930ec385879a}</UniqueIdentifier>
     </Filter>
@@ -238,9 +235,6 @@
     <None Include="..\src\Shaders\id.shader">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="..\src\Shaders\post\engine_post.shader">
-      <Filter>Shaders\post</Filter>
-    </None>
     <None Include="..\src\LowLevelRender\DirectX\states_pools.inl">
       <Filter>LowLevelRender\DirectX</Filter>
     </None>
@@ -252,6 +246,9 @@
     </None>
     <None Include="..\src\LowLevelRender\OpenGL\gl_objects.inl">
       <Filter>LowLevelRender\OpenGL</Filter>
+    </None>
+    <None Include="..\src\Shaders\engine_post.shader">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

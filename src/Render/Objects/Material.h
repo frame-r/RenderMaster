@@ -25,6 +25,10 @@ public:
 
 	API_VOID GetBaseColor(OUT vec4 *color) override;
 	API_VOID SetBaseColor(const vec4 *color) override;
+	API_VOID GetMetallic(OUT float *value) override;
+	API_VOID SetMetallic(float value) override;
+	API_VOID GetRoughness(OUT float *value) override;
+	API_VOID SetRoughness(float value) override;
 	API_VOID GetPath(OUT const char **path) override;
 	API_VOID Save() override;
 };
