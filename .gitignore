@@ -11,15 +11,15 @@
 *.opendb
 *.7z
 *.mat
+*.fbx
+*.mesh
 
 .vs/
 bin/
-resources/log.txt
-resources/scene.yaml
-src/shaders/out.shader
-resources/out_f.shader
-resources/out_v.shader
-resources/err_compile.shader
-build/MainWindow.dat
-build/ContainerWidget.dat
+build/engine/Editor/x64
+err_compile.shader
+
+*.yaml
+
+
 

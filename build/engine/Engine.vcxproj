@@ -1,0 +1,278 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{9BE5DB79-9152-4553-A2C0-21ADFB76F240}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>ConstructorTest</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <ProjectName>Engine</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
+    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\obj\</IntDir>
+    <TargetExt>.dll</TargetExt>
+    <LibraryPath>..\..\bin\$(Platform)\$(Configuration)\Engine\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
+    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\obj\</IntDir>
+    <TargetExt>.dll</TargetExt>
+    <LibraryPath>..\..\bin\$(Platform)\$(Configuration)\Engine\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
+    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\obj\</IntDir>
+    <TargetExt>.dll</TargetExt>
+    <LibraryPath>..\..\bin\$(Platform)\$(Configuration)\Engine\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
+    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\obj\</IntDir>
+    <TargetExt>.dll</TargetExt>
+    <LibraryPath>..\..\bin\$(Platform)\$(Configuration)\Engine\;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DLL_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\..\include\;..\..\src\engine\;..\..\src\engine\thirdparty\yaml-cpp\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DLL_EXPORTS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\..\include\;..\..\src\engine\;..\..\src\engine\thirdparty\yaml-cpp\include;C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp.lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\debug\libfbxsdk.lib</AdditionalDependencies>
+    </Link>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DLL_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\..\include\;..\..\src\engine\;..\..\src\engine\thirdparty\yaml-cpp\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DLL_EXPORTS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\..\include\;..\..\src\engine\;..\..\src\engine\thirdparty\yaml-cpp\include;C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp.lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\release\libfbxsdk.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\camera.h" />
+    <ClInclude Include="..\..\include\common.h" />
+    <ClInclude Include="..\..\include\console.h" />
+    <ClInclude Include="..\..\include\core.h" />
+    <ClInclude Include="..\..\include\filesystem.h" />
+    <ClInclude Include="..\..\include\gameobject.h" />
+    <ClInclude Include="..\..\include\icorerender.h" />
+    <ClInclude Include="..\..\include\input.h" />
+    <ClInclude Include="..\..\include\light.h" />
+    <ClInclude Include="..\..\include\material.h" />
+    <ClInclude Include="..\..\include\material_manager.h" />
+    <ClInclude Include="..\..\include\mesh.h" />
+    <ClInclude Include="..\..\include\model.h" />
+    <ClInclude Include="..\..\include\render.h" />
+    <ClInclude Include="..\..\include\resource_manager.h" />
+    <ClInclude Include="..\..\include\shader.h" />
+    <ClInclude Include="..\..\include\structured_buffer.h" />
+    <ClInclude Include="..\..\include\texture.h" />
+    <ClInclude Include="..\..\include\vector_math.h" />
+    <ClInclude Include="..\..\resources\.standard\shaders\common.h" />
+    <ClInclude Include="..\..\resources\.standard\shaders\vertex.h" />
+    <ClInclude Include="..\..\resources\.standard\shaders\vertex_post.h" />
+    <ClInclude Include="..\..\src\engine\console_window.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11corerender.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11mesh.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11shader.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11structured_buffer.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11texture.h" />
+    <ClInclude Include="..\..\src\engine\dds.h" />
+    <ClInclude Include="..\..\src\engine\fbx.h" />
+    <ClInclude Include="..\..\src\engine\main_window.h" />
+    <ClInclude Include="..\..\src\engine\pch.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\simplecpp\SimpleCpp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\engine\console.cpp" />
+    <ClCompile Include="..\..\src\engine\console_window.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11corerender.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11mesh.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11shader.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11structured_buffer.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11texture.cpp" />
+    <ClCompile Include="..\..\src\engine\dds.cpp" />
+    <ClCompile Include="..\..\src\engine\fbx.cpp" />
+    <ClCompile Include="..\..\src\engine\gameobjects\camera.cpp" />
+    <ClCompile Include="..\..\src\engine\common.cpp" />
+    <ClCompile Include="..\..\src\engine\core.cpp" />
+    <ClCompile Include="..\..\src\engine\dllmain.cpp" />
+    <ClCompile Include="..\..\src\engine\filesystem.cpp" />
+    <ClCompile Include="..\..\src\engine\gameobjects\gameobject.cpp" />
+    <ClCompile Include="..\..\src\engine\gameobjects\light.cpp" />
+    <ClCompile Include="..\..\src\engine\gameobjects\model.cpp" />
+    <ClCompile Include="..\..\src\engine\input.cpp" />
+    <ClCompile Include="..\..\src\engine\main_window.cpp" />
+    <ClCompile Include="..\..\src\engine\material.cpp" />
+    <ClCompile Include="..\..\src\engine\material_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\mesh.cpp" />
+    <ClCompile Include="..\..\src\engine\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\render.cpp" />
+    <ClCompile Include="..\..\src\engine\resource_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\shader.cpp" />
+    <ClCompile Include="..\..\src\engine\structured_buffer.cpp" />
+    <ClCompile Include="..\..\src\engine\texture.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\simplecpp\SimpleCpp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\resources\.standard\shaders\composite.shader" />
+    <None Include="..\..\resources\.standard\shaders\deferred_light.shader" />
+    <None Include="..\..\resources\.standard\shaders\font.shader" />
+    <None Include="..\..\resources\.standard\shaders\id.shader" />
+    <None Include="..\..\resources\.standard\shaders\mesh.shader" />
+    <None Include="..\..\resources\.standard\shaders\primitive.shader" />
+    <None Include="..\..\src\engine\corerender\dx11\dx_objects.inl" />
+    <None Include="..\..\src\engine\corerender\dx11\states_pools.inl" />
+    <None Include="..\..\src\engine\yaml.inl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

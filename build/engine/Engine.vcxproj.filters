@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\..\src\engine\pch.h" />
+    <ClInclude Include="..\..\include\Core.h" />
+    <ClInclude Include="..\..\include\Texture.h" />
+    <ClInclude Include="..\..\include\Common.h" />
+    <ClInclude Include="..\..\include\ICoreRender.h">
+      <Filter>corerender</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\resource_manager.h" />
+    <ClInclude Include="..\..\include\filesystem.h" />
+    <ClInclude Include="..\..\include\vector_math.h" />
+    <ClInclude Include="..\..\include\model.h">
+      <Filter>gameobjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\gameobject.h">
+      <Filter>gameobjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\camera.h">
+      <Filter>gameobjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\light.h">
+      <Filter>gameobjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\console.h" />
+    <ClInclude Include="..\..\include\mesh.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11corerender.h">
+      <Filter>corerender\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\main_window.h" />
+    <ClInclude Include="..\..\include\input.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11mesh.h">
+      <Filter>corerender\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\render.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\simplecpp\SimpleCpp.h">
+      <Filter>thirdparty\simplecpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11shader.h">
+      <Filter>corerender\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\shader.h" />
+    <ClInclude Include="..\..\src\engine\console_window.h" />
+    <ClInclude Include="..\..\src\engine\fbx.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11texture.h">
+      <Filter>corerender\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\dds.h" />
+    <ClInclude Include="..\..\src\engine\corerender\dx11\dx11structured_buffer.h">
+      <Filter>corerender\dx11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\structured_buffer.h" />
+    <ClInclude Include="..\..\resources\.standard\shaders\common.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\resources\.standard\shaders\vertex.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\resources\.standard\shaders\vertex_post.h">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\material.h" />
+    <ClInclude Include="..\..\include\material_manager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\engine\pch.cpp" />
+    <ClCompile Include="..\..\src\engine\dllmain.cpp" />
+    <ClCompile Include="..\..\src\engine\Core.cpp" />
+    <ClCompile Include="..\..\src\engine\resource_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\common.cpp" />
+    <ClCompile Include="..\..\src\engine\filesystem.cpp" />
+    <ClCompile Include="..\..\src\engine\gameobjects\model.cpp">
+      <Filter>gameobjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\gameobjects\gameobject.cpp">
+      <Filter>gameobjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\gameobjects\camera.cpp">
+      <Filter>gameobjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\gameobjects\light.cpp">
+      <Filter>gameobjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\console.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11corerender.cpp">
+      <Filter>corerender\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\main_window.cpp" />
+    <ClCompile Include="..\..\src\engine\input.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11mesh.cpp">
+      <Filter>corerender\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\render.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\simplecpp\SimpleCpp.cpp">
+      <Filter>thirdparty\simplecpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11shader.cpp">
+      <Filter>corerender\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\shader.cpp" />
+    <ClCompile Include="..\..\src\engine\console_window.cpp" />
+    <ClCompile Include="..\..\src\engine\fbx.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11texture.cpp">
+      <Filter>corerender\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\dds.cpp" />
+    <ClCompile Include="..\..\src\engine\corerender\dx11\dx11structured_buffer.cpp">
+      <Filter>corerender\dx11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\structured_buffer.cpp" />
+    <ClCompile Include="..\..\src\engine\mesh.cpp" />
+    <ClCompile Include="..\..\src\engine\texture.cpp" />
+    <ClCompile Include="..\..\src\engine\material.cpp" />
+    <ClCompile Include="..\..\src\engine\material_manager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="corerender">
+      <UniqueIdentifier>{4dfa2652-0e1d-43df-a30b-497083d924aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gameobjects">
+      <UniqueIdentifier>{529ebad2-c98d-4875-81dc-fd2fd52cc7bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="corerender\dx11">
+      <UniqueIdentifier>{a5be3a92-b5ce-49ad-9d26-87fe6bf589f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{d3663168-eb3d-468f-b10a-8c5df898b459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\simplecpp">
+      <UniqueIdentifier>{70d24d5f-58df-4bba-923d-031066bb631e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{f29d3f23-3af7-463c-8e1c-588285afa7a5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\engine\corerender\dx11\states_pools.inl">
+      <Filter>corerender\dx11</Filter>
+    </None>
+    <None Include="..\..\src\engine\corerender\dx11\dx_objects.inl">
+      <Filter>corerender\dx11</Filter>
+    </None>
+    <None Include="..\..\src\engine\yaml.inl" />
+    <None Include="..\..\resources\.standard\shaders\composite.shader">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\.standard\shaders\deferred_light.shader">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\.standard\shaders\font.shader">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\.standard\shaders\id.shader">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\.standard\shaders\mesh.shader">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\.standard\shaders\primitive.shader">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

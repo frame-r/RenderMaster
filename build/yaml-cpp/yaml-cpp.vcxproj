@@ -1,6 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -9,340 +17,218 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="MinSizeRel|x64">
-      <Configuration>MinSizeRel</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="RelWithDebInfo|x64">
-      <Configuration>RelWithDebInfo</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{85A87A52-3AF1-359C-9E62-CAB1B86D8355}</ProjectGuid>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{2BD885F3-F1D4-4605-BDE5-D403A8896D99}</ProjectGuid>
+    <RootNamespace>yamlcpp</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
-    <Keyword>Win32Proj</Keyword>
-    <Platform>x64</Platform>
-    <ProjectName>yaml-cpp shared md</ProjectName>
-    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets">
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\bin\x64\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\bin\x64\Debug\obj\yaml-cpp\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">yaml-cpp</TargetName>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.dll</TargetExt>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
-    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\bin\x64\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\bin\x64\Release\obj\yaml-cpp\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">yaml-cpp</TargetName>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.dll</TargetExt>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
-    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">..\..\bin\x64\Release</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">..\..\bin\x64\Release\obj\yaml-cpp</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">yaml-cpp</TargetName>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.dll</TargetExt>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
-    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">..\..\build\yaml-cpp\RelWithDebInfo\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">yaml-cpp.dir\RelWithDebInfo\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">yaml-cpp</TargetName>
-    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.dll</TargetExt>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
-    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(IncludePath)</IncludePath>
+    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
+    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\yaml-cpp\obj\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(IncludePath)</IncludePath>
+    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
+    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\yaml-cpp\obj\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(IncludePath)</IncludePath>
+    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
+    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\yaml-cpp\obj\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(IncludePath)</IncludePath>
+    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
+    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\yaml-cpp\obj\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4127;4355</DisableSpecificWarnings>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
-      <Optimization>Disabled</Optimization>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;YAML_CPP_NO_CONTRIB;CMAKE_INTDIR="Debug";YAML_CPP_DLL;yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\src\engine\thirdparty\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR=\"Debug\";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <Midl>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
-      <HeaderFileName>%(Filename).h</HeaderFileName>
-      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
-      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
-    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\src\engine\thirdparty\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\src\engine\thirdparty\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>..\..\bin\x64\Debug\yaml-cpp.lib</ImportLibrary>
-      <ProgramDataBaseFile>..\..\bin\x64\Debug\yaml-cpp.pdb</ProgramDataBaseFile>
-      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AssemblerListingLocation>Release/</AssemblerListingLocation>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <DisableSpecificWarnings>4127;4355</DisableSpecificWarnings>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;CMAKE_INTDIR="Release";YAML_CPP_DLL;yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>..\..\src\engine\thirdparty\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR=\"Release\";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <Midl>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
-      <HeaderFileName>%(Filename).h</HeaderFileName>
-      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
-      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
-    </Midl>
     <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>..\..\bin\x64\Release\yaml-cpp.lib</ImportLibrary>
-      <ProgramDataBaseFile>..\..\bin\x64\Release\yaml-cpp.pdb</ProgramDataBaseFile>
-      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <DisableSpecificWarnings>4127;4355</DisableSpecificWarnings>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <Optimization>MinSpace</Optimization>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;CMAKE_INTDIR="MinSizeRel";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
-    </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR=\"MinSizeRel\";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <Midl>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
-      <HeaderFileName>%(Filename).h</HeaderFileName>
-      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
-      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
-    </Midl>
-    <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>..\..\bin\x64\Release\yaml-cpp.lib</ImportLibrary>
-      <ProgramDataBaseFile>..\..\bin\x64\Release\yaml-cpp.pdb</ProgramDataBaseFile>
-      <SubSystem>Console</SubSystem>
-    </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4127;4355</DisableSpecificWarnings>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <Optimization>MaxSpeed</Optimization>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;CMAKE_INTDIR="RelWithDebInfo";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ObjectFileName>$(IntDir)</ObjectFileName>
-    </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;YAML_CPP_NO_CONTRIB;YAML_CPP_DLL;CMAKE_INTDIR=\"RelWithDebInfo\";yaml_cpp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <Midl>
-      <AdditionalIncludeDirectories>..\..\src\ThirdParty\yaml-cpp\include;..\..\src\ThirdParty\yaml-cpp\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
-      <HeaderFileName>%(Filename).h</HeaderFileName>
-      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
-      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
-    </Midl>
-    <Link>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ImportLibrary>C:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp/RelWithDebInfo/yaml-cpp.lib</ImportLibrary>
-      <ProgramDataBaseFile>C:/Users/Konstantin/Documents/RenderMaster/build/yaml-cpp/RelWithDebInfo/yaml-cpp.pdb</ProgramDataBaseFile>
-      <SubSystem>Console</SubSystem>
-    </Link>
-    <ProjectReference>
-      <LinkLibraryDependencies>false</LinkLibraryDependencies>
-    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\binary.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\convert.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\directives.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\emit.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\emitfromevents.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\emitter.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\emitterstate.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\emitterutils.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\exceptions.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\exp.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\memory.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\node.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\node_data.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\nodebuilder.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\nodeevents.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\null.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\ostream_wrapper.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\parse.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\parser.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\regex_yaml.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\scanner.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\scanscalar.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\scantag.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\scantoken.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\simplekey.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\singledocparser.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\stream.cpp" />
-    <ClCompile Include="..\..\src\ThirdParty\yaml-cpp\src\tag.cpp" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\anchor.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\binary.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\contrib\anchordict.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\contrib\graphbuilder.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\dll.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\emitfromevents.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\emitter.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\emitterdef.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\emittermanip.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\emitterstyle.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\eventhandler.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\exceptions.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\mark.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\convert.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\bool_type.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\impl.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\iterator.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\iterator_fwd.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\memory.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\node.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\node_data.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\node_iterator.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\detail\node_ref.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\emit.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\impl.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\iterator.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\node.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\parse.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\ptr.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\node\type.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\noncopyable.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\null.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\ostream_wrapper.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\parser.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\stlemitter.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\traits.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\include\yaml-cpp\yaml.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\collectionstack.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\directives.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\emitterstate.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\emitterutils.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\exp.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\indentation.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\nodebuilder.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\nodeevents.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\ptr_vector.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\regex_yaml.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\regeximpl.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\scanner.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\scanscalar.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\scantag.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\setting.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\singledocparser.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\stream.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\streamcharsource.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\stringsource.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\tag.h" />
-    <ClInclude Include="..\..\src\ThirdParty\yaml-cpp\src\token.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\anchor.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\binary.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\contrib\anchordict.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\contrib\graphbuilder.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\dll.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\emitfromevents.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\emitter.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\emitterdef.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\emittermanip.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\emitterstyle.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\eventhandler.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\exceptions.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\mark.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\convert.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\bool_type.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\impl.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\iterator.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\iterator_fwd.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\memory.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\node.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\node_data.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\node_iterator.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\detail\node_ref.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\emit.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\impl.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\iterator.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\node.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\parse.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\ptr.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\node\type.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\noncopyable.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\null.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\ostream_wrapper.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\parser.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\stlemitter.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\traits.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\include\yaml-cpp\yaml.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\collectionstack.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\contrib\graphbuilderadapter.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\directives.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\emitterstate.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\emitterutils.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\exp.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\indentation.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\nodebuilder.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\nodeevents.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\ptr_vector.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\regeximpl.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\regex_yaml.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\scanner.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\scanscalar.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\scantag.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\setting.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\singledocparser.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\stream.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\streamcharsource.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\stringsource.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\tag.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\yaml-cpp\src\token.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\binary.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\contrib\graphbuilder.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\contrib\graphbuilderadapter.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\convert.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\directives.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\emit.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\emitfromevents.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\emitter.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\emitterstate.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\emitterutils.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\exceptions.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\exp.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\memory.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\node.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\nodebuilder.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\nodeevents.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\node_data.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\null.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\ostream_wrapper.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\parse.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\parser.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\regex_yaml.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\scanner.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\scanscalar.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\scantag.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\scantoken.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\simplekey.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\singledocparser.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\stream.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\yaml-cpp\src\tag.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

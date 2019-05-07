@@ -16,39 +16,36 @@ Clone repositiory. Build solution Engine.sln located in "build" directory (VS 20
 
 ## Example
 ```cpp
-#include "Engine.h"
-
-using namespace RENDER_MASTER;
-
+#include "core.h"
+#include "resource_manager.h"
+#include "gameobject.h"
+#include "camera.h"
+#include "model.h"
+#include "filesystem.h"
+#include "console.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	ICore* pCore;
+	Core *core = GetCore();
+	if (!core)
+		return 0;
 
-	if (GetCore(&pCore))
-	{
-		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::OPENGL45, L"resources", nullptr)))
-		{
-			IResourceManager *resMan;
-			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	core->Init("", nullptr, INIT_FLAGS::VSYNC_ON);
 
-			{
-				ModelPtr mdl = resMan->LoadModel("box.fbx");
+	ResourceManager *resMan = core->GetResourceManager();
+	resMan->LoadWorld();
 
-				pCore->Start(); // Begin main loop
-			}
-			pCore->ReleaseEngine();
-		}
+	Camera *cam = resMan->CreateCamera();
 
-		FreeCore(pCore);
-	}
-	else
-		MessageBox(nullptr, pErrorMessage, TEXT("Unable start engine"), MB_OK | MB_ICONERROR);
+	core->Start(cam);
+
+	core->Free();
+	ReleaseCore(core);
 
 	return 0;
 }
 ```
-![Alt text](box.png?raw=true "Test")
+![Alt text](title.png?raw=true "Test")
 
 ## Uninstall
 To clean Windows Registry run uninstall.bat located ib build/ directory.

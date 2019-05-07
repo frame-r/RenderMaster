@@ -1,0 +1,31 @@
+#pragma once
+#include "common.h"
+
+class MainWindow
+{
+	static MainWindow *this_ptr;
+	HWND hwnd;
+	void(*_main_loop)() {nullptr};
+	Signal<WINDOW_MESSAGE, uint32, uint32, void*> onWindowEvent;
+	int passive_main_loop = 0;
+
+	void _invoke_mesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	LRESULT CALLBACK _wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK _s_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+public:
+
+	MainWindow(void(*main_loop)());
+	~MainWindow();
+
+	HWND *handle() { return &hwnd; }
+
+	void Create();
+	void StartMainLoop();
+	void Destroy();
+	void GetClientSize(int& w, int& h);
+	void AddMessageCallback(WindowCallback c);
+	void SetCaption(const wchar_t* text);
+	void SetPassiveMainLoop(int value) { passive_main_loop = value; }
+};
+

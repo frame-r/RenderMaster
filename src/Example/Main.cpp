@@ -1,38 +1,94 @@
-#include "Engine.h"
-
-using namespace RENDER_MASTER;
-
+#include "core.h"
+#include "resource_manager.h"
+#include "gameobject.h"
+#include "camera.h"
+#include "model.h"
+#include "filesystem.h"
+#include "console.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	ICore* pCore;
+	Core *core = GetCore();
+	if (!core)
+		return 0;
 
-	if (GetCore(&pCore))
-	{
-		if (SUCCEEDED(pCore->Init(INIT_FLAGS::CREATE_CONSOLE | INIT_FLAGS::DIRECTX11, L"resources", nullptr)))
-		{
-			IResourceManager *resMan;
-			pCore->GetSubSystem((ISubSystem**)&resMan, SUBSYSTEM_TYPE::RESOURCE_MANAGER);
+	core->Init("", nullptr, INIT_FLAGS::VSYNC_ON);
 
-			{
-				ModelPtr mdl1 = resMan->LoadModel("sphere.fbx");
-				//ModelPtr mdl2 = resMan->LoadModel("box.fbx");
+	ResourceManager *resMan = core->GetResourceManager();
+	resMan->LoadWorld();
 
-				//mdl2->SetPosition(&vec3{ 11.0f, 0.0f, 0.0f });
+	Camera *c = resMan->CreateCamera();
 
-				pCore->Start(); // Begin main loop
-			}
+	core->Start(c);
 
-			pCore->ReleaseEngine();
-		}
+	//resMan->RemoveObject(m);
+	//delete m;
+	//resMan->RemoveObject(c);
+	//delete c;
 
-		FreeCore(pCore);
-	}
-	else
-		MessageBox(nullptr, pErrorMessage, TEXT("Unable start engine"), MB_OK | MB_ICONERROR);
+	core->Free();
+	ReleaseCore(core);
+
+
+	//// textures
+	//{
+	//	SharedPtr<Texture> t = resMan->CreateTexture(1024, 1024);
+	//	SharedPtr<Texture> t_ = t;
+
+	//	ResourceSharedPtr<Texture> t1 = resMan->LoadTexture("1.dds");
+	//	ResourceSharedPtr<Texture> t2 = resMan->LoadTexture("1.dds");
+	//	ResourceSharedPtr<Texture> t3 = resMan->LoadTexture("2.dds");
+	//}
+
+
+
+	////core->ReloadCoreRender();
+
+	//// gameobjects
+	//{
+	//	GameObject* g = resMan->CreateGameObject();
+
+	//	g->SetWorldPosition({1,2,3});
+
+	//	g->print_local();
+	//	g->print_global();
+
+	//	//SharedPtr<GameObject> g1 = g;
+	//	//
+	//	//SharedPtr<Light> l = resMan->CreateLight();
+	//	//l->SetPosition(vec3(1,1,1));
+
+	//	//SharedPtr<Model> m = resMan->CreateModel("");
+	//	//SharedPtr<GameObject> gg = std::static_pointer_cast<GameObject>(m);
+	//}
+
+	//// fs
+	//{
+	//	FileSystem *fs = core->GetFilesystem();
+
+	//	const char *p1 = "1.txt";
+	//	core->GetConsole()->Log("file '%s' exist = %i", LOG_TYPE::NORMAL, p1, fs->FileExist(p1));
+
+	//	const char *p2 = "C:\\Windows";
+	//	core->GetConsole()->Log("path '%s' exist = %i", LOG_TYPE::NORMAL, p2, fs->DirectoryExist(p2));
+	//}
+
+	////  math
+	//{
+	//	vec3 t{32.f, 32.f, 444.f};
+	//	quat r{10.0f, 70.0f, 10.0f};
+	//	vec3 s{12.0f, 0.1f, 33.0f};
+
+	//	mat4 m;
+	//	compositeTransform(m, t, r, s);
+
+	//	decompositeTransform(m, t, r, s);
+
+	//	int y = 0;
+	//}
+
+
 
 	return 0;
 }
-
-
 
