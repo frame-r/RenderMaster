@@ -3,16 +3,15 @@
 Graphic engine.
 
 ## Features
-* DirectX 11, OpenGL 4.5.
-* Stable ABI. I.e engine binaries are stable across different compiler that supports COM.
+* Deferred render
+* Physically based materials
+* Image based lighting
+* Game objects system with parent-child relationship
 * [Editor](https://github.com/fra-zz-mer/RenderMasterEditor)
 
-Planned:
-* PBR
-* Deferred or Forward+
-
-## Building and installation engine
-Clone repositiory. Build solution Engine.sln located in "build" directory (VS 2017 required). Then you should register Engine.dll in Windows Registry. Just run cmd.exe as Administrator, navigate to "build" directory and type "install.bat release" for release build or "install.bat debug" for debug build.
+## Building
+Open solution build/Engine.sln. Build yaml-cpp project first. Then build Engine project. Then the project Example can start the engine.
+Note: Solution configured to find FBX SDK at C:\Program Files\Autodesk\FBX\FBX SDK\2018.0
 
 ## Example
 ```cpp
@@ -45,14 +44,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	return 0;
 }
 ```
-![Alt text](title.png?raw=true "Test")
+![Alt text](title.png?raw=true "Example")
 
-## Uninstall
-To clean Windows Registry run uninstall.bat located ib build/ directory.
 
-## FBX SDK
-By default Engine solution configured to find FBX SDK at C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\. To build engine without FBX SDK comment '#define USE_FBX' in include\Engine.h and remove libfbxsdk-md.lib from Engine project settings (Linker -> Input -> Additional Dependencies)
-
-## Resource management
-We follow DirectX-style resource management. After loading resource through the ResourceManager you should call AddRef(). When you don't need resource you should call Release().
 
