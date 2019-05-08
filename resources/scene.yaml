@@ -1,0 +1,15 @@
+roots: 2
+objects:
+  - childs: 0
+    id: 845369033
+    enabled: false
+    type: Light
+    worldTransform: [0.8473036, 0.3067211, 0.4336794, 0, 0.305785, 0.3859598, -0.8704141, 0, -0.4343348, 0.8700814, 0.2332268, 0, 0, 0, 0, 1]
+    intensity: 1
+  - childs: 0
+    id: 1540049954
+    enabled: true
+    type: Model
+    worldTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    mesh: .import\test.mesh
+    material: test_material.mat

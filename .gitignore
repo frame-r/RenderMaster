@@ -10,16 +10,12 @@
 *.opensdf
 *.opendb
 *.7z
-*.mat
-*.fbx
-*.mesh
 
 .vs/
 bin/
 build/engine/Editor/x64
 err_compile.shader
 
-*.yaml
 
 
 
