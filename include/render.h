@@ -27,6 +27,7 @@ struct RenderMesh
 	mat4 worldTransformMat;
 	vec4 color;
 	vec4 shading; // r - roughness, g - metallic
+	Texture *albedoTex;
 };
 
 
@@ -55,6 +56,9 @@ class Render
 
 	ManagedPtr<Texture> fontTexture;
 	ManagedPtr<Texture> environmentTexture;
+
+	Texture* whiteTexture;
+
 	ManagedPtr<Mesh> planeMesh;
 	ManagedPtr<Mesh> gridMesh;
 	ManagedPtr<Mesh> lineMesh;

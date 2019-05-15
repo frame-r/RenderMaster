@@ -50,6 +50,8 @@ public:
 	auto DLLEXPORT Import(const char *path) -> void;
 	auto DLLEXPORT GetImportedMeshes() -> std::vector<std::string>;
 
+
+	// TODO: Move all GameObject stuff to SceneManager class
 	// Game objects
 	auto DLLEXPORT CreateGameObject() -> GameObject*;
 	auto DLLEXPORT CreateCamera() -> Camera*;

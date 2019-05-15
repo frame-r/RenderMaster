@@ -1,4 +1,4 @@
-roots: 2
+roots: 3
 objects:
   - childs: 0
     id: 845369033
@@ -8,8 +8,14 @@ objects:
     intensity: 1
   - childs: 0
     id: 1540049954
-    enabled: true
+    enabled: false
     type: Model
     worldTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     mesh: .import\test.mesh
     material: test_material.mat
+  - childs: 0
+    id: 431980828
+    enabled: true
+    type: Model
+    worldTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    mesh: std#plane

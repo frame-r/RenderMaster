@@ -294,15 +294,18 @@ vector<RenderMesh> Render::getRenderMeshes()
 
 		vec4 color = vec4(1, 1, 1, 1);
 		vec4 shading = vec4(0, 0, 1, 1);
+		Texture *albedoTex = whiteTexture;
 		Material *mat = model->GetMaterial();
 		if (mat)
 		{
 			color = mat->GetColor();
 			shading.x = mat->GetRoughness();
 			shading.y = mat->GetMetallic();
+			if (mat->GetAlbedoTex())
+				albedoTex = mat->GetAlbedoTex();
 		}
 
-		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetWorldTransform(), color, shading});
+		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetWorldTransform(), color, shading, albedoTex});
 	}
 	return meshesVec;
 }
@@ -550,6 +553,9 @@ void Render::drawMeshes(const char *path, PASS pass, std::vector<RenderMesh>& me
 		
 		CORE_RENDER->SetShader(shader);
 
+		Texture *texs[1] = {renderMesh.albedoTex}; 
+		CORE_RENDER->BindTextures(1, texs);
+
 		mat4 MVP = ViewProjMat_ * renderMesh.worldTransformMat;
 		mat4 M = renderMesh.worldTransformMat;
 		mat4 NM = M.Inverse().Transpose();
@@ -575,6 +581,9 @@ void Render::Init()
 	gridMesh = RES_MAN->CreateStreamMesh("std#grid");
 	lineMesh = RES_MAN->CreateStreamMesh("std#line");
 
+	uint8 data[4] = {255u, 255u, 255u, 255u};
+	whiteTexture = new Texture(unique_ptr<ICoreTexture>(CORE_RENDER->CreateTexture(&data[0], 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::NONE, false)));
+
 	Log("Render initialized");
 }
 
@@ -592,6 +601,7 @@ void Render::Update()
 
 void Render::Free()
 {
+	delete whiteTexture;
 	environmentTexture.release();
 	records.clear();
 	lineMesh.release();

@@ -13,7 +13,7 @@
 #include "dds.h"
 
 #define IMPORT_DIR ".import"
-#define UNLOAD_FRAMES_TRESHOLD 60
+#define UNLOAD_RESOURCE_FRAMES 60
 
 using namespace YAML;
 
@@ -25,7 +25,7 @@ static std::set<Texture*> textures_;
 static std::set<Shader*> shaders_;
 static std::set<StructuredBuffer*> structured_buffers_;
 
-// Managed
+// Managed (From file)
 static std::unordered_map<string, TextureResource*> resource_textures_;
 static std::unordered_map<string, MeshResource*> resource_meshes_;
 
@@ -411,7 +411,7 @@ void ResourceManager::Update(float dt)
 
 	for (auto [p, m] : resource_meshes_)
 	{
-		if ((_core->frame() - m->frame() > UNLOAD_FRAMES_TRESHOLD) && m->isLoaded())
+		if ((_core->frame() - m->frame() > UNLOAD_RESOURCE_FRAMES) && m->isLoaded())
 			m->free();
 	}
 }

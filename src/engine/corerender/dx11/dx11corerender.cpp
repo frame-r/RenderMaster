@@ -959,33 +959,60 @@ auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize) -> ICor
 
 auto DX11CoreRender::BindTextures(int units, Texture **textures) -> void
 {
+	ID3D11ShaderResourceView *srvs[16];
+	ID3D11SamplerState *samplers[16];
+
 	if (textures)
 	{
-		ID3D11ShaderResourceView *srvs[16];
-		ID3D11SamplerState *samplers[16];
-
+		bool needUpdate = false;
 		for(int i = 0; i < units; i++)
 		{
 			Texture *tt = *(textures + i);
+
+			if (state_.shaderResources[i] != tt)
+			{
+				state_.shaderResources[i] = tt;
+				needUpdate = true;
+			}
+
 			DX11Texture *t = static_cast<DX11Texture*>(tt->GetCoreTexture());
 			srvs[i] = t->srView();
 			samplers[i] = t->sampler();
 		}
 
-		_context->PSSetShaderResources(0, units, srvs);
-		_context->PSSetSamplers(0, units, samplers);
+		if (needUpdate)
+		{
+			_context->PSSetShaderResources(0, units, srvs);
+			_context->PSSetSamplers(0, units, samplers);
+		}
 	} else
 	{
-		ID3D11ShaderResourceView *const pSRV[16] = {};
-		ID3D11SamplerState *const pSamplers[16] = {};
+		bool needUpdate = false;
+		for(int i = 0; i < units; i++)
+		{
+			if (state_.shaderResources[i])
+			{
+				state_.shaderResources[i] = nullptr;
+				needUpdate = true;
+			}
 
-		_context->PSSetShaderResources(0, units, pSRV);
-		_context->PSSetSamplers(0, units, pSamplers);
+			srvs[i] = nullptr;
+			samplers[i] = nullptr;
+		}
+
+		if (needUpdate)
+		{
+			_context->PSSetShaderResources(0, units, srvs);
+			_context->PSSetSamplers(0, units, samplers);
+		}
 	}
 }
 
 auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void
 {
+	if (state_.shaderResources[unit] == buffer)
+		return;
+
 	if (buffer)
 	{
 		ICoreStructuredBuffer *coreBuffer = buffer->GetCoreBuffer();
@@ -999,6 +1026,8 @@ auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) ->
 		_context->VSSetShaderResources(unit, 1, &srv);
 		_context->PSSetShaderResources(unit, 1, &srv);
 	}
+
+	state_.shaderResources[unit] = buffer;
 }
 
 auto DX11CoreRender::SetRenderTextures(int units, Texture **textures, Texture *depthTex) -> void

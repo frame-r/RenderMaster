@@ -68,7 +68,7 @@ public:
 
 		Shader *shader{};
 		Mesh *mesh{};
-		//Texture* texShaderBindings[16]{}; // TODO both Texture* and StructuredBuffers*
+		void* shaderResources[16]{};
 
 		Texture* renderTargets[8]{};
 		Texture* renderDepth{};

@@ -43,8 +43,11 @@ void Model::Serialize(void * yaml)
 	YAML::Emitter *_n = static_cast<YAML::Emitter*>(yaml);
 	YAML::Emitter& n = *_n;
 
-	n << YAML::Key << "mesh" << YAML::Value << mesh_.path();
-	n << YAML::Key << "material" << YAML::Value << mat_->GetPath();
+	if (!mesh_.path().empty())
+		n << YAML::Key << "mesh" << YAML::Value << mesh_.path();
+
+	if (mat_)
+		n << YAML::Key << "material" << YAML::Value << mat_->GetPath();
 }
 
 void Model::Deserialize(void * yaml)

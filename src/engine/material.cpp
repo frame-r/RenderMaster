@@ -2,6 +2,7 @@
 #include "material.h"
 #include "core.h"
 #include "console.h"
+#include "resource_manager.h"
 #include "filesystem.h"
 #include "yaml-cpp/yaml.h"
 #include "yaml.inl"
@@ -27,13 +28,11 @@ void Material::Load()
 	loadVec4(n, "color", color_);
 
 	if (n["metallic"])
-	{
 		metallic_ = n["metallic"].as<float>();
-	}	
 	if (n["roughness"])
-	{
 		roughness_ = n["roughness"].as<float>();
-	}
+	if (n["albedoTex"])
+		albedoTex_ = n["albedoTex"].as<string>();
 }
 
 void Material::Save()
@@ -45,9 +44,17 @@ void Material::Save()
 	out << Key << "color" << Value << color_;
 	out << Key << "metallic" << Value << metallic_;
 	out << Key << "roughness" << Value << roughness_;
+	if (!albedoTex_.empty())
+		out << Key << "albedoTex" << Value << albedoTex_;
 	out << EndMap;
 
 	File f = FS->OpenFile(path_.c_str(), FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
 	
 	f.WriteStr(out.c_str());
+}
+
+auto DLLEXPORT Material::SetAlbedoTexName(const char * path) -> void
+{
+	albedoTex_ = path;
+	albedoTexPtr_ = RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::NONE);
 }
