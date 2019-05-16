@@ -32,7 +32,7 @@ void Material::Load()
 	if (n["roughness"])
 		roughness_ = n["roughness"].as<float>();
 	if (n["albedoTex"])
-		albedoTex_ = n["albedoTex"].as<string>();
+		SetAlbedoTexName(n["albedoTex"].as<string>().c_str());
 }
 
 void Material::Save()
@@ -56,5 +56,5 @@ void Material::Save()
 auto DLLEXPORT Material::SetAlbedoTexName(const char * path) -> void
 {
 	albedoTex_ = path;
-	albedoTexPtr_ = RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::NONE);
+	albedoTexPtr_ = RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_TRILINEAR);
 }

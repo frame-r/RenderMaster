@@ -675,8 +675,10 @@ UINT bindFlags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 			bindFlags_ |= D3D11_BIND_DEPTH_STENCIL;
 	}
 
-	if (bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS))
-		bindFlags_ |= D3D11_BIND_RENDER_TARGET;
+	if (bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS) && !isCompressedFormat(format)) 
+	{
+			bindFlags_ |= D3D11_BIND_RENDER_TARGET; // need for GenerateMips
+	}
 
 	return bindFlags_;
 }
@@ -684,7 +686,7 @@ UINT bindFlags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 UINT getMisc(TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags)
 {
 	UINT ret = type == TEXTURE_TYPE::TYPE_CUBE ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
-	if (bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS))
+	if (bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS) && !isCompressedFormat(format))
 		ret |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
 	return ret;
 }
@@ -710,7 +712,8 @@ int mipmapsNumber(int width, int height) // rounding down rule
 auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) -> ICoreTexture*
 {
 	UINT arraySize = type == TEXTURE_TYPE::TYPE_CUBE ? 6 : 1;
-	bool generateMipmaps = bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
+
+	bool generateMipmaps = bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS) && !isCompressedFormat(format) && !mipmapsPresented;
 	UINT mipLevelsData = mipmapsPresented ? mipmapsNumber(width, height) : 1;
 	UINT mipLevelsResource = (generateMipmaps || mipmapsPresented) ? mipmapsNumber(width, height) : 1;
 
@@ -738,8 +741,8 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 	{
 		if (arraySize > 1)
 		{
-			const uint8_t* pSrcBits = pData;
-			for (UINT item = 0; item < arraySize; ++item)
+			const uint8_t* pSrc = pData;
+			for (UINT arraySlice = 0; arraySlice < arraySize; ++arraySlice)
 			{
 				uint w = width;
 				uint h = height;
@@ -749,11 +752,11 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 					size_t numBytes;
 					GetSurfaceInfo(w, h, texture_desc.Format, &numBytes, &rowBytes, nullptr);
 
-					UINT res = D3D11CalcSubresource(mip, item, mipLevelsResource);
+					UINT res = D3D11CalcSubresource(mip, arraySlice, mipLevelsResource);
 
-					_context->UpdateSubresource(tex, res, nullptr, pSrcBits, static_cast<UINT>(rowBytes), static_cast<UINT>(numBytes));
+					_context->UpdateSubresource(tex, res, nullptr, pSrc, static_cast<UINT>(rowBytes), static_cast<UINT>(numBytes));
 
-					pSrcBits += numBytes;
+					pSrc += numBytes;
 					w /= 2;
 					h /= 2;
 				}
@@ -761,11 +764,24 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 		}
 		else
 		{
-			size_t rowBytes;
-			size_t numBytes;
-			GetSurfaceInfo(width, height, texture_desc.Format, &numBytes, &rowBytes, nullptr);
+			uint w = width;
+			uint h = height;
+			const uint8_t* pSrc = pData;
 
-			_context->UpdateSubresource(tex, 0, nullptr, pData, static_cast<UINT>(rowBytes), static_cast<UINT>(numBytes));
+			for (UINT mip = 0; mip < mipLevelsData; mip++)
+			{
+				size_t rowBytes;
+				size_t numBytes;
+				GetSurfaceInfo(w, h, texture_desc.Format, &numBytes, &rowBytes, nullptr);
+
+				UINT res = D3D11CalcSubresource(mip, 0, mipLevelsResource);
+
+				_context->UpdateSubresource(tex, res, nullptr, pSrc, static_cast<UINT>(rowBytes), static_cast<UINT>(numBytes));
+
+				pSrc += numBytes;
+				w /= 2;
+				h /= 2;
+			}
 		}
 	}
 
