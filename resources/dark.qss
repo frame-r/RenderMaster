@@ -1,0 +1,248 @@
+
+QWidget
+{
+    color: #C2C5CC;
+    background-color: rgb(45, 47, 45);
+    selection-background-color: #2a526c;
+    selection-color: #f5f5f5;
+}
+
+QLabel:disabled { color: rgb(100, 100, 100) }
+
+QMenu::item:disabled{color: rgb(100, 100, 100);}
+
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QAbstractSpinBox:focus
+{
+    border: 1px solid #45a5d5;
+}
+
+/* Spin Box */
+QAbstractSpinBox
+{
+    border: 1px solid rgb(58, 62, 63);
+}
+
+QAbstractSpinBox:disabled { color: rgb(100, 100, 100) }
+
+
+
+QLineEdit
+{
+    background-color: rgb(58, 62, 63);
+    selection-background-color: #0E567B;
+    border: 1px solid #515255;
+    color: #C2C5CC;
+}
+
+
+QScrollBar:vertical {
+    background: rgb(58, 62, 63);
+    width: 18px;
+	border: 3px solid #ff0000;
+	border-color: #424242;
+}
+ 
+QScrollBar:horizontal {
+    background: rgb(58, 62, 63);
+    height: 18px;
+}
+ 
+QScrollBar::add-page:vertical, 
+QScrollBar::add-page:horizontal, 
+QScrollBar::sub-page:vertical,
+QScrollBar::sub-page:horizontal {
+	border: 0px;
+	background: rgb(58, 62, 63);
+	margin: 0px;
+}
+
+QHeaderView::section {
+	background-color: rgb(58, 62, 63);
+}
+
+QCheckBox::indicator{
+    background: rgb(58, 62, 63);
+	border: 1px solid #5A5A5A;
+}
+QCheckBox::indicator:checked {
+    image: url(:/icons/check_box.png);
+}
+
+/* Group box */
+QGroupBox {
+    border: 1px solid rgb(81, 82, 85);
+	margin-top: 10px;
+	padding-top: 7px;
+}
+QGroupBox:disabled { color: rgb(100, 100, 100) }
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 7px;
+    padding: 2px 2px 2px 2px;
+}
+
+
+QMenuBar::item:pressed {
+    background: #2a526c;
+}
+
+
+QSlider::handle:horizontal {
+    width:16px;
+	border-radius:5px; 
+	background:#919295; 
+	margin: -5px 0px -5px 0px;
+}
+QSlider::handle:horizontal:disabled {
+	background:#515255; 
+}
+QSlider::groove:horizontal { 
+	background-color: rgb(58, 62, 63);
+	border: 1px solid #444444; 
+	height: 4px; 
+	border-radius: 1px;
+}
+
+
+/* TOOLBAR */
+
+QToolBar {
+	border-color: #EEEEEE;
+}
+
+QToolBar::handle:horizontal {
+    image: url(":/icons/toolbar_handle.png");
+}
+
+QToolBar::handle:vertical {
+    image: url(":/icons/toolbar_handle_h.png");
+}
+
+QToolButton:hover,
+QToolButton::menu-button:hover {
+    background-color: #2a526c;
+}
+
+QToolButton:checked,
+QToolButton:pressed,
+QToolButton::menu-button:pressed {
+    background-color: rgb(60, 61, 59);
+}
+ 
+/* background for main window */
+ads--ContainerWidget,
+ContainerWidget
+{
+	background: rgb(60, 61, 59); 
+}
+
+/* background for splitter */
+ads--ContainerWidget QSplitter::handle,
+ContainerWidget QSplitter::handle
+{
+	background: rgb(60, 61, 59);
+}
+
+QAbstractItemView {
+    alternate-background-color: rgb(52, 54, 52);
+}
+
+
+/* TREEVIEW */
+
+
+
+/*
+QTreeView::branch:has-siblings:!adjoins-item {
+    border-image: url(vline.png) 0;
+}
+
+QTreeView::branch:has-siblings:adjoins-item {
+    border-image: url(branch-more-3.png) 0;
+}
+
+QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+    border-image: url(branch-end.png) 0;
+}
+*/
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+        border-image: none;
+        image: url(:/icons/branch-closed.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+        border-image: none;
+        image: url(:/icons/branch-open.png);
+}
+
+
+/* border for every container widget for ADS */
+/*
+ads--SectionWidget,
+SectionWidget
+{
+	border: 1px solid palette(light);
+}
+*/
+
+/*
+ads--SectionWidget #tabsMenuButton::menu-indicator,
+SectionWidget #tabsMenuButton::menu-indicator
+{
+	image: none;
+}
+*/
+/*
+ads--SectionTitleWidget,
+SectionTitleWidget
+{
+	background: palette(window);
+	border-color: palette(light);
+	border-style: solid;
+	padding: 0 2px;
+}
+*/
+/*
+ads--SectionTitleWidget[activeTab="true"],
+SectionTitleWidget[activeTab="true"]
+{
+	background: palette(window);
+}
+*/
+/*
+ads--SectionTitleWidget[activeTab="true"] QLabel,
+SectionTitleWidget[activeTab="true"] QLabel
+{
+	color: palette(window);
+}
+*/
+
+/*
+ads--SectionTitleWidget QLabel,
+SectionTitleWidget QLabel
+{
+	color: palette(light);
+}
+*/
+/*
+
+ads--FloatingWidget ads--SectionTitleWidget QLabel,
+FloatingWidget SectionTitleWidget QLabel
+{
+	color: palette(foreground);
+}
+*/
+/*
+ads--SectionContentWidget,
+SectionContentWidget
+{
+	background: palette(light);
+	border-color: palette(light);
+	border-style: solid;
+	border-width: 1px 0 0 0;
+}
+*/

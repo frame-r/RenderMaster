@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>400</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuLayout">
+    <property name="title">
+     <string>Layout</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuEngine">
+    <property name="title">
+     <string>Engine</string>
+    </property>
+    <addaction name="actionLoad"/>
+    <addaction name="actionReload_shaders"/>
+    <addaction name="actionProfiler"/>
+   </widget>
+   <widget class="QMenu" name="menuScene">
+    <property name="title">
+     <string>World</string>
+    </property>
+    <addaction name="actionClose_Scene"/>
+    <addaction name="actionSave_World"/>
+    <addaction name="actionLoad_World"/>
+    <addaction name="separator"/>
+    <addaction name="actionCreate_GameObject"/>
+    <addaction name="actionCreate_Light"/>
+    <addaction name="actionCreate_Model"/>
+    <addaction name="actionCreate_Camera"/>
+   </widget>
+   <addaction name="menuLayout"/>
+   <addaction name="menuEngine"/>
+   <addaction name="menuScene"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="baseSize">
+    <size>
+     <width>0</width>
+     <height>25</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionselect"/>
+   <addaction name="actionTranslator"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionLoad">
+   <property name="text">
+    <string>Load</string>
+   </property>
+  </action>
+  <action name="actionUnload">
+   <property name="text">
+    <string>Unload</string>
+   </property>
+  </action>
+  <action name="actionReload_Core_Render">
+   <property name="text">
+    <string>Reload Core Render</string>
+   </property>
+  </action>
+  <action name="actionClose_Scene">
+   <property name="text">
+    <string>Close World</string>
+   </property>
+  </action>
+  <action name="actionSave_World">
+   <property name="text">
+    <string>Save World</string>
+   </property>
+  </action>
+  <action name="actionLoad_World">
+   <property name="text">
+    <string>Load World</string>
+   </property>
+  </action>
+  <action name="actionCreate_GameObject">
+   <property name="text">
+    <string>Create GameObject</string>
+   </property>
+  </action>
+  <action name="actionCreate_Light">
+   <property name="text">
+    <string>Create Light</string>
+   </property>
+  </action>
+  <action name="actionCreate_Model">
+   <property name="text">
+    <string>Create Model</string>
+   </property>
+  </action>
+  <action name="actionCreate_Camera">
+   <property name="text">
+    <string>Create Camera</string>
+   </property>
+  </action>
+  <action name="actionselect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/rm2.qrc">
+     <normaloff>:/icons/cursor_blue.png</normaloff>:/icons/cursor_blue.png</iconset>
+   </property>
+   <property name="text">
+    <string>select</string>
+   </property>
+  </action>
+  <action name="actionTranslator">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/rm2.qrc">
+     <normaloff>:/icons/manipulator_transform.png</normaloff>:/icons/manipulator_transform.png</iconset>
+   </property>
+   <property name="text">
+    <string>Translator</string>
+   </property>
+  </action>
+  <action name="actionReload_shaders">
+   <property name="text">
+    <string>Reload Shaders</string>
+   </property>
+  </action>
+  <action name="actionProfiler">
+   <property name="text">
+    <string>Profiler</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="../resources/rm2.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>rm.ico</file>
+        <file>branch-closed.png</file>
+        <file>branch-open.png</file>
+        <file>cube_g.png</file>
+        <file>camera.png</file>
+        <file>light.png</file>
+        <file>cursor_black.png</file>
+        <file>cursor_blue.png</file>
+        <file>manipulator_transform.png</file>
+        <file>check_box.png</file>
+    </qresource>
+    <qresource prefix="/styles">
+        <file>dark.qss</file>
+        <file>light.qss</file>
+    </qresource>
+</RCC>

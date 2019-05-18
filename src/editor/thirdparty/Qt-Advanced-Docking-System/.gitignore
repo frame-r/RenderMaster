@@ -1,0 +1,11 @@
+*.pro.user
+AdvancedDockingSystem/debug
+AdvancedDockingSystem/release
+AdvancedDockingSystemDemo/debug
+AdvancedDockingSystemDemo/release
+AdvancedDockingSystemUnitTests/debug
+AdvancedDockingSystemUnitTests/release
+.qmake.stash
+Makefile
+Makefile.Release
+Makefile.Debug

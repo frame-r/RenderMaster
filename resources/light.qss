@@ -1,0 +1,65 @@
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QAbstractSpinBox:focus
+{
+    border: 1px solid #45a5d5;
+}
+
+QGroupBox {
+    border: 1px solid rgb(81, 82, 85);
+	margin-top: 10px;
+	padding-top: 7px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 7px;
+    padding: 2px 2px 2px 2px;
+}
+
+QSlider::handle:horizontal {
+    width:16px;
+	border-radius:5px; 
+	background:#888888; 
+	margin: -5px 0px -5px 0px;
+}
+QSlider::handle:horizontal:disabled {
+	background: rgb(250, 250, 250); 
+}
+QSlider::groove:horizontal { 
+	background-color: rgb(230, 230, 230);
+	border: 1px solid #CCCCCC; 
+	height: 4px; 
+	border-radius: 1px;
+}
+
+/* TREEVIEW */
+
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+        border-image: none;
+        image: url(:/icons/branch-closed.png);
+}
+
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+        border-image: none;
+        image: url(:/icons/branch-open.png);
+}
+/*
+QTreeView::item:selected {
+  background-color: rgb(5, 33, 62);
+}
+*/
+/*
+QTreeView::branch:has-siblings:!adjoins-item {
+    border-image: url(vline.png) 0;
+}
+
+QTreeView::branch:has-siblings:adjoins-item {
+    border-image: url(branch-more-3.png) 0;
+}
+
+QTreeView::branch:!has-children:!has-siblings:adjoins-item {
+    border-image: url(branch-end.png) 0;
+}
+*/
