@@ -138,10 +138,10 @@ DEPENDPATH += $$PWD/../../include
 
 CONFIG( debug, debug|release ) {
     # debug
-    LIBS += -L$$PWD/../../bin/x64/Debug/Engine -lEngine
+    LIBS += -L$$PWD/../../bin/engine/x64/Debug -lEngine
 } else {
     # release
-    LIBS += -L$$PWD/../../bin/x64/Release/Engine -lEngine
+    LIBS += -L$$PWD/../../bin/engine/x64/Release -lEngine
 }
 
 # visual leak detector

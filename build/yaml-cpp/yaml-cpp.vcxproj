@@ -81,13 +81,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
-    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\yaml-cpp\obj\</IntDir>
+    <OutDir>..\..\bin\engine\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\..\bin\engine\$(Platform)\$(Configuration)\yaml-cpp\obj\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
-    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\yaml-cpp\obj\</IntDir>
+    <OutDir>..\..\bin\engine\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\..\bin\engine\$(Platform)\$(Configuration)\yaml-cpp\obj\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
