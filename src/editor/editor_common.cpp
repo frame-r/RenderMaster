@@ -49,6 +49,20 @@ QString sphericalToString(const Spherical &v)
 			QString::number(v.phi) + QString('}');
 }
 
+float axisScale(const vec4& worldPos, const mat4& View, const mat4& Proj, const QPoint& screenSize)
+{
+	vec4 p0 = Proj * View * worldPos;
+	vec4 xx = vec4(View.el_2D[0][0], View.el_2D[0][1], View.el_2D[0][2], 0.0f);
+	vec4 p1 = Proj * View * (worldPos + xx);
+	p0 = p0 / abs(p0.w);
+	p1 = p1 / abs(p1.w);
+
+	float x = (p1.x - p0.x) * 0.5f * screenSize.x();
+	float y = (p1.y - p0.y) * 0.5f * screenSize.y();
+
+	return float(120.0f / (vec3(x, y, 0.0f).Lenght()));
+}
+
 void lookAtCamera(mat4& Result, const vec3 &eye, const vec3 &center)
 {
 	Result = mat4(1.0f);

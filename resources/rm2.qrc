@@ -10,6 +10,8 @@
         <file>cursor_blue.png</file>
         <file>manipulator_transform.png</file>
         <file>check_box.png</file>
+        <file>manipulator_rotate.png</file>
+        <file>manipulator_scale.png</file>
     </qresource>
     <qresource prefix="/styles">
         <file>dark.qss</file>

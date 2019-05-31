@@ -62,7 +62,8 @@ SOURCES += \
     $$PWD/../../src/editor/propertieswidgets/modelpropertywidget.cpp \
     $$PWD/../../src/editor/propertieswidgets/lightpropertywidget.cpp \
     $$PWD/../../src/editor/settings.cpp \
-    $$PWD/../../src/editor/texturelineedit.cpp
+    $$PWD/../../src/editor/texturelineedit.cpp \
+    ../../src/editor/manipulators/manipulatorrotator.cpp
 
 HEADERS += \
     $$PWD/../../src/editor/mainwindow.h \
@@ -88,7 +89,8 @@ HEADERS += \
     $$PWD/../../src/editor/colorwidget.h \
     $$PWD/../../src/editor/propertieswidgets/lightpropertywidget.h \
     $$PWD/../../src/editor/settings.h \
-    $$PWD/../../src/editor/texturelineedit.h
+    $$PWD/../../src/editor/texturelineedit.h \
+    ../../src/editor/manipulators/manipulatorrotator.h
 
 RC_FILE = resources/resources.rc
 

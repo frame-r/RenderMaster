@@ -20,4 +20,6 @@ public:
 	void virtual mouseRelease() = 0;
 };
 
+extern vec4 AxesColors[3];
+
 #endif // MANIPULATORABSTRACT_H

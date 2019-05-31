@@ -70,6 +70,8 @@ private slots:
 
 	void on_actionReload_shaders_triggered();
 
+	void on_actionactionRotator_triggered(bool checked);
+
 private:
 	Ui::MainWindow *ui;
 

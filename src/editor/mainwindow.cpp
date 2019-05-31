@@ -398,11 +398,9 @@ void MainWindow::on_actionCreate_Model_triggered()
 
 void MainWindow::switch_button(QAction *action)
 {
-	bool flag = ui->actionTranslator == action;
-	ui->actionTranslator->setChecked(flag);
-
-	flag = ui->actionselect == action;
-	ui->actionselect->setChecked(flag);
+	ui->actionTranslator->setChecked(ui->actionTranslator == action);
+	ui->actionselect->setChecked(ui->actionselect == action);
+	ui->actionactionRotator->setChecked(ui->actionactionRotator == action);
 }
 
 void MainWindow::on_actionselect_triggered(bool checked)
@@ -420,4 +418,10 @@ void MainWindow::on_actionTranslator_triggered(bool checked)
 void MainWindow::on_actionReload_shaders_triggered()
 {
 	editor->ReloadShaders();
+}
+
+void MainWindow::on_actionactionRotator_triggered(bool checked)
+{
+	switch_button(ui->actionactionRotator);
+	if (checked) editor->ToggleManipulator(MANIPULATOR::ROTATE);
 }

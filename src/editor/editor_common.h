@@ -5,6 +5,7 @@
 
 #include <vector_math.h>
 #include <QString>
+#include <QPoint>
 
 struct CameraData
 {
@@ -49,6 +50,8 @@ QString sphericalToString(const Spherical& v);
 
 Spherical ToSpherical(const vec3& pos);
 vec3 ToCartesian(const Spherical& pos);
+
+float axisScale(const vec4& worldPos, const mat4& View, const mat4& Proj, const QPoint& screenSize);
 
 void lookAtCamera(mat4& Result, const vec3 &eye, const vec3 &center);
 

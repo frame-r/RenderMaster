@@ -68,6 +68,7 @@
    </attribute>
    <addaction name="actionselect"/>
    <addaction name="actionTranslator"/>
+   <addaction name="actionactionRotator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad">
@@ -125,7 +126,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resources/rm2.qrc">
+    <iconset resource="../../resources/rm2.qrc">
      <normaloff>:/icons/cursor_blue.png</normaloff>:/icons/cursor_blue.png</iconset>
    </property>
    <property name="text">
@@ -137,7 +138,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../resources/rm2.qrc">
+    <iconset resource="../../resources/rm2.qrc">
      <normaloff>:/icons/manipulator_transform.png</normaloff>:/icons/manipulator_transform.png</iconset>
    </property>
    <property name="text">
@@ -154,10 +155,22 @@
     <string>Profiler</string>
    </property>
   </action>
+  <action name="actionactionRotator">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/rm2.qrc">
+     <normaloff>:/icons/manipulator_rotate.png</normaloff>:/icons/manipulator_rotate.png</iconset>
+   </property>
+   <property name="text">
+    <string>actionRotator</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="../resources/rm2.qrc"/>
+  <include location="../../resources/rm2.qrc"/>
  </resources>
  <connections/>
 </ui>
