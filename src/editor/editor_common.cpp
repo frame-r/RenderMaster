@@ -93,7 +93,7 @@ QString quatToString(const quat &q)
 			QString::number(q.w) + QString('}');
 }
 
-bool LineIntersectPlane(vec3& intersection, const Plane& plane, const Line3D& line)
+bool RayPlaneIntersection(vec3& intersection, const Plane& plane, const Ray& line)
 {
 	vec3 R = line.direction.Normalized();
 	vec3 N = plane.normal.Normalized();
@@ -110,7 +110,7 @@ bool LineIntersectPlane(vec3& intersection, const Plane& plane, const Line3D& li
 	return true;
 }
 
-Line3D MouseToRay(const mat4& cameraModelMatrix, float fovInDegree, float aspect, const vec2& ndc)
+Ray MouseToRay(const mat4& cameraModelMatrix, float fovInDegree, float aspect, const vec2& ndc)
 {
 	vec3 forwardN = -cameraModelMatrix.Column3(2).Normalized();
 
@@ -128,7 +128,7 @@ Line3D MouseToRay(const mat4& cameraModelMatrix, float fovInDegree, float aspect
 	vec3 dir = (forwardN + right * mousePos.x + up * mousePos.y).Normalized();
 	vec3 origin = cameraModelMatrix.Column3(3);
 
-	return Line3D(dir, origin);
+	return Ray(dir, origin);
 }
 
 vec2 WorldToNdc(const vec3& pos, const mat4& ViewProj)
@@ -158,7 +158,27 @@ float DistanceTo(const mat4& ViewProj, const mat4& worldTransform)
 	return view.Lenght();
 }
 
-vec3 Line3D::projectPoint(vec3 &worldPos)
+static float sig(const vec2& p1, const vec2& p2, const vec2& p3)
+{
+	return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
+bool PointInTriangle(const vec2& pt, const vec2& v1, const vec2& v2, const vec2& v3)
+{
+	float d1, d2, d3;
+	bool has_neg, has_pos;
+
+	d1 = sig(pt, v1, v2);
+	d2 = sig(pt, v2, v3);
+	d3 = sig(pt, v3, v1);
+
+	has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+	has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+	return !(has_neg && has_pos);
+}
+
+vec3 Ray::projectPoint(vec3 &worldPos)
 {
 	vec3 AP = worldPos - origin;
 	vec3 AB = direction;

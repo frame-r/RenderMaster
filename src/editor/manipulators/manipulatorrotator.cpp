@@ -6,26 +6,29 @@
 #include "render.h"
 #include "../editor_common.h"
 
-static ManagedPtr<Mesh> meshLine;
 const static int CircleSubdivision = 40;
 const static vec4 ColorRed = vec4(1,0,0,1);
 const static vec4 ColorGreen = vec4(0,1,0,1);
-mat4 static AxesCorrectionMat[3]{};
+
+static ManagedPtr<Mesh> meshLine;
+
+static mat4 CircleCorrectionMat[3];
+
 
 ManipulatorRotator::ManipulatorRotator()
 {
 	auto *resMan = editor->core->GetResourceManager();
 	meshLine = resMan->CreateStreamMesh("std#line");
 
-	AxesCorrectionMat[0].el_2D[0][0] = 0.0f;
-	AxesCorrectionMat[0].el_2D[2][2] = 0.0f;
-	AxesCorrectionMat[0].el_2D[2][0] = 1.0f;
-	AxesCorrectionMat[0].el_2D[0][2] = 1.0f;
+	CircleCorrectionMat[0].el_2D[0][0] = 0.0f;
+	CircleCorrectionMat[0].el_2D[2][2] = 0.0f;
+	CircleCorrectionMat[0].el_2D[2][0] = 1.0f;
+	CircleCorrectionMat[0].el_2D[0][2] = 1.0f;
 
-	AxesCorrectionMat[1].el_2D[2][2] = 0.0f;
-	AxesCorrectionMat[1].el_2D[1][1] = 0.0f;
-	AxesCorrectionMat[1].el_2D[1][2] = 1.0f;
-	AxesCorrectionMat[1].el_2D[2][1] = 1.0f;
+	CircleCorrectionMat[1].el_2D[2][2] = 0.0f;
+	CircleCorrectionMat[1].el_2D[1][1] = 0.0f;
+	CircleCorrectionMat[1].el_2D[1][2] = 1.0f;
+	CircleCorrectionMat[1].el_2D[2][1] = 1.0f;
 }
 
 ManipulatorRotator::~ManipulatorRotator()
@@ -53,7 +56,7 @@ void ManipulatorRotator::render(const CameraData &cam, const mat4 selectionTrans
 	for (int j = 0; j < 3; j++)
 	{
 		shader->SetVec4Parameter("main_color", &AxesColors[j]);
-		mat4 circleTransform = cam.ViewProjMat * selectionTransform * scaleMat * AxesCorrectionMat[j];
+		mat4 circleTransform = cam.ViewProjMat * selectionTransform * scaleMat * CircleCorrectionMat[j];
 
 		for (int i = 0; i < CircleSubdivision; i++)
 		{

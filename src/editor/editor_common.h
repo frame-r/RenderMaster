@@ -55,24 +55,26 @@ float axisScale(const vec4& worldPos, const mat4& View, const mat4& Proj, const 
 
 void lookAtCamera(mat4& Result, const vec3 &eye, const vec3 &center);
 
+bool PointInTriangle(const vec2& pt, const vec2& v1, const vec2& v2, const vec2& v3);
 
 struct Plane
 {
 	vec3 origin;
 	vec3 normal;
 
+	Plane() = default;
 	Plane(const vec3& normalIn, const vec3& originIn) :
 		origin(originIn), normal(normalIn){}
 };
 
 
-struct Line3D
+struct Ray
 {
 	vec3 origin;
 	vec3 direction;
 
-	Line3D() = default;
-	Line3D(const vec3& directionlIn, const vec3& originIn) :
+	Ray() = default;
+	Ray(const vec3& directionlIn, const vec3& originIn) :
 		origin(originIn), direction(directionlIn){}
 
 	vec3 projectPoint(vec3 &worldPos);
@@ -82,8 +84,8 @@ class QLabel;
 void setLabel(QLabel *l, float val);
 
 
-bool LineIntersectPlane(vec3& intersection, const Plane& plane, const Line3D& line);
-Line3D MouseToRay(const mat4& cameraModelMatrix, float fov, float aspect, const vec2& normalizedMousePos);
+bool RayPlaneIntersection(vec3& intersection, const Plane& plane, const Ray& line);
+Ray MouseToRay(const mat4& cameraModelMatrix, float fov, float aspect, const vec2& normalizedMousePos);
 vec2 WorldToNdc(const vec3& pos, const mat4& ViewProj);
 float PointToSegmentDistance(const vec2& p0, const vec2& p1, const vec2& ndc);
 vec2 NdcToScreen(const vec2& pos, uint w, uint h);

@@ -26,7 +26,8 @@ class ManipulatorTranslator : public IManupulator
 	MANIPULATOR_STATE state = MANIPULATOR_STATE::NONE;
 	vec3 worldDelta;
 	vec2 oldNormalizedMousePos;
-	Line3D movesAlongLine;
+	Ray movesAlongLine;
+	Plane movesAlongPlane;
 
 public:
 	ManipulatorTranslator();
