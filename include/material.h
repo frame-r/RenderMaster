@@ -1,8 +1,6 @@
 #pragma once
 #include "common.h"
 
-class Texture;
-
 class Material
 {
 	std::string path_;

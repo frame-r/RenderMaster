@@ -1,6 +1,7 @@
 #pragma once
 #include "gameobject.h"
 
+
 class Light : public GameObject
 {
 	float intensity_{1.0f};

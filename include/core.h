@@ -1,19 +1,8 @@
 #pragma once
 #include "common.h"
 
-class ResourceManager;
-class MaterialManager;
-class ICoreRender;
-class FileSystem;
-class Core;
-class Console;
-class MainWindow;
-class Camera;
-class Input;
-class Render;
-class IProfilerCallback;
-
 extern Core *_core;
+
 
 class Core final : IProfilerCallback
 {
@@ -101,15 +90,15 @@ public:
 DLLEXPORT Core* GetCore();
 DLLEXPORT void ReleaseCore(Core* core);
 
-extern char log_buffer__[5000];
+extern char logBuffer__[5000];
 
 template<class T, typename... Arguments>
 void _Log(LOG_TYPE type, T a, Arguments ...args)
 {
 	if (strlen(a) > 4999) abort();
-	sprintf(log_buffer__, a, args...);
+	sprintf(logBuffer__, a, args...);
 	if (_core->GetConsole())
-		_core->GetConsole()->Log(log_buffer__, type);
+		_core->GetConsole()->Log(logBuffer__, type);
 }
 template<typename... Arguments>
 void Log(Arguments ...args)

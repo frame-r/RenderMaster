@@ -15,7 +15,7 @@
 
 Core *_core;
 
-char log_buffer__[5000];
+char logBuffer__[5000];
 
 //
 static std::chrono::steady_clock::time_point start;

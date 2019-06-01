@@ -1,6 +1,7 @@
 #pragma once
 #include "gameobject.h"
 
+
 class Camera : public GameObject
 {
 	float zNear_{0.1f};

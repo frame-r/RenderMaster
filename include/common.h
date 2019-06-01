@@ -40,6 +40,29 @@
 class ResourceManager;
 class GameObject;
 class Core;
+class MaterialManager;
+class ICoreRender;
+class ICoreTexture;
+class FileSystem;
+class Core;
+class Console;
+class MainWindow;
+class Camera;
+class Input;
+class Render;
+class IProfilerCallback;
+class File;
+class Camera;
+class Mesh;
+class Model;
+class Material;
+class StructuredBuffer;
+struct ShaderRequirement;
+class Shader;
+class Texture;
+class Light;
+
+
 enum class WINDOW_MESSAGE;
 enum class LOG_TYPE;
 

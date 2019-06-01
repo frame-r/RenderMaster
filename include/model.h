@@ -3,7 +3,6 @@
 #include "mesh.h"
 #include "resource_manager.h"
 
-class Material;
 
 class Model final : public GameObject
 {

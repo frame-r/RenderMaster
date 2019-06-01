@@ -7,7 +7,6 @@ class Console final
 {
 	Signal<const char*, LOG_TYPE> onLog;
 	std::unique_ptr<char[]> tmpbuf;
-
 	ConsoleWindow *window{nullptr};
 
 public:

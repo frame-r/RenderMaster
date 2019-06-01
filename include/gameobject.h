@@ -1,6 +1,7 @@
 #pragma once
 #include "common.h"
 
+
 enum class OBJECT_TYPE
 {
 	GAMEOBJECT,

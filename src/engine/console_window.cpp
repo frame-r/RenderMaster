@@ -47,15 +47,15 @@ LRESULT CALLBACK ConsoleWindow::_s_WndProc(HWND hWnd, UINT message, WPARAM wPara
 	{
 	case WM_MOVE:
 	{
-		this_ptr->_iX = LOWORD(lParam);
-		this_ptr->_iY = HIWORD(lParam);
+		this_ptr->x_ = LOWORD(lParam);
+		this_ptr->y_ = HIWORD(lParam);
 	}
 	break;
 
 	case WM_SHOWWINDOW:
 	{
 		//this_ptr->_bVisible = (wParam == TRUE);
-		SetFocus(this_ptr->_hEdit);
+		SetFocus(this_ptr->hEdit_);
 	}
 	break;
 
@@ -65,19 +65,19 @@ LRESULT CALLBACK ConsoleWindow::_s_WndProc(HWND hWnd, UINT message, WPARAM wPara
 
 	case WM_SIZE:
 	{
-		this_ptr->_iWidth = LOWORD(lParam);
-		this_ptr->_iHeight = HIWORD(lParam);
+		this_ptr->width_ = LOWORD(lParam);
+		this_ptr->height_ = HIWORD(lParam);
 		RECT rect;
-		GetClientRect(this_ptr->_hWnd, &rect);
-		MoveWindow(this_ptr->_hMemo, 0, 0, rect.right, rect.bottom - 0, true);
-		MoveWindow(this_ptr->_hMemo, 0, 0, rect.right, rect.bottom - C_WND_EDIT_HEIGHT, true);
-		MoveWindow(this_ptr->_hEdit, 0, rect.bottom - C_WND_EDIT_HEIGHT, rect.right, C_WND_EDIT_HEIGHT, true);
-		//MoveWindow(this_ptr->_hListBox, 0, rect.bottom - C_WND_LISTBOX_HEIGHT - C_WND_EDIT_HEIGHT, rect.right, C_WND_LISTBOX_HEIGHT, true);
+		GetClientRect(this_ptr->hWnd_, &rect);
+		MoveWindow(this_ptr->hMemo_, 0, 0, rect.right, rect.bottom - 0, true);
+		MoveWindow(this_ptr->hMemo_, 0, 0, rect.right, rect.bottom - C_WND_EDIT_HEIGHT, true);
+		MoveWindow(this_ptr->hEdit_, 0, rect.bottom - C_WND_EDIT_HEIGHT, rect.right, C_WND_EDIT_HEIGHT, true);
+		//MoveWindow(this_ptr->hListBox_, 0, rect.bottom - C_WND_LISTBOX_HEIGHT - C_WND_EDIT_HEIGHT, rect.right, C_WND_LISTBOX_HEIGHT, true);
 	}
 	break;
 
 	case WM_DESTROY:
-		DeleteObject(this_ptr->_hFont);
+		DeleteObject(this_ptr->hFont_);
 		break;
 
 	case WM_GETMINMAXINFO:
@@ -92,7 +92,7 @@ LRESULT CALLBACK ConsoleWindow::_s_WndProc(HWND hWnd, UINT message, WPARAM wPara
 	case WM_KEYUP:
 		if (wParam == 192) // ~
 		{
-			if (this_ptr->_is_visible)
+			if (this_ptr->isVisible)
 				this_ptr->Hide();
 			else
 				this_ptr->Show();
@@ -116,8 +116,8 @@ LRESULT CALLBACK ConsoleWindow::_s_WndEditProc(HWND hWnd, UINT message, WPARAM w
 	auto set_cursor_at_the_end = [=]()
 	{
 		DWORD TextSize;
-		TextSize=GetWindowTextLength(this_ptr->_hEdit);
-		SendMessage(this_ptr->_hEdit,EM_SETSEL,TextSize,TextSize);
+		TextSize=GetWindowTextLength(this_ptr->hEdit_);
+		SendMessage(this_ptr->hEdit_,EM_SETSEL,TextSize,TextSize);
 	};	
 
 	switch (message) 
@@ -126,9 +126,9 @@ LRESULT CALLBACK ConsoleWindow::_s_WndEditProc(HWND hWnd, UINT message, WPARAM w
 		switch (wParam)
 		{
 			case 192: //tilda
-				if (this_ptr->_is_visible)
+				if (this_ptr->isVisible)
 					this_ptr->Hide();
-				SetWindowText(this_ptr->_hEdit, L"");
+				SetWindowText(this_ptr->hEdit_, L"");
 				break;
 
 			//case 38: //up
@@ -221,7 +221,7 @@ LRESULT CALLBACK ConsoleWindow::_s_WndEditProc(HWND hWnd, UINT message, WPARAM w
 	return 0;
 
 callDefWndPros:
-	return CallWindowProc((WNDPROC)this_ptr->_pOldEditProc, hWnd, message, wParam, lParam);
+	return CallWindowProc((WNDPROC)this_ptr->oldEditProc, hWnd, message, wParam, lParam);
 }
 
 WNDPROC ConsoleWindow::oldEditWndProc;
@@ -231,7 +231,7 @@ LRESULT CALLBACK ConsoleWindow::_s_EditProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     if( (uMsg == WM_KEYUP) && (wParam == 192) )
     {
 		ConsoleWindow *this_ptr = (ConsoleWindow *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-        if (this_ptr->_is_visible)
+        if (this_ptr->isVisible)
 			this_ptr->Hide();
 		else
 			this_ptr->Show();
@@ -267,83 +267,83 @@ void ConsoleWindow::Init()
 
 	HWND h = 0;
 
-	_hWnd = CreateWindowEx(WS_EX_TOOLWINDOW, L"ConsoleClass", L"Render Master Console",
+	hWnd_ = CreateWindowEx(WS_EX_TOOLWINDOW, L"ConsoleClass", L"Render Master Console",
 		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX,
 		1160, 200, 350, 500, h, NULL, _hInst, NULL);
 
-	if (!_hWnd)
+	if (!hWnd_)
 	{
 		MessageBox(NULL, L"Failed to create console window!", L"Render Master Console", MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
 		return;
 	}
 
-	SetWindowLongPtr(_hWnd, GWLP_USERDATA, (LONG_PTR)this);
+	SetWindowLongPtr(hWnd_, GWLP_USERDATA, (LONG_PTR)this);
 
 	RECT client_rect;
-	GetClientRect(_hWnd, &client_rect);
-	_hMemo = CreateWindow(L"EDIT", L"",
+	GetClientRect(hWnd_, &client_rect);
+	hMemo_ = CreateWindow(L"EDIT", L"",
 		WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL |
 		ES_MULTILINE | ES_READONLY,
-		0, 0, client_rect.right - client_rect.left, client_rect.bottom - client_rect.top, _hWnd, 0, 0, NULL);
+		0, 0, client_rect.right - client_rect.left, client_rect.bottom - client_rect.top, hWnd_, 0, 0, NULL);
 
-	oldEditWndProc = (WNDPROC) SetWindowLongPtr(_hMemo, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)ConsoleWindow::_s_EditProc);
-	SetWindowLongPtr(_hMemo, GWLP_USERDATA, (LONG_PTR)this);
+	oldEditWndProc = (WNDPROC) SetWindowLongPtr(hMemo_, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)ConsoleWindow::_s_EditProc);
+	SetWindowLongPtr(hMemo_, GWLP_USERDATA, (LONG_PTR)this);
 
 	//SetWindowText(_hMemo, L"Console created\r\n");	
 
 	LOGFONT LF = { 12, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, L"Lucida Console" };
-	_hFont = CreateFontIndirect(&LF);
+	hFont_ = CreateFontIndirect(&LF);
 
-	SendMessage(_hMemo, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
-	SendMessage(_hMemo, EM_LIMITTEXT, 200000, 0);
+	SendMessage(hMemo_, WM_SETFONT, (WPARAM)hFont_, MAKELPARAM(TRUE, 0));
+	SendMessage(hMemo_, EM_LIMITTEXT, 200000, 0);
 
-	_hEdit = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 0, 0, 0, 0, _hWnd, 0, 0, NULL);	
-	_pOldEditProc = (void *)SetWindowLongPtr(_hEdit, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)ConsoleWindow::_s_WndEditProc);
-	SendMessage(_hEdit, WM_SETFONT, (WPARAM)_hFont, MAKELPARAM(TRUE, 0));
+	hEdit_ = CreateWindow(L"EDIT", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, 0, 0, 0, 0, hWnd_, 0, 0, NULL);	
+	oldEditProc = (void *)SetWindowLongPtr(hEdit_, GWLP_WNDPROC, (LONG_PTR)(WNDPROC)ConsoleWindow::_s_WndEditProc);
+	SendMessage(hEdit_, WM_SETFONT, (WPARAM)hFont_, MAKELPARAM(TRUE, 0));
 
-	//_hListBox = CreateWindow(L"LISTBOX", L"", WS_CHILD | WS_VISIBLE, 0, 400, 400, 400, _hMemo, 0, 0, NULL);
+	//hListBox_ = CreateWindow(L"LISTBOX", L"", WS_CHILD | WS_VISIBLE, 0, 400, 400, 400, _hMemo, 0, 0, NULL);
 	//
-	//SendMessage(_hListBox, LB_ADDSTRING, 0, (LPARAM)(LPSTR)L"hello");
-	//SendMessage(_hListBox, LB_ADDSTRING, 0, (LPARAM)(LPSTR)L"hello");
+	//SendMessage(hListBox_, LB_ADDSTRING, 0, (LPARAM)(LPSTR)L"hello");
+	//SendMessage(hListBox_, LB_ADDSTRING, 0, (LPARAM)(LPSTR)L"hello");
 
 	Show();
 }
 
 void ConsoleWindow::Destroy()
 {
-	DestroyWindow(_hWnd);
+	DestroyWindow(hWnd_);
 }
 
 void ConsoleWindow::OutputTxt(const char* pStr)
 {
-	if (!_hMemo)
+	if (!hMemo_)
 		return;
 
-	int cur_l = GetWindowTextLength(_hMemo);
+	int cur_l = GetWindowTextLength(hMemo_);
 
-	SendMessage(_hMemo, EM_SETSEL, cur_l, cur_l);
-	SendMessage(_hMemo, EM_REPLACESEL, false, (LPARAM)(std::wstring(ConvertFromUtf8ToUtf16(pStr)) + std::wstring(L"\r\n")).c_str());
+	SendMessage(hMemo_, EM_SETSEL, cur_l, cur_l);
+	SendMessage(hMemo_, EM_REPLACESEL, false, (LPARAM)(std::wstring(ConvertFromUtf8ToUtf16(pStr)) + std::wstring(L"\r\n")).c_str());
 
-	_prev_line_size = (int)strlen(pStr);
+	prevLineSize_ = (int)strlen(pStr);
 }
 
 void ConsoleWindow::Show()
 {
-	_is_visible = 1;
-	ShowWindow(_hWnd, SW_SHOW);
-	UpdateWindow(_hWnd);
+	isVisible = 1;
+	ShowWindow(hWnd_, SW_SHOW);
+	UpdateWindow(hWnd_);
 }
 
 void ConsoleWindow::Hide()
 {
 	BringToFront();
-	_is_visible = 0;
-	ShowWindow(_hWnd, SW_HIDE);
+	isVisible = 0;
+	ShowWindow(hWnd_, SW_HIDE);
 }
 
 void ConsoleWindow::BringToFront()
 {
-	SetActiveWindow(_hWnd);
+	SetActiveWindow(hWnd_);
 }
 
 //void ConsoleWindow::AddCommand(IConsoleCommand *pCommand)

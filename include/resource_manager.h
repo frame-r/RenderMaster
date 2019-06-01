@@ -5,11 +5,6 @@
 #include "shader.h"
 #include "structured_buffer.h"
 
-// Forward declarations
-class Model;
-class Model;
-class Light;
-class Camera;
 
 template<typename T>
 class Resource;

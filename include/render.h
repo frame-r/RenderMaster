@@ -1,14 +1,6 @@
 #pragma once
 #include "Common.h"
 
-class Camera;
-class Mesh;
-class Model;
-class StructuredBuffer;
-struct ShaderRequirement;
-class Shader;
-class Texture;
-class Light;
 
 struct RenderBuffers
 {
