@@ -92,8 +92,6 @@ HEADERS += \
     $$PWD/../../src/editor/texturelineedit.h \
     ../../src/editor/manipulators/manipulatorrotator.h
 
-RC_FILE = resources/resources.rc
-
 INCLUDEPATH += "$$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/include"
 DEPENDPATH += "$$PWD/../../src/editorthirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/include"
 
@@ -111,7 +109,7 @@ FORMS += \
     $$PWD/../../src/editor/settings.ui \
     $$PWD/../../src/editor/texturelineedit.ui
 
-RC_FILE = ../../resources/resources.rc
+RC_FILE = ../../resources/editor/resources.rc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin1
@@ -132,7 +130,7 @@ PRE_TARGETDEPS += $$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/A
 DISTFILES +=
 
 RESOURCES += \
-    $$PWD/../../resources/rm2.qrc
+    $$PWD/../../resources/editor/rm2.qrc
 
 # rm
 INCLUDEPATH += $$PWD/../../include

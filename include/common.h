@@ -59,8 +59,8 @@ extern Core *_core;
 #define MAT_MAN _core->GetMaterialManager()
 #define INPUT _core->GetInput()
 
-#define SHADER_DIR ".standard\\shaders\\"
-#define TEXTURES_DIR ".standard\\textures\\"
+#define SHADER_DIR "standard\\shaders\\"
+#define TEXTURES_DIR "standard\\textures\\"
 
 inline void ThrowIfFailed(HRESULT hr)
 {

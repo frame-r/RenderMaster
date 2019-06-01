@@ -22,8 +22,8 @@
 #include <QDebug>
 #include <QShortcut>
 
-#define LIGHT_THEME "../../resources/light.qss"
-#define DARK_THEME "../../resources/dark.qss"
+#define LIGHT_THEME "../../resources/editor/light.qss"
+#define DARK_THEME "../../resources/editor/dark.qss"
 #define MAIN_WINDOW_LT "MainWindow"
 #define WINDOWS_LT "Windows"
 #define THEME_LT "Theme"
