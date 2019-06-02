@@ -119,29 +119,38 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin1
 CONFIG( debug, debug|release ) {
     # debug
     win32:LIBS += "$$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/debug/AdvancedDockingSystem.lib"
+    # force relink
+    PRE_TARGETDEPS += $$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/debug/AdvancedDockingSystem.lib
 } else {
     # release
     win32:LIBS += "$$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/release/AdvancedDockingSystem.lib"
+    # force relink
+    PRE_TARGETDEPS += $$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/release/AdvancedDockingSystem.lib
 }
 
-# force relink
-PRE_TARGETDEPS += $$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/debug/AdvancedDockingSystem.lib
+
+
 
 DISTFILES +=
 
 RESOURCES += \
     $$PWD/../../resources/editor/rm2.qrc
 
-# rm
+# Engine
 INCLUDEPATH += $$PWD/../../include
 DEPENDPATH += $$PWD/../../include
 
 CONFIG( debug, debug|release ) {
     # debug
     LIBS += -L$$PWD/../../bin/engine/x64/Debug -lEngine
+    # force relink
+    PRE_TARGETDEPS += $$PWD/../../bin/engine/x64/Debug/Engine.lib
+
 } else {
     # release
     LIBS += -L$$PWD/../../bin/engine/x64/Release -lEngine
+    # force relink
+    PRE_TARGETDEPS += $$PWD/../../bin/engine/x64/Release/Engine.lib
 }
 
 # visual leak detector

@@ -92,7 +92,7 @@ void EditorCore::LoadEngine()
 
 		HWND h = (HWND)window->getWindowHandle();
 
-		core->Init("../../", &h, INIT_FLAGS::NONE);
+		core->Init(ROOT_PATH, &h, INIT_FLAGS::NONE);
 		resMan = core->GetResourceManager();
 
 		onEngineInited();
