@@ -16,3 +16,8 @@ TextureLineEdit::TextureLineEdit(QWidget *parent) :
 	});
 }
 
+void TextureLineEdit::SetPath(const char *path)
+{
+	ui->lineEdit->setText(path);
+}
+

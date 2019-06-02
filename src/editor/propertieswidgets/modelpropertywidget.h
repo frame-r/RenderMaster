@@ -18,7 +18,7 @@ class ModelPropertyWidget : public QWidget
 {
 	Q_OBJECT
 
-	Model *_obj;
+	Model *model_;
 
 	QMetaObject::Connection albedoTexConn;
 

@@ -17,11 +17,10 @@ public:
 	explicit TextureLineEdit(QWidget *parent = nullptr);
 	//~TextureLineEdit();
 
+	void SetPath(const char *path);
+
 signals:
 	void OnPathChanged(const char *path);
-
-//protected:
-//	void SetPath(const char *path);
 
 private:
 	Ui::TextureLineEdit *ui;

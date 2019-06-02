@@ -32,7 +32,7 @@ inline vec4 QtColorToEng(const QColor& c)
 
 void ModelPropertyWidget::update_material_group()
 {
-	Material *mat = _obj->GetMaterial();
+	Material *mat = model_->GetMaterial();
 
 	if (mat)
 	{
@@ -66,20 +66,12 @@ void ModelPropertyWidget::update_material_group()
 
 ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 	QWidget(parent),
-	_obj(m),
+	model_(m),
 	ui(new Ui::ModelPropertyWidget)
 {
 	ui->setupUi(this);
 
-	//auto *label_3 = new QLabel(ui->material_gb);
-	//label_3->setText("Albedo");
-	//ui->formLayout->setWidget(3, QFormLayout::LabelRole, label_3);
-	//
-	//albedoLine = new TextureLineEditConcrete<Material>(ui->material_gb, &Material::SetAlbedoTexName, &Material::GetAlbedoTexName);
-	//ui->formLayout->setWidget(3, QFormLayout::FieldRole, albedoLine);
-	albedoTexConn = connect(ui->albedo_tw, &TextureLineEdit::OnPathChanged, this, &ModelPropertyWidget::setAlbedoPath);
-
-	Mesh *mesh = _obj->GetMesh();
+	Mesh *mesh = model_->GetMesh();
 
 	if (mesh)
 	{
@@ -91,32 +83,14 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 	connect(ui->add_btn, &QToolButton::clicked, [this]() -> void
 	{
 		Material *m = editor->core->GetMaterialManager()->CreateMaterial();
-		_obj->SetMaterial(m);
+		model_->SetMaterial(m);
 		this->update_material_group();
 	});
 
-//	const char *path;
-//	mesh->GetFile(&path);
-
-//	ui->mesh_le->setText(QString(path));
-
-//	update_material_group();
-
-//	connect(ui->material_le, &QLineEdit::editingFinished, [=]()
-//		{
-//			ui->material_le->clearFocus();
-//			 if (_obj)
-//			 {
-//				 const QString newValue = ui->material_le->text();
-//				 _obj->SetMaterial(newValue.toLatin1().data());
-//				 update_material_group();
-//			 }
-//		});
-
-//	// color
+	// color
 	connect(ui->color_w, &ColorWidget::colorChanged, [=](QColor next)
 	{
-		Material *mat = _obj->GetMaterial();
+		Material *mat = model_->GetMaterial();
 		if (mat)
 		{
 			vec4 c = QtColorToEng(next);
@@ -124,11 +98,11 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 		}
 	});
 
-//	// metallic
+	// metallic
 	connect(ui->metallic_sl, &QSlider::valueChanged, [=](int value)
 	{
 		float floatValue = (float)value / ui->metallic_sl->maximum();
-		Material *mat = _obj->GetMaterial();
+		Material *mat = model_->GetMaterial();
 		if (mat)
 			mat->SetMetallic(floatValue);
 
@@ -137,11 +111,11 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 		ui->metallic_num_l->setText(text);
 	});
 
-//	// roughness
+	// roughness
 	connect(ui->roughness_sl, &QSlider::valueChanged, [=](int value)
 	{
 		float floatValue = (float)value / ui->roughness_sl->maximum();
-		Material *mat = _obj->GetMaterial();
+		Material *mat = model_->GetMaterial();
 		if (mat)
 			mat->SetRoughness(floatValue);
 
@@ -150,7 +124,12 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 		ui->roughness_num_l->setText(text);
 	});
 
-	Material *mat = _obj->GetMaterial();
+	Material *mat = model_->GetMaterial();
+
+	albedoTexConn = connect(ui->albedo_tw, &TextureLineEdit::OnPathChanged, this, &ModelPropertyWidget::setAlbedoPath);
+
+	if (mat)
+		ui->albedo_tw->SetPath(mat->GetAlbedoTexName());
 }
 
 
@@ -163,9 +142,9 @@ ModelPropertyWidget::~ModelPropertyWidget()
 
 void ModelPropertyWidget::setAlbedoPath(const char *path)
 {
-	if (_obj)
+	if (model_)
 	{
-		Material *mat = _obj->GetMaterial();
+		Material *mat = model_->GetMaterial();
 		mat->SetAlbedoTexName(path);
 	}
 }
