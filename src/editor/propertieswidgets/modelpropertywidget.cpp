@@ -62,8 +62,6 @@ void ModelPropertyWidget::update_material_group()
 		ui->material_gb->setEnabled(0);
 		ui->color_w->ChangeColor(EngToQtColor(vec4(0.5, 0.5, 0.5f, 0.5f)));
 	}
-
-	albedoLine->SetObject(mat);
 }
 
 ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
@@ -73,13 +71,13 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 {
 	ui->setupUi(this);
 
-	auto *label_3 = new QLabel(ui->material_gb);
-	label_3->setText("Albedo");
-	ui->formLayout->setWidget(3, QFormLayout::LabelRole, label_3);
-
-	albedoLine = new TextureLineEditConcrete<Material>(ui->material_gb, &Material::SetAlbedoTexName, &Material::GetAlbedoTexName);
-	ui->formLayout->setWidget(3, QFormLayout::FieldRole, albedoLine);
-
+	//auto *label_3 = new QLabel(ui->material_gb);
+	//label_3->setText("Albedo");
+	//ui->formLayout->setWidget(3, QFormLayout::LabelRole, label_3);
+	//
+	//albedoLine = new TextureLineEditConcrete<Material>(ui->material_gb, &Material::SetAlbedoTexName, &Material::GetAlbedoTexName);
+	//ui->formLayout->setWidget(3, QFormLayout::FieldRole, albedoLine);
+	albedoTexConn = connect(ui->albedo_tw, &TextureLineEdit::OnPathChanged, this, &ModelPropertyWidget::setAlbedoPath);
 
 	Mesh *mesh = _obj->GetMesh();
 
@@ -153,15 +151,23 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 	});
 
 	Material *mat = _obj->GetMaterial();
-	albedoLine->SetObject(mat);
-
 }
 
 
 
 ModelPropertyWidget::~ModelPropertyWidget()
 {
+	QObject::disconnect(albedoTexConn);
 	delete ui;
+}
+
+void ModelPropertyWidget::setAlbedoPath(const char *path)
+{
+	if (_obj)
+	{
+		Material *mat = _obj->GetMaterial();
+		mat->SetAlbedoTexName(path);
+	}
 }
 
 

@@ -19,13 +19,17 @@ class ModelPropertyWidget : public QWidget
 	Q_OBJECT
 
 	Model *_obj;
-	TextureLineEditConcrete<Material> *albedoLine;
+
+	QMetaObject::Connection albedoTexConn;
 
 	void update_material_group();
 
 public:
 	explicit ModelPropertyWidget(QWidget *parent, Model *m);
 	~ModelPropertyWidget();
+
+private slots:
+	void setAlbedoPath(const char *path);
 
 private:
 	Ui::ModelPropertyWidget *ui;

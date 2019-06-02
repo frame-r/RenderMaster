@@ -201,6 +201,16 @@
         </item>
        </layout>
       </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Albedo</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="TextureLineEdit" name="albedo_tw" native="true"/>
+      </item>
      </layout>
     </widget>
    </item>
@@ -229,6 +239,12 @@
    <class>MyLineEdit</class>
    <extends>QLineEdit</extends>
    <header>../../src/editor/mylineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TextureLineEdit</class>
+   <extends>QWidget</extends>
+   <header location="global">../../src/editor/texturelineedit.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
