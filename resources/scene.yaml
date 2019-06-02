@@ -2,9 +2,9 @@ roots: 3
 objects:
   - childs: 0
     id: 845369033
-    enabled: false
+    enabled: true
     type: Light
-    worldTransform: [0.8473036, 0.3067211, 0.4336794, 0, 0.305785, 0.3859598, -0.8704141, 0, -0.4343348, 0.8700814, 0.2332268, 0, 0, 0, 0, 1]
+    worldTransform: [0.8473037, 0.3067212, 0.4336794, 0, 0.305785, 0.38596, -0.8704142, 0, -0.4343349, 0.8700817, 0.2332268, 0, 0, 0, 0, 1]
     intensity: 1
   - childs: 0
     id: 1540049954
@@ -19,3 +19,4 @@ objects:
     type: Model
     worldTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     mesh: std#plane
+    material: material_0.mat

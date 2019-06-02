@@ -137,6 +137,20 @@ void ManipulatorTranslator::render(const CameraData& cam, const mat4 selectionTr
 	vec4 center4 = vec4(selectionTransform.Column3(3));
 	mat4 distanceScaleMat = mat4(axisScale(center4, cam.ViewMat, cam.ProjectionMat, QPoint(screen.width(), screen.height())));
 
+	// Orientate manipulator-planes to viewer
+	if (state == MANIPULATOR_STATE::NONE)
+	{
+		mat4 invSelectionWorldTransform = selectionTransform.Inverse();
+		vec4 camPos_axesSpace = invSelectionWorldTransform * vec4(cam.pos);
+
+		PlaneMirroringMat[0].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
+		PlaneMirroringMat[0].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
+		PlaneMirroringMat[2].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
+		PlaneMirroringMat[2].el_2D[2][2] = camPos_axesSpace.z > 0 ? 1.0f : -1.0f;
+		PlaneMirroringMat[1].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
+		PlaneMirroringMat[1].el_2D[2][2] = camPos_axesSpace.z > 0 ? 1.0f : -1.0f;
+	}
+
 	for (int i = 0; i < 3; i++)
 	{
 		mat4 M = selectionTransform * distanceScaleMat * AxesCorrectionMat[i];
@@ -285,21 +299,6 @@ void ManipulatorTranslator::update(const CameraData& cam, const mat4 selectionWo
 			}
 
 	}
-
-
-	//if (isMoving != 2)
-	{
-		mat4 invSelectionWorldTransform = selectionWorldTransform.Inverse();
-		vec4 camPos_axesSpace = invSelectionWorldTransform * vec4(cam.pos);
-
-		PlaneMirroringMat[0].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[0].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[2].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[2].el_2D[2][2] = camPos_axesSpace.z > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[1].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[1].el_2D[2][2] = camPos_axesSpace.z > 0 ? 1.0f : -1.0f;
-	}
-
 
 }
 
