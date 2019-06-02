@@ -634,25 +634,7 @@ public:
 	void decRef() override { refs_--; }
 	int getRefs() const override { return refs_; }
 	std::string& getPath() override { return path_; }
-	T *get() override
-	{
-		if (pointer_)
-		{
-			frame_ = _core->frame();
-			return pointer_.get();
-		}
-		if (loadingFailed)
-			return nullptr;
-
-		pointer_.reset(create());
-		loadingFailed = !pointer_->Load();
-
-		if (loadingFailed)
-			pointer_ = nullptr;
-
-		frame_ = _core->frame();
-		return pointer_.get();
-	}
+	T* get() override;
 	void free() override { pointer_ = nullptr; }
 	bool isLoaded() { return static_cast<bool>(pointer_); }
 	uint64_t frame() { return frame_; }

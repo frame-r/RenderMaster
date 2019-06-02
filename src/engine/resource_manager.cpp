@@ -421,13 +421,6 @@ void ResourceManager::Reload()
 	Log("ResourceManager: Reloading all resources...");
 }
 
-template<typename T>
-Resource<T>::Resource(const string& path) :
-	path_(path)
-{
-	Log("Resource created '%s'", path.c_str());
-}
-
 void saveObj(Emitter& out, GameObject *o)
 {
 	if (!o) return;

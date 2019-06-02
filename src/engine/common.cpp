@@ -244,7 +244,35 @@ void ManagedPtr<T>::release()
 	}
 }
 
-//template class Resource<Mesh>;
-//template class Resource<Texture>;
+template<typename T>
+Resource<T>::Resource(const string& path) :
+	path_(path)
+{
+	Log("Resource created '%s'", path.c_str());
+}
+
+template <class T>
+T* Resource<T>::get()
+{
+	if (pointer_)
+	{
+		frame_ = _core->frame();
+		return pointer_.get();
+	}
+	if (loadingFailed)
+		return nullptr;
+
+	pointer_.reset(create());
+	loadingFailed = !pointer_->Load();
+
+	if (loadingFailed)
+		pointer_ = nullptr;
+
+	frame_ = _core->frame();
+	return pointer_.get();
+}
+
+template class Resource<Mesh>;
+template class Resource<Texture>;
 template class DLLEXPORT ManagedPtr<Mesh>;
 template class DLLEXPORT ManagedPtr<Texture>;
