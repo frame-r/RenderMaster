@@ -79,7 +79,7 @@ struct DDS_HEADER_DXT10
 	uint32_t        miscFlags2;
 };
 
-TEXTURE_FORMAT DXGIFormatToEng(DXGI_FORMAT format);
+TEXTURE_FORMAT D3DToEng(DXGI_FORMAT format);
 
 #pragma pack(pop)
 
@@ -141,7 +141,7 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
             default: break;
             }
 
-            format = DXGIFormatToEng(d3d10ext->dxgiFormat);
+            format = D3DToEng(d3d10ext->dxgiFormat);
 
             switch (d3d10ext->resourceDimension)
             {
