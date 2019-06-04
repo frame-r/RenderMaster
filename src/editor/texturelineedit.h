@@ -1,6 +1,6 @@
 #ifndef TEXTURELINEEDIT_H
 #define TEXTURELINEEDIT_H
-
+#include "vector_math.h"
 #include <QWidget>
 #include <QLineEdit>
 
@@ -15,12 +15,17 @@ class TextureLineEdit : public QWidget
 
 public:
 	explicit TextureLineEdit(QWidget *parent = nullptr);
-	//~TextureLineEdit();
 
 	void SetPath(const char *path);
+	void SetUV(const vec4& uv);
 
 signals:
+	void OnUVChanged(const vec4& uv);
 	void OnPathChanged(const char *path);
+
+private slots:
+	void uvChanged();
+
 
 private:
 	Ui::TextureLineEdit *ui;

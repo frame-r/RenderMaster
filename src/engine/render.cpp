@@ -295,6 +295,8 @@ vector<RenderMesh> Render::getRenderMeshes()
 		vec4 color = vec4(1, 1, 1, 1);
 		vec4 shading = vec4(0, 0, 1, 1);
 		Texture *albedoTex = whiteTexture;
+		vec4 albedoUV{ 1.0f, 1.0f, 0.0f, 0.0f };
+
 		Material *mat = model->GetMaterial();
 		if (mat)
 		{
@@ -303,9 +305,10 @@ vector<RenderMesh> Render::getRenderMeshes()
 			shading.y = mat->GetMetallic();
 			if (mat->GetAlbedoTex())
 				albedoTex = mat->GetAlbedoTex();
+			albedoUV = mat->GetAlbedoUV();
 		}
 
-		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetWorldTransform(), color, shading, albedoTex});
+		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetWorldTransform(), color, shading, albedoTex, albedoUV });
 	}
 	return meshesVec;
 }
@@ -481,7 +484,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 	Texture *rts[1] = {CORE_RENDER->GetSurfaceColorTexture()};
 	CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
 
-	renderGrid();
+	//renderGrid();
 
 	// vectors
 	if (vectors.size())
@@ -565,6 +568,7 @@ void Render::drawMeshes(const char *path, PASS pass, std::vector<RenderMesh>& me
 		shader->SetMat4Parameter("NM", &NM);
 		shader->SetVec4Parameter("color", &renderMesh.color);
 		shader->SetVec4Parameter("shading", &renderMesh.shading);
+		shader->SetVec4Parameter("albedo_uv", &renderMesh.albedoUV);
 		if (pass == PASS::ID)
 			shader->SetUintParameter("id", renderMesh.modelId);
 		shader->FlushParameters();

@@ -1,4 +1,4 @@
 !Material
-color: [0.4313726, 1, 0, 1]
-metallic: 0
+color: [0, 0, 0, 1]
+metallic: 1
 roughness: 0

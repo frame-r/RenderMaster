@@ -2,6 +2,8 @@
 #define MODELPROPERTYWIDGET_H
 
 #include <QWidget>
+#include <QList>
+#include "vector_math.h"
 
 class Material;
 
@@ -20,7 +22,8 @@ class ModelPropertyWidget : public QWidget
 
 	Model *model_;
 
-	QMetaObject::Connection albedoTexConn;
+
+	QList<QMetaObject::Connection> connections;
 
 	void update_material_group();
 
@@ -30,6 +33,7 @@ public:
 
 private slots:
 	void setAlbedoPath(const char *path);
+	void setUVTransform(const vec4& uv);
 
 private:
 	Ui::ModelPropertyWidget *ui;

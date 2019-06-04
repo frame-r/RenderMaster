@@ -9,6 +9,7 @@ class Material
 	float metallic_{0.0f};
 	std::string albedoTex_;
 	ManagedPtr<Texture> albedoTexPtr_;
+	vec4 albedoUVTransform_{1.0f, 1.0f, 0.0f, 0.0f};
 
 public:
 	Material(const std::string& path) : path_(path) {}
@@ -26,4 +27,6 @@ public:
 	auto DLLEXPORT GetAlbedoTexName() -> const char* { return albedoTex_.c_str(); }
 	auto DLLEXPORT SetAlbedoTexName(const char *path) -> void;
 	auto DLLEXPORT GetAlbedoTex() -> Texture* { return albedoTexPtr_.get(); }
+	auto DLLEXPORT SetAlbedoUV(const vec4& uv) -> void { albedoUVTransform_ = uv; }
+	auto DLLEXPORT GetAlbedoUV() -> vec4 { return albedoUVTransform_; }
 };

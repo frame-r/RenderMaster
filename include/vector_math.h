@@ -58,6 +58,11 @@ struct vec4
 		return vec4(x / len, y / len, z / len, w / len);
 	}
 
+	bool Aproximately(const vec4& r) const
+	{
+		return std::abs(r.x - x) < EPSILON && std::abs(r.y - y) < EPSILON && std::abs(r.z - z) < EPSILON && std::abs(r.w - w) < EPSILON;
+	}
+
 	operator vec3() const;
 	operator vec2() const;
 };

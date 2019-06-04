@@ -213,6 +213,9 @@
     <ClInclude Include="..\..\resources\.standard\shaders\common.h" />
     <ClInclude Include="..\..\resources\.standard\shaders\vertex.h" />
     <ClInclude Include="..\..\resources\.standard\shaders\vertex_post.h" />
+    <ClInclude Include="..\..\resources\standard\shaders\common.h" />
+    <ClInclude Include="..\..\resources\standard\shaders\vertex.h" />
+    <ClInclude Include="..\..\resources\standard\shaders\vertex_post.h" />
     <ClInclude Include="..\..\src\engine\console_window.h" />
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11corerender.h" />
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11mesh.h" />
@@ -268,6 +271,12 @@
     <None Include="..\..\resources\.standard\shaders\id.shader" />
     <None Include="..\..\resources\.standard\shaders\mesh.shader" />
     <None Include="..\..\resources\.standard\shaders\primitive.shader" />
+    <None Include="..\..\resources\standard\shaders\composite.shader" />
+    <None Include="..\..\resources\standard\shaders\deferred_light.shader" />
+    <None Include="..\..\resources\standard\shaders\font.shader" />
+    <None Include="..\..\resources\standard\shaders\id.shader" />
+    <None Include="..\..\resources\standard\shaders\mesh.shader" />
+    <None Include="..\..\resources\standard\shaders\primitive.shader" />
     <None Include="..\..\src\engine\corerender\dx11\dx_objects.inl" />
     <None Include="..\..\src\engine\corerender\dx11\states_pools.inl" />
     <None Include="..\..\src\engine\yaml.inl" />

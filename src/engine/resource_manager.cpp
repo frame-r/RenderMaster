@@ -414,6 +414,11 @@ void ResourceManager::Update(float dt)
 		if ((_core->frame() - m->frame() > UNLOAD_RESOURCE_FRAMES) && m->isLoaded())
 			m->free();
 	}
+	for (auto [p, m] : resource_textures_)
+	{
+		if ((_core->frame() - m->frame() > UNLOAD_RESOURCE_FRAMES) && m->isLoaded())
+			m->free();
+	}
 }
 void ResourceManager::Reload()
 {

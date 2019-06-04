@@ -4,7 +4,7 @@ objects:
     id: 845369033
     enabled: true
     type: Light
-    worldTransform: [0.8473037, 0.3067212, 0.4336794, 0, 0.305785, 0.38596, -0.8704142, 0, -0.4343349, 0.8700817, 0.2332268, 0, 0, 0, 0, 1]
+    worldTransform: [0.847272, 0.3067082, 0.4336591, 0, 0.3057735, 0.3859436, -0.8703735, 0, -0.4343186, 0.8700446, 0.233216, 0, 0, 0, 0, 1]
     intensity: 1
   - childs: 0
     id: 1540049954
@@ -17,6 +17,6 @@ objects:
     id: 431980828
     enabled: true
     type: Model
-    worldTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    worldTransform: [100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 1]
     mesh: std#plane
     material: material_0.mat

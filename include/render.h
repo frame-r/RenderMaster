@@ -20,6 +20,7 @@ struct RenderMesh
 	vec4 color;
 	vec4 shading; // r - roughness, g - metallic
 	Texture *albedoTex;
+	vec4 albedoUV{ 1.0f, 1.0f, 0.0f, 0.0f };
 };
 
 

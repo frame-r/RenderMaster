@@ -33,6 +33,8 @@ void Material::Load()
 		roughness_ = n["roughness"].as<float>();
 	if (n["albedoTex"])
 		SetAlbedoTexName(n["albedoTex"].as<string>().c_str());
+
+	loadVec4(n, "albedoUVTransform", albedoUVTransform_);
 }
 
 void Material::Save()
@@ -46,6 +48,8 @@ void Material::Save()
 	out << Key << "roughness" << Value << roughness_;
 	if (!albedoTex_.empty())
 		out << Key << "albedoTex" << Value << albedoTex_;
+	if (!albedoUVTransform_.Aproximately(vec4(1, 1, 0, 0)))
+		out << Key << "albedoUVTransform" << Value << albedoUVTransform_;
 	out << EndMap;
 
 	File f = FS->OpenFile(path_.c_str(), FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);

@@ -713,7 +713,14 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 {
 	UINT arraySize = type == TEXTURE_TYPE::TYPE_CUBE ? 6 : 1;
 
-	bool generateMipmaps = bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS) && !isCompressedFormat(format) && !mipmapsPresented;
+	bool generateMipmaps = bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS) && !mipmapsPresented;
+
+	if (isCompressedFormat(format) && generateMipmaps)
+	{
+		generateMipmaps = false;
+		LogWarning("Unable load mipmaps duo format is compressed");
+	}
+
 	UINT mipLevelsData = mipmapsPresented ? mipmapsNumber(width, height) : 1;
 	UINT mipLevelsResource = (generateMipmaps || mipmapsPresented) ? mipmapsNumber(width, height) : 1;
 

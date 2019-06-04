@@ -10,6 +10,7 @@
 		float4 camera_position;
 		float4 color;
 		float4 shading;
+		float4 albedo_uv;
 	};
 
 
@@ -32,7 +33,7 @@
 
 		out_color.color = color;
 		#ifdef ENG_INPUT_TEXCOORD
-			out_color.color *= texture_albedo.Sample(sampler_albedo, fs_input.TexCoord);
+			out_color.color *= texture_albedo.Sample(sampler_albedo, fs_input.TexCoord * albedo_uv.xy + albedo_uv.zw);
 		#endif
 
 		out_color.shading = shading;

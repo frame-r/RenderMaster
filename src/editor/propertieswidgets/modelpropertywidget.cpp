@@ -126,17 +126,23 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 
 	Material *mat = model_->GetMaterial();
 
-	albedoTexConn = connect(ui->albedo_tw, &TextureLineEdit::OnPathChanged, this, &ModelPropertyWidget::setAlbedoPath);
+	connections.append(connect(ui->albedo_tw, &TextureLineEdit::OnUVChanged, this, &ModelPropertyWidget::setUVTransform));
+	connections.append(connect(ui->albedo_tw, &TextureLineEdit::OnPathChanged, this, &ModelPropertyWidget::setAlbedoPath));
 
 	if (mat)
+	{
 		ui->albedo_tw->SetPath(mat->GetAlbedoTexName());
+		ui->albedo_tw->SetUV(mat->GetAlbedoUV());
+	}
 }
 
 
 
 ModelPropertyWidget::~ModelPropertyWidget()
 {
-	QObject::disconnect(albedoTexConn);
+	for (auto& c : connections)
+		QObject::disconnect(c);
+	connections.clear();
 	delete ui;
 }
 
@@ -145,7 +151,18 @@ void ModelPropertyWidget::setAlbedoPath(const char *path)
 	if (model_)
 	{
 		Material *mat = model_->GetMaterial();
-		mat->SetAlbedoTexName(path);
+		if (mat)
+			mat->SetAlbedoTexName(path);
+	}
+}
+
+void ModelPropertyWidget::setUVTransform(const vec4 &uv)
+{
+	if (model_)
+	{
+		Material *mat = model_->GetMaterial();
+		if (mat)
+			mat->SetAlbedoUV(uv);
 	}
 }
 
