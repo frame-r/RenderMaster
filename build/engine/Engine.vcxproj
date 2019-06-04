@@ -210,9 +210,6 @@
     <ClInclude Include="..\..\include\structured_buffer.h" />
     <ClInclude Include="..\..\include\texture.h" />
     <ClInclude Include="..\..\include\vector_math.h" />
-    <ClInclude Include="..\..\resources\.standard\shaders\common.h" />
-    <ClInclude Include="..\..\resources\.standard\shaders\vertex.h" />
-    <ClInclude Include="..\..\resources\.standard\shaders\vertex_post.h" />
     <ClInclude Include="..\..\resources\standard\shaders\common.h" />
     <ClInclude Include="..\..\resources\standard\shaders\vertex.h" />
     <ClInclude Include="..\..\resources\standard\shaders\vertex_post.h" />
@@ -266,11 +263,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\resources\.standard\shaders\composite.shader" />
-    <None Include="..\..\resources\.standard\shaders\deferred_light.shader" />
-    <None Include="..\..\resources\.standard\shaders\font.shader" />
-    <None Include="..\..\resources\.standard\shaders\id.shader" />
-    <None Include="..\..\resources\.standard\shaders\mesh.shader" />
-    <None Include="..\..\resources\.standard\shaders\primitive.shader" />
     <None Include="..\..\resources\standard\shaders\composite.shader" />
     <None Include="..\..\resources\standard\shaders\deferred_light.shader" />
     <None Include="..\..\resources\standard\shaders\font.shader" />

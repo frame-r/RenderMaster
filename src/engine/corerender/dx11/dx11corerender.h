@@ -5,7 +5,7 @@ namespace WRL = Microsoft::WRL;
 
 struct WindowSurface
 {
-	uint w;;
+	uint w;
 	uint h;
 	WRL::ComPtr<IDXGISwapChain> swapChain;
 	std::unique_ptr<Texture> color;

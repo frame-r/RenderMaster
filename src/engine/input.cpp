@@ -22,7 +22,7 @@ void Input::Update()
 	//LOG_FORMATTED("cursorX_=%i cursorY_=%i mouseDeltaPos_(%f, %f) oldPos_(%f, %f)", cursorX_, cursorY_, mouseDeltaPos_.x, mouseDeltaPos_.y, oldPos_.x, oldPos_.y);
 }
 
-void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData)
+void Input::messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData)
 {
 	switch (type)
 	{
@@ -53,11 +53,11 @@ void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2,
 		break;
 
 	case WINDOW_MESSAGE::APPLICATION_ACTIVATED:
-		clear_mouse();
+		clearMouse();
 		break;
 
 	case WINDOW_MESSAGE::APPLICATION_DEACTIVATED:
-		clear_mouse();
+		clearMouse();
 		break;
 
 	default:
@@ -65,9 +65,9 @@ void Input::_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2,
 	}
 }
 
-void Input::_s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void * pData)
+void Input::sMessageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void * pData)
 {
-	instance->_message_callback(type, param1, param2, pData);
+	instance->messageCallback(type, param1, param2, pData);
 }
 
 void Input::Init()
@@ -75,14 +75,14 @@ void Input::Init()
 	MainWindow *w = _core->GeWindow();
 
 	if (w)
-		w->AddMessageCallback(_s_message_callback);
+		w->AddMessageCallback(sMessageCallback);
 }
 
 void Input::Free()
 {
 }
 
-void Input::clear_mouse()
+void Input::clearMouse()
 {
 	cursorX_ = 0;
 	cursorY_ = 0;

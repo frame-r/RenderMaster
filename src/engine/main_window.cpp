@@ -124,31 +124,31 @@ KEYBOARD_KEY_CODES ASCIIKeyToEngKey(unsigned char key)
 	}
 }
 
-MainWindow *MainWindow::this_ptr{nullptr};
+MainWindow *MainWindow::thisPtr{nullptr};
 
 MainWindow::MainWindow(void(*main_loop)())
 {
-	this_ptr = this;
-	_main_loop = main_loop;
+	thisPtr = this;
+	mainLoop = main_loop;
 }
 
 MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::_invoke_mesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
+void MainWindow::invokeMesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void* pData)
 {
 	onWindowEvent.Invoke(type, param1, param2, pData);
 }
 
 
-LRESULT MainWindow::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT MainWindow::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	
 	if (message == WM_CLOSE)
 	{
 		PostQuitMessage(0);
-		_invoke_mesage(WINDOW_MESSAGE::WINDOW_CLOSE, 0, 0, nullptr);
+		invokeMesage(WINDOW_MESSAGE::WINDOW_CLOSE, 0, 0, nullptr);
 		return 0;
 	}
 
@@ -176,14 +176,14 @@ LRESULT MainWindow::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			break;
 		case SIZE_MINIMIZED:
 			//LOG("WM_SIZE::SIZE_MINIMIZED");
-			_invoke_mesage(WINDOW_MESSAGE::WINDOW_MINIMIZED, 0, 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::WINDOW_MINIMIZED, 0, 0, nullptr);
 			break;
 		case SIZE_RESTORED:
 			//LOG("WM_SIZE::SIZE_RESTORED");
-			_invoke_mesage(WINDOW_MESSAGE::WINDOW_UNMINIMIZED, 0, 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::WINDOW_UNMINIMIZED, 0, 0, nullptr);
 			break;
 		}
-		_invoke_mesage(WINDOW_MESSAGE::SIZE, LOWORD(lParam), HIWORD(lParam), (void*)lParam);
+		invokeMesage(WINDOW_MESSAGE::SIZE, LOWORD(lParam), HIWORD(lParam), (void*)lParam);
 	}
 	break;
 
@@ -192,63 +192,63 @@ LRESULT MainWindow::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		if (lParam & 0x00100000)
 		{
 			if (wParam == 16)
-				_invoke_mesage(WINDOW_MESSAGE::KEY_DOWN, (uint32)KEYBOARD_KEY_CODES::KEY_RSHIFT, 0, nullptr);
+				invokeMesage(WINDOW_MESSAGE::KEY_DOWN, (uint32)KEYBOARD_KEY_CODES::KEY_RSHIFT, 0, nullptr);
 			else
 				if (wParam == 17)
-					_invoke_mesage(WINDOW_MESSAGE::KEY_DOWN, (uint32)KEYBOARD_KEY_CODES::KEY_RCONTROL, 0, nullptr);
+					invokeMesage(WINDOW_MESSAGE::KEY_DOWN, (uint32)KEYBOARD_KEY_CODES::KEY_RCONTROL, 0, nullptr);
 				else
-					_invoke_mesage(WINDOW_MESSAGE::KEY_DOWN, (uint32)ASCIIKeyToEngKey((unsigned char)wParam), 0, nullptr);
+					invokeMesage(WINDOW_MESSAGE::KEY_DOWN, (uint32)ASCIIKeyToEngKey((unsigned char)wParam), 0, nullptr);
 		}
 		else
-			_invoke_mesage(WINDOW_MESSAGE::KEY_DOWN, (uint32)ASCIIKeyToEngKey((unsigned char)wParam), 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::KEY_DOWN, (uint32)ASCIIKeyToEngKey((unsigned char)wParam), 0, nullptr);
 		break;
 
 	case WM_KEYUP:
 		if (lParam & 0x00100000)
 		{
 			if (wParam == 16)
-				_invoke_mesage(WINDOW_MESSAGE::KEY_UP, (uint32)KEYBOARD_KEY_CODES::KEY_RSHIFT, 0, nullptr);
+				invokeMesage(WINDOW_MESSAGE::KEY_UP, (uint32)KEYBOARD_KEY_CODES::KEY_RSHIFT, 0, nullptr);
 			else
 				if (wParam == 17)
-					_invoke_mesage(WINDOW_MESSAGE::KEY_UP, (uint32)KEYBOARD_KEY_CODES::KEY_RCONTROL, 0, nullptr);
+					invokeMesage(WINDOW_MESSAGE::KEY_UP, (uint32)KEYBOARD_KEY_CODES::KEY_RCONTROL, 0, nullptr);
 				else
-					_invoke_mesage(WINDOW_MESSAGE::KEY_UP, (uint32)ASCIIKeyToEngKey((unsigned char)wParam), 0, nullptr);
+					invokeMesage(WINDOW_MESSAGE::KEY_UP, (uint32)ASCIIKeyToEngKey((unsigned char)wParam), 0, nullptr);
 		}
 		else
-			_invoke_mesage(WINDOW_MESSAGE::KEY_UP, (uint32)ASCIIKeyToEngKey((unsigned char)wParam), 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::KEY_UP, (uint32)ASCIIKeyToEngKey((unsigned char)wParam), 0, nullptr);
 		break;
 
 	case WM_MOUSEMOVE:
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_MOVE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), nullptr);
+		invokeMesage(WINDOW_MESSAGE::MOUSE_MOVE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), nullptr);
 		break;
 
 	case WM_LBUTTONDOWN:
 		//LOG("WM_LBUTTONDOWN");
 		SetCapture(hWnd);
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 0, (uint32)lParam, nullptr);
+		invokeMesage(WINDOW_MESSAGE::MOUSE_DOWN, 0, (uint32)lParam, nullptr);
 		break;
 
 	case WM_RBUTTONDOWN:
 		
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 1, (uint32)lParam, nullptr);
+		invokeMesage(WINDOW_MESSAGE::MOUSE_DOWN, 1, (uint32)lParam, nullptr);
 		break;
 
 	case WM_MBUTTONDOWN:
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_DOWN, 2, (uint32)lParam, nullptr);
+		invokeMesage(WINDOW_MESSAGE::MOUSE_DOWN, 2, (uint32)lParam, nullptr);
 		break;
 
 	case WM_LBUTTONUP:
 		//LOG("WM_LBUTTONUP");
 		ReleaseCapture();
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_UP, 0, 0, nullptr);
+		invokeMesage(WINDOW_MESSAGE::MOUSE_UP, 0, 0, nullptr);
 		break;
 
 	case WM_RBUTTONUP:
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_UP, 1, 0, nullptr);
+		invokeMesage(WINDOW_MESSAGE::MOUSE_UP, 1, 0, nullptr);
 		break;
 
 	case WM_MBUTTONUP:
-		_invoke_mesage(WINDOW_MESSAGE::MOUSE_UP, 2, 0, nullptr);
+		invokeMesage(WINDOW_MESSAGE::MOUSE_UP, 2, 0, nullptr);
 		break;
 
 	case WM_MOUSELEAVE:
@@ -265,9 +265,9 @@ LRESULT MainWindow::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		//if (fActive) LOG("WM_ACTIVATE true");
 		//else LOG("WM_ACTIVATE false");
 		if (fActive)
-			_invoke_mesage(WINDOW_MESSAGE::WINDOW_ACTIVATED, 0, 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::WINDOW_ACTIVATED, 0, 0, nullptr);
 		else
-			_invoke_mesage(WINDOW_MESSAGE::WINDOW_DEACTIVATED, 0, 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::WINDOW_DEACTIVATED, 0, 0, nullptr);
 	}
 	break;
 
@@ -277,9 +277,9 @@ LRESULT MainWindow::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		//if (fActive) LOG("WM_ACTIVATEAPP true");
 		//else LOG("WM_ACTIVATEAPP false");
 		if (fActive)
-			_invoke_mesage(WINDOW_MESSAGE::APPLICATION_ACTIVATED, 0, 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::APPLICATION_ACTIVATED, 0, 0, nullptr);
 		else
-			_invoke_mesage(WINDOW_MESSAGE::APPLICATION_DEACTIVATED, 0, 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::APPLICATION_DEACTIVATED, 0, 0, nullptr);
 
 	}
 	break;
@@ -298,7 +298,7 @@ LRESULT MainWindow::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		if (wParam == UPDATE_TIMER_ID)
 		{
 			//LOG("WM_TIMER redraw");
-			_invoke_mesage(WINDOW_MESSAGE::WINDOW_REDRAW, 0, 0, nullptr);
+			invokeMesage(WINDOW_MESSAGE::WINDOW_REDRAW, 0, 0, nullptr);
 		}
 		break;
 
@@ -322,9 +322,9 @@ LRESULT MainWindow::_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-LRESULT CALLBACK MainWindow::_s_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK MainWindow::sWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	return this_ptr->_wndProc(hWnd, message, wParam, lParam);
+	return thisPtr->wndProc(hWnd, message, wParam, lParam);
 }
 
 void MainWindow::Create()
@@ -333,7 +333,7 @@ void MainWindow::Create()
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = _s_wndProc;
+	wcex.lpfnWndProc = sWndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = GetModuleHandle(nullptr);
@@ -360,7 +360,7 @@ void MainWindow::StartMainLoop()
 
 	while (true)
 	{
-		if (_main_loop != nullptr && !passive_main_loop)
+		if (mainLoop != nullptr && !passiveMainLoop)
 		{
 
 			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -373,7 +373,7 @@ void MainWindow::StartMainLoop()
 			}
 			else
 			{
-				_main_loop();
+				mainLoop();
 			}
 		}
 		else

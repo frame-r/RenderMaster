@@ -142,7 +142,7 @@ bool Mesh::Load()
 
 	if (m)
 	{
-		_coreMesh.reset(m);
+		coreMesh_.reset(m);
 		return true;
 	}
 
@@ -206,20 +206,20 @@ bool Mesh::Load()
 		return false;
 	}
 
-	_coreMesh.reset(m);
+	coreMesh_.reset(m);
 
 	return true;
 }
 
 auto DLLEXPORT Mesh::GetAttributes() -> INPUT_ATTRUBUTE
 {
-	return _coreMesh->GetAttributes();
+	return coreMesh_->GetAttributes();
 }
 
 auto DLLEXPORT Mesh::GetVideoMemoryUsage() -> size_t
 {
-	if (!_coreMesh)
+	if (!coreMesh_)
 		return 0;
 
-	return _coreMesh->GetVideoMemoryUsage();
+	return coreMesh_->GetVideoMemoryUsage();
 }

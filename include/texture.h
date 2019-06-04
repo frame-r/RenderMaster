@@ -3,7 +3,7 @@
 
 class Texture final
 {
-	std::unique_ptr<ICoreTexture> _coreTexture;
+	std::unique_ptr<ICoreTexture> coreTexture_;
 	std::string path_;
 	TEXTURE_CREATE_FLAGS flags_;
 

@@ -11,9 +11,9 @@ class Input final
 	vec2 oldPos_;
 	vec2 mouseDeltaPos_;
 	
-	void clear_mouse();
-	void _message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
-	static void _s_message_callback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	void clearMouse();
+	void messageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	static void sMessageCallback(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
 
 public:
 	Input();

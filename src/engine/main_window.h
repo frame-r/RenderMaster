@@ -3,15 +3,15 @@
 
 class MainWindow
 {
-	static MainWindow *this_ptr;
+	static MainWindow *thisPtr;
 	HWND hwnd;
-	void(*_main_loop)() {nullptr};
+	void(*mainLoop)() {nullptr};
 	Signal<WINDOW_MESSAGE, uint32, uint32, void*> onWindowEvent;
-	int passive_main_loop = 0;
+	int passiveMainLoop = 0;
 
-	void _invoke_mesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
-	LRESULT CALLBACK _wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK _s_wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	void invokeMesage(WINDOW_MESSAGE type, uint32 param1, uint32 param2, void *pData);
+	LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK sWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
 
@@ -26,6 +26,6 @@ public:
 	void GetClientSize(int& w, int& h);
 	void AddMessageCallback(WindowCallback c);
 	void SetCaption(const wchar_t* text);
-	void SetPassiveMainLoop(int value) { passive_main_loop = value; }
+	void SetPassiveMainLoop(int value) { passiveMainLoop = value; }
 };
 

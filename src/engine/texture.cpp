@@ -12,7 +12,7 @@ Texture::Texture(const std::string& path, TEXTURE_CREATE_FLAGS flags) : path_(pa
 
 Texture::Texture(std::unique_ptr<ICoreTexture> tex)
 {
-	_coreTexture = std::move(tex);
+	coreTexture_ = std::move(tex);
 }
 
 Texture::~Texture()
@@ -44,7 +44,7 @@ bool Texture::Load()
 	f.Read((uint8 *)fileData.get(), size);
 
 	ICoreTexture *coreTex = createDDS(fileData.get(), size, flags_);
-	_coreTexture = std::unique_ptr<ICoreTexture>(coreTex);
+	coreTexture_ = std::unique_ptr<ICoreTexture>(coreTex);
 
 	if (!coreTex)
 	{
@@ -57,33 +57,33 @@ bool Texture::Load()
 
 auto DLLEXPORT Texture::GetCoreTexture() -> ICoreTexture *
 {
-	return _coreTexture.get();
+	return coreTexture_.get();
 }
 
 auto DLLEXPORT Texture::GetVideoMemoryUsage() -> size_t
 {
-	if (!_coreTexture)
+	if (!coreTexture_)
 		return 0;
 
-	return _coreTexture->GetVideoMemoryUsage();
+	return coreTexture_->GetVideoMemoryUsage();
 }
 
 auto DLLEXPORT Texture::GetWidth() -> int
 {
-	return _coreTexture->GetWidth();
+	return coreTexture_->GetWidth();
 }
 
 auto DLLEXPORT Texture::GetHeight() -> int
 {
-	return _coreTexture->GetHeight();
+	return coreTexture_->GetHeight();
 }
 
 auto DLLEXPORT Texture::GetMipmaps() -> int
 {
-	return _coreTexture->GetMipmaps();
+	return coreTexture_->GetMipmaps();
 }
 
 auto DLLEXPORT Texture::ReadPixel2D(void *data, int x, int y) -> int
 {
-	return _coreTexture->ReadPixel2D(data, x, y);
+	return coreTexture_->ReadPixel2D(data, x, y);
 }
