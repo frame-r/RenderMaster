@@ -208,28 +208,19 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
             }
         }
 
-	// Type
-	//TEXTURE_TYPE type; 
-	//if (header->caps2 & DDS_CUBEMAP)
-	//	type = TEXTURE_TYPE::TYPE_CUBE;
-	//else
-	//	type = TEXTURE_TYPE::TYPE_2D;
-	//
-	//// Format
-	//TEXTURE_FORMAT format = DDSToEngFormat(header->ddspf);
 
-	// Convert RGB -> RGBA
-	unique_ptr<uint8[]> imageDataRGBtoRGBA;
+	// Convert BGR -> RGBA
+	unique_ptr<uint8[]> imageDataBGRtoRGBA;
 	if ((header->ddspf.flags & DDS_RGB) && header->ddspf.RGBBitCount == 24)
 	{
 		assert(imageSize % 3 == 0);
 		size_t alphaSize = imageSize / 3;
 		size_t pixels = header->width * header->height;
 
-		imageDataRGBtoRGBA = std::make_unique<uint8[]>(imageSize + alphaSize);
+		imageDataBGRtoRGBA = std::make_unique<uint8[]>(imageSize + alphaSize);
 
 		uint8* ptr_src = imageData;
-		uint8* ptr_dst = imageDataRGBtoRGBA.get();
+		uint8* ptr_dst = imageDataBGRtoRGBA.get();
 
 		memset(ptr_dst, 255, pixels * 4);
 
@@ -237,7 +228,10 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
 		{
 			for (size_t i = 0u; i < pixels; ++i)
 			{
-				memcpy(ptr_dst, ptr_src, 3);
+				// BGR -> RGB
+				memcpy((ptr_dst + 0), (ptr_src + 2), 1);
+				memcpy((ptr_dst + 1), (ptr_src + 1), 1);
+				memcpy((ptr_dst + 2), (ptr_src + 0), 1);
 
 				ptr_dst += 4;
 				ptr_src += 3;
@@ -245,7 +239,7 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
 			pixels /= 4;
 		}
 
-		imageData = imageDataRGBtoRGBA.get();
+		imageData = imageDataBGRtoRGBA.get();
 		format = TEXTURE_FORMAT::RGBA8;
 	}
 
