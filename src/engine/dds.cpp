@@ -185,7 +185,10 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
             format = DDSToEngFormat(header->ddspf);
 
             if (format == TEXTURE_FORMAT::UNKNOWN)
-				abort();
+			{
+				if (!((header->ddspf.flags & DDS_RGB) && (header->ddspf.RGBBitCount == 24))) // we convert RGB ->  RGBA later
+					abort();
+			}
 
             if (header->flags & DDS_HEADER_FLAGS_VOLUME)
             {
@@ -216,27 +219,33 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
 	//TEXTURE_FORMAT format = DDSToEngFormat(header->ddspf);
 
 	// Convert RGB -> RGBA
+	unique_ptr<uint8[]> imageDataRGBtoRGBA;
 	if ((header->ddspf.flags & DDS_RGB) && header->ddspf.RGBBitCount == 24)
 	{
 		assert(imageSize % 3 == 0);
-		size_t alphaChannelSize = imageSize / 3;
-		size_t elements = header->width * header->height;
+		size_t alphaSize = imageSize / 3;
+		size_t pixels = header->width * header->height;
 
-		unique_ptr<uint8[]> imageDataRempped = std::make_unique<uint8[]>(imageSize + alphaChannelSize);
+		imageDataRGBtoRGBA = std::make_unique<uint8[]>(imageSize + alphaSize);
 
 		uint8* ptr_src = imageData;
-		uint8* ptr_dst = imageDataRempped.get();
+		uint8* ptr_dst = imageDataRGBtoRGBA.get();
 
-		for (size_t i = 0u; i < elements; ++i)
+		memset(ptr_dst, 255, pixels * 4);
+
+		for (int m = 0; m < header->mipMapCount; m++)
 		{
-			memcpy(ptr_dst, ptr_dst, 3);
-			memset((ptr_dst + 3), 255, 1);
+			for (size_t i = 0u; i < pixels; ++i)
+			{
+				memcpy(ptr_dst, ptr_src, 3);
 
-			ptr_dst += 4;
-			ptr_src += 3;
+				ptr_dst += 4;
+				ptr_src += 3;
+			}
+			pixels /= 4;
 		}
 
-		imageData = imageDataRempped.get();
+		imageData = imageDataRGBtoRGBA.get();
 		format = TEXTURE_FORMAT::RGBA8;
 	}
 
