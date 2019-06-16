@@ -56,10 +56,16 @@
     <ClInclude Include="..\..\resources\standard\shaders\common.h">
       <Filter>shaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\resources\standard\shaders\vertex.h">
+    <ClInclude Include="..\..\resources\standard\shaders\vertex_post.h">
       <Filter>shaders</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\resources\standard\shaders\vertex_post.h">
+    <ClInclude Include="..\..\src\engine\thirdparty\pugixml\pugiconfig.hpp">
+      <Filter>thirdparty\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\pugixml\pugixml.hpp">
+      <Filter>thirdparty\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\resources\standard\shaders\vertex.h">
       <Filter>shaders</Filter>
     </ClInclude>
   </ItemGroup>
@@ -113,6 +119,9 @@
     <ClCompile Include="..\..\src\engine\texture.cpp" />
     <ClCompile Include="..\..\src\engine\material.cpp" />
     <ClCompile Include="..\..\src\engine\material_manager.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\pugixml\pugixml.cpp">
+      <Filter>thirdparty\pugixml</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="corerender">
@@ -133,6 +142,9 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{f29d3f23-3af7-463c-8e1c-588285afa7a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty\pugixml">
+      <UniqueIdentifier>{79094ae7-6db3-44c4-966b-bdc937fb9448}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\engine\corerender\dx11\states_pools.inl">
@@ -142,7 +154,6 @@
       <Filter>corerender\dx11</Filter>
     </None>
     <None Include="..\..\src\engine\yaml.inl" />
-    <None Include="..\..\resources\.standard\shaders\composite.shader" />
     <None Include="..\..\resources\standard\shaders\composite.shader">
       <Filter>shaders</Filter>
     </None>
@@ -152,13 +163,13 @@
     <None Include="..\..\resources\standard\shaders\font.shader">
       <Filter>shaders</Filter>
     </None>
-    <None Include="..\..\resources\standard\shaders\id.shader">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="..\..\resources\standard\shaders\mesh.shader">
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\resources\standard\shaders\primitive.shader">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\id.shader">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

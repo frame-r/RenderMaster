@@ -2,8 +2,10 @@
 #include "ui_modelpropertywidget.h"
 #include <QScopedPointer>
 #include <QColorDialog>
+#include "../colorwidget.h"
 #include <QDebug>
 #include <QAction>
+#include <QCheckBox>
 #include <QToolButton>
 #include <QFileDialog>
 #include <QSlider>
@@ -30,37 +32,101 @@ inline vec4 QtColorToEng(const QColor& c)
 	return v;
 }
 
-void ModelPropertyWidget::update_material_group()
+void ModelPropertyWidget::destroy_material_group(Material *mat)
 {
-	Material *mat = model_->GetMaterial();
+	//int rows = ui->material_lt->rowCount();
+	while (QLayoutItem* item = ui->material_lt->takeAt(0)) {
+		delete item->widget();
+		delete item;
+	}
+}
 
-	if (mat)
+void ModelPropertyWidget::construct_material_group(Material *mat)
+{
+	destroy_material_group(mat);
+	if (!mat)
+		return;
+
+	GenericMaterial *genmat = mat->GetGenericMaterial();
+
+	for (size_t i = 0; i < genmat->params_.size(); i++)
 	{
-		ui->material_gb->setEnabled(1);
+		GenericMaterial::Param &p = genmat->params_[i];
+		if (p.type != GenericMaterial::PARAM_TYPE::FLOAT)
+			continue;
 
-		auto path = mat->GetPath();
-		ui->material_le->setText(path.c_str());
+		QSlider *sl = new QSlider();
 
-		vec4 base_color = mat->GetColor();
-		ui->color_w->ChangeColor(EngToQtColor(base_color));
+		int valueInt = mat->GetParamFloat(p.id.c_str()) * sl->maximum();
+		sl->setValue(valueInt);
 
-		float metallic = mat->GetMetallic();
-		int metallicInt = metallic * ui->metallic_sl->maximum();
-		ui->metallic_sl->setValue(metallicInt);
-		QString text;
-		//text.sprintf("%6.2f", metallic);
-		//ui->metallic_num_l->setText(text);
-		setLabel(ui->metallic_num_l, metallic);
+		connect(sl, &QSlider::valueChanged, [p, mat, sl, this](int value)
+		{
+			float floatValue = (float)value / sl->maximum();
+			Material *mat = model_->GetMaterial();
 
-		float rough = mat->GetRoughness();
-		int roughInt = rough * ui->roughness_sl->maximum();
-		ui->roughness_sl->setValue(roughInt);
-		text.sprintf("%6.2f", rough);
-		ui->roughness_num_l->setText(text);
-	} else
+			mat->SetParamFloat(p.id.c_str(), floatValue);
+
+			//QString text;
+			//text.sprintf("%6.2f", floatValue);
+			//ui->metallic_num_l->setText(text);
+		});
+
+		sl->setOrientation(Qt::Orientation::Horizontal);
+		ui->material_lt->addRow(tr(p.id.c_str()), sl);
+	}
+
+	// color
+	for (size_t i = 0; i < genmat->params_.size(); i++)
 	{
-		ui->material_gb->setEnabled(0);
-		ui->color_w->ChangeColor(EngToQtColor(vec4(0.5, 0.5, 0.5f, 0.5f)));
+		GenericMaterial::Param &p = genmat->params_[i];
+		if (p.type != GenericMaterial::PARAM_TYPE::COLOR)
+			continue;
+
+		ColorWidget *sl = new ColorWidget();
+
+		vec4 current_color = mat->GetParamFloat4(p.id.c_str());
+		sl->ChangeColor(EngToQtColor(current_color));
+
+		connect(sl, &ColorWidget::colorChanged, [p, mat, sl, this](QColor next)
+		{
+			vec4 c = QtColorToEng(next);
+			mat->SetParamFloat4(p.id.c_str(), c);
+		});
+
+		ui->material_lt->addRow(tr(p.id.c_str()), sl);
+	}
+
+	// defines
+	for (auto& v : genmat->defs_)
+	{
+		QCheckBox *cb = new QCheckBox();
+		cb->setChecked(mat->GetDef(v.first.c_str()));
+
+		connect(cb, &QCheckBox::toggled, [v, this, mat](bool f)
+		{
+			mat->SetDef(v.first.c_str(), f);
+		});
+
+		ui->material_lt->addRow(tr(v.first.c_str()), cb);
+	}
+
+	// textures
+	for (auto& v : genmat->textures_)
+	{
+		TextureLineEdit *l = new TextureLineEdit();
+		ui->material_lt->addRow(tr(v.id.c_str()), l);
+		l->SetPath(mat->GetTexture(v.id.c_str()));
+		l->SetUV(mat->GetUV(v.id.c_str()));
+
+		connect(l, &TextureLineEdit::OnUVChanged, this, [v, mat](const vec4& uv)
+		{
+			mat->SetUV(v.id.c_str(), uv);
+		});
+		connect(l, &TextureLineEdit::OnPathChanged, this, [v, mat](const char *path)
+		{
+			mat->SetTexture(v.id.c_str(), path);
+		});
 	}
 }
 
@@ -72,98 +138,42 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 	ui->setupUi(this);
 
 	Mesh *mesh = model_->GetMesh();
-
 	if (mesh)
-	{
 		ui->mesh_le->setText(QString(mesh->GetPath()));
-	}
 
-	update_material_group();
+	Material *material = model_->GetMaterial();
+	if (material)
+		ui->material_le->setText(QString(material->GetId()));
+
+	construct_material_group(material);
 
 	connect(ui->add_btn, &QToolButton::clicked, [this]() -> void
 	{
-		Material *m = editor->core->GetMaterialManager()->CreateMaterial();
-		model_->SetMaterial(m);
-		this->update_material_group();
+		Material *newMaterial = editor->core->GetMaterialManager()->CreateMaterial("mesh");
+		if (newMaterial)
+			ui->material_le->setText(QString(newMaterial->GetId()));
+
+		model_->SetMaterial(newMaterial);
+
+		this->construct_material_group(model_->GetMaterial());
 	});
 
-	// color
-	connect(ui->color_w, &ColorWidget::colorChanged, [=](QColor next)
-	{
-		Material *mat = model_->GetMaterial();
-		if (mat)
-		{
-			vec4 c = QtColorToEng(next);
-			mat->SetColor(c);
-		}
-	});
+//	connections.append(connect(ui->albedo_tw, &TextureLineEdit::OnUVChanged, this, &ModelPropertyWidget::setUVTransform));
+//	connections.append(connect(ui->albedo_tw, &TextureLineEdit::OnPathChanged, this, &ModelPropertyWidget::setAlbedoPath));
 
-	// metallic
-	connect(ui->metallic_sl, &QSlider::valueChanged, [=](int value)
-	{
-		float floatValue = (float)value / ui->metallic_sl->maximum();
-		Material *mat = model_->GetMaterial();
-		if (mat)
-			mat->SetMetallic(floatValue);
-
-		QString text;
-		text.sprintf("%6.2f", floatValue);
-		ui->metallic_num_l->setText(text);
-	});
-
-	// roughness
-	connect(ui->roughness_sl, &QSlider::valueChanged, [=](int value)
-	{
-		float floatValue = (float)value / ui->roughness_sl->maximum();
-		Material *mat = model_->GetMaterial();
-		if (mat)
-			mat->SetRoughness(floatValue);
-
-		QString text;
-		text.sprintf("%6.2f", floatValue);
-		ui->roughness_num_l->setText(text);
-	});
-
-	Material *mat = model_->GetMaterial();
-
-	connections.append(connect(ui->albedo_tw, &TextureLineEdit::OnUVChanged, this, &ModelPropertyWidget::setUVTransform));
-	connections.append(connect(ui->albedo_tw, &TextureLineEdit::OnPathChanged, this, &ModelPropertyWidget::setAlbedoPath));
-
-	if (mat)
-	{
-		ui->albedo_tw->SetPath(mat->GetAlbedoTexName());
-		ui->albedo_tw->SetUV(mat->GetAlbedoUV());
-	}
+//	if (mat)
+//	{
+//		ui->albedo_tw->SetPath(mat->GetAlbedoTexName());
+//		ui->albedo_tw->SetUV(mat->GetAlbedoUV());
+//	}
 }
-
-
 
 ModelPropertyWidget::~ModelPropertyWidget()
 {
-	for (auto& c : connections)
+	for (auto& c : connections_)
 		QObject::disconnect(c);
-	connections.clear();
+	connections_.clear();
 	delete ui;
-}
-
-void ModelPropertyWidget::setAlbedoPath(const char *path)
-{
-	if (model_)
-	{
-		Material *mat = model_->GetMaterial();
-		if (mat)
-			mat->SetAlbedoTexName(path);
-	}
-}
-
-void ModelPropertyWidget::setUVTransform(const vec4 &uv)
-{
-	if (model_)
-	{
-		Material *mat = model_->GetMaterial();
-		if (mat)
-			mat->SetAlbedoUV(uv);
-	}
 }
 
 

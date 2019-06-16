@@ -2,7 +2,7 @@
 #include "pch.h"
 #include "shader.h"
 
-Shader::Shader(unique_ptr<ICoreShader> s, unique_ptr<const char> vertIn, unique_ptr<const char> geomIn, unique_ptr<const char> fragIn)
+Shader::Shader(unique_ptr<ICoreShader> s, unique_ptr<const char[]> vertIn, unique_ptr<const char[]> geomIn, unique_ptr<const char[]> fragIn)
 {
 	coreShader_ = std::move(s);
 	vertFullText_ = std::move(vertIn);

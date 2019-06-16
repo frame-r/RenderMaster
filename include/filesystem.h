@@ -21,7 +21,7 @@ public:
 	auto DLLEXPORT IsRelative(const char *path) -> bool;
 	auto DLLEXPORT OpenFile(const char *path, FILE_OPEN_MODE mode = FILE_OPEN_MODE::WRITE) -> File;
 	auto DLLEXPORT ClearFile(const char *path) -> void;
-	auto DLLEXPORT GetPaths(const char *ext) -> std::vector<std::string>;
+	auto DLLEXPORT FilterPaths(const char *ext) -> std::vector<std::string>;
 };
 
 class File final

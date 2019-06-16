@@ -47,7 +47,7 @@ void Model::Serialize(void * yaml)
 		n << YAML::Key << "mesh" << YAML::Value << mesh_.path();
 
 	if (mat_)
-		n << YAML::Key << "material" << YAML::Value << mat_->GetPath();
+		n << YAML::Key << "material" << YAML::Value << mat_->GetId();
 }
 
 void Model::Deserialize(void * yaml)

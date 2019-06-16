@@ -5,12 +5,12 @@
 class Shader final
 {
 	std::unique_ptr<ICoreShader> coreShader_;
-	std::unique_ptr<const char> vertFullText_;
-	std::unique_ptr<const char> geomFullText_;
-	std::unique_ptr<const char> fragFullText_;
+	std::unique_ptr<const char[]> vertFullText_;
+	std::unique_ptr<const char[]> geomFullText_;
+	std::unique_ptr<const char[]> fragFullText_;
 
 public:
-	Shader(std::unique_ptr<ICoreShader> s, std::unique_ptr<const char> vertIn, std::unique_ptr<const char> geomIn, std::unique_ptr<const char> fragIn);
+	Shader(std::unique_ptr<ICoreShader> s, std::unique_ptr<const char[]> vertIn, std::unique_ptr<const char[]> geomIn, std::unique_ptr<const char[]> fragIn);
 
 	auto DLLEXPORT GetCoreShader() -> ICoreShader*;
 	auto DLLEXPORT GetVert() -> const char*;

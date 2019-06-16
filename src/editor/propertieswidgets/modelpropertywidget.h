@@ -21,19 +21,14 @@ class ModelPropertyWidget : public QWidget
 	Q_OBJECT
 
 	Model *model_;
+	QList<QMetaObject::Connection> connections_;
 
-
-	QList<QMetaObject::Connection> connections;
-
-	void update_material_group();
+	void destroy_material_group(Material *mat);
+	void construct_material_group(Material *mat);
 
 public:
 	explicit ModelPropertyWidget(QWidget *parent, Model *m);
 	~ModelPropertyWidget();
-
-private slots:
-	void setAlbedoPath(const char *path);
-	void setUVTransform(const vec4& uv);
 
 private:
 	Ui::ModelPropertyWidget *ui;

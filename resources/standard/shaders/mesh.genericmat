@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<generic_material id="mesh">
+	
+	<pass_deferred>
+		<def id="normal_map">0</def>
+		<def id="albedo_map">0</def>
+		
+		<param id="roughness" type="float">0.0</param>
+		<param id="metallness" type="float">0.0</param>
+		<param id="normal_intensity" type="float">1</param>
+		<param id="base_color" type="color">1 1 1 1</param>
+		
+		<texture id="albedo" slot="0">povement_albedo.dds</texture>
+		<texture id="normal" slot="1">povement_normal.dds</texture>
+		
+		<shader>mesh.shader</shader>
+	</pass_deferred>
+	
+	<pass_id>		
+		<shader>id.shader</shader>
+	</pass_id>
+	
+</generic_material>

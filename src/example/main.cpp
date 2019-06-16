@@ -6,6 +6,10 @@
 #include "filesystem.h"
 #include "console.h"
 
+
+#include "material_manager.h"
+#include "material.h"
+
 int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
 	Core *core = GetCore();
@@ -18,6 +22,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE _hInstance, _In_opt_ HINSTANCE hPrevInstanc
 	resMan->LoadWorld();
 
 	Camera *c = resMan->CreateCamera();
+
+	MaterialManager *mm = core->GetMaterialManager();
+
+	Material *mat = mm->CreateMaterial("mesh");
+	mat->SetTexture("albedo", "1.dds");
+	//mat->SaveXML();
 
 	core->Start(c);
 

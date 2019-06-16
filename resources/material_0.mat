@@ -1,6 +1,0 @@
-!Material
-color: [1, 1, 1, 1]
-metallic: 0
-roughness: 1
-albedoTex: 1.dds
-albedoUVTransform: [100, 100, 0, 0]

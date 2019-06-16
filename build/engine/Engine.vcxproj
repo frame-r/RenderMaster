@@ -223,6 +223,8 @@
     <ClInclude Include="..\..\src\engine\fbx.h" />
     <ClInclude Include="..\..\src\engine\main_window.h" />
     <ClInclude Include="..\..\src\engine\pch.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\pugixml\pugiconfig.hpp" />
+    <ClInclude Include="..\..\src\engine\thirdparty\pugixml\pugixml.hpp" />
     <ClInclude Include="..\..\src\engine\thirdparty\simplecpp\SimpleCpp.h" />
   </ItemGroup>
   <ItemGroup>
@@ -259,10 +261,13 @@
     <ClCompile Include="..\..\src\engine\shader.cpp" />
     <ClCompile Include="..\..\src\engine\structured_buffer.cpp" />
     <ClCompile Include="..\..\src\engine\texture.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\pugixml\pugixml.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\engine\thirdparty\simplecpp\SimpleCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\resources\.standard\shaders\composite.shader" />
     <None Include="..\..\resources\standard\shaders\composite.shader" />
     <None Include="..\..\resources\standard\shaders\deferred_light.shader" />
     <None Include="..\..\resources\standard\shaders\font.shader" />

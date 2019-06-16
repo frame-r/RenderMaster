@@ -14,9 +14,17 @@ float3 srgb(float3 v)
 {
 	return float3(pow(v.x, 0.45), pow(v.y, 0.45), pow(v.z, 0.45));
 }
+float4 srgb(float4 v)
+{
+	return float4(pow(v.x, 0.45), pow(v.y, 0.45), pow(v.z, 0.45), pow(v.w, 0.45));
+}
 float3 srgbInv(float3 v)
 {
 	return float3(pow(v.x, 2.2), pow(v.y, 2.2), pow(v.z, 2.2));
+}
+float4 srgbInv(float4 v)
+{
+	return float4(pow(v.x, 2.2), pow(v.y, 2.2), pow(v.z, 2.2), pow(v.w, 2.2));
 }
 float3 Tonemap_Reinhard(float3 x)
 {

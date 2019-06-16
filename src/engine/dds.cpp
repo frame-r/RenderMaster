@@ -224,7 +224,7 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
 
 		memset(ptr_dst, 255, pixels * 4);
 
-		for (int m = 0; m < header->mipMapCount; m++)
+		for (uint32_t m = 0; m < header->mipMapCount; m++)
 		{
 			for (size_t i = 0u; i < pixels; ++i)
 			{
@@ -273,21 +273,16 @@ TEXTURE_FORMAT DDSToEngFormat(const DDS_PIXELFORMAT& ddpf)
 		{
 		case 32:
 			if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
-			{
 				return TEXTURE_FORMAT::RGBA8;
+
+			if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000))
+				return TEXTURE_FORMAT::BGRA8;
+
+			if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
+			{
+				//return DXGI_FORMAT_B8G8R8X8_UNORM;
+				break;
 			}
-
-			//if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000))
-			//{
-			//	//return DXGI_FORMAT_B8G8R8A8_UNORM;
-			//	break;
-			//}
-
-			//if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
-			//{
-			//	//return DXGI_FORMAT_B8G8R8X8_UNORM;
-			//	break;
-			//}
 
 			// No DXGI format maps to ISBITMASK(0x000000ff,0x0000ff00,0x00ff0000,0x00000000) aka D3DFMT_X8B8G8R8
 

@@ -1,22 +1,36 @@
-roots: 3
+roots: 5
 objects:
   - childs: 0
     id: 845369033
     enabled: true
     type: Light
-    worldTransform: [0.847272, 0.3067082, 0.4336591, 0, 0.3057735, 0.3859436, -0.8703735, 0, -0.4343186, 0.8700446, 0.233216, 0, 0, 0, 0, 1]
+    worldTransform: [0.8472722, 0.3067082, 0.4336592, 0, 0.3057736, 0.3859436, -0.8703737, 0, -0.4343187, 0.8700448, 0.233216, 0, 0, 0, 0, 1]
     intensity: 1
   - childs: 0
     id: 1540049954
     enabled: false
     type: Model
-    worldTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-    mesh: .import\test.mesh
-    material: test_material.mat
+    worldTransform: [1, 0, 0, 0.689, 0, 1, 0, 0.472, 0, 0, 1, 1.276, 0, 0, 0, 1]
+    mesh: .import\sphere.mesh
+    material: material_0
   - childs: 0
     id: 431980828
     enabled: true
     type: Model
-    worldTransform: [100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 1]
+    worldTransform: [1, 0, 0, -2.364, 0, 1, 0, 0.823, 0, 0, 1, 1.1, 0, 0, 0, 1]
+    mesh: .import\cube.mesh
+    material: material_0
+  - childs: 0
+    id: 1113097840
+    enabled: false
+    type: Model
+    worldTransform: [-1, 1.755555e-05, 0, 4.504, 0, 0, 1, 1.52, 1.755555e-05, 1, 0, 0.054, 0, 0, 0, 1]
+    mesh: .import\teapot_standard.mesh
+    material: material_0
+  - childs: 0
+    id: 36578474
+    enabled: false
+    type: Model
+    worldTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     mesh: std#plane
-    material: material_0.mat
+    material: material_0

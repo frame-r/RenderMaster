@@ -84,6 +84,8 @@ extern Core *_core;
 
 #define SHADER_DIR "standard\\shaders\\"
 #define TEXTURES_DIR "standard\\textures\\"
+#define GENERIC_MATERIAL_EXT ".genericmat"
+#define USER_MATERIAL_EXT ".mat"
 
 inline void ThrowIfFailed(HRESULT hr)
 {
@@ -197,8 +199,10 @@ enum class WINDOW_MESSAGE
 
 enum class PASS
 {
+	ALL = -1,
 	DEFERRED,
-	ID
+	ID,
+	COUNT
 };
 
 enum class BLEND_FACTOR
@@ -222,6 +226,7 @@ enum class TEXTURE_FORMAT
 	R8,
 	RG8,
 	RGBA8,
+	BGRA8,
 
 	// float
 	R16F,
@@ -248,26 +253,26 @@ enum class TEXTURE_CREATE_FLAGS
 {
 	NONE					= 0x00000000,
 
-	FILTER					= 0x000000F0,
-	FILTER_POINT			= 0x00000010, // magn = point,	min = point,	mip = point
-	FILTER_BILINEAR			= 0x00000020, // magn = linear,	min = linear,	mip = point
-	FILTER_TRILINEAR		= 0x00000030, // magn = linear,	min = linear,	mip = lenear
-	FILTER_ANISOTROPY_2X	= 0x00000040,
-	FILTER_ANISOTROPY_4X	= 0x00000050,
-	FILTER_ANISOTROPY_8X	= 0x00000060,
-	FILTER_ANISOTROPY_16X	= 0x00000070,
+	FILTER_POINT			= 1 << 1, // magn = point,	min = point,	mip = point
+	FILTER_BILINEAR			= 1 << 2, // magn = linear,	min = linear,	mip = point
+	FILTER_TRILINEAR		= 1 << 3, // magn = linear,	min = linear,	mip = lenear
+	FILTER_ANISOTROPY_2X	= 1 << 4,
+	FILTER_ANISOTROPY_4X	= 1 << 5,
+	FILTER_ANISOTROPY_8X	= 1 << 6,
+	FILTER_ANISOTROPY_16X	= 1 << 7,
+	FILTER = 0xFF,
 
-	COORDS					= 0x00000F00,
-	COORDS_WRAP				= 0x00000100,
+	COORDS_WRAP				= 1 << 8,
 	// TODO
 	//COORDS_MIRROR			= 0x00000200,
 	//COORDS_CLAMP			= 0x00000300,
 	//COORDS_BORDER			= 0x00000400,
+	COORDS = 0xF00,
 
-	USAGE					= 0x0000F000,
-	USAGE_RENDER_TARGET		= 0x00001000,
+	USAGE_RENDER_TARGET		= 1 << 12,
+	USAGE = 0xF000,
 
-	GENERATE_MIPMAPS		= 0x00010000,
+	GENERATE_MIPMAPS		= 1 << 16,
 
 	//CPU						= 0x000F0000,
 	//CPU_GPU_READ_WRITE		= 0x00010000
@@ -505,26 +510,6 @@ enum class SHADER_TYPE
 	SHADER_FRAGMENT
 };
 
-struct ShaderRequirement
-{
-	const char *path;
-	INPUT_ATTRUBUTE attributes{INPUT_ATTRUBUTE::UNKNOWN};
-
-	size_t operator()(const ShaderRequirement& k) const
-	{
-		size_t h = 5381;
-		int c;
-		char *s = const_cast<char*>(k.path);
-		while ((c = *s++))
-			h = ((h << 5) + h) + c;
-		return h * (size_t)INPUT_ATTRUBUTE::COLOR + (size_t)k.attributes;
-	}
-	bool operator==(const ShaderRequirement &other) const
-	{
-		return attributes == other.attributes && strcmp(path, other.path) == 0;
-	}
-};
-
 enum class ERROR_COMPILE_SHADER
 {
 	NONE,
@@ -727,4 +712,8 @@ mat4 DLLEXPORT perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar
 inline vec3 GetRightDirection(const mat4& ModelMat) { return vec3(ModelMat.Column(0)); } // Returns local X vector in world space
 inline vec3 GetForwardDirection(const mat4& ModelMat) { return vec3(ModelMat.Column(1)); } // Returns local Y vector in world space
 inline vec3 GetBackDirection(const mat4& ModelMat) { return -vec3(ModelMat.Column(2)); } // Returns local -Z vector in world space
+
+// Hash
+unsigned short Crc16(unsigned char* pcBlock, unsigned short len);
+
 

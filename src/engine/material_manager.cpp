@@ -6,53 +6,89 @@
 #include "material.h"
 #include <unordered_map>
 
-static std::unordered_map<std::string, Material*> materials; // path -> Material
+static std::unordered_map<std::string, Material*> materials; // id -> Material
+static std::unordered_map<std::string, GenericMaterial*> genericMaterials; // id -> GenericMaterial
 static int matNameCounter;
+
 
 void MaterialManager::Init()
 {
-	std::vector<std::string> paths = FS->GetPaths(".mat");
+	//
+	// Load generic materials
+	vector<string> paths = FS->FilterPaths(GENERIC_MATERIAL_EXT);
 
-	for(auto& p : paths)
+	for (auto& p : paths)
 	{
-		Material *m = new Material(p);
-		m->Load();
-		materials[p] = m;
+		GenericMaterial *m = new GenericMaterial(p);
+		m->LoadXML();
+
+		string id = m->id_;
+
+		if (genericMaterials.find(id) != genericMaterials.end())
+		{
+			LogCritical("MaterialManager::Init(): duplicate material with name='%s'", id.c_str());
+			delete m;
+			continue;
+		}
+		genericMaterials[id] = m;
 	}
-	Log("Materials: %i", paths.size());
+
+	//
+	// Load user materials
+	paths = FS->FilterPaths(USER_MATERIAL_EXT);
+	for (auto& p : paths)
+	{
+		Material* m = new Material(p);
+		m->LoadXML();
+		materials[m->GetId()] = m;
+	}
 }
 
 void MaterialManager::Free()
 {
-	for (auto &p : materials)
+	for (auto &m : materials)
 	{
-		p.second->Save();
-		delete p.second;
+		m.second->SaveXML();
+		delete m.second;
 	}
 	materials.clear();
+
+	for (auto &m : genericMaterials)
+		delete m.second;
+
+	genericMaterials.clear();
 }
 
-auto DLLEXPORT MaterialManager::CreateMaterial() -> Material*
+auto DLLEXPORT MaterialManager::CreateMaterial(const char* genericmat) -> Material*
 {
-	string path = "material_" + std::to_string(matNameCounter) + ".mat";
-	while (materials.find(path) != materials.end())
+	auto it = genericMaterials.find(genericmat);
+
+	if (it == genericMaterials.end())
 	{
-		matNameCounter++;
-		path = "material_" + std::to_string(matNameCounter) + ".mat";
+		LogCritical("MaterialManager::CreateMaterial(): unable find material %s", genericmat);
+		return nullptr;
 	}
 
-	Material *mat = new Material(path);
-	materials[path] = mat;
+	string id = "material_" + std::to_string(matNameCounter);
+	while (materials.find(id) != materials.end())
+	{
+		matNameCounter++;
+		id = "material_" + std::to_string(matNameCounter);
+	}
 
-	mat->Save();
-
+	Material *mat = new Material(id, it->second);
+	materials[id] = mat;
 	return mat;
 }
 
 auto DLLEXPORT MaterialManager::GetMaterial(const char * path) -> Material*
 {
 	auto it = materials.find(path);
-	if (it == materials.end())
-		return nullptr;
-	return it->second;
+	return it == materials.end() ? nullptr : it->second;
+}
+
+auto DLLEXPORT MaterialManager::GetGenericMaterial(const char* path) -> GenericMaterial*
+{
+	auto it = genericMaterials.find(path);
+	return it == genericMaterials.end() ? nullptr : it->second;
 }

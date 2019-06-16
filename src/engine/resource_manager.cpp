@@ -78,7 +78,7 @@ auto DLLEXPORT ResourceManager::CreateShader(const char *vert, const char *geom,
 		return SharedPtr<Shader>(nullptr, removeShader);
 	}
 
-	Shader *sh = new Shader(unique_ptr<ICoreShader>(coreShader), unique_ptr<const char>(vert), unique_ptr<const char>(geom), unique_ptr<const char>(frag));
+	Shader *sh = new Shader(unique_ptr<ICoreShader>(coreShader), unique_ptr<const char[]>(vert), unique_ptr<const char[]>(geom), unique_ptr<const char[]>(frag));
 	shaders_.emplace(sh);
 	return SharedPtr<Shader>(sh, removeShader);
 }

@@ -15,12 +15,9 @@ struct RenderBuffers
 struct RenderMesh
 {
 	int modelId;
-	Mesh *mesh{nullptr};
+	Mesh *mesh{};
+	Material *mat{};
 	mat4 worldTransformMat;
-	vec4 color;
-	vec4 shading; // r - roughness, g - metallic
-	Texture *albedoTex;
-	vec4 albedoUV{ 1.0f, 1.0f, 0.0f, 0.0f };
 };
 
 
@@ -72,7 +69,7 @@ class Render
 	std::vector<RenderMesh> getRenderMeshes();
 	RenderScene getRenderScene();
 	void renderGrid();
-	void drawMeshes(const char *shader, PASS pass, std::vector<RenderMesh>& meshes);
+	void drawMeshes(PASS pass, std::vector<RenderMesh>& meshes);
 
 public:
 	void Init();
@@ -81,10 +78,10 @@ public:
 	void RenderFrame(const mat4& ViewMat, const mat4& ProjMat);
 
 public:
-	auto DLLEXPORT GetShader(const ShaderRequirement &req) -> Shader*;
+	auto DLLEXPORT GetShader(const char* path, Mesh* meshattrib = nullptr, const std::vector<std::string>& defines = std::vector<std::string>()) -> Shader*;
 	auto DLLEXPORT ReloadShaders() -> void;
 	auto DLLEXPORT RenderGUI() -> void;
-	auto DLLEXPORT DrawMeshes(const char *shader, PASS pass) -> void;
+	auto DLLEXPORT DrawMeshes(PASS pass) -> void;
 	auto DLLEXPORT GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format) -> Texture*;
 	auto DLLEXPORT ReleaseRenderTexture(Texture *tex) -> void;
 	auto DLLEXPORT RenderVector(const vec3& end, const vec4& c) -> void { vectors.push_back({c, end}); }

@@ -16,7 +16,7 @@
 #include "editor_common.h"
 
 static const float RotateSpeed = 13.0f;
-static const float MoveSpeed = 1.0f;
+static const float MoveSpeed = 6.0f;
 static const float OrbitHorSpeed = 0.29f;
 static const float OrbitVertSpeed = 0.20f;
 static const float ZoomSpeed = 0.20f;
@@ -232,7 +232,7 @@ void RenderWidget::onRender()
 			coreRender->SetRenderTextures(1, texs, coreRender->GetSurfaceDepthTexture());
 			coreRender->Clear();
 			{
-				render->DrawMeshes("id.shader", PASS::ID);
+				render->DrawMeshes(PASS::ID);
 			}
 			texs[0] = coreRender->GetSurfaceColorTexture();
 			coreRender->SetRenderTextures(1, texs, coreRender->GetSurfaceDepthTexture());

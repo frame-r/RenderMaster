@@ -13,7 +13,7 @@
 #include <memory>
 #include <sstream>
 
-static std::unordered_map<ShaderRequirement, SharedPtr<Shader>, ShaderRequirement> runtimeShaders;
+static std::unordered_map<string, SharedPtr<Shader>> runtimeShaders; // defines -> Shader
 
 // One Profiler character
 struct charr
@@ -89,11 +89,25 @@ void getObjects(vector<T*>& vec, OBJECT_TYPE type)
 	}
 }
 
-auto Render::GetShader(const ShaderRequirement &req) ->Shader*
+auto Render::GetShader(const char *path, Mesh *mesh, const vector<string>& defines) ->Shader*
 {
 	SharedPtr<Shader> shader;
 
-	auto it = runtimeShaders.find(req);
+	INPUT_ATTRUBUTE attrib = INPUT_ATTRUBUTE::UNKNOWN;
+
+	if (mesh)
+		attrib = mesh->GetAttributes();
+
+	string shaderKey = string(path) + '-';
+
+	for(const string& def : defines)
+		shaderKey += def;
+
+	if ((int)(attrib & INPUT_ATTRUBUTE::NORMAL)) shaderKey += "ENG_INPUT_NORMAL";
+	if ((int)(attrib & INPUT_ATTRUBUTE::TEX_COORD)) shaderKey += "ENG_INPUT_TEXCOORD";
+	if ((int)(attrib & INPUT_ATTRUBUTE::COLOR)) shaderKey += "ENG_INPUT_COLOR";
+
+	auto it = runtimeShaders.find(shaderKey);
 
 	if (it != runtimeShaders.end())
 	{
@@ -105,13 +119,11 @@ auto Render::GetShader(const ShaderRequirement &req) ->Shader*
 		{
 			simplecpp::DUI dui;
 
-			const char *gapi = CORE_RENDER->GetName();
-			bool is_opengl = (strcmp("GLCoreRender", gapi) == 0);
+			copy(begin(defines), end(defines), back_inserter(dui.defines));
 
-			if (is_opengl)
-				dui.defines.push_back("ENG_OPENGL");
-			else
-				dui.defines.push_back("ENG_DIRECTX11");
+			if ((int)(attrib & INPUT_ATTRUBUTE::NORMAL)) dui.defines.push_back("ENG_INPUT_NORMAL");
+			if ((int)(attrib & INPUT_ATTRUBUTE::TEX_COORD)) dui.defines.push_back("ENG_INPUT_TEXCOORD");
+			if ((int)(attrib & INPUT_ATTRUBUTE::COLOR)) dui.defines.push_back("ENG_INPUT_COLOR");
 
 			if (type == 0)
 				dui.defines.push_back("ENG_SHADER_VERTEX");
@@ -119,10 +131,6 @@ auto Render::GetShader(const ShaderRequirement &req) ->Shader*
 				dui.defines.push_back("ENG_SHADER_PIXEL");
 			else if (type == 2)
 				dui.defines.push_back("ENG_SHADER_GEOMETRY");
-
-			if ((int)(req.attributes & INPUT_ATTRUBUTE::NORMAL)) dui.defines.push_back("ENG_INPUT_NORMAL");
-			if ((int)(req.attributes & INPUT_ATTRUBUTE::TEX_COORD)) dui.defines.push_back("ENG_INPUT_TEXCOORD");
-			if ((int)(req.attributes & INPUT_ATTRUBUTE::COLOR)) dui.defines.push_back("ENG_INPUT_COLOR");
 			
 			simplecpp::OutputList outputList;
 			std::vector<std::string> files;
@@ -138,18 +146,8 @@ auto Render::GetShader(const ShaderRequirement &req) ->Shader*
 			const string out = outputTokens.stringify();
 			auto size = out.size();
 
-			// Workaround for opengl because C preprocessor eats up unknown derictive "#version 420"
-			if (is_opengl)
-				size += 13;
-
 			char *tmp = new char[size + 1];
-			if (is_opengl)
-			{
-				strncpy(tmp + 0, "#version 420\n", 13);
-				strncpy(tmp + 13, out.c_str(), size - 13);
-			} else
-				strncpy(tmp, out.c_str(), size);
-
+			strncpy(tmp, out.c_str(), size);
 			tmp[size] = '\0';
 
 			ppTextOut = tmp;
@@ -158,7 +156,7 @@ auto Render::GetShader(const ShaderRequirement &req) ->Shader*
 		char *text;
 
 		string dataDir = _core->GetDataPath();
-		string fileIn = dataDir + '\\' + string(SHADER_DIR) + req.path;
+		string fileIn = dataDir + '\\' + string(SHADER_DIR) + path;
 
 		File f = FS->OpenFile(fileIn.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
 		size_t size = f.FileSize();
@@ -175,12 +173,9 @@ auto Render::GetShader(const ShaderRequirement &req) ->Shader*
 		shader = RES_MAN->CreateShader(textVert, nullptr, textFrag);
 
 		if (!shader)
-		{
-			LogCritical("Render::GetShader(): can't compile %s standard shader", req.path);
-			runtimeShaders.emplace(req, nullptr);
-		}
-		else
-			runtimeShaders.emplace(req, shader);
+			LogCritical("Render::GetShader(): can't compile %s standard shader", path);
+
+		runtimeShaders.emplace(shaderKey, shader);
 	}
 	return shader.get();
 }
@@ -198,7 +193,7 @@ auto DLLEXPORT Render::RenderGUI() -> void
 
 	INPUT_ATTRUBUTE attribs = planeMesh.get()->GetAttributes();
 
-	Shader *shader = GetShader({"font.shader", attribs});
+	Shader *shader = GetShader("font.shader");
 	if (!shader)
 		return;
 
@@ -292,23 +287,7 @@ vector<RenderMesh> Render::getRenderMeshes()
 		if (!mesh)
 			continue;
 
-		vec4 color = vec4(1, 1, 1, 1);
-		vec4 shading = vec4(0, 0, 1, 1);
-		Texture *albedoTex = whiteTexture;
-		vec4 albedoUV{ 1.0f, 1.0f, 0.0f, 0.0f };
-
-		Material *mat = model->GetMaterial();
-		if (mat)
-		{
-			color = mat->GetColor();
-			shading.x = mat->GetRoughness();
-			shading.y = mat->GetMetallic();
-			if (mat->GetAlbedoTex())
-				albedoTex = mat->GetAlbedoTex();
-			albedoUV = mat->GetAlbedoUV();
-		}
-
-		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetWorldTransform(), color, shading, albedoTex, albedoUV });
+		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetMaterial(), model->GetWorldTransform()});
 	}
 	return meshesVec;
 }
@@ -320,12 +299,15 @@ Render::RenderScene Render::getRenderScene()
 
 	vector<Light*> lights;
 	getObjects(lights, OBJECT_TYPE::LIGHT);
+
 	for (Light *l : lights)
 	{
 		if (!l->IsEnabled())
 			continue;
+
 		vec3 worldDir = l->GetWorldTransform().Column3(2);
 		worldDir.Normalize();
+
 		scene.lights.emplace_back(RenderLight{l, worldDir});
 	}
 	scene.hasWorldLight = scene.lights.size() > 0;
@@ -333,10 +315,10 @@ Render::RenderScene Render::getRenderScene()
 	return scene;
 }
 
-auto DLLEXPORT Render::DrawMeshes(const char *path, PASS pass) -> void
+auto DLLEXPORT Render::DrawMeshes(PASS pass) -> void
 {
 	vector<RenderMesh> meshes = getRenderMeshes();
-	drawMeshes(path, pass, meshes);
+	drawMeshes(pass, meshes);
 }
 
 auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format) -> Texture *
@@ -402,7 +384,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 		CORE_RENDER->SetDepthTest(1);
 		CORE_RENDER->Clear();
 		{
-			drawMeshes("mesh.shader", PASS::DEFERRED, scene.meshes);
+			drawMeshes(PASS::DEFERRED, scene.meshes);
 		}
 		CORE_RENDER->SetRenderTextures(3, nullptr, nullptr);
 	}
@@ -414,7 +396,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 		CORE_RENDER->SetRenderTextures(2, rts, nullptr);
 		CORE_RENDER->Clear();
 
-		Shader *shader = GetShader({"deferred_light.shader", planeMesh.get()->GetAttributes()});
+		Shader *shader = GetShader("deferred_light.shader", planeMesh.get());
 		if (shader && scene.lights.size())
 		{
 			CORE_RENDER->SetShader(shader);
@@ -448,7 +430,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 
 	// Composite
 	{
-		Shader *shader = GetShader({"composite.shader", planeMesh.get()->GetAttributes()});
+		Shader *shader = GetShader("composite.shader", planeMesh.get());
 
 		if (shader)
 		{
@@ -491,10 +473,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 	{
 		CORE_RENDER->SetDepthTest(1);
 
-		Mesh *mesh = lineMesh.get();
-		INPUT_ATTRUBUTE attribs = mesh->GetAttributes();
-
-		auto shader = GetShader({"primitive.shader", attribs});
+		auto shader = GetShader("primitive.shader", lineMesh.get() );
 		if (shader)
 		{
 			CORE_RENDER->SetShader(shader);
@@ -510,7 +489,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 				shader->SetMat4Parameter("MVP", &MVP);
 				shader->FlushParameters();
 
-				CORE_RENDER->Draw(mesh, 1);
+				CORE_RENDER->Draw(lineMesh.get(), 1);
 			}
 		}
 	}
@@ -529,10 +508,7 @@ void Render::renderGrid()
 {
 	CORE_RENDER->SetDepthTest(1);
 
-	Mesh *mesh = gridMesh.get();
-	INPUT_ATTRUBUTE attribs = mesh->GetAttributes();
-
-	auto shader = GetShader({ "primitive.shader", attribs });
+	auto shader = GetShader("primitive.shader", gridMesh.get());
 	if (shader)
 	{
 		CORE_RENDER->SetShader(shader);
@@ -541,23 +517,34 @@ void Render::renderGrid()
 		shader->SetVec4Parameter("main_color", &vec4(0.3f, 0.3f, 0.3f, 1.0f));
 		shader->FlushParameters();
 
-		CORE_RENDER->Draw(mesh, 1);
+		CORE_RENDER->Draw(gridMesh.get(), 1);
 	}
 }
 
-void Render::drawMeshes(const char *path, PASS pass, std::vector<RenderMesh>& meshes)
+void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 {
 	for(RenderMesh &renderMesh : meshes)
 	{
-		Shader *shader = GetShader({path, renderMesh.mesh->GetAttributes()});
+		Material *mat = renderMesh.mat;
+		if (!mat)
+			continue;
+
+		Shader *shader = nullptr;
+		if (pass == PASS::DEFERRED)
+			shader = mat->GetDeferredShader(renderMesh.mesh);
+		else if (pass == PASS::ID)
+			shader = mat->GetIdShader(renderMesh.mesh);
 
 		if (!shader)
 			continue;
 		
 		CORE_RENDER->SetShader(shader);
 
-		Texture *texs[1] = {renderMesh.albedoTex}; 
-		CORE_RENDER->BindTextures(1, texs);
+		mat->UploadShaderParameters(shader, pass);
+		mat->BindShaderTextures(shader, pass);
+
+		//Texture *texs[1] = {whiteTexture};
+		//CORE_RENDER->BindTextures(1, texs);
 
 		mat4 MVP = ViewProjMat_ * renderMesh.worldTransformMat;
 		mat4 M = renderMesh.worldTransformMat;
@@ -566,11 +553,9 @@ void Render::drawMeshes(const char *path, PASS pass, std::vector<RenderMesh>& me
 		shader->SetMat4Parameter("MVP", &MVP);
 		shader->SetMat4Parameter("M", &M);
 		shader->SetMat4Parameter("NM", &NM);
-		shader->SetVec4Parameter("color", &renderMesh.color);
-		shader->SetVec4Parameter("shading", &renderMesh.shading);
-		shader->SetVec4Parameter("albedo_uv", &renderMesh.albedoUV);
 		if (pass == PASS::ID)
 			shader->SetUintParameter("id", renderMesh.modelId);
+
 		shader->FlushParameters();
 
 		CORE_RENDER->Draw(renderMesh.mesh, 1);

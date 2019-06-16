@@ -105,7 +105,7 @@ auto DLLEXPORT FileSystem::ClearFile(const char *path) -> void
 	}
 }
 
-auto DLLEXPORT FileSystem::GetPaths(const char *ext) -> std::vector<std::string>
+auto DLLEXPORT FileSystem::FilterPaths(const char *ext) -> std::vector<std::string>
 {
 	std::vector<std::string> files;
 	std::string extension(ext);

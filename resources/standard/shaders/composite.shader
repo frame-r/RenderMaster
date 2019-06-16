@@ -55,17 +55,17 @@
 #if 0
 		float3 specularEnv = float3(0, 0, 0);
 		{ // fast reflection (mipmap)
-			L = normalize(reflect(-V, N));
+			float3 L = normalize(reflect(-V, N));
 
 			const float specularMip = sqrt(roughness) * (environment_resolution.z - 1);
 
 			if (depth != 1)
 				specularEnv = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, L), specularMip).rgb;
 
-			H = normalize(L + V);
-			NdotL = max(dot(N, L), 0.0);
-			NdotV = max(dot(N, V), 0.0);
-			VdotH = max(dot(V, H), 0.0);
+			float3 H = normalize(L + V);
+			float NdotL = max(dot(N, L), 0.0);
+			float NdotV = max(dot(N, V), 0.0);
+			float VdotH = max(dot(V, H), 0.0);
 			float3 D = DistributionGGX(N, H, roughness);
 			float3 G = GeometrySmith(N, V, L, roughness);
 			float3 F = fresnelSchlick(VdotH, F0);
@@ -173,7 +173,11 @@
 		color = srgb(color);
 		//color = Tonemap_Unreal(color); // use without gamma correction!
 
-		return float4(color, 1.0);
+		#if 1
+			return float4(color, 1.0);
+		#else
+			return float4(N.x * 0.5 + 0.5, N.y * 0.5 + 0.5, N.z * 0.5 + 0.5, 1.0);
+		#endif
 	}
 
 #endif

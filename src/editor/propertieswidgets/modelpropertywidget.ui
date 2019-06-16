@@ -79,137 +79,43 @@
      <property name="title">
       <string>Material</string>
      </property>
-     <layout class="QFormLayout" name="formLayout">
-      <property name="horizontalSpacing">
-       <number>11</number>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>0</number>
       </property>
       <property name="leftMargin">
-       <number>7</number>
+       <number>0</number>
       </property>
       <property name="topMargin">
-       <number>7</number>
+       <number>0</number>
       </property>
       <property name="rightMargin">
        <number>0</number>
       </property>
       <property name="bottomMargin">
-       <number>7</number>
+       <number>0</number>
       </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="color_l">
-        <property name="text">
-         <string>Color</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="ColorWidget" name="color_w">
-        <property name="autoFillBackground">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="metallic_l">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>Metallic</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <layout class="QHBoxLayout" name="param">
-        <property name="spacing">
+      <item>
+       <layout class="QFormLayout" name="material_lt">
+        <property name="horizontalSpacing">
          <number>10</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>8</number>
-        </property>
-        <item>
-         <widget class="QSlider" name="metallic_sl">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="metallic_num_l">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>0.00</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="roughness_l">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>Roughness</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <layout class="QHBoxLayout" name="param_2">
-        <property name="spacing">
-         <number>10</number>
+        <property name="verticalSpacing">
+         <number>6</number>
         </property>
         <property name="leftMargin">
-         <number>0</number>
+         <number>5</number>
+        </property>
+        <property name="topMargin">
+         <number>5</number>
         </property>
         <property name="rightMargin">
-         <number>8</number>
+         <number>5</number>
         </property>
-        <item>
-         <widget class="QSlider" name="roughness_sl">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="roughness_num_l">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>0.00</string>
-          </property>
-         </widget>
-        </item>
+        <property name="bottomMargin">
+         <number>5</number>
+        </property>
        </layout>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Albedo</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="TextureLineEdit" name="albedo_tw" native="true"/>
       </item>
      </layout>
     </widget>
@@ -231,20 +137,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ColorWidget</class>
-   <extends>QPushButton</extends>
-   <header location="global">../../src/editor/colorwidget.h</header>
-  </customwidget>
-  <customwidget>
    <class>MyLineEdit</class>
    <extends>QLineEdit</extends>
    <header>../../src/editor/mylineedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>TextureLineEdit</class>
-   <extends>QWidget</extends>
-   <header location="global">../../src/editor/texturelineedit.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
