@@ -151,7 +151,7 @@ void GenericMaterial::Clear()
 	idShader_.clear();
 }
 
-void Material::clear()
+void Material::initializeFromParent()
 {
 	runtimeParams_.clear();
 	for (auto& p : parent_->params_)
@@ -206,7 +206,7 @@ void Material::BindShaderTextures(Shader* shader, PASS pass)
 Material::Material(const std::string& id, GenericMaterial* mat) : id_(id), parent_(mat)
 {
 	path_ = id_ + USER_MATERIAL_EXT;
-	clear();
+	initializeFromParent();
 }
 
 void Material::SaveXML()
@@ -309,7 +309,7 @@ auto DLLEXPORT Material::LoadXML() -> void
 	MaterialManager *mm = _core->GetMaterialManager();
 	parent_ = mm->GetGenericMaterial(genericmat.c_str());
 
-	clear();
+	initializeFromParent();
 
 	for (pugi::xml_node def = mat.child("def"); def; def = def.next_sibling("def"))
 	{
@@ -349,6 +349,8 @@ auto DLLEXPORT Material::LoadXML() -> void
 		vec4& uv = runtimeTextures_[id].uv;
 		sscanf(i.attribute("uv").as_string(), "%f %f %f %f", &uv.x, &uv.y, &uv.z, &uv.w);
 	}
+
+	generateDefines();
 }
 
 auto DLLEXPORT Material::SetParamFloat(const char* def, float value) -> void
@@ -386,32 +388,10 @@ auto DLLEXPORT Material::GetParamFloat(const char* def) -> float
 	return runtimeParams_[id].x;
 }
 
-void Material::SetDef(const char* def, int value)
+void Material::generateDefines()
 {
-	if (!parent_->HasDef(def))
-	{
-		LogWarning("Material::SetDef(): Unable find '%s' def for material '%s'", def, id_.c_str());
-		return;
-	}
-
-	auto it = runtimeDefs_.find(def);
-	if (it == runtimeDefs_.end())
-	{
-		runtimeDefs_[def] = value;
-	}
-	else
-	{
-		if (runtimeDefs_[def] == value)
-			return;
-		runtimeDefs_[def] = value;
-	}
-
-	//
-	// Update defines
-
 	currentDefinesVec_.clear();
 	currentDefinesString_.clear();
-	//currentDefsCrc16_ = 0;
 
 	for (auto const& [d, val] : runtimeDefs_)
 	{
@@ -436,11 +416,32 @@ void Material::SetDef(const char* def, int value)
 		if (!currentDefinesString_.empty())
 			currentDefinesString_ += ',';
 	}
+}
 
-	//if (currentDefinesString_.empty())
-	//	currentDefsCrc16_ = 0;
-	//else
-	//	currentDefsCrc16_ = Crc16((unsigned char*)currentDefinesString_.c_str(), (unsigned short)currentDefinesString_.size());
+void Material::SetDef(const char* def, int value)
+{
+	if (!parent_->HasDef(def))
+	{
+		LogWarning("Material::SetDef(): Unable find '%s' def for material '%s'", def, id_.c_str());
+		return;
+	}
+
+	auto it = runtimeDefs_.find(def);
+	if (it == runtimeDefs_.end())
+	{
+		runtimeDefs_[def] = value;
+	}
+	else
+	{
+		if (runtimeDefs_[def] == value)
+			return;
+		runtimeDefs_[def] = value;
+	}
+
+	//
+	// Update defines
+
+	generateDefines();
 }
 
 auto DLLEXPORT Material::GetDef(const char* name) -> int

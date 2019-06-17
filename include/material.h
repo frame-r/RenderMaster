@@ -101,7 +101,8 @@ class Material
 	};
 	std::map<std::string, RuntimeTexture> runtimeTextures_; // name -> texure
 
-	void clear();
+	void initializeFromParent();
+	void generateDefines();
 
 public:
 	void UploadShaderParameters(Shader* shader, PASS pass);
