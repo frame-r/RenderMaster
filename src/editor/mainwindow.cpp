@@ -55,7 +55,7 @@ static QAction* engineActions[ENGINE_ACTIONS_NUM] = {};
 
 
 template<typename T>
-static T* createWidget(const QString& name, int id, ADS_NS::DropArea drop, QMenu *menuLayout, MainWindow* wnd, bool hidden = false)
+static T* createWidget(const QString& name, int id, ADS_NS::DropArea drop, QMenu *menuLayout, MainWindow* wnd, bool hidden = true)
 {
 	T* w = new T(wnd);
 
