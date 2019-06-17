@@ -1,5 +1,16 @@
 
-static const float Reflectance = 0.4;
+static const float Reflectance = 0.4; // F0 TODO: move to material parameters 
+
+#define TEXTURE_DECL(NAME, SLOT) \
+	Texture2D texture_ ## NAME : register(t ## SLOT); \
+	SamplerState sampler_ ## NAME : register(s ## SLOT); \
+	cbuffer texture_ ## NAME { \
+		float4 uv_transform_ ## NAME; \
+	};
+	
+#define TEXTURE_UV_SAMPLE(NAME, UV) \
+	texture_ ## NAME .Sample(sampler_ ## NAME , UV * uv_transform_ ## NAME .xy + uv_transform_ ## NAME  .zw)
+	
 
 float3 getDepthToPosition(float depth, float2 uv, float4x4 iprojection)
 {
