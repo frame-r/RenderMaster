@@ -10,8 +10,8 @@
 const static float SelectionThresholdInPixels = 8.0f;
 const static float MaxDistanceInPixels = 1000000.0f;
 const static vec3 AxesEndpoints[3] = {vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1)};
-const static vec4 ColorSelection = vec4(1,1,0,1);
-const static vec4 ColorPlane = vec4(1,1,1,0.3f);
+const static vec4 ColorYellow = vec4(1,1,0,1);
+const static vec4 ColorPlane = vec4(1,1,1,0.17f);
 const static vec4 ColorRed = vec4(1,0,0,1);
 const static vec4 ColorGreen = vec4(0,1,0,1);
 const static vec4 ColorBlue = vec4(0,0,1,1);
@@ -25,7 +25,7 @@ static ManagedPtr<Mesh> meshPlane;
 static mat4 AxesCorrectionMat[3];
 
 static mat4 PlaneCorrectionMat[3];
-static mat4 PlaneMirroringMat[3];
+static mat4 RuntimeSideMat[3];
 static vec4 PlaneTriangles[2][3];
 
 
@@ -137,36 +137,49 @@ void ManipulatorTranslator::render(const CameraData& cam, const mat4 selectionTr
 	vec4 center4 = vec4(selectionTransform.Column3(3));
 	mat4 distanceScaleMat = mat4(axisScale(center4, cam.ViewMat, cam.ProjectionMat, QPoint(screen.width(), screen.height())));
 
+	mat4 invSelectionWorldTransform = selectionTransform.Inverse();
+	vec4 camPos_axesSpace = invSelectionWorldTransform * vec4(cam.pos);
+
 	// Orientate manipulator-planes to viewer
 	if (state == MANIPULATOR_STATE::NONE)
 	{
-		mat4 invSelectionWorldTransform = selectionTransform.Inverse();
-		vec4 camPos_axesSpace = invSelectionWorldTransform * vec4(cam.pos);
-
-		PlaneMirroringMat[0].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[0].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[2].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[2].el_2D[2][2] = camPos_axesSpace.z > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[1].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
-		PlaneMirroringMat[1].el_2D[2][2] = camPos_axesSpace.z > 0 ? 1.0f : -1.0f;
+		RuntimeSideMat[0].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
+		RuntimeSideMat[0].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
+		RuntimeSideMat[2].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
+		RuntimeSideMat[2].el_2D[2][2] = camPos_axesSpace.z > 0 ? 1.0f : -1.0f;
+		RuntimeSideMat[1].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
+		RuntimeSideMat[1].el_2D[2][2] = camPos_axesSpace.z > 0 ? 1.0f : -1.0f;
 	}
 
 	for (int i = 0; i < 3; i++)
 	{
-		mat4 M = selectionTransform * distanceScaleMat * AxesCorrectionMat[i];
-		mat4 MVP = cam.ViewProjMat * M;
 		vec4 col;
-
 		if ((int)underMouse == i)
-			col = ColorSelection;
+			col = ColorYellow;
 		else
 			col = AxesColors[i];
 
+		mat4 MVP = cam.ViewProjMat * selectionTransform * distanceScaleMat * AxesCorrectionMat[i];
+		shader->SetMat4Parameter("MVP", &MVP);
+		shader->SetVec4Parameter("main_color", &ColorYellow);
+		shader->FlushParameters();
+		coreRender->Draw(meshLine.get(), 1);
+
+		if ((i == 0 && camPos_axesSpace.x <= 0)
+				|| (i == 1 && camPos_axesSpace.y <= 0)
+				|| (i == 2 && camPos_axesSpace.z <= 0))
+		{
+			mat4 lineMat = MVP * -PlaneScale * 2.0f;
+			shader->SetMat4Parameter("MVP", &lineMat);
+			shader->SetVec4Parameter("main_color", &ColorYellow);
+			shader->FlushParameters();
+			coreRender->Draw(meshLine.get(), 1);
+		}
+
+		MVP = MVP * 1.04f;
 		shader->SetMat4Parameter("MVP", &MVP);
 		shader->SetVec4Parameter("main_color", &col);
 		shader->FlushParameters();
-
-		coreRender->Draw(meshLine.get(), 1);
 		coreRender->Draw(meshArrow.get(), 1);
 	}
 
@@ -176,11 +189,11 @@ void ManipulatorTranslator::render(const CameraData& cam, const mat4 selectionTr
 
 	for (int i = 0; i < 3; i++)
 	{
-		mat4 MVP = planeTransform * PlaneMirroringMat[i] * PlaneCorrectionMat[i];
+		mat4 MVP = planeTransform * RuntimeSideMat[i] * PlaneCorrectionMat[i];
 
 		vec4 col;
 		if ((int)underMouse == i + 3)
-			col = ColorSelection;
+		{ col = ColorYellow; col.w = 0.5f; }
 		else
 			col = ColorPlane;
 
@@ -240,7 +253,7 @@ void ManipulatorTranslator::update(const CameraData& cam, const mat4 selectionWo
 
 			for (int k = 0; k < 3; k++) // each plane
 			{
-				mat4 axisToWorld = planeTransform * PlaneMirroringMat[k] * PlaneCorrectionMat[k];
+				mat4 axisToWorld = planeTransform * RuntimeSideMat[k] * PlaneCorrectionMat[k];
 				for (int j = 0; j < 2; j++) // 2 triangle
 				{
 					vec4 ndc[3];
