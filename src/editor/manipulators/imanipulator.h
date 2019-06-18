@@ -13,13 +13,17 @@ public:
 	explicit IManupulator(QObject *parent = nullptr);
 	virtual ~IManupulator() {}
 
-	void virtual render(const CameraData& cam, const mat4 selectionTransform, const QRect& screen) = 0;
-	void virtual update(const CameraData& cam, const mat4 selectionTransform, const QRect& screen, const vec2 &normalizedMousePos) = 0;
+	void virtual render(const CameraData& cam, const mat4& selectionTransform, const QRect& screen) = 0;
+	void virtual update(const CameraData& cam, const mat4& selectionTransform, const QRect& screen, const vec2 &normalizedMousePos) = 0;
 	bool virtual isMouseIntersect(const vec2 &normalizedMousePos) = 0;
-	void virtual mousePress(const CameraData& cam, const mat4 selectionTransform,const QRect &screen, const vec2 &normalizedMousePos) = 0;
+	void virtual mousePress(const CameraData& cam, const mat4& selectionTransform,const QRect &screen, const vec2 &normalizedMousePos) = 0;
 	void virtual mouseRelease() = 0;
+	bool virtual isNeedDepthBuffer() = 0;
 };
 
+extern float SelectionThresholdInPixels;
 extern vec4 AxesColors[3];
+extern vec4 ColorYellow;
+extern vec4 ColorTransparent;
 
 #endif // MANIPULATORABSTRACT_H

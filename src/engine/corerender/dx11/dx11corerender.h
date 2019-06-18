@@ -111,6 +111,7 @@ public:
 	auto Clear() -> void override;
 	auto SetDepthTest(int enabled) -> void override;
 	auto SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void override;
+	auto SetCullingMode(CULLING_MODE value) -> void override;
 	auto BindTextures(int units, Texture **textures) -> void override;
 	auto BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void override;
 	auto SetMesh(Mesh* mesh) -> void override;

@@ -207,11 +207,23 @@ void RenderWidget::onRender()
 
 	ICoreRender *coreRender = core->GetCoreRender();
 	Render *render = editor->core->GetRender();
+	IManupulator *manipulator = editor->currentManipulator.get();
 
-	if (editor->NumSelectedObjects() == 1 && editor->currentManipulator)
+	if (editor->NumSelectedObjects() == 1 && manipulator)
 	{
+		// clear depth
+		if (manipulator->isNeedDepthBuffer())
+		{
+			coreRender->SetRenderTextures(0, nullptr, coreRender->GetSurfaceDepthTexture());
+			coreRender->Clear();
+
+			Texture *texs[1];
+			texs[0] = coreRender->GetSurfaceColorTexture();
+			coreRender->SetRenderTextures(1, texs, coreRender->GetSurfaceDepthTexture());
+		}
+
 		coreRender->PushStates();
-		editor->currentManipulator->render(cam, editor->SelectionTransform(), rect());
+		manipulator->render(cam, editor->SelectionTransform(), rect());
 		coreRender->PopStates();
 	}
 
@@ -221,8 +233,8 @@ void RenderWidget::onRender()
 
 	if (leftMouseClick && !keyAlt)
 	{
-		if ((editor->currentManipulator && !editor->currentManipulator->isMouseIntersect(normalizedMousePos))
-			|| !editor->currentManipulator)
+		if ((manipulator && !manipulator->isMouseIntersect(normalizedMousePos))
+			|| !manipulator)
 		{
 			Texture *modelTex = render->GetRenderTexture(w, h, TEXTURE_FORMAT::R32UI);
 			coreRender->PushStates();

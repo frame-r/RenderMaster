@@ -38,6 +38,7 @@ public:
 	auto virtual Clear() -> void = 0;
 	auto virtual SetDepthTest(int enabled) -> void = 0;
 	auto virtual SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void = 0;
+	auto virtual SetCullingMode(CULLING_MODE value) -> void = 0;
 	auto virtual BindTextures(int units, Texture **textures) -> void = 0;
 	auto virtual BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void = 0;
 	auto virtual SetMesh(Mesh* mesh) -> void = 0;

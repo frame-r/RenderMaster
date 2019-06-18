@@ -145,10 +145,10 @@ float PointToSegmentDistance(const vec2& p0, const vec2& p1, const vec2& point)
 	return (p00 + direction * clamp(direction.Dot(point - p00) / direction.Dot(direction), 0.0f, 1.0f) - point).Lenght();
 }
 
-vec2 NdcToScreen(const vec2 &ndc, uint w, uint h)
+vec2 NdcToScreen(const vec2 &ndc, const QRect& screen)
 {
 	vec2 tmp = ndc * 0.5f + vec2(0.5f, 0.5f);
-	return vec2(tmp.x * w, tmp.y * h);
+	return vec2(tmp.x * screen.width(), tmp.y * screen.height());
 }
 
 float DistanceTo(const mat4& ViewProj, const mat4& worldTransform)

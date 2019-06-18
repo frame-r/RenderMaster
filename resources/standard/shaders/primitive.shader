@@ -2,6 +2,16 @@
 struct VS_OUT
 {
 	float4 position : SV_POSITION;
+	float4 WorldPosition : TEXCOORD1;
+	#ifdef ENG_INPUT_NORMAL
+		float4 Normal : TEXCOORD2;
+	#endif
+	#ifdef ENG_INPUT_TEXCOORD
+		float2 TexCoord : TEXCOORD3;
+	#endif
+	#ifdef ENG_INPUT_COLOR
+		float4 Color : TEXCOORD4;
+	#endif
 };
 	
 #ifdef ENG_SHADER_VERTEX

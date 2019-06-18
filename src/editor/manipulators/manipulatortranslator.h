@@ -13,7 +13,7 @@ enum class MANIPULATOR_ELEMENT
 	ZX
 };
 
-enum MANIPULATOR_STATE
+enum class MANIPULATOR_STATE
 {
 	NONE,
 	MOVING_ARROW_HANDLE,
@@ -33,11 +33,12 @@ public:
 	ManipulatorTranslator();
 	virtual ~ManipulatorTranslator();
 
-	void render(const CameraData& cam, const mat4 selectionTransform, const QRect& screen) override;
-	void update(const CameraData& cam, const mat4 selectionTransform, const QRect& screen, const vec2 &normalizedMousePos) override;
+	void render(const CameraData& cam, const mat4& selectionTransform, const QRect& screen) override;
+	void update(const CameraData& cam, const mat4& selectionTransform, const QRect& screen, const vec2& normalizedMousePos) override;
 	bool isMouseIntersect(const vec2 &normalizedMousePos) override;
-	void mousePress(const CameraData& cam, const mat4 selectionTransform, const QRect &screen, const vec2 &normalizedMousePos) override;
+	void mousePress(const CameraData& cam, const mat4& selectionTransform, const QRect &screen, const vec2& normalizedMousePos) override;
 	void mouseRelease() override;
+	bool isNeedDepthBuffer() override { return false; }
 };
 
 #endif // MANIPULATORTRANSLATOR_H

@@ -6,6 +6,7 @@
 #include <vector_math.h>
 #include <QString>
 #include <QPoint>
+#include <QRect>
 
 #define ROOT_PATH "../../" // relative working directory
 #define LIGHT_THEME ROOT_PATH "resources/editor/light.qss"
@@ -93,6 +94,6 @@ bool RayPlaneIntersection(vec3& intersection, const Plane& plane, const Ray& lin
 Ray MouseToRay(const mat4& cameraModelMatrix, float fov, float aspect, const vec2& normalizedMousePos);
 vec2 WorldToNdc(const vec3& pos, const mat4& ViewProj);
 float PointToSegmentDistance(const vec2& p0, const vec2& p1, const vec2& ndc);
-vec2 NdcToScreen(const vec2& pos, uint w, uint h);
+vec2 NdcToScreen(const vec2& pos, const QRect& screen);
 float DistanceTo(const mat4& ViewProj, const mat4& worldTransform);
 #endif // COMMON_H

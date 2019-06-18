@@ -7,11 +7,11 @@
 #include "gameobject.h"
 #include <qdebug.h>
 
-const static float SelectionThresholdInPixels = 8.0f;
+float SelectionThresholdInPixels = 8.0f;
 const static float MaxDistanceInPixels = 1000000.0f;
 const static vec3 AxesEndpoints[3] = {vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1)};
-const static vec4 ColorYellow = vec4(1,1,0,1);
-const static vec4 ColorPlane = vec4(1,1,1,0.17f);
+vec4 ColorYellow = vec4(1,1,0,1);
+vec4 ColorTransparent = vec4(1,1,1,0.17f);
 const static vec4 ColorRed = vec4(1,0,0,1);
 const static vec4 ColorGreen = vec4(0,1,0,1);
 const static vec4 ColorBlue = vec4(0,0,1,1);
@@ -52,13 +52,13 @@ AxisIntersection intersectMouseWithAxis(const CameraData& cam, const mat4 select
 
 	if (RayPlaneIntersection(out.worldPos, plane, ray))
 	{
-	   vec2 A = NdcToScreen(WorldToNdc(center, cam.ViewProjMat), screen.width(), screen.height());
+	   vec2 A = NdcToScreen(WorldToNdc(center, cam.ViewProjMat), screen);
 
 	   vec4 axisEndpointLocal = vec4(AxesEndpoints[(int)type] * axisScale(center4, cam.ViewMat, cam.ProjectionMat, QPoint(screen.width(), screen.height())));
 	   vec4 axisEndpointWorld = selectionWS * axisEndpointLocal;
-	   vec2 B = NdcToScreen(WorldToNdc((vec3&)axisEndpointWorld, cam.ViewProjMat), screen.width(), screen.height());
+	   vec2 B = NdcToScreen(WorldToNdc(vec3(axisEndpointWorld), cam.ViewProjMat), screen);
 
-	   vec2 I = NdcToScreen(WorldToNdc(out.worldPos, cam.ViewProjMat), screen.width(), screen.height());
+	   vec2 I = NdcToScreen(WorldToNdc(out.worldPos, cam.ViewProjMat), screen);
 
 	   out.minDistToAxes = PointToSegmentDistance(A, B, I);
 	   return out;
@@ -121,7 +121,7 @@ ManipulatorTranslator::~ManipulatorTranslator()
 	meshPlane.release();
 }
 
-void ManipulatorTranslator::render(const CameraData& cam, const mat4 selectionTransform, const QRect& screen)
+void ManipulatorTranslator::render(const CameraData& cam, const mat4& selectionTransform, const QRect& screen)
 {
 	Render *render = editor->core->GetRender();
 	Shader *shader = render->GetShader("primitive.shader", meshLine.get());
@@ -165,9 +165,9 @@ void ManipulatorTranslator::render(const CameraData& cam, const mat4 selectionTr
 		shader->FlushParameters();
 		coreRender->Draw(meshLine.get(), 1);
 
-		if ((i == 0 && camPos_axesSpace.x <= 0)
-				|| (i == 1 && camPos_axesSpace.y <= 0)
-				|| (i == 2 && camPos_axesSpace.z <= 0))
+		if ((i == 0 && RuntimeSideMat[0].el_2D[0][0] < 0)
+				|| (i == 1 && RuntimeSideMat[2].el_2D[1][1] < 0)
+				|| (i == 2 && RuntimeSideMat[1].el_2D[2][2] < 0))
 		{
 			mat4 lineMat = MVP * -PlaneScale * 2.0f;
 			shader->SetMat4Parameter("MVP", &lineMat);
@@ -195,7 +195,7 @@ void ManipulatorTranslator::render(const CameraData& cam, const mat4 selectionTr
 		if ((int)underMouse == i + 3)
 		{ col = ColorYellow; col.w = 0.5f; }
 		else
-			col = ColorPlane;
+			col = ColorTransparent;
 
 		shader->SetMat4Parameter("MVP", &MVP);
 		shader->SetVec4Parameter("main_color", &col);
@@ -205,7 +205,7 @@ void ManipulatorTranslator::render(const CameraData& cam, const mat4 selectionTr
 	}
 }
 
-void ManipulatorTranslator::update(const CameraData& cam, const mat4 selectionWorldTransform, const QRect& screen, const vec2 &normalizedMousePos)
+void ManipulatorTranslator::update(const CameraData& cam, const mat4& selectionWorldTransform, const QRect& screen, const vec2 &normalizedMousePos)
 {
 	if (oldNormalizedMousePos.Aproximately(normalizedMousePos))
 		return;
@@ -320,7 +320,7 @@ bool ManipulatorTranslator::isMouseIntersect(const vec2 &)
 	return underMouse != MANIPULATOR_ELEMENT::NONE;
 }
 
-void ManipulatorTranslator::mousePress(const CameraData &cam, const mat4 selectionTransform, const QRect &screen, const vec2 &normalizedMousePos)
+void ManipulatorTranslator::mousePress(const CameraData &cam, const mat4& selectionTransform, const QRect &screen, const vec2 &normalizedMousePos)
 {
 	if (MANIPULATOR_ELEMENT::NONE < underMouse && underMouse <= MANIPULATOR_ELEMENT::Z)
 	{

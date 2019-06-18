@@ -1119,6 +1119,18 @@ auto DX11CoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void
 	}
 }
 
+auto DX11CoreRender::SetCullingMode(CULLING_MODE value) -> void
+{
+	D3D11_CULL_MODE newMode = static_cast<D3D11_CULL_MODE>((int)value);
+
+	if (state_.rasterStateDesc.CullMode == newMode)
+		return;
+
+	state_.rasterStateDesc.CullMode = newMode;
+	state_.rasterState = _rasterizerStatePool.FetchState(state_.rasterStateDesc);
+	_context->RSSetState(state_.rasterState.Get());
+}
+
 auto DX11CoreRender::SetMesh(Mesh * mesh) -> void
 {
 	if (state_.mesh == mesh)

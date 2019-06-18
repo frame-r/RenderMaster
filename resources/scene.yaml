@@ -17,7 +17,7 @@ objects:
     id: 431980828
     enabled: true
     type: Model
-    worldTransform: [1, 0, 0, -2.364, 0, 1, 0, 0.823, 0, 0, 1, 1.1, 0, 0, 0, 1]
+    worldTransform: [1.000001, 0, 0, -1.6, 0, 1, 0, 5.15, 0, 0, 1.000001, 1.501, 0, 0, 0, 1]
     mesh: .import\cube.mesh
     material: material_0
   - childs: 0

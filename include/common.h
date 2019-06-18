@@ -220,6 +220,13 @@ enum class BLEND_FACTOR
 	ONE_MINUS_DEST_COLOR,
 };
 
+enum class CULLING_MODE
+{
+	NONE = 0,
+	FRONT,
+	BACK	
+};
+
 enum class TEXTURE_FORMAT
 {
 	// normalized
