@@ -41,7 +41,6 @@ SceneWidget::SceneWidget(QWidget *parent) :
 
 	connect(selectionModel, SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(selectionChangedFromClick(const QItemSelection&,const QItemSelection&)));
 	connect(editor, &EditorCore::OnSelectionChanged, this, &SceneWidget::OnSelectionChanged, Qt::DirectConnection);
-
 	connect(editor, &EditorCore::OnObjectAdded, this, &SceneWidget::onObjectAdded);
 	connect(editor, &EditorCore::OnObjectRemoved, this, &SceneWidget::onObjectRemoved);
 
@@ -146,11 +145,11 @@ void SceneWidget::onObjectAdded(TreeNode *obj)
 {
 	model->onObjectAdded(obj);
 
-	QSet<GameObject*> slected = {obj->obj()};
-	editor->SelectObjects(slected);
-
-	QModelIndex idx = model->indexForNode(obj);
-	selectionModel->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+	//QSet<GameObject*> slected = {obj->obj()};
+	//editor->SelectObjects(slected);
+	//
+	//QModelIndex idx = model->indexForNode(obj);
+	//selectionModel->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
 }
 
 void SceneWidget::onObjectRemoved(TreeNode *obj)

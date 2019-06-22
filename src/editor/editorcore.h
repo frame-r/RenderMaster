@@ -35,6 +35,7 @@ class EditorCore : public QObject
 
 	QApplication& app_;
 	bool isActive{true};
+	bool preventFocusOnWorldLoad{false};
 
 	QTimer *timer{nullptr};
 	std::chrono::steady_clock::time_point start;

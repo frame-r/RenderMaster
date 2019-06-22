@@ -44,7 +44,7 @@ void EditorCore::onEngineInited()
 	resMan->AddCallbackOnDestroy(onEngineObejctDestroyed);
 
 	//dbg
-	resMan->LoadWorld();
+	LoadWorld();
 }
 
 void EditorCore::onEngineFree()
@@ -235,6 +235,11 @@ void EditorCore::onEngineObejctAdded(GameObject *obj)
 
 	emit editor->OnObjectAdded(node);
 
+	if (!editor->preventFocusOnWorldLoad)
+	{
+		QSet<GameObject *> objects={obj};
+		editor->SelectObjects(objects);
+	}
 	//qDebug() << "obj_to_treenode.size()=" << editor->obj_to_treenode.size() - 1;
 }
 
@@ -284,7 +289,9 @@ void EditorCore::CloseWorld()
 
 void EditorCore::LoadWorld()
 {
+	preventFocusOnWorldLoad = true;
 	resMan->LoadWorld();
+	preventFocusOnWorldLoad = false;
 }
 
 void EditorCore::SelectObjects(const QSet<GameObject *> &objects)
