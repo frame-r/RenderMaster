@@ -34,7 +34,6 @@ class Render
 		bool hasWorldLight;
 	};
 
-
 	// Frame data
 	mat4 ViewMat_;
 	mat4 ViewProjMat_;
@@ -42,14 +41,14 @@ class Render
 	mat4 CameraViewProjectionInv_;
 	mat4 CameraViewInv_;
 
+	// Render internal resources
 	ManagedPtr<Texture> fontTexture;
 	ManagedPtr<Texture> environmentTexture;
-
 	Texture* whiteTexture;
-
 	ManagedPtr<Mesh> planeMesh;
 	ManagedPtr<Mesh> gridMesh;
 	ManagedPtr<Mesh> lineMesh;
+	Material* compositeMaterial{};
 
 	struct RenderVector
 	{
@@ -62,11 +61,8 @@ class Render
 	float specularEnvironemnt{1.0f};
 	int specualrQuality{};
 	VIEW_MODE viewMode{VIEW_MODE::FINAL};
-
 	float debugParam{1};
 	float debugParam1{1};
-
-	Material* compositeInternal{};
 
 	std::vector<RenderMesh> getRenderMeshes();
 	RenderScene getRenderScene();

@@ -43,7 +43,7 @@ struct RenderTexture
 	uint width;
 	uint height;
 	TEXTURE_FORMAT format;
-	SharedPtr<Texture> tex;
+	SharedPtr<Texture> pointer;
 };
 
 static vector<RenderTexture> renderTextures;
@@ -324,17 +324,16 @@ auto DLLEXPORT Render::DrawMeshes(PASS pass) -> void
 
 auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format) -> Texture *
 {
-	for (RenderTexture &tex : renderTextures)
-	{
-		if (tex.free)
+	auto it = std::find_if(renderTextures.begin(), renderTextures.end(), [width, height, format](const RenderTexture& tex)
 		{
-			if (width == tex.width && height == tex.height && format == tex.format)
-			{
-				tex.free = 0;
-				tex.frame = _core->frame();
-				return tex.tex.get();
-			}
-		}
+			return tex.free && width == tex.width && height == tex.height && format == tex.format;
+		});
+
+	if (it != renderTextures.end())
+	{
+		it->free = 0;
+		it->frame = _core->frame();
+		return it->pointer.get();
 	}
 
 	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT;
@@ -345,16 +344,9 @@ auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT 
 	return tex.get();
 }
 
-auto DLLEXPORT Render::ReleaseRenderTexture(Texture * tex) -> void
+auto DLLEXPORT Render::ReleaseRenderTexture(Texture* tex) -> void
 {
-	for (RenderTexture &tp : renderTextures)
-	{
-		if (tp.tex.get() == tex)
-		{
-			tp.free = 1;
-			return;
-		}
-	}
+	std::for_each(renderTextures.begin(), renderTextures.end(), [tex](RenderTexture& t) { if (tex == t.pointer.get()) t.free = 1; });
 }
 
 void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
@@ -411,12 +403,10 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 
 			for (RenderLight &renderLight : scene.lights)
 			{
-				Light *l = renderLight.light;
-				vec4 light_color = vec4(1, 1, 1, 1) * l->GetIntensity();
-				light_color.w = 1;
+				vec4 lightColor(renderLight.light->GetIntensity());
 				vec4 dir = vec4(renderLight.worldDirection);
 
-				shader->SetVec4Parameter("light_color", &light_color);
+				shader->SetVec4Parameter("light_color", &lightColor);
 				shader->SetVec4Parameter("light_direction", &dir);
 				shader->FlushParameters();
 
@@ -431,9 +421,9 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 
 	// Composite
 	{
-		compositeInternal->SetDef("specular_quality", specualrQuality);
-		compositeInternal->SetDef("view_mode", (int)viewMode);
-		Shader* shader = compositeInternal->GetShader(planeMesh.get());
+		compositeMaterial->SetDef("specular_quality", specualrQuality);
+		compositeMaterial->SetDef("view_mode", (int)viewMode);
+		Shader* shader = compositeMaterial->GetShader(planeMesh.get());
 
 		if (shader)
 		{
@@ -537,6 +527,7 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 			continue;
 
 		Shader *shader = nullptr;
+
 		if (pass == PASS::DEFERRED)
 			shader = mat->GetDeferredShader(renderMesh.mesh);
 		else if (pass == PASS::ID)
@@ -550,9 +541,6 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 		mat->UploadShaderParameters(shader, pass);
 		mat->BindShaderTextures(shader, pass);
 
-		//Texture *texs[1] = {whiteTexture};
-		//CORE_RENDER->BindTextures(1, texs);
-
 		mat4 MVP = ViewProjMat_ * renderMesh.worldTransformMat;
 		mat4 M = renderMesh.worldTransformMat;
 		mat4 NM = M.Inverse().Transpose();
@@ -560,6 +548,7 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 		shader->SetMat4Parameter("MVP", &MVP);
 		shader->SetMat4Parameter("M", &M);
 		shader->SetMat4Parameter("NM", &NM);
+
 		if (pass == PASS::ID)
 			shader->SetUintParameter("id", renderMesh.modelId);
 
@@ -579,10 +568,11 @@ void Render::Init()
 
 	uint8 data[4] = {255u, 255u, 255u, 255u};
 	whiteTexture = new Texture(unique_ptr<ICoreTexture>(CORE_RENDER->CreateTexture(&data[0], 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::NONE, false)));
+	assert(whiteTexture);
 
 	MaterialManager* mm = _core->GetMaterialManager();
-	compositeInternal = mm->CreateMaterial("composite");
-	assert(compositeInternal);
+	compositeMaterial = mm->CreateMaterial("composite");
+	assert(compositeMaterial);
 
 	Log("Render initialized");
 }
@@ -602,8 +592,8 @@ void Render::Update()
 void Render::Free()
 {
 	MaterialManager* mm = _core->GetMaterialManager();
-	mm->DestoryMaterial(compositeInternal);
-	compositeInternal = nullptr;
+	mm->DestoryMaterial(compositeMaterial);
+	compositeMaterial = nullptr;
 
 	delete whiteTexture;
 	environmentTexture.release();
