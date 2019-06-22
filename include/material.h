@@ -51,6 +51,8 @@ struct GenericMaterial
 		int slot;
 		PASS pass;
 		std::string path;
+		int hasCondition{0};
+		std::string condition;
 	};
 	std::vector<MaterialTexture> textures_;
 

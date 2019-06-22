@@ -108,12 +108,17 @@ void GenericMaterial::LoadXML()
 		// textures
 		for (pugi::xml_node par = node.child("texture"); par; par = par.next_sibling("texture"))
 		{
-			MaterialTexture tex;
+			MaterialTexture tex{};
 			tex.id = par.attribute("id").as_string();
 			tex.slot = par.attribute("slot").as_int();
 			tex.pass = pass;
 			tex.path = par.child_value();
 
+			if (par.attribute("condition"))
+			{
+				tex.hasCondition = 1;
+				tex.condition = par.attribute("condition").as_string();
+			}
 			textures_.emplace_back(tex);
 		}
 
@@ -179,17 +184,27 @@ void Material::UploadShaderParameters(Shader *shader, PASS pass)
 
 void Material::BindShaderTextures(Shader* shader, PASS pass)
 {
-	std::vector<Texture*> texs(16);
+	Texture* texs[16]{};
+	int maxSlots = 0;
 
-	int slots = 0;
 	for (GenericMaterial::MaterialTexture& tex : parent_->textures_)
 	{
 		int slot = tex.slot;
 		RuntimeTexture& t = runtimeTextures_[tex.id];
 
+		if (tex.pass != pass)
+			continue;
+
+		if (tex.hasCondition)
+		{
+			if (!GetDef(tex.condition.c_str()))
+				continue;
+		}
+
 		texs[slot] = t.ptr.get();
-		if (slot + 1 > slots)
-			slots = slot + 1;
+		
+		if (slot + 1 > maxSlots)
+			maxSlots = slot + 1;
 
 		if (texs[slot])
 		{
@@ -197,10 +212,12 @@ void Material::BindShaderTextures(Shader* shader, PASS pass)
 			shader->SetVec4Parameter(shader_par.c_str(), &t.uv);
 		}
 	}
-	shader->FlushParameters();
 
-	if (slots)
-		CORE_RENDER->BindTextures(slots, &texs[0]);
+	if (maxSlots)
+	{
+		shader->FlushParameters();
+		CORE_RENDER->BindTextures(maxSlots, &texs[0]);
+	}
 }
 
 Material::Material(const std::string& id, GenericMaterial* mat) : id_(id), parent_(mat)

@@ -10,8 +10,8 @@
 		<param id="normal_intensity" type="float">1</param>
 		<param id="base_color" type="color">1 1 1 1</param>
 		
-		<texture id="albedo" slot="0">povement_albedo.dds</texture>
-		<texture id="normal" slot="1">povement_normal.dds</texture>
+		<texture id="albedo" slot="0" condition="albedo_map">povement_albedo.dds</texture>
+		<texture id="normal" slot="1" condition="normal_map">povement_normal.dds</texture>
 		
 		<shader>mesh.shader</shader>
 	</pass_deferred>

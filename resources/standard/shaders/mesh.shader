@@ -15,8 +15,13 @@
 		float4 albedo_uv;
 	};
 
-	TEXTURE_DECL(albedo, 0)
-	TEXTURE_DECL(normal, 1)	
+	#if defined(ENG_INPUT_TEXCOORD) && defined(albedo_map)
+		TEXTURE_DECL(albedo, 0)
+	#endif
+	
+	#if defined(ENG_INPUT_TEXCOORD) && defined(ENG_INPUT_NORMAL) && defined(albedo_map)
+		TEXTURE_DECL(normal, 1)	
+	#endif
 
 	struct FS_OUT
 	{
