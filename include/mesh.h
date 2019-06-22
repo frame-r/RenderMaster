@@ -6,6 +6,7 @@ class Mesh
 {
 	std::unique_ptr<ICoreMesh> coreMesh_;
 	std::string path_;
+	vec3 center_;
 
 public:
 	Mesh(const std::string& path);
@@ -17,4 +18,5 @@ public:
 	auto DLLEXPORT GetAttributes() -> INPUT_ATTRUBUTE;
 	auto DLLEXPORT GetVideoMemoryUsage() -> size_t;
 	auto DLLEXPORT GetPath() -> const char* const { return path_.c_str(); }
+	auto DLLEXPORT GetCenter() -> vec3;
 };

@@ -137,9 +137,7 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 {
 	ui->setupUi(this);
 
-	Mesh *mesh = model_->GetMesh();
-	if (mesh)
-		ui->mesh_le->setText(QString(mesh->GetPath()));
+	ui->mesh_le->setText(QString(model_->GetMeshPath()));
 
 	Material *material = model_->GetMaterial();
 	if (material)
@@ -157,15 +155,6 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 
 		this->construct_material_group(model_->GetMaterial());
 	});
-
-//	connections.append(connect(ui->albedo_tw, &TextureLineEdit::OnUVChanged, this, &ModelPropertyWidget::setUVTransform));
-//	connections.append(connect(ui->albedo_tw, &TextureLineEdit::OnPathChanged, this, &ModelPropertyWidget::setAlbedoPath));
-
-//	if (mat)
-//	{
-//		ui->albedo_tw->SetPath(mat->GetAlbedoTexName());
-//		ui->albedo_tw->SetUV(mat->GetAlbedoUV());
-//	}
 }
 
 ModelPropertyWidget::~ModelPropertyWidget()

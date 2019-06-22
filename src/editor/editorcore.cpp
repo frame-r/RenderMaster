@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "render.h"
 #include "gameobject.h"
+#include "model.h"
 #include <QVariant>
 #include <QApplication>
 #include "treenode.h"
@@ -325,7 +326,12 @@ void EditorCore::Focus()
 		return;
 
 	GameObject * g = *selectedObjects.begin();
-	emit OnFocusOnSelected(g->GetWorldPosition());
+	vec3 center = g->GetWorldPosition();
+
+	if (g->GetType()==OBJECT_TYPE::MODEL)
+		center = static_cast<Model*>(g)->GetWorldCenter();
+
+	emit OnFocusOnSelected(center);
 }
 
 void EditorCore::ToggleManipulator(MANIPULATOR type)

@@ -8,7 +8,7 @@ objects:
     intensity: 1
   - childs: 0
     id: 1540049954
-    enabled: false
+    enabled: true
     type: Model
     worldTransform: [1, 0, 0, 0.689, 0, 1, 0, 0.472, 0, 0, 1, 1.276, 0, 0, 0, 1]
     mesh: .import\sphere.mesh
@@ -24,8 +24,8 @@ objects:
     id: 1113097840
     enabled: true
     type: Model
-    worldTransform: [-1, 1.755557e-05, 0, 4.504, 0, 0, 1, 1.52, 1.755557e-05, 1, 0, 0.054, 0, 0, 0, 1]
-    mesh: .import\teapot_standard.mesh
+    worldTransform: [-1, 1.755555e-05, 0, 4.504, 0, 0, 1, 1.52, 1.755555e-05, 1, 0, 0.054, 0, 0, 0, 1]
+    mesh: .import\Teapot_Node.mesh
     material: material_4
   - childs: 0
     id: 36578474

@@ -13,7 +13,7 @@
 #include "dds.h"
 
 #define IMPORT_DIR ".import"
-#define UNLOAD_RESOURCE_FRAMES 60
+#define UNLOAD_RESOURCE_FRAMES 10
 
 using namespace YAML;
 

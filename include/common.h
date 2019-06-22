@@ -478,23 +478,32 @@ struct MeshDataDesc
 };
 
 #pragma pack(push, 1)
-struct MeshHeader
+struct MeshHeader // 128 bytes
 {
-	char magic[3];
-	char attributes; // 0 - positions, 1 - normals, 2 - uv, 3 - tangent, 4 - binormal, 5 -color, 
+	char magic[2];
+	char version;
+	char attributes; // 0 - positions, 1 - normals, 2 - uv, 3 - tangent, 4 - binormal, 5 -color,
+	uint32_t __future1[2];
 	uint32_t numberOfVertex;
-	uint32_t positionOffset;	// 16 bytes
+	uint32_t positionOffset;
 	uint32_t positionStride;
-	uint32_t normalOffset;		// 16 bytes
+	uint32_t normalOffset;
 	uint32_t normalStride;
-	uint32_t tangentOffset;		// 16 bytes
+	uint32_t tangentOffset;
 	uint32_t tangentStride;
-	uint32_t binormalOffset;	// 16 bytes
+	uint32_t binormalOffset;
 	uint32_t binormalStride;
-	uint32_t uvOffset;			// 8 bytes
+	uint32_t uvOffset;
 	uint32_t uvStride;
-	uint32_t colorOffset;		// 16 bytes
+	uint32_t colorOffset;
 	uint32_t colorStride;
+	float minX;
+	float maxX;
+	float minY;
+	float maxY;
+	float minZ;
+	float maxZ;
+	uint32_t __future2[10];
 };
 #pragma pack(pop)
 
@@ -613,6 +622,7 @@ public:
 	virtual T *get() = 0;
 	virtual std::string& getPath() = 0;
 	virtual void free() = 0;
+	virtual bool isLoaded() = 0;
 };
 
 template<typename T>
@@ -637,7 +647,7 @@ public:
 	std::string& getPath() override { return path_; }
 	T* get() override;
 	void free() override { pointer_ = nullptr; }
-	bool isLoaded() { return static_cast<bool>(pointer_); }
+	bool isLoaded() override { return static_cast<bool>(pointer_); }
 	uint64_t frame() { return frame_; }
 	size_t getVideoMemoryUsage()
 	{
@@ -651,6 +661,7 @@ template<typename T>
 class ManagedPtr
 {
 	IResource<T> *resource_{nullptr};
+	std::string __empty; // return if resource_= = null
 
 	inline void grab()
 	{
@@ -698,14 +709,16 @@ public:
 	}
 	T *get()
 	{
-		if (!resource_)
-			return nullptr;
-		return resource_->get();
+		return resource_ ? resource_->get() : nullptr;
 	}
-	std::string path()
+	bool isLoaded()
+	{
+		return resource_ ? resource_->isLoaded() : false;
+	}
+	std::string& path()
 	{
 		if (!resource_)
-			return std::string();
+			return __empty;
 		return resource_->getPath();
 	}
 };

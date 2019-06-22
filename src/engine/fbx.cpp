@@ -205,6 +205,8 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 
 	vector<float> data;
 	data.reserve(vertecies * (4 + is_normals * 4 + is_uv * 2));
+
+	vec3 minCoord, maxCoord;
 	
 	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
 	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
@@ -239,10 +241,18 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 
 				// position
 				FbxVector4 lCurrentVertex = control_points_array[ctrl_point_idx];
+				vec3 coord{ (float)lCurrentVertex[0], (float)lCurrentVertex[1], (float)lCurrentVertex[2]};
 
-				data.push_back((float)lCurrentVertex[0]);
-				data.push_back((float)lCurrentVertex[1]);
-				data.push_back((float)lCurrentVertex[2]);
+				minCoord.x = std::min(coord.x, minCoord.x);
+				minCoord.y = std::min(coord.y, minCoord.y);
+				minCoord.z = std::min(coord.z, minCoord.z);
+				maxCoord.x = std::max(coord.x, maxCoord.x);
+				maxCoord.y = std::max(coord.y, maxCoord.y);
+				maxCoord.z = std::max(coord.z, maxCoord.z);
+
+				data.push_back(coord.x);
+				data.push_back(coord.y);
+				data.push_back(coord.z);
 				data.push_back(1.0f);
 
 				// normal
@@ -364,9 +374,9 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 	}
 
 	MeshHeader header{};
-	header.magic[0] = 'M'; 
-	header.magic[0] = 'S'; 
-	header.magic[0] = 'H'; 
+	header.magic[0] = 'M';
+	header.magic[1] = 'F';
+	header.version = 0;
 	header.attributes = ((vertecies > 0) << 0)
 		| (is_normals << 1)
 		| (is_uv << 2)
@@ -409,7 +419,14 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 	header.colorStride = stride;
 	bytes += is_color * sizeof(vec4);
 
-	string p = RES_MAN->GetImportMeshDir() + "\\teapot.mesh";
+	header.minX = minCoord.x;
+	header.minY = minCoord.y;
+	header.minZ = minCoord.z;
+	header.maxX = maxCoord.x;
+	header.maxY = maxCoord.y;
+	header.maxZ = maxCoord.z;
+
+	string p = RES_MAN->GetImportMeshDir() + '\\' + pNode->GetName() + ".mesh";
 
 	File f = FS->OpenFile(p.c_str(), FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
 

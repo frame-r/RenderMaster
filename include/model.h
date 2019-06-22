@@ -7,6 +7,7 @@
 class Model final : public GameObject
 {
 	ManagedPtr<Mesh> mesh_;
+	vec3 meshCeneter;
 	Material *mat_{nullptr};
 
 protected:
@@ -21,8 +22,10 @@ public:
 
 public:
 	auto DLLEXPORT virtual GetMesh() -> Mesh*;
+	auto DLLEXPORT virtual GetMeshPath() -> const char*;
 	auto DLLEXPORT virtual SetMaterial(Material *mat) -> void { mat_ = mat; }
 	auto DLLEXPORT virtual GetMaterial() -> Material* { return mat_; }
+	auto DLLEXPORT virtual GetWorldCenter() -> vec3;
 
 	// GameObject
 	auto DLLEXPORT virtual Clone() -> GameObject* override;

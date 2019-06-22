@@ -208,6 +208,10 @@ bool Mesh::Load()
 
 	coreMesh_.reset(m);
 
+	center_.x = header.minX * 0.5f + header.maxX * 0.5f;
+	center_.y = header.minY * 0.5f + header.maxY * 0.5f;
+	center_.z = header.minZ * 0.5f + header.maxZ * 0.5f;
+
 	return true;
 }
 
@@ -222,4 +226,9 @@ auto DLLEXPORT Mesh::GetVideoMemoryUsage() -> size_t
 		return 0;
 
 	return coreMesh_->GetVideoMemoryUsage();
+}
+
+auto DLLEXPORT Mesh::GetCenter() -> vec3
+{
+	return center_;
 }

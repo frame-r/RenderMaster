@@ -28,6 +28,17 @@ auto DLLEXPORT Model::GetMesh() -> Mesh *
 {
 	return mesh_.get();
 }
+auto DLLEXPORT Model::GetMeshPath() -> const char *
+{
+	return mesh_.path().c_str();
+}
+
+auto DLLEXPORT Model::GetWorldCenter() -> vec3
+{
+	vec3 center = mesh_.isLoaded() ? mesh_.get()->GetCenter() : vec3();
+	vec4 centerWS = worldTransform_ * vec4(center);
+	return (vec3)centerWS;
+}
 
 auto DLLEXPORT Model::Clone() -> GameObject *
 {
