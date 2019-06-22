@@ -15,6 +15,7 @@ class TextureLineEdit : public QWidget
 
 public:
 	explicit TextureLineEdit(QWidget *parent = nullptr);
+	virtual ~TextureLineEdit();
 
 	void SetPath(const char *path);
 	void SetUV(const vec4& uv);

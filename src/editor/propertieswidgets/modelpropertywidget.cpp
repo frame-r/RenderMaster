@@ -32,18 +32,23 @@ inline vec4 QtColorToEng(const QColor& c)
 	return v;
 }
 
-void ModelPropertyWidget::destroy_material_group(Material *mat)
+void ModelPropertyWidget::destroy_material_group()
 {
-	//int rows = ui->material_lt->rowCount();
-	while (QLayoutItem* item = ui->material_lt->takeAt(0)) {
+	for (auto& c : connections_)
+		QObject::disconnect(c);
+	connections_.clear();
+
+	while (ui->material_lt->rowCount())
+	{
+		QLayoutItem* item = ui->material_lt->takeAt(0);
 		delete item->widget();
 		delete item;
+		ui->material_lt->removeRow(0);
 	}
 }
 
 void ModelPropertyWidget::construct_material_group(Material *mat)
 {
-	destroy_material_group(mat);
 	if (!mat)
 		return;
 
@@ -55,7 +60,7 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 		if (p.type != GenericMaterial::PARAM_TYPE::FLOAT)
 			continue;
 
-		QSlider *sl = new QSlider();
+		QSlider *sl = new QSlider(this);
 
 		int valueInt = mat->GetParamFloat(p.id.c_str()) * sl->maximum();
 		sl->setValue(valueInt);
@@ -83,7 +88,7 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 		if (p.type != GenericMaterial::PARAM_TYPE::COLOR)
 			continue;
 
-		ColorWidget *sl = new ColorWidget();
+		ColorWidget *sl = new ColorWidget(this);
 
 		vec4 current_color = mat->GetParamFloat4(p.id.c_str());
 		sl->ChangeColor(EngToQtColor(current_color));
@@ -100,12 +105,13 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 	// defines
 	for (auto& v : genmat->defs_)
 	{
-		QCheckBox *cb = new QCheckBox();
+		QCheckBox *cb = new QCheckBox(this);
 		cb->setChecked(mat->GetDef(v.first.c_str()));
 
 		connect(cb, &QCheckBox::toggled, [v, this, mat](bool f)
 		{
 			mat->SetDef(v.first.c_str(), f);
+			needRecreatematerialGroup = true;
 		});
 
 		ui->material_lt->addRow(tr(v.first.c_str()), cb);
@@ -114,7 +120,11 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 	// textures
 	for (auto& v : genmat->textures_)
 	{
-		TextureLineEdit *l = new TextureLineEdit();
+		if (v.hasCondition)
+			if (!mat->GetDef(v.condition.c_str()))
+				continue;
+
+		TextureLineEdit *l = new TextureLineEdit(this);
 		ui->material_lt->addRow(tr(v.id.c_str()), l);
 		l->SetPath(mat->GetTexture(v.id.c_str()));
 		l->SetUV(mat->GetUV(v.id.c_str()));
@@ -143,6 +153,7 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 	if (material)
 		ui->material_le->setText(QString(material->GetId()));
 
+	destroy_material_group();
 	construct_material_group(material);
 
 	connect(ui->add_btn, &QToolButton::clicked, [this]() -> void
@@ -153,16 +164,29 @@ ModelPropertyWidget::ModelPropertyWidget(QWidget *parent, Model* m) :
 
 		model_->SetMaterial(newMaterial);
 
+		this->destroy_material_group();
 		this->construct_material_group(model_->GetMaterial());
 	});
+
+	connect(editor, &EditorCore::OnUpdate, this, &ModelPropertyWidget::onUpdate, Qt::DirectConnection);
 }
 
 ModelPropertyWidget::~ModelPropertyWidget()
 {
-	for (auto& c : connections_)
-		QObject::disconnect(c);
-	connections_.clear();
+	destroy_material_group();
 	delete ui;
+}
+
+void ModelPropertyWidget::onUpdate(float dt)
+{
+	if (!needRecreatematerialGroup)
+		return;
+
+	Material *material = model_->GetMaterial();
+	destroy_material_group();
+	construct_material_group(material);
+
+	needRecreatematerialGroup = false;
 }
 
 

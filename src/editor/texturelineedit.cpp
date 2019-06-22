@@ -1,6 +1,5 @@
 #include "texturelineedit.h"
 #include "ui_texturelineedit.h"
-#include <QDebug>
 
 
 TextureLineEdit::TextureLineEdit(QWidget *parent) :
@@ -20,6 +19,11 @@ TextureLineEdit::TextureLineEdit(QWidget *parent) :
 	QObject::connect(ui->uv2_sb, QOverload<const QString&>::of(&QDoubleSpinBox::valueChanged), this, &TextureLineEdit::uvChanged);
 	QObject::connect(ui->uv3_sb, QOverload<const QString&>::of(&QDoubleSpinBox::valueChanged), this, &TextureLineEdit::uvChanged);
 	QObject::connect(ui->uv4_sb, QOverload<const QString&>::of(&QDoubleSpinBox::valueChanged), this, &TextureLineEdit::uvChanged);
+}
+
+TextureLineEdit::~TextureLineEdit()
+{
+	delete ui;
 }
 
 void TextureLineEdit::SetPath(const char *path)

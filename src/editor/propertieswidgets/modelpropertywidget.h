@@ -22,13 +22,17 @@ class ModelPropertyWidget : public QWidget
 
 	Model *model_;
 	QList<QMetaObject::Connection> connections_;
+	bool needRecreatematerialGroup{};
 
-	void destroy_material_group(Material *mat);
+	void destroy_material_group();
 	void construct_material_group(Material *mat);
 
 public:
 	explicit ModelPropertyWidget(QWidget *parent, Model *m);
 	~ModelPropertyWidget();
+
+private slots:
+	void onUpdate(float dt);
 
 private:
 	Ui::ModelPropertyWidget *ui;

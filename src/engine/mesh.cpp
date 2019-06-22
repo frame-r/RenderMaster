@@ -10,7 +10,7 @@ Mesh::Mesh(const std::string& path) : path_(path)
 }
 Mesh::~Mesh()
 {
-	Log("Mesh destroyed: '%s'", path_.c_str());
+	Log("Mesh unloaded: '%s'", path_.c_str());
 }
 ICoreMesh* createStdMesh(const char *path)
 {

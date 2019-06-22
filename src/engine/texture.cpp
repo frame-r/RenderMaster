@@ -17,7 +17,8 @@ Texture::Texture(std::unique_ptr<ICoreTexture> tex)
 
 Texture::~Texture()
 {
-	//Log("Texture destroyed: '%s'", path_.c_str());
+	if (!path_.empty())
+		Log("Texture unloaded: '%s'", path_.c_str());
 }
 
 bool Texture::Load()
