@@ -2,6 +2,13 @@
 <generic_material id="composite">
 	
 	<def id="specular_quality" value0="REFLECTION_MIPMAP" value1="REFLECTION_GGX">0</def>
+	<def id="view_mode" 
+		value0="VIEW_MODE_FINAL" 
+		value1="VIEW_MODE_NORMAL" 
+		value2="VIEW_MODE_ALBEDO"
+		value3="VIEW_MODE_DIFFUSE_LIGHT"
+		value4="VIEW_MODE_SPECULAR_LIGHT"
+		>0</def>
 	
 	<shader>composite.shader</shader>
 

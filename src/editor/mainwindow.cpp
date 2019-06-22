@@ -7,6 +7,7 @@
 #include "editorcore.h"
 #include "debugwidget.h"
 #include "parameterswidget.h"
+#include "render.h"
 #include "projectwidget.h"
 #include "selectmeshdialog.h"
 #include "settings.h"
@@ -17,6 +18,7 @@
 #include "ads/ContainerWidget.h"
 #include "ads/SectionContent.h"
 
+#include <QComboBox>
 #include <QAction>
 #include <QTimer>
 #include <QDebug>
@@ -217,20 +219,18 @@ MainWindow::MainWindow(QWidget *parent) :
 	});
 
 
-//	engineActions[RELOAD_CORE_RENDER] = ui->actionReload_Core_Render;
-//	connect(engineActions[RELOAD_CORE_RENDER], &QAction::toggled, []()
-//	{
-//		qDebug() << "QAction::toggled";
-//	});
-//	connect(engineActions[RELOAD_CORE_RENDER], &QAction::triggered, []()
-//	{
-//		editor->ReloadCoreRender();
-//		qDebug() << "QAction::triggered";
-//	});
-//	connect(engineActions[RELOAD_CORE_RENDER], &QAction::changed, []()
-//	{
-//		qDebug() << "QAction::changed";
-//	});
+	QComboBox *view_cb = new QComboBox(this);
+	view_cb->addItem("Final");
+	view_cb->addItem("Normal");
+	view_cb->addItem("Albedo");
+	view_cb->addItem("Diffuse light (only analytic)");
+	view_cb->addItem("Specular light (only analytic)");
+	ui->mainToolBar->addWidget(view_cb);
+	connect(view_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [view_cb](int idx)->void
+	{
+		Render *render = editor->core->GetRender();
+		render->SetViewMode(static_cast<VIEW_MODE>(view_cb->currentIndex()));
+	});
 
 	switch_button(ui->actionselect);
 

@@ -61,6 +61,7 @@ class Render
 	float diffuseEnvironemnt{1.0f};
 	float specularEnvironemnt{1.0f};
 	int specualrQuality{};
+	VIEW_MODE viewMode{VIEW_MODE::FINAL};
 
 	float debugParam{1};
 	float debugParam1{1};
@@ -93,6 +94,8 @@ public:
 	auto DLLEXPORT GetSpecularEnvironemnt() -> float { return specularEnvironemnt; }
 	auto DLLEXPORT SetSpecularQuality(int value) -> void { specualrQuality = value; }
 	auto DLLEXPORT GetSpecularQuality() -> int { return specualrQuality; }
+	auto DLLEXPORT SetViewMode(VIEW_MODE value) -> void { viewMode = value; }
+	auto DLLEXPORT GetViewMode() -> VIEW_MODE { return viewMode; }
 
 	// debug
 	auto DLLEXPORT SetDebugParam(float v) -> void { debugParam = v; }

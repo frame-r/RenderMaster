@@ -432,6 +432,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 	// Composite
 	{
 		compositeInternal->SetDef("specular_quality", specualrQuality);
+		compositeInternal->SetDef("view_mode", (int)viewMode);
 		Shader* shader = compositeInternal->GetShader(planeMesh.get());
 
 		if (shader)

@@ -438,6 +438,15 @@ enum class MOUSE_BUTTON
 	MIDDLE
 };
 
+enum class VIEW_MODE
+{
+	FINAL,
+	NORMAL,
+	ALBEDO,
+	DIFFUSE_LIGHT,
+	SPECULAR_LIGHT,
+};
+
 struct MeshDataDesc
 {
 	uint numberOfVertex{0};
