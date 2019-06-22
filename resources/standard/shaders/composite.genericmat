@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <generic_material id="composite">
 	
-	<def id="reflection_type" value0="REFLECTION_MIPMAP" value1="REFLECTION_GGX">0</def>
+	<def id="specular_quality" value0="REFLECTION_MIPMAP" value1="REFLECTION_GGX">0</def>
 	
 	<shader>composite.shader</shader>
 

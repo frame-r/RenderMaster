@@ -103,8 +103,8 @@ bool Core::Init(const char* rootPath, const WindowHandle* externHandle, INIT_FLA
 
 	resMan->Init();
 	input->Init();
-	render->Init();
 	matManager->Init();
+	render->Init();
 
 	Log("Core Inited");
 
@@ -286,8 +286,8 @@ void Core::Free()
 {
 	RemoveProfilerCallback(this);
 
-	matManager->Free();
 	render->Free();
+	matManager->Free();
 	input->Free();
 	resMan->Free();
 	freeCoreRender();

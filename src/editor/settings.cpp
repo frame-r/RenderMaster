@@ -3,6 +3,7 @@
 #include "editorcore.h"
 #include "render.h"
 #include <QCheckBox>
+#include <QComboBox>
 
 static std::vector<QMetaObject::Connection> _connections;
 
@@ -31,16 +32,23 @@ void Settings::OnEngineFree(Core *c)
 
 void Settings::OnEngineInit(Core *c)
 {
+	Render *render = editor->core->GetRender();
+
 	_connections.emplace_back(connect(ui->diffuse_env_sl, &QSlider::valueChanged, this, &Settings::sliderOChanged, Qt::DirectConnection));
 	_connections.emplace_back(connect(ui->specular_env_sl, &QSlider::valueChanged, this, &Settings::slider1Changed, Qt::DirectConnection));
-
-	Render *render = editor->core->GetRender();
+	_connections.emplace_back(connect(ui->spec_quality_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int idx)->void
+	{
+		Render *render = editor->core->GetRender();
+		render->SetSpecularQuality(ui->spec_quality_cb->currentIndex());
+	}));
 
 	ui->diffuse_env_sl->setValue(render->GetDiffuseEnvironemnt() * ui->diffuse_env_sl->maximum());
 	setLabel(ui->diffuse_env_l, render->GetDiffuseEnvironemnt());
 
 	ui->specular_env_sl->setValue(render->GetSpecularEnvironemnt() * ui->specular_env_sl->maximum());
 	setLabel(ui->specular_env_l, render->GetSpecularEnvironemnt());
+
+	ui->spec_quality_cb->setCurrentIndex(render->GetSpecularQuality());
 }
 
 void Settings::sliderOChanged(int i)

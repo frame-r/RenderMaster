@@ -17,20 +17,20 @@ objects:
     id: 431980828
     enabled: true
     type: Model
-    worldTransform: [1.000001, 0, 0, -1.6, 0, 1, 0, 5.15, 0, 0, 1.000001, 1.501, 0, 0, 0, 1]
+    worldTransform: [1, 0, 0, -1.6, 0, 1, 0, 5.15, 0, 0, 1.000001, 1.501, 0, 0, 0, 1]
     mesh: .import\cube.mesh
     material: material_0
   - childs: 0
     id: 1113097840
-    enabled: false
+    enabled: true
     type: Model
-    worldTransform: [-1, 1.755555e-05, 0, 4.504, 0, 0, 1, 1.52, 1.755555e-05, 1, 0, 0.054, 0, 0, 0, 1]
+    worldTransform: [-1, 1.755557e-05, 0, 4.504, 0, 0, 1, 1.52, 1.755557e-05, 1, 0, 0.054, 0, 0, 0, 1]
     mesh: .import\teapot_standard.mesh
-    material: material_0
+    material: material_4
   - childs: 0
     id: 36578474
-    enabled: false
+    enabled: true
     type: Model
-    worldTransform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    worldTransform: [100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     mesh: std#plane
-    material: material_0
+    material: material_2

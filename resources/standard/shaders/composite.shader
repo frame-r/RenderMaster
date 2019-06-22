@@ -52,7 +52,7 @@
 		//
 		// Environment specular
 		//
-#if 0
+#ifdef REFLECTION_MIPMAP
 		float3 specularEnv = float3(0, 0, 0);
 		{ // fast reflection (mipmap)
 			float3 L = normalize(reflect(-V, N));
@@ -72,7 +72,7 @@
 
 			specularEnv = specularEnv * F * G  / (NdotV + 0.001);
 		}
-#else
+#else // REFLECTION_GGX
 		float3 specularEnv = float3(0, 0, 0);
 		{ // Importance sampling
 

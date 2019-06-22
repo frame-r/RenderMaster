@@ -81,6 +81,17 @@ auto DLLEXPORT MaterialManager::CreateMaterial(const char* genericmat) -> Materi
 	return mat;
 }
 
+auto DLLEXPORT MaterialManager::DestoryMaterial(Material* mat) -> void
+{
+	for (auto iter = materials.begin(); iter != materials.end(); ) {
+		if (iter->second == mat)
+			materials.erase(iter++);
+		else
+			++iter;
+	}
+	delete mat;
+}
+
 auto DLLEXPORT MaterialManager::GetMaterial(const char * path) -> Material*
 {
 	auto it = materials.find(path);

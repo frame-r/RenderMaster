@@ -1,28 +1,26 @@
 #pragma once
 #include "Common.h"
 
-
-struct RenderBuffers
-{
-	Texture *albedo;
-	Texture *normal;
-	Texture *shading;
-	Texture *depth;
-	Texture *diffuseLight;
-	Texture *specularLight;
-};
-
-struct RenderMesh
-{
-	int modelId;
-	Mesh *mesh{};
-	Material *mat{};
-	mat4 worldTransformMat;
-};
-
-
 class Render
 {
+	struct RenderBuffers
+	{
+		Texture* albedo;
+		Texture* normal;
+		Texture* shading;
+		Texture* depth;
+		Texture* diffuseLight;
+		Texture* specularLight;
+	};
+
+	struct RenderMesh
+	{
+		int modelId;
+		Mesh* mesh{};
+		Material* mat{};
+		mat4 worldTransformMat;
+	};
+
 	struct RenderLight
 	{
 		Light *light;
@@ -62,9 +60,12 @@ class Render
 
 	float diffuseEnvironemnt{1.0f};
 	float specularEnvironemnt{1.0f};
+	int specualrQuality{};
 
 	float debugParam{1};
 	float debugParam1{1};
+
+	Material* compositeInternal{};
 
 	std::vector<RenderMesh> getRenderMeshes();
 	RenderScene getRenderScene();
@@ -90,6 +91,8 @@ public:
 	auto DLLEXPORT GetDiffuseEnvironemnt() -> float { return diffuseEnvironemnt; }
 	auto DLLEXPORT SetSpecularEnvironemnt(float v) -> void { specularEnvironemnt = v; }
 	auto DLLEXPORT GetSpecularEnvironemnt() -> float { return specularEnvironemnt; }
+	auto DLLEXPORT SetSpecularQuality(int value) -> void { specualrQuality = value; }
+	auto DLLEXPORT GetSpecularQuality() -> int { return specualrQuality; }
 
 	// debug
 	auto DLLEXPORT SetDebugParam(float v) -> void { debugParam = v; }

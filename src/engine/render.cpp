@@ -6,6 +6,7 @@
 #include "resource_manager.h"
 #include "light.h"
 #include "material.h"
+#include "material_manager.h"
 #include "model.h"
 #include "camera.h"
 #include "filesystem.h"
@@ -270,7 +271,7 @@ auto DLLEXPORT Render::RenderGUI() -> void
 	CORE_RENDER->SetDepthTest(1);
 }
 
-vector<RenderMesh> Render::getRenderMeshes()
+vector<Render::RenderMesh> Render::getRenderMeshes()
 {
 	vector<RenderMesh> meshesVec;
 
@@ -375,7 +376,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 	buffers.normal =		GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA32F);
 	buffers.shading =		GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
 
-	RenderScene scene = getRenderScene();	
+	RenderScene scene = getRenderScene();
 
 	// G-buffer
 	{
@@ -430,7 +431,8 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 
 	// Composite
 	{
-		Shader *shader = GetShader("composite.shader", planeMesh.get());
+		compositeInternal->SetDef("specular_quality", specualrQuality);
+		Shader* shader = compositeInternal->GetShader(planeMesh.get());
 
 		if (shader)
 		{
@@ -443,12 +445,16 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 			environment_resolution.y = float(environmentTexture.get()->GetHeight());
 			environment_resolution.z = float(environmentTexture.get()->GetMipmaps());
 			shader->SetVec4Parameter("environment_resolution", &environment_resolution);
+
 			vec4 environment_intensity;
 			environment_intensity.x = diffuseEnvironemnt;
 			environment_intensity.y = specularEnvironemnt;
 			shader->SetVec4Parameter("environment_intensity", &environment_intensity);
+
 			shader->SetVec4Parameter("camera_position", &CameraWorldPos_);
+
 			shader->SetMat4Parameter("camera_view_projection_inv", &CameraViewProjectionInv_);
+
 			shader->FlushParameters();
 
 			CORE_RENDER->SetDepthTest(0);
@@ -573,6 +579,10 @@ void Render::Init()
 	uint8 data[4] = {255u, 255u, 255u, 255u};
 	whiteTexture = new Texture(unique_ptr<ICoreTexture>(CORE_RENDER->CreateTexture(&data[0], 1, 1, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::NONE, false)));
 
+	MaterialManager* mm = _core->GetMaterialManager();
+	compositeInternal = mm->CreateMaterial("composite");
+	assert(compositeInternal);
+
 	Log("Render initialized");
 }
 
@@ -590,6 +600,10 @@ void Render::Update()
 
 void Render::Free()
 {
+	MaterialManager* mm = _core->GetMaterialManager();
+	mm->DestoryMaterial(compositeInternal);
+	compositeInternal = nullptr;
+
 	delete whiteTexture;
 	environmentTexture.release();
 	records.clear();
