@@ -19,7 +19,7 @@
 		TEXTURE_DECL(albedo, 0)
 	#endif
 	
-	#if defined(ENG_INPUT_TEXCOORD) && defined(ENG_INPUT_NORMAL) && defined(albedo_map)
+	#if defined(ENG_INPUT_TEXCOORD) && defined(ENG_INPUT_NORMAL) && defined(normal_map)
 		TEXTURE_DECL(normal, 1)	
 	#endif
 

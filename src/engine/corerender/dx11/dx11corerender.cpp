@@ -985,8 +985,8 @@ auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize) -> ICor
 
 auto DX11CoreRender::BindTextures(int units, Texture **textures) -> void
 {
-	ID3D11ShaderResourceView *srvs[16];
-	ID3D11SamplerState *samplers[16];
+	ID3D11ShaderResourceView* srvs[16]{};
+	ID3D11SamplerState* samplers[16]{};
 
 	if (textures)
 	{
@@ -1001,9 +1001,12 @@ auto DX11CoreRender::BindTextures(int units, Texture **textures) -> void
 				needUpdate = true;
 			}
 
-			DX11Texture *t = static_cast<DX11Texture*>(tt->GetCoreTexture());
-			srvs[i] = t->srView();
-			samplers[i] = t->sampler();
+			if (tt)
+			{
+				DX11Texture* t = static_cast<DX11Texture*>(tt->GetCoreTexture());
+				srvs[i] = t->srView();
+				samplers[i] = t->sampler();
+			}
 		}
 
 		if (needUpdate)
