@@ -4,7 +4,6 @@
 #include <fstream>
 
 
-
 class FileSystem final
 {
 
@@ -22,6 +21,23 @@ public:
 	auto DLLEXPORT OpenFile(const char *path, FILE_OPEN_MODE mode = FILE_OPEN_MODE::WRITE) -> File;
 	auto DLLEXPORT ClearFile(const char *path) -> void;
 	auto DLLEXPORT FilterPaths(const char *ext) -> std::vector<std::string>;
+	auto DLLEXPORT CreateMemoryMapedFile(const char *path) -> FileMapping;
+};
+
+struct FileMapping
+{
+	HANDLE hFile;
+	HANDLE hMapping;
+	size_t fsize;
+	unsigned char* ptr;
+
+public:
+	FileMapping() = default;
+	~FileMapping();
+	FileMapping& operator=(const FileMapping&) = delete;
+	FileMapping(const FileMapping&) = delete;
+	FileMapping& operator=(FileMapping&&);
+	FileMapping(FileMapping&&);
 };
 
 class File final

@@ -52,6 +52,7 @@ class Input;
 class Render;
 class IProfilerCallback;
 class File;
+struct FileMapping;
 class Camera;
 class Mesh;
 class Model;

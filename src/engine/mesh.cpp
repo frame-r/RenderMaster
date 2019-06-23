@@ -154,8 +154,8 @@ bool Mesh::Load()
 		return false;
 	}
 
-	File f = FS->OpenFile(path_.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
-	f.Read(reinterpret_cast<uint8*>(&header), sizeof(MeshHeader));
+	FileMapping mappedFile = FS->CreateMemoryMapedFile(path_.c_str());
+	memcpy(&header, mappedFile.ptr, sizeof(header));
 
 	int is_positions = (header.attributes & 1u) > 0;
 	int is_normals = (header.attributes & 2u) > 0;
@@ -171,9 +171,6 @@ bool Mesh::Load()
 	bytes += is_tangent * header.numberOfVertex * sizeof(vec4);
 	bytes += is_binormal * header.numberOfVertex * sizeof(vec4);
 	bytes += is_color * header.numberOfVertex * sizeof(vec4);
-
-	unique_ptr<float[]> data = unique_ptr<float[]>(new float[bytes / 4]);
-	f.Read(reinterpret_cast<uint8*>(data.get()), bytes);
 
 	MeshDataDesc desc;
 	desc.numberOfVertex = header.numberOfVertex;
@@ -194,7 +191,7 @@ bool Mesh::Load()
 	desc.colorPresented = is_color;
 	desc.colorOffset = header.colorOffset;
 	desc.colorStride = header.colorStride;
-	desc.pData = reinterpret_cast<uint8*>(data.get());
+	desc.pData = reinterpret_cast<uint8*>(mappedFile.ptr + sizeof(MeshHeader));
 
 	MeshIndexDesc indexDesc;
 

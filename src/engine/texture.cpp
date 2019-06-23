@@ -38,13 +38,9 @@ bool Texture::Load()
 		return false;
 	}
 
-	File f = FS->OpenFile(path_.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
-	size_t size = f.FileSize();
-	unique_ptr<uint8[]> fileData = std::make_unique<uint8[]>(size);
+	FileMapping mappedFile = FS->CreateMemoryMapedFile(path_.c_str());
+	ICoreTexture* coreTex = createDDS(mappedFile.ptr, mappedFile.fsize, flags_);
 
-	f.Read((uint8 *)fileData.get(), size);
-
-	ICoreTexture *coreTex = createDDS(fileData.get(), size, flags_);
 	coreTexture_ = std::unique_ptr<ICoreTexture>(coreTex);
 
 	if (!coreTex)

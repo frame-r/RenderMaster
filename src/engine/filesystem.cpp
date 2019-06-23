@@ -126,6 +126,34 @@ auto DLLEXPORT FileSystem::FilterPaths(const char *ext) -> std::vector<std::stri
 	return files;
 }
 
+auto DLLEXPORT FileSystem::CreateMemoryMapedFile(const char* path) -> FileMapping
+{
+	FileMapping mapping;
+
+	fs::path fsPath = fs::u8path(path);
+
+	if (fsPath.is_relative())
+	{
+		fs::path fsDataPath = fs::u8path(_core->GetDataPath());
+		fsPath = fsDataPath / fsPath;
+	}
+
+	std::wstring wpath = ConvertFromUtf8ToUtf16(fsPath.u8string());
+	mapping.hFile = CreateFile(wpath.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	assert(mapping.hFile != INVALID_HANDLE_VALUE);
+
+	mapping.fsize = GetFileSize(mapping.hFile, nullptr);
+	assert(mapping.fsize != INVALID_FILE_SIZE);
+
+	mapping.hMapping = CreateFileMapping(mapping.hFile, nullptr, PAGE_READONLY, 0, 0, nullptr);
+	assert(mapping.hMapping);
+
+	mapping.ptr = (unsigned char*)MapViewOfFile(mapping.hMapping, FILE_MAP_READ, 0, 0, mapping.fsize);
+	assert(mapping.ptr);
+
+	return mapping;
+}
+
 File::File(const std::ios_base::openmode & fileMode, const std::filesystem::path & path)
 {
 	fsPath_ = path;	
@@ -172,4 +200,34 @@ auto DLLEXPORT File::WriteStr(const char *str) -> void
 auto DLLEXPORT File::FileSize() -> size_t
 {
 	return fs::file_size(fsPath_);
+}
+
+FileMapping::~FileMapping()
+{
+	if (ptr)
+	{
+		UnmapViewOfFile(ptr);
+		CloseHandle(hMapping);
+		CloseHandle(hFile);
+		ptr = nullptr;
+	}
+}
+
+FileMapping& FileMapping::operator=(FileMapping&& r)
+{
+	hFile = r.hFile;
+	hMapping = r.hMapping;
+	fsize = r.fsize;
+	ptr = r.ptr;
+	r.ptr = nullptr;
+	return *this;
+}
+
+FileMapping::FileMapping(FileMapping&& r)
+{
+	hFile = r.hFile;
+	hMapping = r.hMapping;
+	fsize = r.fsize;
+	ptr = r.ptr;
+	r.ptr = nullptr;
 }
