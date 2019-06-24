@@ -54,8 +54,7 @@ bool FileSystem::IsRelative(const char *path)
 
 auto DLLEXPORT FileSystem::OpenFile(const char *path, FILE_OPEN_MODE mode) -> File
 {
-	const bool read = (mode & FILE_OPEN_MODE::READ) == FILE_OPEN_MODE::READ;
-	const bool write = (mode & FILE_OPEN_MODE::WRITE) == FILE_OPEN_MODE::WRITE;
+	const bool read = bool(mode & FILE_OPEN_MODE::READ);
 	
 	fs::path fsPath = fs::u8path(path);
 
@@ -65,22 +64,14 @@ auto DLLEXPORT FileSystem::OpenFile(const char *path, FILE_OPEN_MODE mode) -> Fi
 		fsPath = fsDataPath / fsPath;
 	}
 
-	if (read)
-	{
-		assert(fs::exists(fsPath));
-	}
+	assert(read && fs::exists(fsPath) || !read);
 
-	std::ios_base::openmode cpp_mode;
+	std::ios_base::openmode cpp_mode = read ? std::ofstream::in : cpp_mode = std::ofstream::out;
 
-	if (read)
-		cpp_mode = std::ofstream::in;
-	else // (write)
-		cpp_mode = std::ofstream::out;
+	if (bool(FILE_OPEN_MODE::APPEND & mode))
+		cpp_mode |= std::ofstream::out | std::ofstream::app;
 
-	if ((int)(FILE_OPEN_MODE::APPEND & mode))
-		cpp_mode = std::ofstream::out | std::ofstream::app;
-
-	if ((int)(mode & FILE_OPEN_MODE::BINARY))
+	if (bool(mode & FILE_OPEN_MODE::BINARY))
 		cpp_mode |= std::ofstream::binary;
 
 	return File(cpp_mode, fsPath);
@@ -156,7 +147,7 @@ auto DLLEXPORT FileSystem::CreateMemoryMapedFile(const char* path) -> FileMappin
 
 File::File(const std::ios_base::openmode & fileMode, const std::filesystem::path & path)
 {
-	fsPath_ = path;	
+	fsPath_ = path;
 	mstring mPath = UTF8ToNative(path.u8string());
 	file_.open(mPath, fileMode);
 }

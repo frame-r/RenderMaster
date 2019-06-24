@@ -134,16 +134,6 @@ void GenericMaterial::LoadXML()
 		loadPass(mat.child("pass_deferred"), deferredShader_, PASS::DEFERRED);
 	if (mat.child("pass_id"))
 		loadPass(mat.child("pass_id"), idShader_, PASS::ID);
-
-
-	//
-	// shaders
-	//if (mat.child("shader"))
-	//	shader_ = mat.child("shader").child_value();
-	//if (mat.child("deferred_shader"))
-	//	deferredShader_ = mat.child("deferred_shader").child_value();
-	//if (mat.child("id_shader"))
-	//	idShader_ = mat.child("id_shader").child_value();
 }
 
 void GenericMaterial::Clear()

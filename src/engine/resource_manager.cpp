@@ -59,9 +59,8 @@ auto DLLEXPORT ResourceManager::CreateShader(const char *vert, const char *geom,
 
 	ERROR_COMPILE_SHADER err;
 	ICoreShader* coreShader = CORE_RENDER->CreateShader(vert, frag, geom, err);
-	bool compiled = coreShader != nullptr;
 
-	if (!compiled)
+	if (!coreShader)
 	{
 		const char *shaderText = nullptr;
 
@@ -137,8 +136,7 @@ auto DLLEXPORT ResourceManager::CloneObject(GameObject * obj) -> GameObject *
 {
 	GameObject *ret = obj->Clone();
 
-	auto it = std::find(root_objects_.begin(), root_objects_.end(), obj);
-	if (it != root_objects_.end())
+	if (std::find(root_objects_.begin(), root_objects_.end(), obj) != root_objects_.end())
 		root_objects_.emplace_back(ret);
 	else
 	{
@@ -164,13 +162,10 @@ auto DLLEXPORT ResourceManager::RemoveObject(GameObject *obj) -> void
 
 auto DLLEXPORT ResourceManager::DestroyObject(GameObject * obj) -> void
 {
-	int childs = (int)obj->GetNumChilds();
-	if (childs > 0)
+	if (auto childs = obj->GetNumChilds())
 	{
-		for (int i = childs - 1; i >= 0; i--)
-		{
+		for (auto i = childs - 1; i >= 0; i--)
 			DestroyObject(obj->GetChild(i));
-		}
 	}
 
 	if (obj->GetParent() == nullptr)
@@ -217,13 +212,14 @@ auto DLLEXPORT ResourceManager::AddCallbackOnObjAdded(ObjectCallback c) -> void
 
 bool findRecursive(GameObject *root, int id, GameObject *&found)
 {
+	GameObject* ret;
+
 	if (root->GetId() == id)
 	{
 		found = root;
 		return true;
 	}
 
-	GameObject *ret;
 	for (int i = 0; i<root->GetNumChilds(); i++)
 	{
 		if (findRecursive(root->GetChild(i), id, ret))
@@ -240,12 +236,11 @@ bool findRecursive(GameObject *root, int id, GameObject *&found)
 auto DLLEXPORT ResourceManager::FindObjectById(int id) -> GameObject*
 {
 	GameObject *ret;
+
 	for (int i = 0; i < root_objects_.size(); i++)
 	{
 		if (findRecursive(root_objects_[i], id, ret))
-		{
 			return ret;
-		}
 	}
 
 	return nullptr;
@@ -274,6 +269,7 @@ protected:
 	{
 		return new Texture(path_, flags_);
 	}
+
 public:
 	TextureResource(const std::string& path,TEXTURE_CREATE_FLAGS flags) : Resource(path),
 		flags_(flags)
@@ -288,6 +284,7 @@ protected:
 	{
 		return new Mesh(path_);
 	}
+
 public:
 	MeshResource(const std::string& path) : Resource(path)
 	{}
@@ -297,9 +294,7 @@ auto DLLEXPORT ResourceManager::CreateStreamTexture(const char *path, TEXTURE_CR
 {
 	auto it = resource_textures_.find(path);
 	if (it != resource_textures_.end())
-	{
 		return ManagedPtr<Texture>(it->second);
-	}
 
 	TextureResource *resource = new TextureResource(path, flags);
 	resource_textures_[path] = resource;
@@ -311,9 +306,7 @@ auto DLLEXPORT ResourceManager::CreateStreamMesh(const char *path) -> ManagedPtr
 {
 	auto it = resource_meshes_.find(path);
 	if (it != resource_meshes_.end())
-	{
 		return ManagedPtr<Mesh>(it->second);
-	}
 
 	MeshResource *resource = new MeshResource(path);
 	resource_meshes_[path] = resource;
@@ -428,7 +421,8 @@ void ResourceManager::Reload()
 
 void saveObj(Emitter& out, GameObject *o)
 {
-	if (!o) return;
+	if (!o)
+		return;
 
 	out << YAML::BeginMap;
 	out << Key << "childs" << Value << o->GetNumChilds();
@@ -524,8 +518,8 @@ auto DLLEXPORT ResourceManager::LoadWorld() -> void
 	f.Read((uint8 *)tmp.get(), fileSize);
 	
 	YAML::Node model_yaml = YAML::Load(tmp.get());
-	auto t = model_yaml.Type();	
-	
+	auto t = model_yaml.Type();
+
 	if (!model_yaml["roots"])
 	{
 		LogCritical("LoadWorld(): invalid file");
@@ -533,14 +527,14 @@ auto DLLEXPORT ResourceManager::LoadWorld() -> void
 	}
 
 	auto roots_yaml = model_yaml["roots"];
-	auto t1 = roots_yaml.Type();
-	if (t1 != NodeType::Scalar)
+
+	if (roots_yaml.Type() != NodeType::Scalar)
 	{
 		LogCritical("LoadWorld(): invalid file");
 		return;
 	}
-	
-	int roots = roots_yaml.as<int>();
+
+	auto roots = roots_yaml.as<int>();
 	if (roots <= 0)
 	{
 		Log("LoadWorld(): world is empty");
@@ -548,8 +542,7 @@ auto DLLEXPORT ResourceManager::LoadWorld() -> void
 	}
 
 	auto objects_yaml = model_yaml["objects"];
-	auto t2 = objects_yaml.Type();
-	if (t2 != NodeType::Sequence)
+	if (objects_yaml.Type() != NodeType::Sequence)
 	{
 		LogCritical("LoadWorld(): invalid file");
 		return;
@@ -557,20 +550,15 @@ auto DLLEXPORT ResourceManager::LoadWorld() -> void
 
 	int i = 0;
 	for (int j = 0; j < roots; j++)
-	{
 		loadObj(objects_yaml, &i, nullptr, onObjectAdded);
-	}
 }
 
 auto DLLEXPORT ResourceManager::CloseWorld() -> void
 {
-	int roots = (int)root_objects_.size();
-	if (roots)
+	if (const int roots = (int)root_objects_.size())
 	{
 		for (int i = roots - 1; i >= 0; i--)
-		{
 			DestroyObject(root_objects_[i]);
-		}
 	}
 }
 

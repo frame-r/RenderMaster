@@ -423,9 +423,8 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 	{
 		compositeMaterial->SetDef("specular_quality", specualrQuality);
 		compositeMaterial->SetDef("view_mode", (int)viewMode);
-		Shader* shader = compositeMaterial->GetShader(planeMesh.get());
-
-		if (shader)
+		
+		if (auto shader = compositeMaterial->GetShader(planeMesh.get()))
 		{
 			Texture *rts[1] = {CORE_RENDER->GetSurfaceColorTexture()};
 			CORE_RENDER->SetRenderTextures(1, rts, nullptr);
@@ -470,8 +469,7 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 	{
 		CORE_RENDER->SetDepthTest(1);
 
-		auto shader = GetShader("primitive.shader", lineMesh.get() );
-		if (shader)
+		if (auto shader = GetShader("primitive.shader", lineMesh.get()))
 		{
 			CORE_RENDER->SetShader(shader);
 
@@ -505,8 +503,7 @@ void Render::renderGrid()
 {
 	CORE_RENDER->SetDepthTest(1);
 
-	auto shader = GetShader("primitive.shader", gridMesh.get());
-	if (shader)
+	if (auto shader = GetShader("primitive.shader", gridMesh.get()))
 	{
 		CORE_RENDER->SetShader(shader);
 
