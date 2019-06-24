@@ -1,6 +1,9 @@
 #include "common.h"
 #include "vertex_post.h"
 
+//#define WHITE_BAKGROUND
+
+
 #ifdef ENG_SHADER_PIXEL
 
 	Texture2D texture_albedo : register(t0);
@@ -52,103 +55,114 @@
 		//
 		// Environment specular
 		//
-#ifdef REFLECTION_MIPMAP
+		
 		float3 specularEnv = float3(0, 0, 0);
-		{ // fast reflection (mipmap)
-			float3 L = normalize(reflect(-V, N));
+		
+	#ifdef REFLECTION_MIPMAP
 
-			const float specularMip = sqrt(roughness) * (environment_resolution.z - 1);
-
-			if (depth != 1)
+		float3 L = normalize(reflect(-V, N));        
+		float specularMip = sqrt(roughness) * (environment_resolution.z - 1);
+        
+		if (depth != 1)
+			#ifdef WHITE_BAKGROUND
+				specularEnv = float3(0.5, 0.5, 0.5);
+			#else
 				specularEnv = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, L), specularMip).rgb;
+			#endif
+		
 
-			float3 H = normalize(L + V);
-			float NdotL = max(dot(N, L), 0.0);
-			float NdotV = max(dot(N, V), 0.0);
-			float VdotH = max(dot(V, H), 0.0);
-			float3 D = DistributionGGX(N, H, roughness);
-			float3 G = GeometrySmith(N, V, L, roughness);
-			float3 F = fresnelSchlick(VdotH, F0);
+	#else // REFLECTION_GGX
 
-			specularEnv = specularEnv * F * G  / (NdotV + 0.001);
-		}
-#else // REFLECTION_GGX
-		float3 specularEnv = float3(0, 0, 0);
-		{ // Importance sampling
-
-			roughness *= roughness;
-
-			const float gloss = 1.0f - roughness;
-			float a = max(roughness * roughness, 5e-4f );
-			float a2 = a*a;
-			float k = a * 0.5f;
-			float3 basisX = abs(N.z < 0.9999) ? normalize(cross(float3(0, 0, 1), N)) : float3(1, 0, 0);
-			float3 basisY = cross(N, basisX);
-			float3 basisZ = N;
-
-			float A = 0.5f * log2((environment_resolution.x * environment_resolution.y) / float(GGXsamples)) + 1.5f * gloss * gloss;
-
-			//[unroll]
+		roughness *= roughness;
+		float gloss = 1.0f - roughness;
+		float a = max(roughness * roughness, 5e-4f );
+		float a2 = a*a;
+		float k = a * 0.5f;
+		float3 basisX = abs(N.z < 0.9999) ? normalize(cross(float3(0, 0, 1), N)) : float3(1, 0, 0);
+		float3 basisY = cross(N, basisX);
+		float3 basisZ = N;
+		float A = 0.5f * log2((environment_resolution.x * environment_resolution.y) / float(GGXsamples)) + 1.5f * gloss * gloss;
+		
+		float sum = 1;
+		specularEnv = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, reflect(-V, N)), sqrt(roughness) * (environment_resolution.z - 1)).xyz;
+		
+		if (depth != 1.0f)
+		{	
 			for(int i = 0; i < GGXsamples; i++)
 			{
+				float NH_;
 				float3 dir = ImportanceSampleGGX( hammersleySamples[i], a2 -5e-4f *5e-4f);
 				float3 H = basisX * dir.x + basisY * dir.y + basisZ * dir.z;
+				//float3 H = sample_ggx(hammersleySamples[i] 	, a2-5e-4f *5e-4f, basisZ, basisX, basisY, NH_);
 				float3 L = H * (2.0f * dot(V,H)) - V;
 
 				float NdotH = saturate( dot(N, H) );
-				float NdotL = saturate( dot(N, L) );
 				float VdotH = saturate( dot(V, H) );
-		
-				float d = ( NdotH * a2 - NdotH ) * NdotH + 1.0f;
-				float pdf = (NdotH * a2) / (4.0f * 3.141593f * d* d * VdotH);
 
-				float lod = A - 0.5f * log2(pdf);
-				float3 sampleCol = float3(0, 0, 0);
-				if (depth != 1)
-					sampleCol = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, L), lod ).xyz;
+				if (dot(N, L) > 0)
+				{
+					float d = ( NdotH * a2 - NdotH ) * NdotH + 1.0f;
+					float pdf = (NdotH * a2) / (4.0f * 3.141593f * d* d * VdotH);
 
-				float3 G = GeometrySmith(N, V, L, roughness);
-				float3 F = fresnelSchlick(VdotH, F0);
-
-				specularEnv += sampleCol * F * G / (NdotV + 0.001);
+					float lod = A - 0.5f * log2(pdf);
+					float3 sampleCol = float3(0, 0, 0);
+					if (depth != 1)
+						#ifdef WHITE_BAKGROUND
+							sampleCol = float3(0.5, 0.5, 0.5);
+						#else
+							sampleCol = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, L), lod).xyz;
+						#endif
+						
+					float3 G = GeometrySmith(N, V, L, roughness);
+					float3 F = fresnelSchlick(VdotH, F0);
+			
+					float w =  G;
+					specularEnv += sampleCol * w;
+					
+					sum +=w;
+				}				
 			}
-
-			specularEnv /= float(GGXsamples);
+			specularEnv /= sum;
 		}
-#endif
+	#endif
 
-		specularEnv /= 1.5f; // i don't know what is it. but this coeff gives more natural intensity
-		// TODO: clarify maybe it is some sort of 3.1415 or 4.0
+		specularEnv *= F;
 
 		//
 		// Environment diffuse
 		//
 		float3 diffuseEnv = float3(0,0,0);
+
+		if (depth != 1)
 		{
 			float3 NotCollinearToN = normalize(lerp(float3(-N.y,N.x,0), float3(1,0,0), abs(N.z)));
 			float3 basisX = normalize(cross(NotCollinearToN, N));
 			float3 basisY = cross(N, basisX);
+			
+			const float ambientlMip = environment_resolution.z - 2;
+			const float ambientSampels = 5;
+			const float d = 0.1;
+			
+			float3 sample2 = normalize( d * basisX + d * basisY + N);
+			float3 sample3 = normalize(-d * basisX + d * basisY + N);
+			float3 sample4 = normalize(-d * basisX - d * basisY + N);
+			float3 sample5 = normalize( d * basisX - d * basisY + N);
 
-			if (depth != 1)
-			{
-				const float ambientlMip = environment_resolution.z - 2;
-
-				const float ambientSampels = 5;
-
-				const float d = 0.1;
-				float3 sample2 = normalize( d * basisX + d * basisY + N);
-				float3 sample3 = normalize(-d * basisX + d * basisY + N);
-				float3 sample4 = normalize(-d * basisX - d * basisY + N);
-				float3 sample5 = normalize( d * basisX - d * basisY + N);
-
+			#ifdef WHITE_BAKGROUND
+				diffuseEnv +=					float3(0.5,0.5,0.5);
+				diffuseEnv += dot(N, sample2) * float3(0.5,0.5,0.5);
+				diffuseEnv += dot(N, sample3) * float3(0.5,0.5,0.5);
+				diffuseEnv += dot(N, sample4) * float3(0.5,0.5,0.5);
+				diffuseEnv += dot(N, sample5) * float3(0.5,0.5,0.5);
+			#else
 				diffuseEnv +=					texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, N), ambientlMip).rgb;
 				diffuseEnv += dot(N, sample2) * texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, sample2), ambientlMip).rgb;
 				diffuseEnv += dot(N, sample3) * texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, sample3), ambientlMip).rgb;
 				diffuseEnv += dot(N, sample4) * texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, sample4), ambientlMip).rgb;
 				diffuseEnv += dot(N, sample5) * texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, sample5), ambientlMip).rgb;
-				
-				diffuseEnv *= albedo / (ambientSampels * 3.1415f);
-			}
+			#endif
+			
+			diffuseEnv *= albedo / (ambientSampels);
 		}
 
 
@@ -162,8 +176,13 @@
 		color += specularBRDF;
 
 		float3 R = normalize(reflect(-V, N));
-		float3 bkg = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, -V), 0).rgb;
-
+		
+		#ifdef USE_WHITE
+			float3 bkg = float3(0.5, 0.5, 0.5);
+		#else
+			float3 bkg = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, -V), 0).rgb;
+		#endif
+		
 		color = lerp(color, bkg, float(depth == 1.0f));
 
 		color *= 1.0f; // exposure
