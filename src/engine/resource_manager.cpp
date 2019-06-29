@@ -21,16 +21,16 @@ class MeshResource;
 class TextureResource;
 
 // Runtime
-static std::set<Texture*> textures_;
-static std::set<Shader*> shaders_;
-static std::set<StructuredBuffer*> structured_buffers_;
+static std::set<Texture*> texturesSet;
+static std::set<Shader*> shadersSet;
+static std::set<StructuredBuffer*> structuredBuffersSet;
 
 // Managed (From file)
-static std::unordered_map<string, TextureResource*> resource_textures_;
-static std::unordered_map<string, MeshResource*> resource_meshes_;
+static std::unordered_map<string, TextureResource*> streamTexturesMap;
+static std::unordered_map<string, MeshResource*> streamMeshesMap;
 
 // Root GameObjects
-static std::vector<GameObject*> root_objects_;
+static std::vector<GameObject*> rootObjectsVec;
 
 
 SharedPtr<Texture> ResourceManager::CreateTexture(int width, int height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags)
@@ -38,11 +38,11 @@ SharedPtr<Texture> ResourceManager::CreateTexture(int width, int height, TEXTURE
 	ICoreTexture *coreTex = CORE_RENDER->CreateTexture(nullptr, width, height, type, format, flags, false);
 
 	Texture *texture = new Texture(unique_ptr<ICoreTexture>(coreTex));
-	textures_.emplace(texture);
+	texturesSet.emplace(texture);
 
 	auto removeTex = [](Texture* t)
 	{
-		textures_.erase(t);
+		texturesSet.erase(t);
 		delete t;
 	};
 
@@ -53,7 +53,7 @@ auto DLLEXPORT ResourceManager::CreateShader(const char *vert, const char *geom,
 {
 	auto removeShader = [](Shader* s)
 	{
-		shaders_.erase(s);
+		shadersSet.erase(s);
 		delete s;
 	};
 
@@ -72,13 +72,13 @@ auto DLLEXPORT ResourceManager::CreateShader(const char *vert, const char *geom,
 		};
 	
 		File f = FS->OpenFile("err_compile.shader", FILE_OPEN_MODE::WRITE);
-		f.Write((uint8 *)shaderText, (uint)strlen(shaderText));
+		f.Write((uint8 *)shaderText, strlen(shaderText));
 
 		return SharedPtr<Shader>(nullptr, removeShader);
 	}
 
 	Shader *sh = new Shader(unique_ptr<ICoreShader>(coreShader), unique_ptr<const char[]>(vert), unique_ptr<const char[]>(geom), unique_ptr<const char[]>(frag));
-	shaders_.emplace(sh);
+	shadersSet.emplace(sh);
 	return SharedPtr<Shader>(sh, removeShader);
 }
 
@@ -87,11 +87,11 @@ auto DLLEXPORT ResourceManager::CreateStructuredBuffer(uint size, uint elementSi
 	ICoreStructuredBuffer *c = CORE_RENDER->CreateStructuredBuffer(size, elementSize);
 
 	StructuredBuffer *buffer = new StructuredBuffer(unique_ptr<ICoreStructuredBuffer>(c));
-	structured_buffers_.emplace(buffer);
+	structuredBuffersSet.emplace(buffer);
 
 	auto removeBuffer = [](StructuredBuffer* b)
 	{
-		structured_buffers_.erase(b);
+		structuredBuffersSet.erase(b);
 		delete b;
 	};
 
@@ -101,7 +101,7 @@ auto DLLEXPORT ResourceManager::CreateStructuredBuffer(uint size, uint elementSi
 GameObject* ResourceManager::CreateGameObject()
 {
 	GameObject *g  = new GameObject;
-	root_objects_.push_back(g);
+	rootObjectsVec.push_back(g);
 	onObjectAdded.Invoke(g);
 	return g;
 }
@@ -109,7 +109,7 @@ GameObject* ResourceManager::CreateGameObject()
 auto DLLEXPORT ResourceManager::CreateCamera() -> Camera *
 {
 	Camera *c = new Camera;
-	root_objects_.push_back(c);
+	rootObjectsVec.push_back(c);
 	onObjectAdded.Invoke(c);
 	return c;
 }
@@ -119,7 +119,7 @@ auto DLLEXPORT ResourceManager::CreateModel(const char *path) -> Model*
 	ManagedPtr<Mesh> meshPtr = CreateStreamMesh(path);
 
 	Model *m = new Model(meshPtr);
-	root_objects_.push_back(m);
+	rootObjectsVec.push_back(m);
 	onObjectAdded.Invoke(m);
 	return m;
 }
@@ -127,7 +127,7 @@ auto DLLEXPORT ResourceManager::CreateModel(const char *path) -> Model*
 auto DLLEXPORT ResourceManager::CreateLight() -> Light*
 {
 	Light *l = new Light;
-	root_objects_.push_back(l);
+	rootObjectsVec.push_back(l);
 	onObjectAdded.Invoke(l);
 	return l;
 }
@@ -136,8 +136,8 @@ auto DLLEXPORT ResourceManager::CloneObject(GameObject * obj) -> GameObject *
 {
 	GameObject *ret = obj->Clone();
 
-	if (std::find(root_objects_.begin(), root_objects_.end(), obj) != root_objects_.end())
-		root_objects_.emplace_back(ret);
+	if (std::find(rootObjectsVec.begin(), rootObjectsVec.end(), obj) != rootObjectsVec.end())
+		rootObjectsVec.emplace_back(ret);
 	else
 	{
 		GameObject *p = obj->GetParent();
@@ -151,11 +151,11 @@ auto DLLEXPORT ResourceManager::CloneObject(GameObject * obj) -> GameObject *
 
 auto DLLEXPORT ResourceManager::RemoveObject(GameObject *obj) -> void
 {
-	auto it = std::find(root_objects_.begin(), root_objects_.end(), obj);
-	if (it != root_objects_.end())
+	auto it = std::find(rootObjectsVec.begin(), rootObjectsVec.end(), obj);
+	if (it != rootObjectsVec.end())
 	{
 		GameObject *g = *it;
-		root_objects_.erase(it);
+		rootObjectsVec.erase(it);
 		g->SetWorldTransform(g->GetWorldTransform());
 	}
 }
@@ -164,16 +164,16 @@ auto DLLEXPORT ResourceManager::DestroyObject(GameObject * obj) -> void
 {
 	if (auto childs = obj->GetNumChilds())
 	{
-		for (auto i = childs - 1; i >= 0; i--)
+		for (int i = int(childs - 1); i >= 0; i--)
 			DestroyObject(obj->GetChild(i));
 	}
 
 	if (obj->GetParent() == nullptr)
 	{
-		auto it = std::find(root_objects_.begin(), root_objects_.end(), obj);
-		assert(it != root_objects_.end());
+		auto it = std::find(rootObjectsVec.begin(), rootObjectsVec.end(), obj);
+		assert(it != rootObjectsVec.end());
 		GameObject *g = *it;
-		root_objects_.erase(it);
+		rootObjectsVec.erase(it);
 	} else
 		obj->GetParent()->RemoveChild(obj);
 
@@ -184,20 +184,20 @@ auto DLLEXPORT ResourceManager::DestroyObject(GameObject * obj) -> void
 
 auto DLLEXPORT ResourceManager::InsertObject(int row, GameObject *obj) -> void
 {
-	assert(row <= root_objects_.size());
+	assert(row <= rootObjectsVec.size());
 
-	root_objects_.insert(root_objects_.begin() + row, obj);
+	rootObjectsVec.insert(rootObjectsVec.begin() + row, obj);
 	obj->SetWorldTransform(obj->GetWorldTransform());
 }
 
 auto ResourceManager::GetNumObjects() -> size_t
 {
-	return root_objects_.size();
+	return rootObjectsVec.size();
 }
 
 auto ResourceManager::GetObject_(size_t i) -> GameObject*
 {
-	return root_objects_[i];
+	return rootObjectsVec[i];
 }
 
 auto ResourceManager::GetImportMeshDir() -> std::string
@@ -237,9 +237,9 @@ auto DLLEXPORT ResourceManager::FindObjectById(int id) -> GameObject*
 {
 	GameObject *ret;
 
-	for (int i = 0; i < root_objects_.size(); i++)
+	for (int i = 0; i < rootObjectsVec.size(); i++)
 	{
-		if (findRecursive(root_objects_[i], id, ret))
+		if (findRecursive(rootObjectsVec[i], id, ret))
 			return ret;
 	}
 
@@ -292,24 +292,24 @@ public:
 
 auto DLLEXPORT ResourceManager::CreateStreamTexture(const char *path, TEXTURE_CREATE_FLAGS flags) -> ManagedPtr<Texture>
 {
-	auto it = resource_textures_.find(path);
-	if (it != resource_textures_.end())
+	auto it = streamTexturesMap.find(path);
+	if (it != streamTexturesMap.end())
 		return ManagedPtr<Texture>(it->second);
 
 	TextureResource *resource = new TextureResource(path, flags);
-	resource_textures_[path] = resource;
+	streamTexturesMap[path] = resource;
 	return ManagedPtr<Texture>(resource);
 }
 
 
 auto DLLEXPORT ResourceManager::CreateStreamMesh(const char *path) -> ManagedPtr<Mesh>
 {
-	auto it = resource_meshes_.find(path);
-	if (it != resource_meshes_.end())
+	auto it = streamMeshesMap.find(path);
+	if (it != streamMeshesMap.end())
 		return ManagedPtr<Mesh>(it->second);
 
 	MeshResource *resource = new MeshResource(path);
-	resource_meshes_[path] = resource;
+	streamMeshesMap[path] = resource;
 	return ManagedPtr<Mesh>(resource);
 }
 
@@ -343,10 +343,10 @@ public:
 	std::string getString(uint i) override
 	{
 		size_t texBytes = 0;
-		size_t textures = textures_.size();
-		for(Texture *t : textures_)
+		size_t textures = texturesSet.size();
+		for(Texture *t : texturesSet)
 			texBytes += t->GetVideoMemoryUsage();
-		for(auto [key, resource] : resource_textures_)
+		for(auto [key, resource] : streamTexturesMap)
 		{
 			if (resource->isLoaded())
 			{
@@ -357,7 +357,7 @@ public:
 
 		size_t meshBytes = 0;
 		size_t meshes = 0;
-		for(auto [key, resource] : resource_meshes_)
+		for(auto [key, resource] : streamMeshesMap)
 		{
 			if (resource->isLoaded())
 			{
@@ -366,7 +366,7 @@ public:
 			}
 		}
 		size_t buffersBytes = 0;
-		for(StructuredBuffer *b : structured_buffers_)
+		for(StructuredBuffer *b : structuredBuffersSet)
 			buffersBytes += b->GetVideoMemoryUsage();
 
 		switch (i)
@@ -374,7 +374,7 @@ public:
 			case 0: return "==== Resource Manager ====";
 			case 1: return "textures: " + std::to_string(textures) + " (" + bytesToMBytes(texBytes) + " Mb)";
 			case 2: return "meshes: " + std::to_string(meshes) + " (" + bytesToMBytes(meshBytes) + " Mb)";
-			case 3: return "structured buffers: " + std::to_string(structured_buffers_.size()) + " (" + bytesToMBytes(buffersBytes) + " Mb)";
+			case 3: return "structured buffers: " + std::to_string(structuredBuffersSet.size()) + " (" + bytesToMBytes(buffersBytes) + " Mb)";
 		}
 		return "";
 	}
@@ -391,23 +391,23 @@ void ResourceManager::Free()
 
 	CloseWorld();
 
-	assert(shaders_.size() == 0);
-	assert(textures_.size() == 0);
-	assert(structured_buffers_.size() == 0);
+	assert(shadersSet.size() == 0);
+	assert(texturesSet.size() == 0);
+	assert(structuredBuffersSet.size() == 0);
 
 	Log("ResourceManager Free");
 }
 void ResourceManager::Update(float dt)
 {
-	for (GameObject *g : root_objects_)
+	for (GameObject *g : rootObjectsVec)
 		g->Update(dt);
 
-	for (auto [p, m] : resource_meshes_)
+	for (auto [p, m] : streamMeshesMap)
 	{
 		if ((_core->frame() - m->frame() > UNLOAD_RESOURCE_FRAMES) && m->isLoaded())
 			m->free();
 	}
-	for (auto [p, m] : resource_textures_)
+	for (auto [p, m] : streamTexturesMap)
 	{
 		if ((_core->frame() - m->frame() > UNLOAD_RESOURCE_FRAMES) && m->isLoaded())
 			m->free();
@@ -441,13 +441,13 @@ auto DLLEXPORT ResourceManager::SaveWorld() -> void
 
 	out << YAML::BeginMap;
 
-	out << Key << "roots" << Value << root_objects_.size();
+	out << Key << "roots" << Value << rootObjectsVec.size();
 
 	out << Key << "objects" << Value;
 	out << YAML::BeginSeq;
 
-	for (int i = 0; i< root_objects_.size(); i++)
-		saveObj(out, root_objects_[i]);
+	for (int i = 0; i< rootObjectsVec.size(); i++)
+		saveObj(out, rootObjectsVec[i]);
 
 	out << YAML::EndSeq;
 	out << YAML::EndMap;
@@ -490,7 +490,7 @@ void loadObj(YAML::Node& objects_yaml, int *i, GameObject *parent, Signal<GameOb
 	if (parent)
 		parent->InsertChild(g);
 	else
-		root_objects_.push_back(g);
+		rootObjectsVec.push_back(g);
 
 	g->Deserialize(static_cast<void*>(&obj_yaml));
 
@@ -502,7 +502,7 @@ void loadObj(YAML::Node& objects_yaml, int *i, GameObject *parent, Signal<GameOb
 
 auto DLLEXPORT ResourceManager::LoadWorld() -> void
 {
-	if (root_objects_.size())
+	if (rootObjectsVec.size())
 	{
 		LogWarning("ResourceManager::LoadWorld(): scene loaded");
 		return;
@@ -555,10 +555,10 @@ auto DLLEXPORT ResourceManager::LoadWorld() -> void
 
 auto DLLEXPORT ResourceManager::CloseWorld() -> void
 {
-	if (const int roots = (int)root_objects_.size())
+	if (const int roots = (int)rootObjectsVec.size())
 	{
 		for (int i = roots - 1; i >= 0; i--)
-			DestroyObject(root_objects_[i]);
+			DestroyObject(rootObjectsVec[i]);
 	}
 }
 

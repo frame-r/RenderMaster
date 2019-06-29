@@ -35,11 +35,11 @@ class Render
 	};
 
 	// Frame data
-	mat4 ViewMat_;
-	mat4 ViewProjMat_;
-	vec4 CameraWorldPos_;
-	mat4 CameraViewProjectionInv_;
-	mat4 CameraViewInv_;
+	mat4 cameraViewMat_;
+	mat4 cameraViewProjMat_;
+	vec4 cameraWorldPos_;
+	mat4 cameraViewProjectionInvMat_;
+	mat4 cameraViewInvMat_;
 
 	// Render internal resources
 	ManagedPtr<Texture> fontTexture;
@@ -55,7 +55,7 @@ class Render
 		vec4 color;
 		vec3 v;
 	};
-	std::vector<RenderVector> vectors;
+	std::vector<RenderVector> renderVectors;
 
 	float diffuseEnvironemnt{1.0f};
 	float specularEnvironemnt{1.0f};
@@ -82,7 +82,7 @@ public:
 	auto DLLEXPORT DrawMeshes(PASS pass) -> void;
 	auto DLLEXPORT GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format) -> Texture*;
 	auto DLLEXPORT ReleaseRenderTexture(Texture *tex) -> void;
-	auto DLLEXPORT RenderVector(const vec3& end, const vec4& c) -> void { vectors.push_back({c, end}); }
+	auto DLLEXPORT RenderVector(const vec3& end, const vec4& c) -> void { renderVectors.push_back({c, end}); }
 
 	auto DLLEXPORT SetDiffuseEnvironemnt(float v) -> void { diffuseEnvironemnt = v; }
 	auto DLLEXPORT GetDiffuseEnvironemnt() -> float { return diffuseEnvironemnt; }

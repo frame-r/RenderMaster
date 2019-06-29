@@ -351,11 +351,11 @@ auto DLLEXPORT Render::ReleaseRenderTexture(Texture* tex) -> void
 
 void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 {
-	ViewProjMat_ = ProjMat * ViewMat;
-	ViewMat_ = ViewMat;
-	CameraWorldPos_ = ViewMat.Inverse().Column3(3);
-	CameraViewProjectionInv_ = ViewProjMat_.Inverse();
-	CameraViewInv_ = ViewMat_.Inverse();
+	cameraViewProjMat_ = ProjMat * ViewMat;
+	cameraViewMat_ = ViewMat;
+	cameraWorldPos_ = ViewMat.Inverse().Column3(3);
+	cameraViewProjectionInvMat_ = cameraViewProjMat_.Inverse();
+	cameraViewInvMat_ = cameraViewMat_.Inverse();
 
 	uint w, h;
 	CORE_RENDER->GetViewport(&w, &h);
@@ -394,8 +394,8 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 		{
 			CORE_RENDER->SetShader(shader);
 
-			shader->SetVec4Parameter("camera_position", &CameraWorldPos_);
-			shader->SetMat4Parameter("camera_view_projection_inv", &CameraViewProjectionInv_);
+			shader->SetVec4Parameter("camera_position", &cameraWorldPos_);
+			shader->SetMat4Parameter("camera_view_projection_inv", &cameraViewProjectionInvMat_);
 
 			CORE_RENDER->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA); // additive
 			Texture *texs[4] = {buffers.normal, buffers.shading, buffers.albedo, buffers.depth};
@@ -441,9 +441,9 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 			environment_intensity.y = specularEnvironemnt;
 			shader->SetVec4Parameter("environment_intensity", &environment_intensity);
 
-			shader->SetVec4Parameter("camera_position", &CameraWorldPos_);
+			shader->SetVec4Parameter("camera_position", &cameraWorldPos_);
 
-			shader->SetMat4Parameter("camera_view_projection_inv", &CameraViewProjectionInv_);
+			shader->SetMat4Parameter("camera_view_projection_inv", &cameraViewProjectionInvMat_);
 
 			shader->FlushParameters();
 
@@ -464,8 +464,8 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 
 	//renderGrid();
 
-	// vectors
-	if (vectors.size())
+	// renderVectors
+	if (renderVectors.size())
 	{
 		CORE_RENDER->SetDepthTest(1);
 
@@ -473,14 +473,14 @@ void Render::RenderFrame(const mat4& ViewMat, const mat4& ProjMat)
 		{
 			CORE_RENDER->SetShader(shader);
 
-			for (auto &v : vectors)
+			for (auto &v : renderVectors)
 			{
 				shader->SetVec4Parameter("main_color", &v.color);
 				mat4 transform(0.0f);
 				transform.el_2D[0][0] = v.v.x;
 				transform.el_2D[1][0] = v.v.y;
 				transform.el_2D[2][0] = v.v.z;
-				mat4 MVP = ViewProjMat_ * transform;
+				mat4 MVP = cameraViewProjMat_ * transform;
 				shader->SetMat4Parameter("MVP", &MVP);
 				shader->FlushParameters();
 
@@ -507,7 +507,7 @@ void Render::renderGrid()
 	{
 		CORE_RENDER->SetShader(shader);
 
-		shader->SetMat4Parameter("MVP", &ViewProjMat_);
+		shader->SetMat4Parameter("MVP", &cameraViewProjMat_);
 		shader->SetVec4Parameter("main_color", &vec4(0.3f, 0.3f, 0.3f, 1.0f));
 		shader->FlushParameters();
 
@@ -538,7 +538,7 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 		mat->UploadShaderParameters(shader, pass);
 		mat->BindShaderTextures(shader, pass);
 
-		mat4 MVP = ViewProjMat_ * renderMesh.worldTransformMat;
+		mat4 MVP = cameraViewProjMat_ * renderMesh.worldTransformMat;
 		mat4 M = renderMesh.worldTransformMat;
 		mat4 NM = M.Inverse().Transpose();
 
@@ -583,7 +583,7 @@ void Render::Update()
 	}),
 	renderTextures.end());
 
-	vectors.clear();
+	renderVectors.clear();
 }
 
 void Render::Free()

@@ -35,16 +35,17 @@ public:
 	auto GetImportMeshDir() -> std::string;
 
 public:
-	// Render resources
+	// Render runtime resources
 	auto DLLEXPORT CreateTexture(int width, int height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) -> SharedPtr<Texture>;
 	auto DLLEXPORT CreateShader(const char *vert, const char *geom, const char *frag) -> SharedPtr<Shader>;
 	auto DLLEXPORT CreateStructuredBuffer(uint size, uint elementSize) -> SharedPtr<StructuredBuffer>;
+
+	// Render stream resources
 	auto DLLEXPORT CreateStreamTexture(const char *path, TEXTURE_CREATE_FLAGS flags) -> ManagedPtr<Texture>;
 	auto DLLEXPORT CreateStreamMesh(const char *path) -> ManagedPtr<Mesh>;
 
 	auto DLLEXPORT Import(const char *path) -> void;
 	auto DLLEXPORT GetImportedMeshes() -> std::vector<std::string>;
-
 
 	// TODO: Move all GameObject stuff to SceneManager class
 	// Game objects
