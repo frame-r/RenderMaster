@@ -1,7 +1,13 @@
 <?xml version="1.0"?>
 <generic_material id="composite">
 	
-	<def id="specular_quality" value0="REFLECTION_MIPMAP" value1="REFLECTION_GGX">0</def>
+	<def id="specular_quality" 
+       value0="REFLECTION_MIPMAP" 
+       value1="REFLECTION_GGX_LOW"
+       value2="REFLECTION_GGX_MEDIUM"
+       value3="REFLECTION_GGX_HIGH"
+       >0</def>
+  
 	<def id="view_mode" 
 		value0="VIEW_MODE_FINAL" 
 		value1="VIEW_MODE_NORMAL" 
