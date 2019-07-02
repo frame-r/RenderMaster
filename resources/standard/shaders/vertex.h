@@ -2,14 +2,16 @@ struct VS_OUT
 {
 	float4 position : SV_POSITION;
 	float4 WorldPosition : TEXCOORD1;
+	float4 ViewPos : TEXCOORD2;
+	float4 ViewPosPrev : TEXCOORD3;
 	#ifdef ENG_INPUT_NORMAL
-		float4 Normal : TEXCOORD2;
+		float4 Normal : TEXCOORD4;
 	#endif
 	#ifdef ENG_INPUT_TEXCOORD
-		float2 TexCoord : TEXCOORD3;
+		float2 TexCoord : TEXCOORD5;
 	#endif
 	#ifdef ENG_INPUT_COLOR
-		float4 Color : TEXCOORD4;
+		float4 Color : TEXCOORD6;
 	#endif
 };
 
@@ -18,6 +20,7 @@ struct VS_OUT
 	cbuffer vertex_transformation_parameters
 	{
 		float4x4 MVP;
+		float4x4 MVP_prev;
 		float4x4 M;
 		float4x4 NM;
 	};
@@ -40,6 +43,9 @@ struct VS_OUT
 	{
 		VS_OUT vs_output;
 		vs_output.position = mul(MVP, vs_input.PositionIn);
+
+		vs_output.ViewPos = mul(MVP, vs_input.PositionIn);
+		vs_output.ViewPosPrev = mul(MVP_prev, vs_input.PositionIn);
 
 		vs_output.WorldPosition = mul(M, vs_input.PositionIn);
 

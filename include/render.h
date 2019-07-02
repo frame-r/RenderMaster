@@ -1,16 +1,28 @@
 #pragma once
 #include "Common.h"
 
+struct ViewData
+{
+	mat4 cameraViewMat_;
+	mat4 cameraViewProjMat_;
+	vec4 cameraWorldPos_;
+	mat4 cameraViewProjectionInvMat_;
+	mat4 cameraViewInvMat_;
+};
+
 class Render
 {
 	struct RenderBuffers
 	{
+		Texture* color;
+		Texture* color_reprojected;
 		Texture* albedo;
 		Texture* normal;
 		Texture* shading;
 		Texture* depth;
 		Texture* diffuseLight;
 		Texture* specularLight;
+		Texture* velocity;
 	};
 
 	struct RenderMesh
@@ -19,6 +31,7 @@ class Render
 		Mesh* mesh{};
 		Material* mat{};
 		mat4 worldTransformMat;
+		mat4 worldTransformMatPrev;
 	};
 
 	struct RenderLight
@@ -41,6 +54,14 @@ class Render
 	mat4 cameraViewProjectionInvMat_;
 	mat4 cameraViewInvMat_;
 
+	// prev
+	mat4 cameraPrevViewMat_;
+	mat4 cameraPrevViewProjMat_;
+	vec4 cameraPrevWorldPos_;
+	mat4 cameraPrevViewProjectionInvMat_;
+	mat4 cameraPrevViewInvMat_;
+
+
 	// Render internal resources
 	ManagedPtr<Texture> fontTexture;
 	ManagedPtr<Texture> environmentTexture;
@@ -48,7 +69,9 @@ class Render
 	ManagedPtr<Mesh> planeMesh;
 	ManagedPtr<Mesh> gridMesh;
 	ManagedPtr<Mesh> lineMesh;
+
 	Material* compositeMaterial{};
+	Material* copyMaterial{};
 
 	struct RenderVector
 	{
@@ -73,7 +96,9 @@ public:
 	void Init();
 	void Update();
 	void Free();
-	void RenderFrame(const mat4& ViewMat, const mat4& ProjMat);
+	void RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat);
+	auto GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format) -> Texture*;
+	void ExchangePrevRenderTexture(Texture *prev, Texture *some);
 
 public:
 	auto DLLEXPORT GetShader(const char* path, Mesh* meshattrib = nullptr, const std::vector<std::string>& defines = std::vector<std::string>()) -> Shader*;

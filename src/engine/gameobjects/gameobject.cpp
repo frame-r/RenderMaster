@@ -53,6 +53,8 @@ void GameObject::Copy(GameObject * original)
 
 void GameObject::Update(float dt)
 {
+	worldTransformPrev_ = worldTransform_;
+
 	for(int i = 0; i < childs_.size(); i++)
 		childs_[i]->Update(dt);
 }
@@ -206,6 +208,11 @@ auto DLLEXPORT GameObject::GetInvWorldTransform() -> mat4
 {
 	mat4 mat = worldTransform_.Inverse();
 	return mat;
+}
+
+auto DLLEXPORT GameObject::GetWorldTransformPrev() -> mat4
+{
+	return worldTransformPrev_;
 }
 
 auto DLLEXPORT GameObject::GetChild(size_t i) -> GameObject*

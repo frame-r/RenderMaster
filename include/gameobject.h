@@ -33,6 +33,8 @@ protected:
 	vec3 worldScale_{1.0f, 1.0f, 1.0f};
 	mat4 worldTransform_; // transforms Local -> World coordinates
 
+	mat4 worldTransformPrev_;
+
 	GameObject *parent_{nullptr};
 	std::vector<GameObject*> childs_;
 
@@ -74,6 +76,7 @@ public:
 	auto DLLEXPORT SetWorldTransform(const mat4& m) -> void;
 	auto DLLEXPORT GetWorldTransform() -> mat4;
 	auto DLLEXPORT GetInvWorldTransform() -> mat4;
+	auto DLLEXPORT GetWorldTransformPrev()->mat4;
 
 	// Hierarchy
 	auto DLLEXPORT GetParent() -> GameObject* { return parent_; }

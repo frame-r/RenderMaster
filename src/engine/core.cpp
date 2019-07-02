@@ -20,6 +20,9 @@ char logBuffer__[5000];
 //
 static std::chrono::steady_clock::time_point start;
 
+static std::unordered_map<const WindowHandle*, size_t> windowToViewId;
+static size_t viewIDCounter{};
+
 int getMsaaSamples(INIT_FLAGS flags);
 int getVSync(INIT_FLAGS flags);
 
@@ -232,7 +235,7 @@ void Core::mainLoop()
 		mat4 ProjMat = camera->GetProjectionMatrix(aspect);
 		mat4 ViewMat = camera->GetViewMatrix();
 
-		render->RenderFrame(ViewMat, ProjMat);
+		render->RenderFrame(0, ViewMat, ProjMat);
 		CORE_RENDER->SwapBuffers();
 	}else
 	{
@@ -264,7 +267,14 @@ auto DLLEXPORT Core::ManualRenderFrame(const WindowHandle *externHandle, const m
 	assert(false); // not impl
 #endif // WIN32
 
-	render->RenderFrame(ViewMat, ProjMat);
+	auto it = windowToViewId.find(externHandle);
+
+	if (it == windowToViewId.end())
+		windowToViewId[externHandle] = viewIDCounter++;
+
+	size_t viewID = windowToViewId[externHandle];
+
+	render->RenderFrame(viewID, ViewMat, ProjMat);
 }
 
 auto DLLEXPORT Core::AddProfilerCallback(IProfilerCallback * c) -> void

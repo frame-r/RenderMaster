@@ -27,10 +27,8 @@
 	{
 		float4 color : SV_Target0;
 		float4 shading : SV_Target1;
-
-		#ifdef ENG_INPUT_NORMAL
-			float4 normal : SV_Target2;
-		#endif
+		float4 velocity : SV_Target2;
+		float4 normal : SV_Target3;
 	};
 
 	FS_OUT mainFS(VS_OUT fs_input)
@@ -44,6 +42,11 @@
 		#if defined(ENG_INPUT_TEXCOORD) && defined(albedo_map)
 			out_color.color *= TEXTURE_UV_SAMPLE(albedo, fs_input.TexCoord.xy);
 		#endif
+
+		// velocity
+		float2 uv_cur = (fs_input.ViewPos.xy / fs_input.ViewPos.w) * 0.5 + float2(0.5, 0.5);
+		float2 uv_prev = (fs_input.ViewPosPrev.xy / fs_input.ViewPosPrev.w) * 0.5 + float2(0.5, 0.5);
+		out_color.velocity = float4(uv_cur - uv_prev, 0, 0);
 
 		#ifdef ENG_INPUT_NORMAL
 		

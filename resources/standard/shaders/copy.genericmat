@@ -1,12 +1,5 @@
 <?xml version="1.0"?>
-<generic_material id="composite">
-	
-	<def id="specular_quality" 
-       value0="REFLECTION_MIPMAP" 
-       value1="REFLECTION_GGX_LOW"
-       value2="REFLECTION_GGX_MEDIUM"
-       value3="REFLECTION_GGX_HIGH"
-       >0</def>
+<generic_material id="copy">
   
 	<def id="view_mode" 
 		value0="VIEW_MODE_FINAL" 
@@ -18,6 +11,6 @@
 		value6="VIEW_MODE_COLOR_REPROJECTION"
 		>0</def>
 	
-	<shader>composite.shader</shader>
+	<shader>copy.shader</shader>
 
 </generic_material>

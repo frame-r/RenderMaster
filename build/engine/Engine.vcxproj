@@ -268,12 +268,18 @@
     <ClCompile Include="..\..\src\engine\thirdparty\simplecpp\SimpleCpp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\resources\standard\shaders\camera_velocity.shader" />
+    <None Include="..\..\resources\standard\shaders\composite.genericmat" />
     <None Include="..\..\resources\standard\shaders\composite.shader" />
+    <None Include="..\..\resources\standard\shaders\copy.genericmat" />
+    <None Include="..\..\resources\standard\shaders\copy.shader" />
     <None Include="..\..\resources\standard\shaders\deferred_light.shader" />
     <None Include="..\..\resources\standard\shaders\font.shader" />
     <None Include="..\..\resources\standard\shaders\id.shader" />
+    <None Include="..\..\resources\standard\shaders\mesh.genericmat" />
     <None Include="..\..\resources\standard\shaders\mesh.shader" />
     <None Include="..\..\resources\standard\shaders\primitive.shader" />
+    <None Include="..\..\resources\standard\shaders\reprojection.shader" />
     <None Include="..\..\src\engine\corerender\dx11\dx_objects.inl" />
     <None Include="..\..\src\engine\corerender\dx11\states_pools.inl" />
     <None Include="..\..\src\engine\yaml.inl" />

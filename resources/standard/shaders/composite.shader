@@ -12,8 +12,9 @@
 	Texture2D texture_diffuse_light : register(t3);
 	Texture2D texture_specular_light : register(t4);
 	Texture2D texture_depth : register(t5);
+
 	TextureCube texture_environment : register(t6);
-	SamplerState sampler_environment : register(s6);	
+	SamplerState sampler_environment : register(s6);
 
 	cbuffer parameters
 	{
@@ -185,17 +186,7 @@
 		color = srgb(color);
 		//color = Tonemap_Unreal(color); // use without gamma correction!
 
-		#ifdef VIEW_MODE_NORMAL
-			return float4(N.x * 0.5 + 0.5, N.y * 0.5 + 0.5, N.z * 0.5 + 0.5, 1.0);
-		#elif VIEW_MODE_ALBEDO
-			return float4(albedo, 1.0);
-		#elif VIEW_MODE_DIFFUSE_LIGHT
-			return float4(kD * diffuseBRDF, 1.0);
-		#elif VIEW_MODE_SPECULAR_LIGHT
-			return float4(specularBRDF, 1.0);
-		#else
-			return float4(color, 1.0);
-		#endif
+		return float4(color, 1.0);
 	}
 
 #endif

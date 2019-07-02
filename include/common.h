@@ -446,6 +446,14 @@ enum class VIEW_MODE
 	ALBEDO,
 	DIFFUSE_LIGHT,
 	SPECULAR_LIGHT,
+	VELOCITY,
+	COLOR_REPROJECTION
+};
+
+enum class PREV_TEXTURES
+{
+	UNKNOWN,
+	COLOR
 };
 
 struct MeshDataDesc

@@ -225,6 +225,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	view_cb->addItem("Albedo");
 	view_cb->addItem("Diffuse light (only analytic)");
 	view_cb->addItem("Specular light (only analytic)");
+	view_cb->addItem("Velocity");
+	view_cb->addItem("Color reprojection");
 	ui->mainToolBar->addWidget(view_cb);
 	connect(view_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [view_cb](int idx)->void
 	{
