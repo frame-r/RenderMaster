@@ -9,8 +9,8 @@ Texture2D texture_shading : register(t2);
 Texture2D texture_diffuse_light : register(t3);
 Texture2D texture_specular_light : register(t4);
 Texture2D texture_velocity : register(t5);
-Texture2D texture_color_reprojection : register(t6);
-Texture2D texture_color : register(t7);
+Texture2D texture_color : register(t6);
+Texture2D texture_color_reprojection : register(t7);
 
 float4 mainFS(VS_OUT fs_input, float4 screenPos : SV_Position) : SV_Target0
 {

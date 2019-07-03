@@ -42,6 +42,12 @@ void Settings::OnEngineInit(Core *c)
 		render->SetSpecularQuality(ui->spec_quality_cb->currentIndex());
 	}));
 
+	_connections.emplace_back(connect(ui->taa_cb, &QCheckBox::toggled, [this](bool value)->void
+	{
+		Render *render = editor->core->GetRender();
+		render->SetTAA(value);
+	}));
+
 	ui->diffuse_env_sl->setValue(render->GetDiffuseEnvironemnt() * ui->diffuse_env_sl->maximum());
 	setLabel(ui->diffuse_env_l, render->GetDiffuseEnvironemnt());
 
@@ -49,6 +55,9 @@ void Settings::OnEngineInit(Core *c)
 	setLabel(ui->specular_env_l, render->GetSpecularEnvironemnt());
 
 	ui->spec_quality_cb->setCurrentIndex(render->GetSpecularQuality());
+
+	ui->taa_cb->setChecked(render->IsTAA());
+
 }
 
 void Settings::sliderOChanged(int i)

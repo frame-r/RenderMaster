@@ -175,9 +175,6 @@
     <None Include="..\..\resources\standard\shaders\copy.shader">
       <Filter>shaders</Filter>
     </None>
-    <None Include="..\..\resources\standard\shaders\camera_velocity.shader">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="..\..\resources\standard\shaders\reprojection.shader">
       <Filter>shaders</Filter>
     </None>
@@ -188,6 +185,9 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\resources\standard\shaders\mesh.genericmat">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\taa.shader">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

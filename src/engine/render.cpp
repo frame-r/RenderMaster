@@ -54,7 +54,8 @@ struct RenderTexture
 static vector<RenderTexture> renderTextures;
 static vector<RenderTexture> prevRenderTextures;
 
-static const uint fontWidth[256] = {
+static const uint fontWidth[256] =
+{
  8 ,8 ,8 ,8 ,8 ,8 ,8 ,8 ,8, 8 ,8 ,8 ,8 ,0 ,8 ,8 ,8 ,8 ,8, 8
 ,8 ,8 ,8 ,8 ,8 ,8 ,8 ,8 ,8, 8, 8 ,8 ,4 ,4 ,5 ,8 ,7 ,1 ,10,3
 ,4, 4, 5, 9, 3, 5, 3, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 3
@@ -67,7 +68,29 @@ static const uint fontWidth[256] = {
 ,4, 8, 6, 3, 3, 5, 6, 7,12,12, 12,6, 8, 8, 8, 8, 8, 8,11, 8
 ,7, 7, 7, 7, 3, 3, 3, 3, 9,10, 10,10,10,10,10,9,10, 9, 9, 9
 ,9, 7, 7, 7, 7, 7, 7, 7, 7, 7, 11, 6,7, 7, 7, 7, 3, 3, 3, 3
-,7, 7, 8, 8, 8, 8, 8, 9, 8, 7, 7, 7, 7, 6, 8, 6};
+,7, 7, 8, 8, 8, 8, 8, 9, 8, 7, 7, 7, 7, 6, 8, 6
+};
+
+static const vec2 taaSamples[16] =
+{
+	vec2(1.0f / 2.0f,  1.0f / 3.0f),
+	vec2(1.0f / 4.0f,  2.0f / 3.0f),
+	vec2(3.0f / 4.0f,  1.0f / 9.0f),
+	vec2(1.0f / 8.0f,  4.0f / 9.0f),
+	vec2(5.0f / 8.0f,  7.0f / 9.0f),
+	vec2(3.0f / 8.0f,  2.0f / 9.0f),
+	vec2(7.0f / 8.0f,  5.0f / 9.0f),
+	vec2(1.0f / 16.0f,  8.0f / 9.0f),
+	vec2(9.0f / 16.0f,  1.0f / 27.0f),
+	vec2(5.0f / 16.0f, 10.0f / 27.0f),
+	vec2(13.0f / 16.0f, 19.0f / 27.0f),
+	vec2(3.0f / 16.0f,  4.0f / 27.0f),
+	vec2(11.0f / 16.0f, 13.0f / 27.0f),
+	vec2(7.0f / 16.0f, 22.0f / 27.0f),
+	vec2(15.0f / 16.0f,  7.0f / 27.0f),
+	vec2(1.0f / 32.0f, 16.0f / 27.0f)
+};
+
 
 template<typename T>
 void addObjectsRecursive(std::vector<T*>& ret, GameObject *root, OBJECT_TYPE type)
@@ -355,33 +378,74 @@ auto DLLEXPORT Render::ReleaseRenderTexture(Texture* tex) -> void
 	std::for_each(renderTextures.begin(), renderTextures.end(), [tex](RenderTexture& t) { if (tex == t.pointer.get()) t.free = 1; });
 }
 
-void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat)
+void Render::RenderFrame(size_t viewID, const mat4& ViewRef, const mat4& ProjRef)
 {
-	cameraViewProjMat_			= ProjMat * ViewMat;
-	cameraViewMat_				= ViewMat;
-	cameraWorldPos_				= ViewMat.Inverse().Column3(3);
-	cameraViewProjectionInvMat_ = cameraViewProjMat_.Inverse();
-	cameraViewInvMat_			= cameraViewMat_.Inverse();
+	uint w, h;
+	CORE_RENDER->GetViewport(&w, &h);
 
 	ViewData& data = viewsDataMap[viewID];
 
+	cameraProjUnjitteredMat_ = ProjRef;
+
+	cameraProjMat_ = ProjRef;
+	vec2 taaOfffset{};
+	if (taa)
+	{
+		taaOfffset = taaSamples[_core->frame() % 16];
+		taaOfffset = (taaOfffset * 2.0f - vec2(1, 1));
+
+		cameraProjMat_.el_2D[0][2] += taaOfffset.x / w;
+		cameraProjMat_.el_2D[1][2] += taaOfffset.y / h;
+
+		// rejitter prev
+		if (_core->frame() > 1)
+			cameraPrevViewProjMatRejittered_ = data.cameraProjUnjitteredMat_;
+		else
+			cameraPrevViewProjMatRejittered_ = ProjRef;
+
+		cameraPrevViewProjMatRejittered_.el_2D[0][2] += taaOfffset.x / w;
+		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOfffset.y / h;
+
+		if (_core->frame() > 1)
+			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * data.cameraViewMat_;
+		else
+			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * ViewRef;
+	}
+	
+	cameraViewProjMat_			= cameraProjMat_ * ViewRef;
+	cameraViewMat_				= ViewRef;
+	cameraWorldPos_				= ViewRef.Inverse().Column3(3);
+	cameraViewProjectionInvMat_ = cameraViewProjMat_.Inverse();
+	cameraViewInvMat_			= cameraViewMat_.Inverse();
+
+	// Restore prev matricies
 	if (_core->frame() > 1)
 	{
-		cameraPrevViewProjMat_			= data.cameraViewProjMat_;
-		cameraPrevViewMat_				= data.cameraViewMat_;
-		cameraPrevWorldPos_				= data.cameraWorldPos_;
+		cameraPrevProjUnjitteredMat_ = data.cameraProjUnjitteredMat_;
+		cameraPrevProjMat_ = data.cameraProjMat_;
+		cameraPrevViewProjMat_ = data.cameraViewProjMat_;
+		cameraPrevViewMat_ = data.cameraViewMat_;
+		cameraPrevWorldPos_ = data.cameraWorldPos_;
 		cameraPrevViewProjectionInvMat_ = data.cameraViewProjectionInvMat_;
-		cameraPrevViewInvMat_			= data.cameraViewInvMat_;
+		cameraPrevViewInvMat_ = data.cameraViewInvMat_;
 	}
 	else
 	{
-		cameraPrevViewProjMat_			= cameraViewProjMat_;
-		cameraPrevViewMat_				= cameraViewMat_;
-		cameraPrevWorldPos_				= cameraWorldPos_;
+		cameraPrevProjUnjitteredMat_ = cameraProjUnjitteredMat_;
+		cameraPrevProjMat_ = cameraProjMat_;
+		cameraPrevViewProjMat_ = cameraViewProjMat_;
+		cameraPrevViewMat_ = cameraViewMat_;
+		cameraPrevWorldPos_ = cameraWorldPos_;
 		cameraPrevViewProjectionInvMat_ = cameraViewProjectionInvMat_;
-		cameraPrevViewInvMat_			= cameraViewInvMat_;
+		cameraPrevViewInvMat_ = cameraViewInvMat_;
 	}
 
+
+	bool colorReprojection = viewMode == VIEW_MODE::COLOR_REPROJECTION;
+
+	// Save prev matricies
+	data.cameraProjUnjitteredMat_ = cameraProjUnjitteredMat_;
+	data.cameraProjMat_ = cameraProjMat_;
 	data.cameraViewProjMat_ = cameraViewProjMat_;
 	data.cameraViewMat_ = cameraViewMat_;
 	data.cameraWorldPos_ = cameraWorldPos_;
@@ -389,12 +453,8 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	data.cameraViewInvMat_ = cameraViewInvMat_;
 
 
-	uint w, h;
-	CORE_RENDER->GetViewport(&w, &h);
-
 	RenderBuffers buffers;
 	buffers.color =				GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-	buffers.color_reprojected =	GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
 	buffers.velocity =			GetRenderTexture(w, h, TEXTURE_FORMAT::RG16F);
 	buffers.depth =				CORE_RENDER->GetSurfaceDepthTexture();
 	buffers.albedo =			GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
@@ -402,6 +462,8 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	buffers.specularLight =		GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA16F);
 	buffers.normal =			GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA32F);
 	buffers.shading =			GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+	if (colorReprojection)
+		buffers.color_reprojected = GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
 
 	Texture* colorPrev = GetPrevRenderTexture(PREV_TEXTURES::COLOR, w, h, TEXTURE_FORMAT::RGBA8);
 
@@ -422,24 +484,25 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	}
 
 	// Color reprojection
+	if (colorReprojection)
 	{
 		Shader* shader = GetShader("reprojection.shader", planeMesh.get());
 		if (shader)
 		{
 			Texture* texs_rt[1] = { buffers.color_reprojected };
 			CORE_RENDER->SetRenderTextures(1, texs_rt, nullptr);
-
+	
 			Texture* texs[2] = { colorPrev, buffers.velocity };
 			CORE_RENDER->BindTextures(2, texs);
 			CORE_RENDER->SetShader(shader);
-
-			vec4 s(w, h, 0, 0);
+	
+			vec4 s((float)w, (float)h, 0, 0);
 			shader->SetVec4Parameter("bufer_size", &s);
 			shader->FlushParameters();
-
+	
 			CORE_RENDER->Draw(planeMesh.get(), 1);
 			CORE_RENDER->BindTextures(2, nullptr);
-
+	
 			CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
 		}
 	}
@@ -510,7 +573,8 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 			CORE_RENDER->SetDepthTest(0);
 
-			Texture *texs[7] = {
+			constexpr int tex_count = 7;
+			Texture *texs[tex_count] = {
 				buffers.albedo,
 				buffers.normal,
 				buffers.shading,
@@ -519,13 +583,39 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 				buffers.depth,
 				environmentTexture.get()
 			};
-			CORE_RENDER->BindTextures(7, texs);
+
+			CORE_RENDER->BindTextures(tex_count, texs);
 			{
 				CORE_RENDER->Draw(planeMesh.get(), 1);
 			}
-			CORE_RENDER->BindTextures(7, nullptr);
+			CORE_RENDER->BindTextures(tex_count, nullptr);
 		}
 	}
+
+	if (taa)
+		if (Shader *shader = GetShader("taa.shader", planeMesh.get()))
+		{
+			Texture* taaOut = GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+
+			Texture* texs_rt[1] = { taaOut };
+			CORE_RENDER->SetRenderTextures(1, texs_rt, nullptr);
+	
+			Texture* texs[3] = { buffers.color, colorPrev, buffers.velocity };
+			CORE_RENDER->BindTextures(3, texs);
+			CORE_RENDER->SetShader(shader);
+	
+			vec4 s((float)w, (float)h, taaOfffset.x, taaOfffset.y);
+			shader->SetVec4Parameter("data", &s);
+			shader->FlushParameters();
+	
+			CORE_RENDER->Draw(planeMesh.get(), 1);
+			CORE_RENDER->BindTextures(3, nullptr);
+	
+			CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
+
+			std::swap(taaOut, buffers.color);
+			ReleaseRenderTexture(taaOut);
+		}
 
 	// Restore default render target
 	Texture *rts[1] = {CORE_RENDER->GetSurfaceColorTexture()};
@@ -536,20 +626,24 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 		if (auto shader = copyMaterial->GetShader(planeMesh.get()))
 		{
-			Texture* texs[8] = {
+			constexpr int tex_count = 8;
+			Texture* texs[tex_count] = {
 				buffers.albedo,
 				buffers.normal,
 				buffers.shading,
 				buffers.diffuseLight,
 				buffers.specularLight,
 				buffers.velocity,
-				buffers.color_reprojected,
-				buffers.color
+				buffers.color,
+				colorReprojection ? buffers.color_reprojected : nullptr
 			};
-			CORE_RENDER->BindTextures(8, texs);
+			int tex_bind = tex_count;
+			if (!colorReprojection) tex_bind--;
+
+			CORE_RENDER->BindTextures(tex_bind, texs);
 			CORE_RENDER->SetShader(shader);
 			CORE_RENDER->Draw(planeMesh.get(), 1);
-			CORE_RENDER->BindTextures(8, nullptr);
+			CORE_RENDER->BindTextures(tex_bind, nullptr);
 		}
 	}
 
@@ -584,13 +678,15 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 	buffers.depth = nullptr;
 	ReleaseRenderTexture(buffers.color);
-	ReleaseRenderTexture(buffers.color_reprojected);
 	ReleaseRenderTexture(buffers.albedo);
 	ReleaseRenderTexture(buffers.diffuseLight);
 	ReleaseRenderTexture(buffers.specularLight);
 	ReleaseRenderTexture(buffers.normal);
 	ReleaseRenderTexture(buffers.shading);
 	ReleaseRenderTexture(buffers.velocity);
+	if (colorReprojection)
+		ReleaseRenderTexture(buffers.color_reprojected);
+
 
 	ExchangePrevRenderTexture(colorPrev, buffers.color);
 }
@@ -683,7 +779,7 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 		mat->BindShaderTextures(shader, pass);
 
 		mat4 MVP = cameraViewProjMat_ * renderMesh.worldTransformMat;
-		mat4 MVP_prev = cameraPrevViewProjMat_ * renderMesh.worldTransformMatPrev;
+		mat4 MVP_prev = /*cameraPrevViewProjMat_*/ cameraPrevViewProjMatRejittered_ * renderMesh.worldTransformMatPrev;
 		mat4 M = renderMesh.worldTransformMat;
 		mat4 NM = M.Inverse().Transpose();
 

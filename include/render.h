@@ -3,6 +3,8 @@
 
 struct ViewData
 {
+	mat4 cameraProjUnjitteredMat_;
+	mat4 cameraProjMat_;
 	mat4 cameraViewMat_;
 	mat4 cameraViewProjMat_;
 	vec4 cameraWorldPos_;
@@ -48,6 +50,8 @@ class Render
 	};
 
 	// Frame data
+	mat4 cameraProjUnjitteredMat_;
+	mat4 cameraProjMat_;
 	mat4 cameraViewMat_;
 	mat4 cameraViewProjMat_;
 	vec4 cameraWorldPos_;
@@ -55,11 +59,15 @@ class Render
 	mat4 cameraViewInvMat_;
 
 	// prev
+	mat4 cameraPrevProjUnjitteredMat_;
+	mat4 cameraPrevProjMat_;
 	mat4 cameraPrevViewMat_;
 	mat4 cameraPrevViewProjMat_;
 	vec4 cameraPrevWorldPos_;
 	mat4 cameraPrevViewProjectionInvMat_;
 	mat4 cameraPrevViewInvMat_;
+
+	mat4 cameraPrevViewProjMatRejittered_; // previous Projection matrix with same jitter as current frame
 
 
 	// Render internal resources
@@ -86,6 +94,8 @@ class Render
 	VIEW_MODE viewMode{VIEW_MODE::FINAL};
 	float debugParam{1};
 	float debugParam1{1};
+
+	bool taa{true};
 
 	std::vector<RenderMesh> getRenderMeshes();
 	RenderScene getRenderScene();
@@ -117,6 +127,8 @@ public:
 	auto DLLEXPORT GetSpecularQuality() -> int { return specualrQuality; }
 	auto DLLEXPORT SetViewMode(VIEW_MODE value) -> void { viewMode = value; }
 	auto DLLEXPORT GetViewMode() -> VIEW_MODE { return viewMode; }
+	auto DLLEXPORT IsTAA() -> bool { return taa; }
+	auto DLLEXPORT SetTAA(bool value) -> void { taa = value; }
 
 	// debug
 	auto DLLEXPORT SetDebugParam(float v) -> void { debugParam = v; }
