@@ -929,5 +929,35 @@ struct quat
 	}
 };
 
+inline float dot(const vec3& a, const vec3& b)
+{
+	return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+inline float max(float a, float b)
+{
+	return a > b ? a : b;
+}
+
+inline float min(float a, float b)
+{
+	return a > b ? b : a;
+}
+
+inline vec3 normalize(const vec3& v)
+{
+	float len = v.Lenght();
+	return v / len;
+}
+
+inline vec3 cross(const vec3& point1 ,const vec3& point)
+{
+	return vec3(point1.y * point.z - point1.z * point.y, point1.z * point.x - point1.x * point.z, point1.x * point.y - point1.y * point.x);
+}
+
+inline float saturate(float a)
+{
+	return max(min(a, 1.0f), 0);
+}
 
 #pragma warning(default : 4201)
