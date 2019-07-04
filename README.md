@@ -7,7 +7,7 @@ Graphic engine.
 * Physically based materials
 * Image based lighting
 * Temporal anti-aliasing
-* Game objects hearachy
+* Game objects hierarchy
 
 ### Editor
 * Manipulators (Translate, Rotate)

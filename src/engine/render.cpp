@@ -383,6 +383,12 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewRef, const mat4& ProjRef
 	uint w, h;
 	CORE_RENDER->GetViewport(&w, &h);
 
+	// turn off TAA if not final render to prevent jittering frame
+	// TODO: do TAA for debug views too
+	bool taa_prev_state = taa;
+	if (viewMode != VIEW_MODE::FINAL)
+		taa = false;
+
 	ViewData& data = viewsDataMap[viewID];
 
 	cameraProjUnjitteredMat_ = ProjRef;
@@ -689,6 +695,8 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewRef, const mat4& ProjRef
 
 
 	ExchangePrevRenderTexture(colorPrev, buffers.color);
+
+	taa = taa_prev_state;
 }
 
 Texture* Render::GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format)
