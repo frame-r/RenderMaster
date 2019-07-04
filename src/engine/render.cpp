@@ -811,10 +811,10 @@ void Render::Init()
 
 	MaterialManager* mm = _core->GetMaterialManager();
 
-	compositeMaterial = mm->CreateMaterial("composite");
+	compositeMaterial = mm->CreateInternalMaterial("composite");
 	assert(compositeMaterial);
 
-	copyMaterial = mm->CreateMaterial("copy");
+	copyMaterial = mm->CreateInternalMaterial("copy");
 	assert(copyMaterial);
 
 	Log("Render initialized");
@@ -841,10 +841,6 @@ void Render::Update()
 
 void Render::Free()
 {
-	MaterialManager* mm = _core->GetMaterialManager();
-	mm->DestoryMaterial(compositeMaterial);
-	compositeMaterial = nullptr;
-
 	delete whiteTexture;
 	environmentTexture.release();
 	records.clear();

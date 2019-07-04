@@ -62,6 +62,8 @@ struct ShaderRequirement;
 class Shader;
 class Texture;
 class Light;
+class Material;
+struct GenericMaterial;
 
 
 enum class WINDOW_MESSAGE;

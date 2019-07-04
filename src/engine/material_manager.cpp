@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 static std::unordered_map<std::string, Material*> materials; // id -> Material
+static std::set<Material*> internalMaterials;
 static std::unordered_map<std::string, GenericMaterial*> genericMaterials; // id -> GenericMaterial
 static int matNameCounter;
 
@@ -53,6 +54,10 @@ void MaterialManager::Free()
 	}
 	materials.clear();
 
+	for (Material* mat : internalMaterials)
+		delete mat;
+	internalMaterials.clear();
+
 	for (auto &m : genericMaterials)
 		delete m.second;
 
@@ -61,6 +66,8 @@ void MaterialManager::Free()
 
 auto DLLEXPORT MaterialManager::CreateMaterial(const char* genericmat) -> Material*
 {
+	Material* ret = nullptr;
+
 	auto it = genericMaterials.find(genericmat);
 
 	if (it == genericMaterials.end())
@@ -76,26 +83,57 @@ auto DLLEXPORT MaterialManager::CreateMaterial(const char* genericmat) -> Materi
 		id = "material_" + std::to_string(matNameCounter);
 	}
 
-	Material *mat = new Material(id, it->second);
-	materials[id] = mat;
-	return mat;
+	ret = new Material(id, it->second);
+	materials[id] = ret;
+
+	return ret;
+}
+
+auto DLLEXPORT MaterialManager::CreateInternalMaterial(const char* genericmat) -> Material*
+{
+	Material* ret = nullptr;
+
+	auto it = genericMaterials.find(genericmat);
+
+	if (it == genericMaterials.end())
+	{
+		LogCritical("MaterialManager::CreateMaterial(): unable find material %s", genericmat);
+		return nullptr;
+	}
+
+	ret = new Material("internal material", it->second);
+	internalMaterials.insert(ret);
+
+	return ret;
 }
 
 auto DLLEXPORT MaterialManager::DestoryMaterial(Material* mat) -> void
 {
 	for (auto iter = materials.begin(); iter != materials.end(); ) {
 		if (iter->second == mat)
+		{
 			materials.erase(iter++);
+			delete mat;
+			return;
+		}
 		else
 			++iter;
 	}
-	delete mat;
+
+	LogWarning("DestoryMaterial(): unable find material");
+	
 }
 
 auto DLLEXPORT MaterialManager::GetMaterial(const char * path) -> Material*
 {
+	Material* ret = nullptr;
+
 	auto it = materials.find(path);
-	return it == materials.end() ? nullptr : it->second;
+
+	if (it != materials.end())
+		ret = it->second;
+
+	return ret;
 }
 
 auto DLLEXPORT MaterialManager::GetGenericMaterial(const char* path) -> GenericMaterial*
