@@ -52,6 +52,8 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 	if (!mat)
 		return;
 
+	bool disable = mat == editor->core->GetMaterialManager()->GetDiffuseMaterial();
+
 	GenericMaterial *genmat = mat->GetGenericMaterial();
 
 	for (size_t i = 0; i < genmat->params_.size(); i++)
@@ -61,6 +63,8 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 			continue;
 
 		QSlider *sl = new QSlider(this);
+		if (disable)
+			sl->setDisabled(true);
 
 		int valueInt = mat->GetParamFloat(p.id.c_str()) * sl->maximum();
 		sl->setValue(valueInt);
@@ -89,6 +93,8 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 			continue;
 
 		ColorWidget *sl = new ColorWidget(this);
+		if (disable)
+			sl->setDisabled(true);
 
 		vec4 current_color = mat->GetParamFloat4(p.id.c_str());
 		sl->ChangeColor(EngToQtColor(current_color));
@@ -107,6 +113,8 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 	{
 		QCheckBox *cb = new QCheckBox(this);
 		cb->setChecked(mat->GetDef(v.first.c_str()));
+		if (disable)
+			cb->setDisabled(true);
 
 		connect(cb, &QCheckBox::toggled, [v, this, mat](bool f)
 		{
@@ -128,6 +136,9 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 		ui->material_lt->addRow(tr(v.id.c_str()), l);
 		l->SetPath(mat->GetTexture(v.id.c_str()));
 		l->SetUV(mat->GetUV(v.id.c_str()));
+
+		if (disable)
+			l->setDisabled(true);
 
 		connect(l, &TextureLineEdit::OnUVChanged, this, [v, mat](const vec4& uv)
 		{

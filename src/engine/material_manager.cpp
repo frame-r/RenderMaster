@@ -10,6 +10,7 @@ static std::unordered_map<std::string, Material*> materials; // id -> Material
 static std::set<Material*> internalMaterials;
 static std::unordered_map<std::string, GenericMaterial*> genericMaterials; // id -> GenericMaterial
 static int matNameCounter;
+static Material *diffuseMaterial;
 
 
 void MaterialManager::Init()
@@ -43,6 +44,9 @@ void MaterialManager::Init()
 		m->LoadXML();
 		materials[m->GetId()] = m;
 	}
+
+	// check standard material exist
+	diffuseMaterial = CreateInternalMaterial("mesh");
 }
 
 void MaterialManager::Free()
@@ -124,11 +128,11 @@ auto DLLEXPORT MaterialManager::DestoryMaterial(Material* mat) -> void
 	
 }
 
-auto DLLEXPORT MaterialManager::GetMaterial(const char * path) -> Material*
+auto DLLEXPORT MaterialManager::GetMaterial(const char *id) -> Material*
 {
 	Material* ret = nullptr;
 
-	auto it = materials.find(path);
+	auto it = materials.find(id);
 
 	if (it != materials.end())
 		ret = it->second;
@@ -140,4 +144,9 @@ auto DLLEXPORT MaterialManager::GetGenericMaterial(const char* path) -> GenericM
 {
 	auto it = genericMaterials.find(path);
 	return it == genericMaterials.end() ? nullptr : it->second;
+}
+
+auto DLLEXPORT MaterialManager::GetDiffuseMaterial() -> Material*
+{
+	return diffuseMaterial;
 }

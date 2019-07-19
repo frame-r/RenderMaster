@@ -5,6 +5,7 @@
 #include "material_manager.h"
 #include "yaml.inl"
 
+
 void Model::Copy(GameObject * original)
 {
 	GameObject::Copy(original);
@@ -17,11 +18,12 @@ void Model::Copy(GameObject * original)
 Model::Model()
 {
 	type_ = OBJECT_TYPE::MODEL;
+	mat_ = MAT_MAN->GetDiffuseMaterial();
 }
 
-Model::Model(ManagedPtr<Mesh> mesh) : mesh_(mesh)
+Model::Model(ManagedPtr<Mesh> mesh) : Model()
 {
-	type_ = OBJECT_TYPE::MODEL;
+	mesh_ = mesh;
 }
 
 auto DLLEXPORT Model::GetMesh() -> Mesh *

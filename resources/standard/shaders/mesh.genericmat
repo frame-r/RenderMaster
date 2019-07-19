@@ -5,7 +5,7 @@
 		<def id="normal_map">0</def>
 		<def id="albedo_map">0</def>
 		
-		<param id="roughness" type="float">0.0</param>
+		<param id="roughness" type="float">1.0</param>
 		<param id="metallness" type="float">0.0</param>
 		<param id="normal_intensity" type="float">1</param>
 		<param id="base_color" type="color">1 1 1 1</param>

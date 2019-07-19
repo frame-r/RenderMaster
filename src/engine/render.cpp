@@ -378,7 +378,7 @@ auto DLLEXPORT Render::ReleaseRenderTexture(Texture* tex) -> void
 	std::for_each(renderTextures.begin(), renderTextures.end(), [tex](RenderTexture& t) { if (tex == t.pointer.get()) t.free = 1; });
 }
 
-void Render::RenderFrame(size_t viewID, const mat4& ViewRef, const mat4& ProjRef)
+void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat)
 {
 	uint w, h;
 	CORE_RENDER->GetViewport(&w, &h);
@@ -389,12 +389,13 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewRef, const mat4& ProjRef
 	if (viewMode != VIEW_MODE::FINAL)
 		taa = false;
 
-	ViewData& data = viewsDataMap[viewID];
+	cameraProjUnjitteredMat_ = ProjMat;
+	cameraProjMat_ = ProjMat;
 
-	cameraProjUnjitteredMat_ = ProjRef;
+	ViewData& prev = viewsDataMap[viewID];
 
-	cameraProjMat_ = ProjRef;
-	vec2 taaOfffset{};
+	vec2 taaOfffset;
+
 	if (taa)
 	{
 		taaOfffset = taaSamples[_core->frame() % 16];
@@ -405,35 +406,37 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewRef, const mat4& ProjRef
 
 		// rejitter prev
 		if (_core->frame() > 1)
-			cameraPrevViewProjMatRejittered_ = data.cameraProjUnjitteredMat_;
+			cameraPrevViewProjMatRejittered_ = prev.cameraProjUnjitteredMat_;
 		else
-			cameraPrevViewProjMatRejittered_ = ProjRef;
+			cameraPrevViewProjMatRejittered_ = ProjMat;
 
 		cameraPrevViewProjMatRejittered_.el_2D[0][2] += taaOfffset.x / w;
 		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOfffset.y / h;
 
 		if (_core->frame() > 1)
-			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * data.cameraViewMat_;
+			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * prev.cameraViewMat_;
 		else
-			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * ViewRef;
+			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * ViewMat;
 	}
+	else
+		cameraPrevViewProjMatRejittered_ = prev.cameraProjMat_ * prev.cameraViewMat_;
 	
-	cameraViewProjMat_			= cameraProjMat_ * ViewRef;
-	cameraViewMat_				= ViewRef;
-	cameraWorldPos_				= ViewRef.Inverse().Column3(3);
+	cameraViewProjMat_			= cameraProjMat_ * ViewMat;
+	cameraViewMat_				= ViewMat;
+	cameraWorldPos_				= ViewMat.Inverse().Column3(3);
 	cameraViewProjectionInvMat_ = cameraViewProjMat_.Inverse();
 	cameraViewInvMat_			= cameraViewMat_.Inverse();
 
 	// Restore prev matricies
 	if (_core->frame() > 1)
 	{
-		cameraPrevProjUnjitteredMat_ = data.cameraProjUnjitteredMat_;
-		cameraPrevProjMat_ = data.cameraProjMat_;
-		cameraPrevViewProjMat_ = data.cameraViewProjMat_;
-		cameraPrevViewMat_ = data.cameraViewMat_;
-		cameraPrevWorldPos_ = data.cameraWorldPos_;
-		cameraPrevViewProjectionInvMat_ = data.cameraViewProjectionInvMat_;
-		cameraPrevViewInvMat_ = data.cameraViewInvMat_;
+		cameraPrevProjUnjitteredMat_ = prev.cameraProjUnjitteredMat_;
+		cameraPrevProjMat_ = prev.cameraProjMat_;
+		cameraPrevViewProjMat_ = prev.cameraViewProjMat_;
+		cameraPrevViewMat_ = prev.cameraViewMat_;
+		cameraPrevWorldPos_ = prev.cameraWorldPos_;
+		cameraPrevViewProjectionInvMat_ = prev.cameraViewProjectionInvMat_;
+		cameraPrevViewInvMat_ = prev.cameraViewInvMat_;
 	}
 	else
 	{
@@ -450,13 +453,13 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewRef, const mat4& ProjRef
 	bool colorReprojection = viewMode == VIEW_MODE::COLOR_REPROJECTION;
 
 	// Save prev matricies
-	data.cameraProjUnjitteredMat_ = cameraProjUnjitteredMat_;
-	data.cameraProjMat_ = cameraProjMat_;
-	data.cameraViewProjMat_ = cameraViewProjMat_;
-	data.cameraViewMat_ = cameraViewMat_;
-	data.cameraWorldPos_ = cameraWorldPos_;
-	data.cameraViewProjectionInvMat_ = cameraViewProjectionInvMat_;
-	data.cameraViewInvMat_ = cameraViewInvMat_;
+	prev.cameraProjUnjitteredMat_ = cameraProjUnjitteredMat_;
+	prev.cameraProjMat_ = cameraProjMat_;
+	prev.cameraViewProjMat_ = cameraViewProjMat_;
+	prev.cameraViewMat_ = cameraViewMat_;
+	prev.cameraWorldPos_ = cameraWorldPos_;
+	prev.cameraViewProjectionInvMat_ = cameraViewProjectionInvMat_;
+	prev.cameraViewInvMat_ = cameraViewInvMat_;
 
 
 	RenderBuffers buffers;
@@ -671,7 +674,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewRef, const mat4& ProjRef
 				transform.el_2D[0][0] = v.v.x;
 				transform.el_2D[1][0] = v.v.y;
 				transform.el_2D[2][0] = v.v.z;
-				mat4 MVP = data.cameraViewProjMat_ * transform;
+				mat4 MVP = prev.cameraViewProjMat_ * transform;
 				shader->SetMat4Parameter("MVP", &MVP);
 				shader->FlushParameters();
 
@@ -787,7 +790,7 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 		mat->BindShaderTextures(shader, pass);
 
 		mat4 MVP = cameraViewProjMat_ * renderMesh.worldTransformMat;
-		mat4 MVP_prev = /*cameraPrevViewProjMat_*/ cameraPrevViewProjMatRejittered_ * renderMesh.worldTransformMatPrev;
+		mat4 MVP_prev = cameraPrevViewProjMatRejittered_ * renderMesh.worldTransformMatPrev;
 		mat4 M = renderMesh.worldTransformMat;
 		mat4 NM = M.Inverse().Transpose();
 

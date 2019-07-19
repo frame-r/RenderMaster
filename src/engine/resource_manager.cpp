@@ -315,12 +315,12 @@ auto DLLEXPORT ResourceManager::CreateStreamMesh(const char *path) -> ManagedPtr
 
 auto DLLEXPORT ResourceManager::GetImportedMeshes() -> std::vector<std::string>
 {
-	std::vector<std::string> ret = {"std#plane", "std#grid", "std#line", "std#axes_arrows"};
+	vector<string> paths = FS->FilterPaths(".mesh");
 
-	// TODO: add all imported mesh
-	ret.push_back(".import\\teapot.mesh");
+	std::vector<std::string> stds = { "std#plane", "std#grid", "std#line", "std#axes_arrows" };
+	paths.insert(paths.begin(), stds.begin(), stds.end());
 
-	return ret;
+	return paths;
 }
 
 auto DLLEXPORT ResourceManager::Import(const char *path) -> void
