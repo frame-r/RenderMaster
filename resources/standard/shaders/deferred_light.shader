@@ -36,6 +36,7 @@
 
 		float4 shading = texture_shading.Load(int3(screenPos.xy, 0));
 		float roughness = shading.r;
+		
 		float metallic = shading.g;
 		float4 albedo = texture_albedo.Load(int3(screenPos.xy, 0));
 		float3 N = texture_normals.Load(int3(screenPos.xy, 0)).rgb * 2.0 - float3(1, 1, 1);
@@ -51,6 +52,7 @@
 		float NdotL = max(dot(N, L), 0.0);
 
 		float roughness_analytic = roughness * roughness; // use ^2 to match environment specular
+		roughness_analytic = max(roughness_analytic, 0.008);
 		
 		float3 H = normalize(L + V);
 		float VdotH = max(dot(V, H), 0.0);

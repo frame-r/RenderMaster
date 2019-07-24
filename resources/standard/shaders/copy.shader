@@ -21,9 +21,9 @@ float4 mainFS(VS_OUT fs_input, float4 screenPos : SV_Position) : SV_Target0
 	#elif VIEW_MODE_ALBEDO
 		return texture_albedo.Load(int3(screenPos.xy, 0));
 	#elif VIEW_MODE_DIFFUSE_LIGHT
-		return float4(1,1,1, 1.0); // not impl
+		return texture_diffuse_light.Load(int3(screenPos.xy, 0));
 	#elif VIEW_MODE_SPECULAR_LIGHT
-		return float4(1,1,1, 1.0); // not impl
+		return texture_specular_light.Load(int3(screenPos.xy, 0));
 	#elif VIEW_MODE_VELOCITY
 		return texture_velocity.Load(int3(screenPos.xy, 0)) * 10;
 	#elif VIEW_MODE_COLOR_REPROJECTION
