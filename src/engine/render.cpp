@@ -614,7 +614,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 			CORE_RENDER->SetShader(shader);
 	
 			vec4 s((float)w, (float)h, taaOfffset.x, taaOfffset.y);
-			shader->SetVec4Parameter("data", &s);
+			shader->SetVec4Parameter("viewport_data", &s);
 			shader->FlushParameters();
 	
 			CORE_RENDER->Draw(planeMesh.get(), 1);
