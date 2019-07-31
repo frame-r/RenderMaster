@@ -40,7 +40,7 @@
 		out_color.shading.y = metallness;
 		
 		#if defined(ENG_INPUT_TEXCOORD) && defined(albedo_map)
-			out_color.color *= TEXTURE_UV_SAMPLE(albedo, fs_input.TexCoord.xy);
+			out_color.color *= srgbInv(TEXTURE_UV_SAMPLE(albedo, fs_input.TexCoord.xy));
 		#endif
 
 		// velocity
