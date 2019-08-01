@@ -1,5 +1,5 @@
-#include "common.h"
-#include "vertex_post.h"
+#include "common.hlsli"
+#include "vertex_post.hlsli"
 
 //#define WHITE_BAKGROUND
 
@@ -41,7 +41,7 @@
 
 		float roughness = shading.r;
 		float metallic = shading.g;
-		float3 WorldPosition = getDepthToPosition(depth, fs_input.ndc, camera_view_projection_inv);
+		float3 WorldPosition = depthToPosition(depth, fs_input.ndc, camera_view_projection_inv);
 		float3 V = normalize(camera_position.xyz - WorldPosition);
 		float NdotV = max(dot(N, V), 0.0);
 
@@ -81,10 +81,10 @@
 
 		for (uint i = 0; i < GGX_SAMPLES; i++)
 		{
-			//float2 Xi = Hammersley2d(i, NumSamples);
+			//float2 Xi = hammersley2d(i, NumSamples);
 			float4 s = samples[i];
 
-			float3 H = ImportanceSampleGGX1(s, roughness2, N);
+			float3 H = importanceSampleGGX1(s, roughness2, N);
 			
 			float3 L = 2 * dot(V, H) * H - V;
 			float NoV = saturate(dot(N, V));
@@ -94,7 +94,7 @@
 
 			//if (NoL > 0)
 			{
-				float pdf = DistributionGGX(N, H, roughness) * NoH / (4 * NoV);
+				float pdf = distributionGGX(N, H, roughness) * NoH / (4 * NoV);
 				float lod = A - 0.5f * log2(pdf);
 				lod += 0.5 * pow(roughness, 2);
 
@@ -103,7 +103,7 @@
 #else
 				float3 SampleColor = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, L), lod).rgb;
 #endif
-				//float G = GeometrySmith(N, V, L, Roughness);
+				//float G = geometrySmith(N, V, L, Roughness);
 				//float Fc = pow(1 - VoH, 5);
 				//float3 F = (1 - Fc) * SpecularColor + Fc;
 				// Incident light = SampleColor * NoL
@@ -181,10 +181,10 @@
 
 		color *= 1.0f; // exposure
 
-		color = Tonemap_ACES(color);
-		//color = Tonemap_Reinhard(color);
+		color = tonemapACES(color);
+		//color = tonemapReinhard(color);
 		color = srgb(color);
-		//color = Tonemap_Unreal(color); // use without gamma correction!
+		//color = tonemapUnreal(color); // use without gamma correction!
 
 		return float4(color, 1.0);
 	}

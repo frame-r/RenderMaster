@@ -1,5 +1,5 @@
 
-#include "common.h"
+#include "common.hlsli"
 
 struct VS_OUT
 {

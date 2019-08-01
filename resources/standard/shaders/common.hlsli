@@ -1,5 +1,6 @@
 
-static const float Reflectance = 0.4; // F0 TODO: move to material parameters 
+
+static const float Reflectance = 0.4;
 
 #define TEXTURE_DECL(NAME, SLOT) \
 	Texture2D texture_ ## NAME : register(t ## SLOT); \
@@ -12,14 +13,14 @@ static const float Reflectance = 0.4; // F0 TODO: move to material parameters
 	texture_ ## NAME .Sample(sampler_ ## NAME , UV * uv_transform_ ## NAME .xy + uv_transform_ ## NAME  .zw)
 	
 
-float3 getDepthToPosition(float depth, float2 uv, float4x4 iprojection)
+float3 depthToPosition(float depth, float2 uv, float4x4 projectionInv)
 {
-	float4 position = mul(iprojection, float4(uv, depth, 1.0f));
+	float4 position = mul(projectionInv, float4(uv, depth, 1.0f));
 	return position.xyz / position.w;
 }
 float luma(float3 col)
 {
-	return 0.299*col.r + 0.587*col.g + 0.114*col.b;
+	return 0.299 *  col.r + 0.587 * col.g + 0.114 * col.b;
 }
 float3 srgb(float3 v)
 {
@@ -37,20 +38,22 @@ float4 srgbInv(float4 v)
 {
 	return float4(pow(v.x, 2.2), pow(v.y, 2.2), pow(v.z, 2.2), pow(v.w, 2.2));
 }
-float3 Tonemap_Reinhard(float3 x)
+
+//
+// Tonemapping
+//
+float3 tonemapReinhard(float3 x)
 {
-	// Reinhard et al. 2002, "Photographic Tone Reproduction for Digital Images", Eq. 3
 	return x / (1.0 + luma(x));
 }
 
-float3 Tonemap_Unreal(float3 x)
+// Gamma 2.2 correction is baked in, don't use with sRGB conversion!
+float3 tonemapUnreal(float3 x)
 {
-	// Unreal, Documentation: "Color Grading"
-	// Adapted to be close to Tonemap_ACES, with similar range
-	// Gamma 2.2 correction is baked in, don't use with sRGB conversion!
 	return x / (x + 0.155) * 1.019;
 }
-float3 Tonemap_ACES(float3 x)
+
+float3 tonemapACES(float3 x)
 {
 	const float a = 2.51;
 	const float b = 0.03;
@@ -60,6 +63,10 @@ float3 Tonemap_ACES(float3 x)
 	return (x * (a * x + b)) / (x * (c * x + d) + e);
 }
 
+
+//
+// lighting
+//
 float3 fresnelSchlick(float cosTheta, float3 F0)
 {
 	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
@@ -69,7 +76,7 @@ float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 	float spec = 1.0 - roughness;
 	return F0 + (max(float3(spec, spec, spec), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
-float DistributionGGX(float3 N, float3 H, float roughness)
+float distributionGGX(float3 N, float3 H, float roughness)
 {
 	float a      = roughness*roughness;
 	float a2     = a*a;
@@ -82,7 +89,7 @@ float DistributionGGX(float3 N, float3 H, float roughness)
 	
 	return num / denom;
 }
-float GeometrySchlickGGX(float NdotV, float roughness)
+float geometrySchlickGGX(float NdotV, float roughness)
 {
 	float r = (roughness + 1.0);
 	float k = (r*r) / 8.0;
@@ -92,17 +99,17 @@ float GeometrySchlickGGX(float NdotV, float roughness)
 	
 	return nom / denom;
 }
-float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
+float geometrySmith(float3 N, float3 V, float3 L, float roughness)
 {
 	float NdotV = max(dot(N, V), 0.0);
 	float NdotL = max(dot(N, L), 0.0);
-	float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-	float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+	float ggx2 = geometrySchlickGGX(NdotV, roughness);
+	float ggx1 = geometrySchlickGGX(NdotL, roughness);
 	
 	return ggx1 * ggx2;
 }
 
-float radicalInverse_VdC(uint bits)
+float radicalInverseVdC(uint bits)
 {
 	bits = (bits << 16) | (bits >> 16);
 	bits = ((bits & 0x55555555) << 1) | ((bits & 0xAAAAAAAA) >> 1);
@@ -112,19 +119,19 @@ float radicalInverse_VdC(uint bits)
 	return float(bits) * 2.3283064365386963e-10f; // / 0x100000000
  }
 
-float2 Hammersley2d(int i, int N)
+float2 hammersley2d(int i, int N)
 {
-	return float2(float(i)/float(N), radicalInverse_VdC(i));
+	return float2(float(i)/float(N), radicalInverseVdC(i));
 }
 
-float2 ImportanceSamplePhong(float2 xi, float a)
+float2 importanceSamplePhong(float2 xi, float a)
 {
 	float phi = 2.0f * 3.141592f * xi.x;
 	float theta = acos(pow(1.0f - xi.y, 1.0f / (a + 1.0f)));
 	return float2(phi, theta);
 }
 
-float3 ImportanceSampleGGX1(float4 s, float Roughness2, float3 N)
+float3 importanceSampleGGX1(float4 s, float Roughness2, float3 N)
 {
 	float a = Roughness2;
 	//float Phi = 2 * 3.1415926 * Xi.x;
@@ -141,7 +148,7 @@ float3 ImportanceSampleGGX1(float4 s, float Roughness2, float3 N)
 	return TangentX * H.x + TangentY * H.y + N * H.z;
 }
 
-float3 SphericalToCartesian(float2 s)
+float3 sphericalToCartesian(float2 s)
 {
 	return float3(sin(s.y) * cos(s.x), sin(s.y) * sin(s.x), cos(s.y));
 }

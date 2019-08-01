@@ -25,5 +25,6 @@ extern float SelectionThresholdInPixels;
 extern vec4 AxesColors[3];
 extern vec4 ColorYellow;
 extern vec4 ColorTransparent;
+extern const char* PrimitiveShaderName;
 
 #endif // MANIPULATORABSTRACT_H

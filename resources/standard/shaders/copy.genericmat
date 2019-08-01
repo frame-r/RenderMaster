@@ -11,6 +11,6 @@
 		value6="VIEW_MODE_COLOR_REPROJECTION"
 		>0</def>
 	
-	<shader>copy.shader</shader>
+	<shader>copy.hlsl</shader>
 
 </generic_material>

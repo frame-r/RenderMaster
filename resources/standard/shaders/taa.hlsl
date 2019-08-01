@@ -1,5 +1,5 @@
-#include "common.h"
-#include "vertex_post.h"
+#include "common.hlsli"
+#include "vertex_post.hlsli"
 
 #ifdef ENG_SHADER_PIXEL
 

@@ -1,5 +1,5 @@
-#include "common.h"
-#include "vertex_post.h"
+#include "common.hlsli"
+#include "vertex_post.hlsli"
 
 #ifdef ENG_SHADER_PIXEL
 
@@ -41,7 +41,7 @@
 		float4 albedo = texture_albedo.Load(int3(screenPos.xy, 0));
 		float3 N = texture_normals.Load(int3(screenPos.xy, 0)).rgb * 2.0 - float3(1, 1, 1);
 
-		float3 WorldPosition = getDepthToPosition(depth, fs_input.ndc, camera_view_projection_inv);
+		float3 WorldPosition = depthToPosition(depth, fs_input.ndc, camera_view_projection_inv);
 		float3 V = normalize(camera_position.xyz - WorldPosition);
 		float NdotV = max(dot(N, V), 0.0);
 
@@ -51,14 +51,14 @@
 		float3 L = light_direction.xyz;
 		float NdotL = max(dot(N, L), 0.0);
 
-		float roughness_analytic = roughness * roughness; // use ^2 to match environment specular
+		float roughness_analytic = roughness * roughness;
 		roughness_analytic = max(roughness_analytic, 0.008);
 		
 		float3 H = normalize(L + V);
 		float VdotH = max(dot(V, H), 0.0);
 
-		float D = DistributionGGX(N, H, roughness_analytic);
-		float G = GeometrySmith(N, V, L, roughness_analytic);
+		float D = distributionGGX(N, H, roughness_analytic);
+		float G = geometrySmith(N, V, L, roughness_analytic);
 		float3 F = fresnelSchlick(VdotH, F0);
 		
 		float3 specularBRDF = D * G * F /* NdotL*/ / (4 * NdotV /** NdotL*/ + 0.001);

@@ -66,7 +66,7 @@ void ManipulatorRotator::render(const CameraData &cam, const mat4& selectionTran
 	vec4 center = vec4(selectionTransform.Column3(3));
 	mat4 scaleMat(0.7f * axisScale(center, cam.ViewMat, cam.ProjectionMat, QPoint(screen.width(), screen.height())));
 
-	shader = render->GetShader("primitive.shader", meshLine.get());
+	shader = render->GetShader(PrimitiveShaderName, meshLine.get());
 	if (!shader)
 		return;
 
@@ -131,7 +131,7 @@ void ManipulatorRotator::render(const CameraData &cam, const mat4& selectionTran
 
 	coreRender->SetBlendState(BLEND_FACTOR::SRC_ALPHA, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA); // alpha blend
 
-	shader = render->GetShader("primitive.shader", meshSphere.get());
+	shader = render->GetShader(PrimitiveShaderName, meshSphere.get());
 	if (!shader)
 		return;
 	coreRender->SetShader(shader);

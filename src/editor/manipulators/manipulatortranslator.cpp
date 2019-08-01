@@ -124,7 +124,7 @@ ManipulatorTranslator::~ManipulatorTranslator()
 void ManipulatorTranslator::render(const CameraData& cam, const mat4& selectionTransform, const QRect& screen)
 {
 	Render *render = editor->core->GetRender();
-	Shader *shader = render->GetShader("primitive.shader", meshLine.get());
+	Shader *shader = render->GetShader(PrimitiveShaderName, meshLine.get());
 
 	if (!shader)
 		return;

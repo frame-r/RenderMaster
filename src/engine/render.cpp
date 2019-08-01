@@ -223,7 +223,7 @@ auto DLLEXPORT Render::RenderGUI() -> void
 
 	INPUT_ATTRUBUTE attribs = planeMesh.get()->GetAttributes();
 
-	Shader *shader = GetShader("font.shader");
+	Shader *shader = GetShader("font.hlsl");
 	if (!shader)
 		return;
 
@@ -495,7 +495,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	// Color reprojection
 	if (colorReprojection)
 	{
-		Shader* shader = GetShader("reprojection.shader", planeMesh.get());
+		Shader* shader = GetShader("reprojection.hlsl", planeMesh.get());
 		if (shader)
 		{
 			Texture* texs_rt[1] = { buffers.color_reprojected };
@@ -602,7 +602,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	}
 
 	if (taa)
-		if (Shader *shader = GetShader("taa.shader", planeMesh.get()))
+		if (Shader *shader = GetShader("taa.hlsl", planeMesh.get()))
 		{
 			Texture* taaOut = GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
 
@@ -663,7 +663,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	{
 		CORE_RENDER->SetDepthTest(1);
 
-		if (auto shader = GetShader("primitive.shader", lineMesh.get()))
+		if (auto shader = GetShader("primitive.hlsl", lineMesh.get()))
 		{
 			CORE_RENDER->SetShader(shader);
 
@@ -754,7 +754,7 @@ void Render::renderGrid()
 {
 	CORE_RENDER->SetDepthTest(1);
 
-	if (auto shader = GetShader("primitive.shader", gridMesh.get()))
+	if (auto shader = GetShader("primitive.hlsl", gridMesh.get()))
 	{
 		CORE_RENDER->SetShader(shader);
 

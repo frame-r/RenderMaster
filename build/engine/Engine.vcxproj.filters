@@ -53,19 +53,16 @@
     <ClInclude Include="..\..\include\structured_buffer.h" />
     <ClInclude Include="..\..\include\material.h" />
     <ClInclude Include="..\..\include\material_manager.h" />
-    <ClInclude Include="..\..\resources\standard\shaders\common.h">
-      <Filter>shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\resources\standard\shaders\vertex_post.h">
-      <Filter>shaders</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\engine\thirdparty\pugixml\pugiconfig.hpp">
       <Filter>thirdparty\pugixml</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\engine\thirdparty\pugixml\pugixml.hpp">
       <Filter>thirdparty\pugixml</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\resources\standard\shaders\vertex.h">
+    <ClInclude Include="..\..\resources\standard\shaders\vertex.hlsli">
+      <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\resources\standard\shaders\vertex_post.hlsli">
       <Filter>shaders</Filter>
     </ClInclude>
   </ItemGroup>
@@ -154,28 +151,7 @@
       <Filter>corerender\dx11</Filter>
     </None>
     <None Include="..\..\src\engine\yaml.inl" />
-    <None Include="..\..\resources\standard\shaders\composite.shader">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="..\..\resources\standard\shaders\deferred_light.shader">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\font.shader">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\mesh.shader">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\primitive.shader">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\id.shader">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\copy.shader">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\reprojection.shader">
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\resources\standard\shaders\copy.genericmat">
@@ -187,7 +163,31 @@
     <None Include="..\..\resources\standard\shaders\mesh.genericmat">
       <Filter>shaders</Filter>
     </None>
-    <None Include="..\..\resources\standard\shaders\taa.shader">
+    <None Include="..\..\resources\standard\shaders\common.hlsli">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\composite.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\copy.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\font.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\id.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\mesh.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\primitive.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\reprojection.hlsl">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\taa.hlsl">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

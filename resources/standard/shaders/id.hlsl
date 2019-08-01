@@ -1,5 +1,5 @@
 
-#include "vertex.h"
+#include "vertex.hlsli"
 
 
 #ifdef ENG_SHADER_PIXEL

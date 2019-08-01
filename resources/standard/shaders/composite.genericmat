@@ -18,6 +18,6 @@
 		value6="VIEW_MODE_COLOR_REPROJECTION"
 		>0</def>
 	
-	<shader>composite.shader</shader>
+	<shader>composite.hlsl</shader>
 
 </generic_material>
