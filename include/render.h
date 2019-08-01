@@ -17,7 +17,7 @@ class Render
 	struct RenderBuffers
 	{
 		Texture* color;
-		Texture* color_reprojected;
+		Texture* colorReprojected;
 		Texture* albedo;
 		Texture* normal;
 		Texture* shading;

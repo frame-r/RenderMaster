@@ -472,7 +472,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	buffers.normal =			GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA32F);
 	buffers.shading =			GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
 	if (colorReprojection)
-		buffers.color_reprojected = GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+		buffers.colorReprojected = GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
 
 	Texture* colorPrev = GetPrevRenderTexture(PREV_TEXTURES::COLOR, w, h, TEXTURE_FORMAT::RGBA8);
 
@@ -498,7 +498,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		Shader* shader = GetShader("reprojection.hlsl", planeMesh.get());
 		if (shader)
 		{
-			Texture* texs_rt[1] = { buffers.color_reprojected };
+			Texture* texs_rt[1] = { buffers.colorReprojected };
 			CORE_RENDER->SetRenderTextures(1, texs_rt, nullptr);
 	
 			Texture* texs[2] = { colorPrev, buffers.velocity };
@@ -644,7 +644,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 				buffers.specularLight,
 				buffers.velocity,
 				buffers.color,
-				colorReprojection ? buffers.color_reprojected : nullptr
+				colorReprojection ? buffers.colorReprojected : nullptr
 			};
 			int tex_bind = tex_count;
 			if (!colorReprojection) tex_bind--;
@@ -694,7 +694,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	ReleaseRenderTexture(buffers.shading);
 	ReleaseRenderTexture(buffers.velocity);
 	if (colorReprojection)
-		ReleaseRenderTexture(buffers.color_reprojected);
+		ReleaseRenderTexture(buffers.colorReprojected);
 
 
 	ExchangePrevRenderTexture(colorPrev, buffers.color);
