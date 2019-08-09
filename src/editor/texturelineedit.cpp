@@ -1,6 +1,6 @@
 #include "texturelineedit.h"
 #include "ui_texturelineedit.h"
-
+#include "editor_common.h"
 
 TextureLineEdit::TextureLineEdit(QWidget *parent) :
 	QWidget(parent),
@@ -15,6 +15,15 @@ TextureLineEdit::TextureLineEdit(QWidget *parent) :
 		uvChanged();
 	});
 
+	QObject::connect(lineEdit, &MyLineEdit::fileDropped, [this, lineEdit](QString relativePath)
+	{
+		if (isTexture(relativePath))
+		{
+			lineEdit->setText(relativePath);
+			emit OnPathChanged(relativePath.toLatin1());
+		}
+	});
+
 	QObject::connect(ui->uv1_sb, QOverload<const QString&>::of(&QDoubleSpinBox::valueChanged), this, &TextureLineEdit::uvChanged);
 	QObject::connect(ui->uv2_sb, QOverload<const QString&>::of(&QDoubleSpinBox::valueChanged), this, &TextureLineEdit::uvChanged);
 	QObject::connect(ui->uv3_sb, QOverload<const QString&>::of(&QDoubleSpinBox::valueChanged), this, &TextureLineEdit::uvChanged);
@@ -25,7 +34,6 @@ TextureLineEdit::~TextureLineEdit()
 {
 	delete ui;
 }
-
 void TextureLineEdit::SetPath(const char *path)
 {
 	ui->lineEdit->setText(path);

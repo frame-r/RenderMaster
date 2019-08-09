@@ -89,6 +89,11 @@ struct Ray
 class QLabel;
 void setLabel(QLabel *l, float val);
 
+inline bool isTexture(const QString& str)
+{
+	return str.endsWith(".dds");
+}
+
 
 bool RayPlaneIntersection(vec3& intersection, const Plane& plane, const Ray& line);
 Ray MouseToRay(const mat4& cameraModelMatrix, float fov, float aspect, const vec2& normalizedMousePos);

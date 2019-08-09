@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QLineEdit>
 
-
 namespace Ui {
 class TextureLineEdit;
 }

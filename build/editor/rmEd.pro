@@ -63,7 +63,8 @@ SOURCES += \
     $$PWD/../../src/editor/propertieswidgets/lightpropertywidget.cpp \
     $$PWD/../../src/editor/settings.cpp \
     $$PWD/../../src/editor/texturelineedit.cpp \
-    ../../src/editor/manipulators/manipulatorrotator.cpp
+    ../../src/editor/manipulators/manipulatorrotator.cpp \
+    ../../src/editor/mylineedit.cpp
 
 HEADERS += \
     $$PWD/../../src/editor/mainwindow.h \
