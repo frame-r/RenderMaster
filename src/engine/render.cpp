@@ -450,7 +450,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	}
 
 
-	bool colorReprojection = viewMode == VIEW_MODE::COLOR_REPROJECTION;
+	bool colorReprojection = viewMode == VIEW_MODE::COLOR_REPROJECTION || taa;
 
 	// Save prev matricies
 	prev.cameraProjUnjitteredMat_ = cameraProjUnjitteredMat_;
@@ -609,16 +609,12 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 			Texture* texs_rt[1] = { taaOut };
 			CORE_RENDER->SetRenderTextures(1, texs_rt, nullptr);
 	
-			Texture* texs[3] = { buffers.color, colorPrev, buffers.velocity };
-			CORE_RENDER->BindTextures(3, texs);
+			Texture* texs[2] = { buffers.color, buffers.colorReprojected};
+			CORE_RENDER->BindTextures(2, texs);
 			CORE_RENDER->SetShader(shader);
 	
-			vec4 s((float)w, (float)h, taaOfffset.x, taaOfffset.y);
-			shader->SetVec4Parameter("viewport_data", &s);
-			shader->FlushParameters();
-	
 			CORE_RENDER->Draw(planeMesh.get(), 1);
-			CORE_RENDER->BindTextures(3, nullptr);
+			CORE_RENDER->BindTextures(2, nullptr);
 	
 			CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
 
