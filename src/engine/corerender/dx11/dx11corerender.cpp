@@ -609,7 +609,7 @@ DXGI_FORMAT engToDX11Format(TEXTURE_FORMAT format)
 
 TEXTURE_FORMAT D3DToEng(DXGI_FORMAT format)
 {
-		switch (format)
+	switch (format)
 	{
 		case DXGI_FORMAT_R8_UNORM:				return TEXTURE_FORMAT::R8;	
 		case DXGI_FORMAT_R8G8_UNORM:			return TEXTURE_FORMAT::RG8;		
