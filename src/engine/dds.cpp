@@ -90,17 +90,17 @@ TEXTURE_FORMAT D3DToEng(DXGI_FORMAT format);
 #define ISBITMASK( r,g,b,a ) ( ddpf.RBitMask == r && ddpf.GBitMask == g && ddpf.BBitMask == b && ddpf.ABitMask == a )
 
 
-ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
+ICoreTexture *createFromDDS(unique_ptr<uint8_t[]> dataPtr, size_t size, TEXTURE_CREATE_FLAGS flags)
 {
 	// Check magic
-	uint32_t dwMagicNumber = *reinterpret_cast<const uint32_t*>(data);
+	uint32_t dwMagicNumber = *reinterpret_cast<const uint32_t*>(dataPtr.get());
 	if (dwMagicNumber != DDS_MAGIC)
 	{
 		LogCritical("loadDDS(): Wrong magic");
 		return nullptr;
 	}
 
-	const DDS_HEADER* header = reinterpret_cast<const DDS_HEADER*>(data + sizeof(uint32_t));
+	const DDS_HEADER* header = reinterpret_cast<const DDS_HEADER*>(dataPtr.get() + sizeof(uint32_t));
 
 	// Check header sizes
 	if (header->size != sizeof(DDS_HEADER) || header->ddspf.size != sizeof(DDS_PIXELFORMAT))
@@ -109,12 +109,16 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
 		return nullptr;
 	}
 
+	const bool mipmapsPresented = header->mipMapCount > 1;
+	const uint width = header->width;
+	const uint height = header->height;
+
 	// Check for DX10 extension
 	bool bDXT10Header = (header->ddspf.flags & DDS_FOURCC) && (MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.fourCC);
 
 	ptrdiff_t headerOffset = sizeof(uint32_t) + sizeof(DDS_HEADER) + (bDXT10Header ? sizeof(DDS_HEADER_DXT10) : 0);
 
-	uint8 *imageData = data + headerOffset;
+	uint8 *imageData = dataPtr.get() + headerOffset;
 	size_t sizeInBytes = size - headerOffset;
 
 	TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D;
@@ -465,19 +469,23 @@ ICoreTexture *createDDS(uint8_t *data, size_t size, TEXTURE_CREATE_FLAGS flags)
 		}
 	}
 
-	if (newData)
-		imageData = newData;
-
 	if (format == TEXTURE_FORMAT::UNKNOWN)
 	{
 		LogCritical("ResourceManager::loadDDS(): format not supported");
 		return nullptr;
 	}
 
-	bool mipmapsPresented = header->mipMapCount > 1;
 	ICoreTexture *tex = nullptr;
 
-	ICoreTexture *ret = CORE_RENDER->CreateTexture(imageData, header->width, header->height, type, format, flags, mipmapsPresented);
+	if (newData)
+	{
+		imageData = newData;
+
+		// free original memory
+		dataPtr = nullptr;
+	}
+
+	ICoreTexture *ret = CORE_RENDER->CreateTexture(imageData, width, height, type, format, flags, mipmapsPresented);
 
 	if (newData)
 		delete[] newData;

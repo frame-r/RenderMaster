@@ -38,8 +38,19 @@ bool Texture::Load()
 		return false;
 	}
 
-	FileMapping mappedFile = FS->CreateMemoryMapedFile(path_.c_str());
-	ICoreTexture* coreTex = createDDS(mappedFile.ptr, mappedFile.fsize, flags_);
+	File file = FS->OpenFile(path_.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+	size_t fileSize = file.FileSize();
+
+	if (fileSize <= 0)
+	{
+		LogCritical("Texture::Load(): file is empty");
+		return false;
+	}
+
+	unique_ptr<uint8_t[]> data(new uint8_t[fileSize]);
+	file.Read(data.get(), fileSize);
+
+	ICoreTexture* coreTex = createFromDDS(std::move(data), fileSize, flags_);
 
 	coreTexture_ = std::unique_ptr<ICoreTexture>(coreTex);
 
