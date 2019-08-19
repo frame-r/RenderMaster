@@ -934,12 +934,14 @@ inline float dot(const vec3& a, const vec3& b)
 	return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-inline float max(float a, float b)
+template <class T>
+inline T max(T a, T b)
 {
 	return a > b ? a : b;
 }
 
-inline float min(float a, float b)
+template <class T>
+inline T min(T a, T b)
 {
 	return a > b ? b : a;
 }
@@ -957,7 +959,7 @@ inline vec3 cross(const vec3& point1 ,const vec3& point)
 
 inline float saturate(float a)
 {
-	return max(min(a, 1.0f), 0);
+	return max(min(a, 1.0f), 0.0f);
 }
 
 #pragma warning(default : 4201)

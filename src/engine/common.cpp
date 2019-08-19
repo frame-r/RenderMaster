@@ -115,6 +115,54 @@ bool isCompressedFormat(TEXTURE_FORMAT format)
 	return false;
 }
 
+std::unique_ptr<uint8_t[]> convertRGBtoRGBA(const uint8_t *dataIn, uint w, uint h, bool hasMipmaps, bool bgrTorgb)
+{
+	size_t texels = w * (size_t)h;
+
+	if (hasMipmaps)
+		while (w > 1 || h > 1)
+		{
+			w = max(1u, w / 2);
+			h = max(1u, h / 2);
+			texels += w * (size_t)h;
+		}
+
+	size_t sizeInBytes = 4 * texels;
+
+	unique_ptr<uint8_t[]> newData(new uint8[sizeInBytes]);
+	memset(newData.get(), 255, sizeInBytes);
+
+	const uint8_t* ptrSrc = dataIn;
+	uint8_t* ptrDst = newData.get();
+
+	if (bgrTorgb)
+	{
+		for (size_t i = 0; i < texels; ++i)
+		{
+			ptrDst[0] = ptrSrc[2];
+			ptrDst[1] = ptrSrc[1];
+			ptrDst[2] = ptrSrc[0];
+
+			ptrDst += 4;
+			ptrSrc += 3;
+		}
+	}
+	else
+	{
+		for (size_t i = 0; i < texels; ++i)
+		{
+			ptrDst[0] = ptrSrc[0];
+			ptrDst[1] = ptrSrc[1];
+			ptrDst[2] = ptrSrc[2];
+
+			ptrDst += 4;
+			ptrSrc += 3;
+		}
+	}
+
+	return std::move(newData);
+}
+
 //void calculateTexture(size_t& numBytes, size_t& rowBytes, uint width, uint height, TEXTURE_FORMAT format)
 //{
 //	if (isCompressedFormat(format))

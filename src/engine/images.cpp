@@ -1,9 +1,17 @@
 #include "pch.h"
-#include "dds.h"
+#include "images.h"
 #include "core.h"
+#include "texture.h"
 #include "console.h"
+#include "render.h"
 #include "icorerender.h"
+#include "resource_manager.h"
+#include "filesystem.h"
 
+#include "jpeglib.h"
+
+#include "png.h"
+#include "pngstruct.h"
 
 #pragma pack(push,1)
 
@@ -118,15 +126,15 @@ ICoreTexture *createFromDDS(unique_ptr<uint8_t[]> dataPtr, size_t size, TEXTURE_
 
 	ptrdiff_t headerOffset = sizeof(uint32_t) + sizeof(DDS_HEADER) + (bDXT10Header ? sizeof(DDS_HEADER_DXT10) : 0);
 
-	uint8 *imageData = dataPtr.get() + headerOffset;
+	uint8_t *imageData = dataPtr.get() + headerOffset;
 	size_t sizeInBytes = size - headerOffset;
 
 	TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D;
 	TEXTURE_FORMAT format = TEXTURE_FORMAT::UNKNOWN;
 
-	uint8* newData = nullptr;
+	unique_ptr<uint8_t[]> newData;
 
-	if ((header->ddspf.flags & DDS_FOURCC) && (MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.fourCC))
+	if (bDXT10Header)
 	{
 		const DDS_HEADER_DXT10* d3d10ext = reinterpret_cast<const DDS_HEADER_DXT10*>((const char*)header + sizeof(DDS_HEADER));
 
@@ -180,11 +188,11 @@ ICoreTexture *createFromDDS(unique_ptr<uint8_t[]> dataPtr, size_t size, TEXTURE_
 
 				// Convert BGR<unused> -> RGBA
 				{
-					newData = new uint8[sizeInBytes];
-					memset(newData, 255, sizeInBytes);
+					newData = unique_ptr<uint8_t[]>(new uint8[sizeInBytes]);
+					memset(newData.get(), 255, sizeInBytes);
 
 					uint8* ptrSrc = imageData;
-					uint8* ptrDst = newData;
+					uint8* ptrDst = newData.get();
 
 					size_t texels = (size_t)header->width * header->height;
 
@@ -241,30 +249,7 @@ ICoreTexture *createFromDDS(unique_ptr<uint8_t[]> dataPtr, size_t size, TEXTURE_
 				// No 24bpp DXGI formats aka D3DFMT_R8G8B8
 				// Convert BGR -> RGBA
 				{
-					
-					assert(sizeInBytes % 3 == 0);
-					newData = new uint8[sizeInBytes + sizeInBytes / 3];
-					memset(newData, 255, sizeInBytes + sizeInBytes / 3);
-
-					uint8* ptrSrc = imageData;
-					uint8* ptrDst = newData;
-
-					size_t texels = (size_t)header->width * header->height;
-
-					for (uint32_t m = 0; m < header->mipMapCount; ++m)
-					{
-						for (size_t i = 0; i < texels; ++i)
-						{
-							// BGR -> RGB
-							memcpy((ptrDst + 0), (ptrSrc + 2), 1);
-							memcpy((ptrDst + 1), (ptrSrc + 1), 1);
-							memcpy((ptrDst + 2), (ptrSrc + 0), 1);
-
-							ptrDst += 4;
-							ptrSrc += 3;
-						}
-						texels /= 4;
-					}
+					newData = convertRGBtoRGBA(imageData, width, height, true, true);
 
 					format = TEXTURE_FORMAT::RGBA8;
 				}
@@ -479,16 +464,13 @@ ICoreTexture *createFromDDS(unique_ptr<uint8_t[]> dataPtr, size_t size, TEXTURE_
 
 	if (newData)
 	{
-		imageData = newData;
+		imageData = newData.get();
 
 		// free original memory
 		dataPtr = nullptr;
 	}
 
 	ICoreTexture *ret = CORE_RENDER->CreateTexture(imageData, width, height, type, format, flags, mipmapsPresented);
-
-	if (newData)
-		delete[] newData;
 
 	if (!ret)
 	{
@@ -497,5 +479,344 @@ ICoreTexture *createFromDDS(unique_ptr<uint8_t[]> dataPtr, size_t size, TEXTURE_
 	}
 
 	return ret;
+}
+
+static void saveToDDS(const char* path, uint width, uint height, const uint8_t* outputRGBA)
+{
+	const size_t baseSize = (size_t)width * height * 4;
+
+	uint w = width;
+	uint h = height;
+	size_t offset = baseSize;
+	uint32_t mipmaps = 1;
+
+	unique_ptr<uint8_t[]> buffer;
+	size_t bufferInBytes = baseSize;
+
+	while (w > 1 || h > 1)
+	{
+		w = max(1u, w / 2);
+		h = max(1u, h / 2);
+		++mipmaps;
+		bufferInBytes += (size_t)w * h * 4;
+	}
+	buffer = unique_ptr<uint8_t[]>(new uint8_t[bufferInBytes]);
+	memcpy(buffer.get(), outputRGBA, baseSize);
+
+	CORE_RENDER->PushStates();
+
+	w = width;
+	h = height;
+
+	const uint8_t* bufferIn = buffer.get();
+
+	for (uint mip = 1; mip < mipmaps; ++mip)
+	{
+		ICoreTexture* coreTexIn = CORE_RENDER->CreateTexture(bufferIn, w, h, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::NONE, false);
+		unique_ptr<Texture> texIn(new Texture(unique_ptr<ICoreTexture>(coreTexIn)));
+		Texture* texsIn[] = { texIn.get() };
+		CORE_RENDER->BindTextures(1, texsIn, BIND_TETURE_FLAGS::COMPUTE);
+
+		uint newWidth = max(1u, w / 2);
+		uint newHeight = max(1u, h / 2);
+
+		vector<string> defines;
+
+		if (newWidth * 2 == w)
+			defines.push_back("X_EVEN");
+		if (newHeight * 2 == h)
+			defines.push_back("Y_EVEN");
+
+		Shader* shader = RENDER->GetComputeShader("mipmap.hlsl", defines);
+		if (shader)
+		{
+			CORE_RENDER->SetShader(shader);
+			shader->SetUintParameter("tex_in_width", w);
+			shader->SetUintParameter("tex_in_height", h);
+			shader->FlushParameters();
+
+			w = newWidth;
+			h = newHeight;
+			const size_t mipSize = (size_t)w * h * 4;
+
+			ICoreTexture* coreTexOut = CORE_RENDER->CreateTexture(nullptr, w, h, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS, false);
+			unique_ptr<Texture> texOut(new Texture(unique_ptr<ICoreTexture>(coreTexOut)));
+			Texture* uavs[] = { texOut.get() };
+			CORE_RENDER->BindUnorderedAccessTextures(1, uavs);
+
+			constexpr uint warpSize = 16;
+			int numGroupsX = (w + (warpSize - 1)) / warpSize;
+			int numGroupsY = (h + (warpSize - 1)) / warpSize;
+
+			CORE_RENDER->Dispatch(numGroupsX, numGroupsY, 1);
+
+			texOut->GetData(buffer.get() + offset, mipSize);
+
+			bufferIn = buffer.get() + offset;
+			offset += mipSize;
+		}
+	}
+
+	Texture* texsIn[1] = {};
+	CORE_RENDER->BindTextures(1, texsIn);
+
+	Texture* uavs[1] = {};
+	CORE_RENDER->BindUnorderedAccessTextures(1, uavs);
+
+	CORE_RENDER->PopStates();
+
+
+
+	// save
+
+	size_t headerInBytes = sizeof(uint32_t) + sizeof(DDS_HEADER);
+	size_t ddsFileInBytes = headerInBytes + bufferInBytes;
+
+	unique_ptr<uint8_t[]> ddsImage(new uint8_t[ddsFileInBytes]);
+
+	memcpy(ddsImage.get(), &DDS_MAGIC, 4);
+	memset(ddsImage.get() + 4, 0, sizeof(DDS_HEADER));
+
+	DDS_HEADER* header = reinterpret_cast<DDS_HEADER*>(ddsImage.get() + 4);
+	header->size = sizeof(DDS_HEADER);
+	header->ddspf.size = sizeof(DDS_PIXELFORMAT);
+	header->mipMapCount = mipmaps;
+	header->width = width;
+	header->height = height;
+	header->depth = 1;
+
+	DDS_PIXELFORMAT* ddpf = &header->ddspf;
+	ddpf->flags = DDS_RGB;
+	ddpf->RGBBitCount = 32;
+	ddpf->RBitMask = 0x000000FF;
+	ddpf->GBitMask = 0x0000FF00;
+	ddpf->BBitMask = 0x00FF0000;
+	ddpf->ABitMask = 0xFF000000;
+
+	uint8* imageData = ddsImage.get() + headerInBytes;
+	memcpy(imageData, buffer.get(), bufferInBytes);
+
+	auto filename = FS->getFileName(path, false);
+	string p = RES_MAN->GetImportMeshDir() + '\\' + filename + ".dds";
+
+	File f = FS->OpenFile(p.c_str(), FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
+
+	f.Write(ddsImage.get(), ddsFileInBytes);
+
+	Log("Saved to '%s'", p.c_str());
+}
+
+void importJPEG(const char* fullPath)
+{
+	File file = FS->OpenFile(fullPath, FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+	size_t fileSize = file.FileSize();
+
+	if (fileSize <= 0)
+	{
+		LogCritical("importJPEG(): file is empty");
+		return;
+	}
+
+	unique_ptr<uint8_t[]> input(new uint8_t[fileSize]);
+	file.Read(input.get(), fileSize);
+
+	jpeg_decompress_struct cinfo{};
+	jpeg_error_mgr pub{};
+
+	cinfo.err = jpeg_std_error(&pub);
+
+	jpeg_create_decompress(&cinfo);
+
+	jpeg_mem_src(&cinfo, input.get(), (unsigned long)fileSize);
+
+	jpeg_read_header(&cinfo, TRUE);
+
+	cinfo.out_color_space = JCS_RGB;
+	cinfo.out_color_components = 3;
+	cinfo.do_fancy_upsampling = FALSE;
+
+	jpeg_start_decompress(&cinfo);
+
+	auto rowspan = cinfo.image_width * cinfo.out_color_components;
+	const uint width = cinfo.image_width;
+	const uint height = cinfo.image_height;
+
+	unique_ptr<uint8_t[]> output(new uint8[rowspan * (size_t)height]);
+	uint8** row_ptr = new uint8 * [height];
+
+	for (uint i = 0; i < height; ++i)
+		row_ptr[i] = &output[i * rowspan];
+
+	uint rowsRead = 0;
+
+	while (cinfo.output_scanline < cinfo.output_height)
+		rowsRead += jpeg_read_scanlines(&cinfo, &row_ptr[rowsRead], cinfo.output_height - rowsRead);
+
+	delete[] row_ptr;
+
+	jpeg_finish_decompress(&cinfo);
+
+	jpeg_destroy_decompress(&cinfo);
+
+	// RGB -> RGBA
+	unique_ptr<const uint8_t[]> outputRGBA = convertRGBtoRGBA(output.get(), width, height, false, false);
+	output = nullptr;
+
+	saveToDDS(fullPath, width, height, outputRGBA.get());
+}
+
+struct ImageSource
+{
+	unsigned char* data;
+	size_t size;
+	size_t offset;
+};
+
+static void PNGAPI pngReadCallback(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+	ImageSource* isource = (ImageSource*)png_get_io_ptr(png_ptr);
+
+	if (isource->offset + length <= isource->size)
+	{
+		memcpy(data, isource->data + isource->offset, length);
+		isource->offset += length;
+	}
+	else
+		LogCritical("pngReadCallback failed");
+}
+
+static void pngError(png_structp ptr, png_const_charp msg)
+{
+	LogCritical("PNG fatal error: %s", msg);
+}
+
+void importPNG(const char* path)
+{
+	File file = FS->OpenFile(path, FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+	size_t fileSize = file.FileSize();
+
+	if (fileSize <= 0)
+	{
+		LogCritical("importJPEG(): file is empty");
+		return;
+	}
+
+	unique_ptr<uint8_t[]> input(new uint8_t[fileSize]);
+	file.Read(input.get(), fileSize);
+
+	if (png_sig_cmp(input.get(), 0, 8) != 0)
+	{
+		LogCritical("Wrong PNG file.");
+		return;
+	}
+
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, (png_error_ptr)pngError, NULL);
+	
+	if (!png_ptr)
+	{
+		LogCritical("Internal PNG png_create_read_struct function failure.");
+		return;
+	}
+
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+
+	if (!info_ptr)
+	{
+		LogCritical("Internal PNG png_create_info_struct function failure.");
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		return;
+	}
+
+	//if (setjmp(png_jmpbuf(png_ptr)))
+	//{
+	//	LogCritical("Internal PNG jump failure.");
+	//	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+	//	return;
+	//}
+
+	ImageSource imgsource;
+	imgsource.data = input.get();
+	imgsource.size = fileSize;
+	imgsource.offset = 0;
+	png_set_read_fn(png_ptr, &imgsource, pngReadCallback);
+
+	//png_set_sig_bytes(png_ptr, 8);
+
+	png_read_info(png_ptr, info_ptr);
+
+	png_uint_32 width, height;
+	int bit_depth, color_type;
+
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
+
+	if (color_type == PNG_COLOR_TYPE_PALETTE)
+		png_set_palette_to_rgb(png_ptr);
+
+	if (bit_depth < 8)
+	{
+		if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+			png_set_expand_gray_1_2_4_to_8(png_ptr);
+		else
+			png_set_packing(png_ptr);
+	}
+
+	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+		png_set_tRNS_to_alpha(png_ptr);
+
+	if (bit_depth == 16)
+		png_set_strip_16(png_ptr);
+
+	if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+		png_set_gray_to_rgb(png_ptr);
+
+	png_read_update_info(png_ptr, info_ptr);
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
+
+	uint8_t** row_pointers = new png_bytep[height];
+
+	if (!row_pointers)
+	{
+		LogCritical("Failed to allocate PNG row pointers.");
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		return;
+	}
+
+	int pitch = (color_type == PNG_COLOR_TYPE_RGB_ALPHA ? 4 : 3) * width;
+	uint8_t* data = new uint8_t[(size_t)height * pitch];
+	uint8_t* offset = data;
+
+	for (uint i = 0; i < height; ++i)
+	{
+		row_pointers[i] = offset;
+		offset += pitch;
+	}
+
+	if (setjmp(png_jmpbuf(png_ptr)))
+	{
+		LogCritical("Internal PNG jump failure.");
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		delete[] row_pointers;
+		delete[] data;
+		return;
+	}
+
+	png_read_image(png_ptr, row_pointers);
+
+	png_read_end(png_ptr, NULL);
+	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+	delete[] row_pointers;
+
+	// RGB -> RGBA
+	unique_ptr<uint8_t[]> outputRGBA;
+	if (color_type == PNG_COLOR_TYPE_RGB)
+	{
+		outputRGBA = convertRGBtoRGBA(data, width, height, false, false);
+		delete[] data;
+		data = outputRGBA.get();
+	}
+
+	saveToDDS(path, width, height, data);
+
+	delete[] data;
 }
 

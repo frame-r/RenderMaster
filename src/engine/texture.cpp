@@ -4,7 +4,7 @@
 #include "console.h"
 #include "filesystem.h"
 #include "icorerender.h"
-#include "dds.h"
+#include "images.h"
 
 Texture::Texture(const std::string& path, TEXTURE_CREATE_FLAGS flags) : path_(path), flags_(flags)
 {
@@ -94,4 +94,9 @@ auto DLLEXPORT Texture::GetMipmaps() -> int
 auto DLLEXPORT Texture::ReadPixel2D(void *data, int x, int y) -> int
 {
 	return coreTexture_->ReadPixel2D(data, x, y);
+}
+
+auto DLLEXPORT Texture::GetData(uint8_t* pDataOut, size_t length) -> void
+{
+	return coreTexture_->GetData(pDataOut, length);
 }

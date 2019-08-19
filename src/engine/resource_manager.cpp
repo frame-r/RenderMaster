@@ -10,7 +10,7 @@
 #include "console.h"
 #include "yaml-cpp/yaml.h"
 #include "fbx.h"
-#include "dds.h"
+#include "images.h"
 
 #define IMPORT_DIR ".import"
 #define UNLOAD_RESOURCE_FRAMES 10
@@ -80,6 +80,39 @@ auto DLLEXPORT ResourceManager::CreateShader(const char *vert, const char *geom,
 	Shader *sh = new Shader(unique_ptr<ICoreShader>(coreShader), unique_ptr<const char[]>(vert), unique_ptr<const char[]>(geom), unique_ptr<const char[]>(frag));
 	shadersSet.emplace(sh);
 	return SharedPtr<Shader>(sh, removeShader);
+}
+
+auto DLLEXPORT ResourceManager::CreateComputeShader(const char* compText) -> SharedPtr<Shader>
+{
+	auto removeShader = [](Shader* s)
+	{
+		shadersSet.erase(s);
+		delete s;
+	};
+
+	ERROR_COMPILE_SHADER err;
+	ICoreShader* coreShader = CORE_RENDER->CreateComputeShader(compText, err);
+
+	if (!coreShader)
+	{
+		const char* shaderText = nullptr;
+
+		switch (err)
+		{
+			case ERROR_COMPILE_SHADER::COMP: shaderText = compText; break;
+			default: abort(); // unreal
+		};
+
+		File f = FS->OpenFile("err_compile.shader", FILE_OPEN_MODE::WRITE);
+		f.Write((uint8*)shaderText, strlen(shaderText));
+
+		return SharedPtr<Shader>(nullptr, removeShader);
+	}
+
+	Shader* sh = new Shader(unique_ptr<ICoreShader>(coreShader), unique_ptr<const char[]>(compText));
+	shadersSet.emplace(sh);
+	return SharedPtr<Shader>(sh, removeShader);
+
 }
 
 auto DLLEXPORT ResourceManager::CreateStructuredBuffer(uint size, uint elementSize) -> SharedPtr<StructuredBuffer>
@@ -201,6 +234,11 @@ auto ResourceManager::GetObject_(size_t i) -> GameObject*
 }
 
 auto ResourceManager::GetImportMeshDir() -> std::string
+{
+	return _core->GetDataPath() + '\\' + IMPORT_DIR;
+}
+
+auto ResourceManager::GetImportTextureDir() -> std::string
 {
 	return _core->GetDataPath() + '\\' + IMPORT_DIR;
 }
@@ -333,7 +371,21 @@ auto DLLEXPORT ResourceManager::Import(const char *path) -> void
 		return;
 	}
 
-	importFbx(path);
+	const string ext = fileExtension(path);
+
+	// TODO: copy file to resources
+
+	if (ext == "fbx")
+		importFbx(path);
+	else if (ext == "jpg" || ext == "jpeg")
+		importJPEG(path);
+	else if (ext == "png")
+		importPNG(path);
+	else
+	{
+		LogCritical("Importing failed: importer for extension %s not found", ext.c_str());
+		return;
+	}
 }
 
 class ResManProfiler : public IProfilerCallback
@@ -413,6 +465,7 @@ void ResourceManager::Update(float dt)
 			m->free();
 	}
 }
+
 void ResourceManager::Reload()
 {
 	// TODO
@@ -512,7 +565,7 @@ auto DLLEXPORT ResourceManager::LoadWorld() -> void
 	
 	uint fileSize =	(uint)f.FileSize();
 	
-	unique_ptr<char[]> tmp = unique_ptr<char[]>(new char[fileSize + 1]);
+	unique_ptr<char[]> tmp = unique_ptr<char[]>(new char[fileSize + 1L]);
 	tmp[fileSize] = '\0';
 	
 	f.Read((uint8 *)tmp.get(), fileSize);

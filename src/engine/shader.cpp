@@ -10,6 +10,12 @@ Shader::Shader(unique_ptr<ICoreShader> s, unique_ptr<const char[]> vertIn, uniqu
 	fragFullText_ = std::move(fragIn);
 }
 
+Shader::Shader(std::unique_ptr<ICoreShader> s, std::unique_ptr<const char[]> compIn)
+{
+	coreShader_ = std::move(s);
+	compFullText_ = std::move(compIn);
+}
+
 auto DLLEXPORT Shader::GetCoreShader() -> ICoreShader*
 {
 	return coreShader_.get();
@@ -28,6 +34,11 @@ auto DLLEXPORT Shader::GetGeom() -> const char *
 auto DLLEXPORT Shader::GetFrag() -> const char *
 {
 	return fragFullText_.get();
+}
+
+auto DLLEXPORT Shader::GetComp() -> const char*
+{
+	return compFullText_.get();
 }
 
 auto DLLEXPORT Shader::SetFloatParameter(const char *name, float value) -> void

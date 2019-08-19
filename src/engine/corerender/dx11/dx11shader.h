@@ -7,12 +7,7 @@ class DX11Shader : public ICoreShader
 {
 	struct SubShader
 	{
-		union
-		{
-			ID3D11VertexShader *pVertex;
-			ID3D11GeometryShader *pGeometry;
-			ID3D11PixelShader *pFragment;
-		}pointer;
+		ID3D11DeviceChild *pointer;
 
 		// all buffers need to bind for work with shader
 		// slot -> index of Constant Buffer in ConstantBufferPool
@@ -29,6 +24,7 @@ class DX11Shader : public ICoreShader
 	SubShader v{};
 	SubShader f{};
 	SubShader g{};
+	SubShader c{};
 
 	void initSubShader(ShaderInitData& data, SHADER_TYPE type);
 	void setParameter(const char *name, const void *data);
@@ -36,11 +32,13 @@ class DX11Shader : public ICoreShader
 public:
 
 	DX11Shader(ShaderInitData& vs, ShaderInitData& fs, ShaderInitData& gs);
+	DX11Shader(ShaderInitData& cs);
 	virtual ~DX11Shader();
 
-	ID3D11VertexShader*		vs() const { return v.pointer.pVertex; }
-	ID3D11GeometryShader*	gs() const { return g.pointer.pGeometry; }
-	ID3D11PixelShader*		fs() const { return f.pointer.pFragment; }
+	ID3D11VertexShader*		vs() const { return (ID3D11VertexShader*)v.pointer; }
+	ID3D11GeometryShader*	gs() const { return (ID3D11GeometryShader*)g.pointer; }
+	ID3D11PixelShader*		fs() const { return (ID3D11PixelShader*)f.pointer; }
+	ID3D11ComputeShader*	cs() const { return (ID3D11ComputeShader*)c.pointer; }
 
 	void bind();
 

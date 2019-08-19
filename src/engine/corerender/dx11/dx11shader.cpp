@@ -22,9 +22,10 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 {
 	switch (type)
 	{
-		case SHADER_TYPE::SHADER_VERTEX: v.pointer.pVertex = (ID3D11VertexShader *)data.pointer; break;
-		case SHADER_TYPE::SHADER_GEOMETRY: g.pointer.pGeometry = (ID3D11GeometryShader *)data.pointer; break;
-		case SHADER_TYPE::SHADER_FRAGMENT:  f.pointer.pFragment = (ID3D11PixelShader *)data.pointer; break;
+		case SHADER_TYPE::SHADER_VERTEX: v.pointer = (ID3D11VertexShader *)data.pointer; break;
+		case SHADER_TYPE::SHADER_GEOMETRY: g.pointer = (ID3D11GeometryShader *)data.pointer; break;
+		case SHADER_TYPE::SHADER_FRAGMENT:  f.pointer = (ID3D11PixelShader *)data.pointer; break;
+		case SHADER_TYPE::SHADER_COMPUTE:  c.pointer = (ID3D11ComputeShader *)data.pointer; break;
 	}
 
 	ID3D11ShaderReflection* reflection = nullptr;
@@ -110,6 +111,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			case SHADER_TYPE::SHADER_VERTEX:	buf = &v._bufferIndicies; break;
 			case SHADER_TYPE::SHADER_GEOMETRY:	buf = &g._bufferIndicies; break;
 			case SHADER_TYPE::SHADER_FRAGMENT:	buf = &f._bufferIndicies; break;
+			case SHADER_TYPE::SHADER_COMPUTE:	buf = &c._bufferIndicies; break;
 		};
 
 		if (indexFound != -1) // buffer found
@@ -158,22 +160,27 @@ DX11Shader::DX11Shader(ShaderInitData& vs, ShaderInitData& fs, ShaderInitData& g
 		initSubShader(gs, SHADER_TYPE::SHADER_GEOMETRY);
 }
 
+DX11Shader::DX11Shader(ShaderInitData& cs)
+{
+	initSubShader(cs, SHADER_TYPE::SHADER_COMPUTE);
+}
+
 DX11Shader::~DX11Shader()
 {
-	if (v.pointer.pVertex)		{ v.pointer.pVertex->Release();		v.pointer.pVertex = nullptr; }
-	if (f.pointer.pFragment)	{ f.pointer.pFragment->Release();	f.pointer.pFragment = nullptr; }
-	if (g.pointer.pGeometry)	{ g.pointer.pGeometry->Release();	g.pointer.pGeometry = nullptr; }
+	if (v.pointer)	{ v.pointer->Release();	v.pointer = nullptr; }
+	if (f.pointer)	{ f.pointer->Release();	f.pointer = nullptr; }
+	if (g.pointer)	{ g.pointer->Release();	g.pointer = nullptr; }
+	if (c.pointer)	{ c.pointer->Release();	c.pointer = nullptr; }
 }
 
 void DX11Shader::bind()
 {
 	ID3D11DeviceContext *ctx = getContext();
 
-	ctx->VSSetShader(vs(), nullptr, 0);
-	ctx->PSSetShader(fs(), nullptr, 0);
-
-	if (gs())
-		ctx->GSSetShader(gs(), nullptr, 0);
+	if (vs()) ctx->VSSetShader(vs(), nullptr, 0);
+	if (fs()) ctx->PSSetShader(fs(), nullptr, 0);
+	if (gs()) ctx->GSSetShader(gs(), nullptr, 0);
+	if (cs()) ctx->CSSetShader(cs(), nullptr, 0);
 
 	ID3D11Buffer *pointers[128];
 
@@ -186,12 +193,18 @@ void DX11Shader::bind()
 			} \
 			ctx->PREFIX##SetConstantBuffers(0, (uint)IDX_VEC.size(), pointers); \
 		}
-	
+
+	if (vs())
 	BUND_CONSTANT_BUFFERS(VS, v._bufferIndicies)
+
+	if (fs())
 	BUND_CONSTANT_BUFFERS(PS, f._bufferIndicies)
 
 	if (gs())
 	BUND_CONSTANT_BUFFERS(GS, g._bufferIndicies)
+
+	if (cs())
+	BUND_CONSTANT_BUFFERS(CS, c._bufferIndicies)
 }
 
 void DX11Shader::setParameter(const char *name, const void *data)
@@ -261,11 +274,10 @@ auto DX11Shader::FlushParameters() -> void
 		}
 	};
 
-	updateBuffers(v._bufferIndicies);
-	updateBuffers(f._bufferIndicies);
-
-	if (gs())
-		updateBuffers(g._bufferIndicies);
+	if (vs()) updateBuffers(v._bufferIndicies);
+	if (fs()) updateBuffers(f._bufferIndicies);
+	if (gs()) updateBuffers(g._bufferIndicies);
+	if (cs()) updateBuffers(c._bufferIndicies);
 }
 
 

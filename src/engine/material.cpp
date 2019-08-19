@@ -154,7 +154,7 @@ void Material::initializeFromParent()
 
 	runtimeTextures_.clear();
 	for (auto& p : parent_->textures_)
-		runtimeTextures_[p.id] = { p.path, RES_MAN->CreateStreamTexture(p.path.c_str(), TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_TRILINEAR) };
+		runtimeTextures_[p.id] = { p.path, RES_MAN->CreateStreamTexture(p.path.c_str(), TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_8X) };
 }
 
 void Material::UploadShaderParameters(Shader *shader, PASS pass)
@@ -351,7 +351,7 @@ auto DLLEXPORT Material::LoadXML() -> void
 	{
 		string id = i.attribute("id").as_string();
 		runtimeTextures_[id].path = i.child_value();
-		runtimeTextures_[id].ptr = RES_MAN->CreateStreamTexture(runtimeTextures_[id].path.c_str(), TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_TRILINEAR);
+		runtimeTextures_[id].ptr = RES_MAN->CreateStreamTexture(runtimeTextures_[id].path.c_str(), TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_8X);
 
 		vec4& uv = runtimeTextures_[id].uv;
 		sscanf(i.attribute("uv").as_string(), "%f %f %f %f", &uv.x, &uv.y, &uv.z, &uv.w);
@@ -458,7 +458,7 @@ auto DLLEXPORT Material::GetDef(const char* name) -> int
 
 auto DLLEXPORT Material::SetTexture(const char* name, const char* path) -> void
 {
-	runtimeTextures_[name] = { string(path), RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_TRILINEAR) };
+	runtimeTextures_[name] = { string(path), RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_8X) };
 }
 
 auto DLLEXPORT Material::GetTexture(const char* name) -> const char*

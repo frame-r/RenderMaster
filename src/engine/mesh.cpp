@@ -116,9 +116,9 @@ ICoreMesh* createStdMesh(const char *path)
 				v3.xyzw[2] = sin(alpha + dAlpha) * arrowRadius;
 				v3.w = 1.0f;
 
-				memcpy(vertexAxesArrows + j * 12 + 0, &v1.x, 16);
-				memcpy(vertexAxesArrows + j * 12 + 4, &v2.x, 16);
-				memcpy(vertexAxesArrows + j * 12 + 8, &v3.x, 16);
+				memcpy(vertexAxesArrows + j * 12 + 0L, &v1.x, 16);
+				memcpy(vertexAxesArrows + j * 12 + 4L, &v2.x, 16);
+				memcpy(vertexAxesArrows + j * 12 + 8L, &v3.x, 16);
 			}
 		}
 		MeshIndexDesc indexEmpty;
@@ -165,12 +165,12 @@ bool Mesh::Load()
 	int is_color = (header.attributes & 32u) > 0;
 
 	size_t bytes = 0;
-	bytes += is_positions * header.numberOfVertex * sizeof(vec4);
-	bytes += is_normals * header.numberOfVertex * sizeof(vec4);
-	bytes += is_uv * header.numberOfVertex * sizeof(vec2);
-	bytes += is_tangent * header.numberOfVertex * sizeof(vec4);
-	bytes += is_binormal * header.numberOfVertex * sizeof(vec4);
-	bytes += is_color * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)is_positions * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)is_normals * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)is_uv * header.numberOfVertex * sizeof(vec2);
+	bytes += (size_t)is_tangent * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)is_binormal * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)is_color * header.numberOfVertex * sizeof(vec4);
 
 	MeshDataDesc desc;
 	desc.numberOfVertex = header.numberOfVertex;

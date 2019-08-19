@@ -3,6 +3,8 @@
 #include "dx11corerender.h"
 #include "core.h"
 
+size_t BitsPerPixel(_In_ DXGI_FORMAT fmt);
+
 void GetSurfaceInfo(
         _In_ size_t width,
         _In_ size_t height,
@@ -22,8 +24,8 @@ static ID3D11Device* getDevice()
 	return dxRender->getDevice();
 }
 
-DX11Texture::DX11Texture(ID3D11Resource *res, ID3D11SamplerState *sampler, ID3D11ShaderResourceView *srv, ID3D11RenderTargetView * rtv, ID3D11DepthStencilView *dsv, TEXTURE_FORMAT format)
- : _resource(res), _sampler(sampler), _shaderView(srv), _renderTargetView(rtv), _depthStencilView(dsv), _format(format)
+DX11Texture::DX11Texture(ID3D11Resource *res, ID3D11SamplerState *sampler, ID3D11ShaderResourceView *srv, ID3D11RenderTargetView * rtv, ID3D11DepthStencilView *dsv, ID3D11UnorderedAccessView* uav, TEXTURE_FORMAT format)
+ : _resource(res), _sampler(sampler), _shaderView(srv), _renderTargetView(rtv), _depthStencilView(dsv), _unorderedAccessView(uav), _format(format)
 {
 	// TODO make other types!
 	ID3D11Texture2D *tex2D = static_cast<ID3D11Texture2D*>(res);
@@ -41,6 +43,7 @@ DX11Texture::~DX11Texture()
 	if (_shaderView) { _shaderView->Release(); _shaderView = nullptr;	}
 	if (_renderTargetView) { _renderTargetView->Release(); _renderTargetView = nullptr;	}
 	if (_depthStencilView) { _depthStencilView->Release(); _depthStencilView = nullptr;	}
+	if (_unorderedAccessView) { _unorderedAccessView->Release(); _unorderedAccessView = nullptr;	}
 }
 
 auto DX11Texture::GetVideoMemoryUsage() -> size_t
@@ -48,8 +51,10 @@ auto DX11Texture::GetVideoMemoryUsage() -> size_t
 	return bytes;
 }
 
-auto DX11Texture::ReadPixel2D(void * data, int x, int y) -> int
+size_t DX11Texture::getData(uint8_t* pDataOut, size_t length)
 {
+	assert(bytes <= length);
+
 	ID3D11Texture2D* cpuReadTex;
 	D3D11_TEXTURE2D_DESC cpuReadTexDesc{};
 	cpuReadTexDesc.Width = _width;
@@ -66,22 +71,64 @@ auto DX11Texture::ReadPixel2D(void * data, int x, int y) -> int
 	ThrowIfFailed(getDevice()->CreateTexture2D(&cpuReadTexDesc, nullptr, &cpuReadTex));
 
 	getContext()->CopyResource(cpuReadTex, resource());
-	D3D11_MAPPED_SUBRESOURCE mapResource;
-	auto hr = getContext()->Map(cpuReadTex, 0, D3D11_MAP_READ, 0, &mapResource);
+	D3D11_MAPPED_SUBRESOURCE mapped;
+	HRESULT hr = getContext()->Map(cpuReadTex, 0, D3D11_MAP_READ, 0, &mapped);
+
+	size_t rowPitch = _width * (BitsPerPixel(_desc.Format) / 8);
+	size_t bytesRead = 0;
+
+	// The memory is conitguos
+	if (rowPitch == mapped.RowPitch)
+	{
+		memcpy(pDataOut, mapped.pData, bytes);
+		bytesRead = bytes;
+	}
+	else
+	{
+		size_t numBytesRow = min(rowPitch, (size_t)mapped.RowPitch);
+		uint8_t const* srcRow = static_cast<uint8_t const*>(mapped.pData);
+		uint8_t* dstRow = static_cast<uint8_t*>(pDataOut);
+
+		for (uint row = 0; row < _height; ++row)
+		{
+			memcpy(dstRow, srcRow, numBytesRow);
+			srcRow += mapped.RowPitch;
+			dstRow += rowPitch;
+			bytesRead += numBytesRow;
+		}
+	}
+
+	assert(bytesRead <= length);
+
+	getContext()->Unmap(cpuReadTex, 0);
+
+	cpuReadTex->Release();
+
+	return bytesRead;
+
+}
+
+auto DX11Texture::ReadPixel2D(void *data, int x, int y) -> int
+{
+	unique_ptr<uint8_t[]> buffer(new uint8_t[bytes]);
+	size_t read = getData(buffer.get(), bytes);
 
 	// TODO: make other!
 	int byteWidthElement = 4;
 
-	void *src = (char*)mapResource.pData + y * mapResource.RowPitch + x * byteWidthElement;
+	size_t rowPitch = _width * (BitsPerPixel(_desc.Format) / 8);
+
+	uint8_t *src = buffer.get() + y * rowPitch + x * byteWidthElement;
 	memcpy(data, reinterpret_cast<void*>(src), byteWidthElement);
 
-	getContext()->Unmap(cpuReadTex,0);
-
-	cpuReadTex->Release();
-
 	return byteWidthElement;
-
 }
+
+auto DX11Texture::GetData(uint8_t* pDataOut, size_t length) -> void
+{
+	getData(pDataOut, length);
+}
+
 size_t BitsPerPixel(_In_ DXGI_FORMAT fmt)
     {
         switch (fmt)

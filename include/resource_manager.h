@@ -33,11 +33,13 @@ public:
 	auto GetNumObjects() -> size_t;
 	auto GetObject_(size_t i) -> GameObject*;
 	auto GetImportMeshDir() -> std::string;
+	auto GetImportTextureDir() -> std::string;
 
 public:
 	// Render runtime resources
 	auto DLLEXPORT CreateTexture(int width, int height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags) -> SharedPtr<Texture>;
 	auto DLLEXPORT CreateShader(const char *vert, const char *geom, const char *frag) -> SharedPtr<Shader>;
+	auto DLLEXPORT CreateComputeShader(const char *compText) -> SharedPtr<Shader>;
 	auto DLLEXPORT CreateStructuredBuffer(uint size, uint elementSize) -> SharedPtr<StructuredBuffer>;
 
 	// Render stream resources

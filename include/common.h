@@ -80,6 +80,7 @@ typedef void (*WindowCallback)(WINDOW_MESSAGE, uint32, uint32, void*);
 extern Core *_core;
 
 #define CORE_RENDER _core->GetCoreRender()
+#define RENDER _core->GetRender()
 #define FS _core->GetFilesystem()
 #define RES_MAN _core->GetResourceManager()
 #define MAT_MAN _core->GetMaterialManager()
@@ -280,6 +281,7 @@ enum class TEXTURE_CREATE_FLAGS
 	COORDS = 0xF00,
 
 	USAGE_RENDER_TARGET		= 1 << 12,
+	USAGE_UNORDRED_ACCESS	= 1 << 13,
 	USAGE = 0xF000,
 
 	GENERATE_MIPMAPS		= 1 << 16,
@@ -543,7 +545,8 @@ enum class SHADER_TYPE
 {
 	SHADER_VERTEX,
 	SHADER_GEOMETRY,
-	SHADER_FRAGMENT
+	SHADER_FRAGMENT,
+	SHADER_COMPUTE
 };
 
 enum class ERROR_COMPILE_SHADER
@@ -551,7 +554,8 @@ enum class ERROR_COMPILE_SHADER
 	NONE,
 	VERTEX,
 	FRAGMENT,
-	GEOM
+	GEOM,
+	COMP
 };
 
 
@@ -739,7 +743,7 @@ size_t blockSize(TEXTURE_FORMAT compressedFormat);
 size_t bytesPerPixel(TEXTURE_FORMAT format);
 bool isColorFormat(TEXTURE_FORMAT format);
 bool isCompressedFormat(TEXTURE_FORMAT format);
-//void calculateTexture(size_t& bytes, size_t& bytesRow, uint w, uint h, TEXTURE_FORMAT f);
+std::unique_ptr<uint8_t[]> convertRGBtoRGBA(const uint8_t* dataIn, uint w, uint h, bool mipmaps, bool bgrTorgb);
 
 // memory
 std::string bytesToMBytes(size_t bytes);

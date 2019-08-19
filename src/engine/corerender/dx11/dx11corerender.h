@@ -68,7 +68,10 @@ public:
 
 		Shader *shader{};
 		Mesh *mesh{};
-		void* shaderResources[16]{};
+
+		ID3D11ShaderResourceView* srvs[16]{};
+
+		ID3D11UnorderedAccessView* uavs[16]{};
 
 		Texture* renderTargets[8]{};
 		Texture* renderDepth{};
@@ -100,8 +103,9 @@ public:
 	auto GetSurfaceDepthTexture() -> Texture*;
 
 	auto CreateMesh(const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) -> ICoreMesh* override;
-	auto CreateTexture(uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) -> ICoreTexture* override;
+	auto CreateTexture(const uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) -> ICoreTexture* override;
 	auto CreateShader(const char *vertText, const char *fragText, const char *geomText, ERROR_COMPILE_SHADER &err) -> ICoreShader* override;
+	auto CreateComputeShader(const char *compText, ERROR_COMPILE_SHADER &err) -> ICoreShader* override;
 	auto CreateStructuredBuffer(uint size, uint elementSize) -> ICoreStructuredBuffer* override;
 
 	auto PushStates() -> void override;
@@ -112,11 +116,13 @@ public:
 	auto SetDepthTest(int enabled) -> void override;
 	auto SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void override;
 	auto SetCullingMode(CULLING_MODE value) -> void override;
-	auto BindTextures(int units, Texture **textures) -> void override;
+	auto BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags) -> void override;
+	auto BindUnorderedAccessTextures(int units, Texture **textures) -> void override;
 	auto BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void override;
 	auto SetMesh(Mesh* mesh) -> void override;
 	auto SetShader(Shader *shader) -> void override;
 	auto Draw(Mesh *mesh, uint instances) -> void override;
+	auto Dispatch(uint x, uint y, uint z) -> void override;
 	auto GetViewport(uint* w, uint* h) -> void override;
 	auto SetViewport(int w, int h) ->void override;
 

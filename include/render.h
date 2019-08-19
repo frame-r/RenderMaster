@@ -112,6 +112,7 @@ public:
 
 public:
 	auto DLLEXPORT GetShader(const char* path, Mesh* meshattrib = nullptr, const std::vector<std::string>& defines = std::vector<std::string>()) -> Shader*;
+	auto DLLEXPORT GetComputeShader(const char* path, const std::vector<std::string>& defines) -> Shader*;
 	auto DLLEXPORT ReloadShaders() -> void;
 	auto DLLEXPORT RenderGUI() -> void;
 	auto DLLEXPORT DrawMeshes(PASS pass) -> void;

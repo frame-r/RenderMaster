@@ -70,6 +70,7 @@ const char *get_shader_profile(SHADER_TYPE type)
 		case SHADER_TYPE::SHADER_VERTEX: return "vs_5_0";
 		case SHADER_TYPE::SHADER_GEOMETRY: return "gs_5_0";
 		case SHADER_TYPE::SHADER_FRAGMENT: return "ps_5_0";
+		case SHADER_TYPE::SHADER_COMPUTE: return "cs_5_0";
 	}
 	assert(false);
 	return nullptr;
@@ -82,6 +83,7 @@ const char *get_main_function(SHADER_TYPE type)
 		case SHADER_TYPE::SHADER_VERTEX: return "mainVS";
 		case SHADER_TYPE::SHADER_GEOMETRY: return "mainGS";
 		case SHADER_TYPE::SHADER_FRAGMENT: return "mainFS";
+		case SHADER_TYPE::SHADER_COMPUTE: return "mainCS";
 	}
 	assert(false);
 	return nullptr;
@@ -679,9 +681,10 @@ UINT bindFlags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 	}
 
 	if (bool(flags & TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS) && !isCompressedFormat(format)) 
-	{
 		bindFlags_ |= D3D11_BIND_RENDER_TARGET; // need for GenerateMips
-	}
+
+	if (bool(flags & TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS)) 
+		bindFlags_ |= D3D11_BIND_UNORDERED_ACCESS;
 
 	return bindFlags_;
 }
@@ -714,7 +717,7 @@ int mipmapsNumber(int width, int height) // rounding down rule
 	return 1 + (int)floor(log2((float)std::max(width, height)));
 }
 
-auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) -> ICoreTexture*
+auto DX11CoreRender::CreateTexture(const uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) -> ICoreTexture*
 {
 	UINT arraySize = type == TEXTURE_TYPE::TYPE_CUBE ? 6 : 1;
 
@@ -729,21 +732,21 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 	UINT mipLevelsData = mipmapsPresented ? mipmapsNumber(width, height) : 1;
 	UINT mipLevelsResource = (generateMipmaps || mipmapsPresented) ? mipmapsNumber(width, height) : 1;
 
-	D3D11_TEXTURE2D_DESC textureDesc;
-	textureDesc.Width = width;
-	textureDesc.Height = height;
-	textureDesc.MipLevels = mipLevelsResource;
-	textureDesc.ArraySize = arraySize;
-	textureDesc.Format = engToDX11Format(format);
-	textureDesc.SampleDesc.Count = 1; // TODO: MSAA textures
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = bindFlags(flags, format);
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = getMisc(type, format, flags);
+	D3D11_TEXTURE2D_DESC desc;
+	desc.Width = width;
+	desc.Height = height;
+	desc.MipLevels = mipLevelsResource;
+	desc.ArraySize = arraySize;
+	desc.Format = engToDX11Format(format);
+	desc.SampleDesc.Count = 1; // TODO: MSAA textures
+	desc.SampleDesc.Quality = 0;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = bindFlags(flags, format);
+	desc.CPUAccessFlags = 0;
+	desc.MiscFlags = getMisc(type, format, flags);
 
 	ID3D11Texture2D *tex = nullptr;
-	if (FAILED(_device->CreateTexture2D(&textureDesc, NULL, &tex)))
+	if (FAILED(_device->CreateTexture2D(&desc, NULL, &tex)))
 	{
 		LogCritical("DX11CoreRender::CreateTexture(): can't create texture");
 		return nullptr;
@@ -762,7 +765,7 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 				{
 					size_t rowBytes;
 					size_t numBytes;
-					GetSurfaceInfo(w, h, textureDesc.Format, &numBytes, &rowBytes, nullptr);
+					GetSurfaceInfo(w, h, desc.Format, &numBytes, &rowBytes, nullptr);
 
 					UINT res = D3D11CalcSubresource(mip, arraySlice, mipLevelsResource);
 
@@ -784,7 +787,7 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 			{
 				size_t rowBytes;
 				size_t numBytes;
-				GetSurfaceInfo(w, h, textureDesc.Format, &numBytes, &rowBytes, nullptr);
+				GetSurfaceInfo(w, h, desc.Format, &numBytes, &rowBytes, nullptr);
 
 				UINT res = D3D11CalcSubresource(mip, 0, mipLevelsResource);
 
@@ -814,7 +817,7 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 	shaderResourceViewDesc.Format = engToD3DSRV(format);
 	shaderResourceViewDesc.ViewDimension = type == TEXTURE_TYPE::TYPE_CUBE ? D3D11_SRV_DIMENSION_TEXTURECUBE : D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
-	shaderResourceViewDesc.TextureCube.MipLevels = textureDesc.MipLevels;
+	shaderResourceViewDesc.TextureCube.MipLevels = desc.MipLevels;
 	
 	if (FAILED(_device->CreateShaderResourceView(tex, &shaderResourceViewDesc, &srv)))
 	{
@@ -834,7 +837,7 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 		if (isColorFormat(format))
 		{
 			D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-			renderTargetViewDesc.Format = textureDesc.Format;
+			renderTargetViewDesc.Format = desc.Format;
 			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			renderTargetViewDesc.Texture2D.MipSlice = 0;
 
@@ -863,7 +866,26 @@ auto DX11CoreRender::CreateTexture(uint8 *pData, uint width, uint height, TEXTUR
 		}
 	}
 
-	DX11Texture *dxTex = new DX11Texture(tex, sampler, srv, rtv, dsv, format);
+	ID3D11UnorderedAccessView* uav{};
+	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS))
+	{
+		D3D11_UNORDERED_ACCESS_VIEW_DESC desc{};
+		desc.Format = desc.Format;
+		desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
+		desc.Texture2D.MipSlice = 0;
+
+		if (FAILED(_device->CreateUnorderedAccessView(tex, &desc, &uav)))
+		{
+			tex->Release();
+			srv->Release();
+			if (rtv)
+				rtv->Release();
+			LogCritical("DX11CoreRender::CreateTexture(): can't create UAV\n");
+			return nullptr;
+		}
+	}
+
+	DX11Texture *dxTex = new DX11Texture(tex, sampler, srv, rtv, dsv, uav, format);
 	return dxTex;
 }
 
@@ -883,6 +905,7 @@ ComPtr<ID3DBlob> DX11CoreRender::createShader(ID3D11DeviceChild *&poiterOut, SHA
 		case SHADER_TYPE::SHADER_VERTEX: type_str = "vertex"; err = ERROR_COMPILE_SHADER::VERTEX; break;
 		case SHADER_TYPE::SHADER_GEOMETRY: type_str = "geometry"; err = ERROR_COMPILE_SHADER::GEOM; break;
 		case SHADER_TYPE::SHADER_FRAGMENT: type_str = "fragment"; err = ERROR_COMPILE_SHADER::FRAGMENT; break;
+		case SHADER_TYPE::SHADER_COMPUTE: type_str = "compute"; err = ERROR_COMPILE_SHADER::COMP; break;
 		default:
 			err = ERROR_COMPILE_SHADER::NONE;
 		}
@@ -909,6 +932,9 @@ ComPtr<ID3DBlob> DX11CoreRender::createShader(ID3D11DeviceChild *&poiterOut, SHA
 			break;
 		case SHADER_TYPE::SHADER_FRAGMENT:
 			res = _device->CreatePixelShader(data, size, NULL, (ID3D11PixelShader**)&ret);
+			break;
+		case SHADER_TYPE::SHADER_COMPUTE:
+			res = _device->CreateComputeShader(data, size, NULL, (ID3D11ComputeShader**)&ret);
 			break;
 		}
 
@@ -955,6 +981,19 @@ auto DX11CoreRender::CreateShader(const char *vertText, const char *fragText, co
 	return new DX11Shader(vi, fi, gi);
 }
 
+auto DX11CoreRender::CreateComputeShader(const char* compText, ERROR_COMPILE_SHADER& err) -> ICoreShader*
+{
+	ID3D11ComputeShader* cs = nullptr;
+	auto vb = createShader((ID3D11DeviceChild * &)cs, SHADER_TYPE::SHADER_COMPUTE, compText, err);
+
+	if (!cs)
+		return nullptr;
+
+	ShaderInitData vi = { cs, (unsigned char*)vb->GetBufferPointer(), vb->GetBufferSize() };
+
+	return new DX11Shader(vi);
+}
+
 auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize) -> ICoreStructuredBuffer*
 {
 	assert(size % 16 == 0);
@@ -983,7 +1022,7 @@ auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize) -> ICor
 	return new DX11StructuredBuffer(pBuffer, pSRVOut);
 }
 
-auto DX11CoreRender::BindTextures(int units, Texture **textures) -> void
+auto DX11CoreRender::BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags) -> void
 {
 	ID3D11ShaderResourceView* srvs[16]{};
 	ID3D11SamplerState* samplers[16]{};
@@ -991,72 +1030,143 @@ auto DX11CoreRender::BindTextures(int units, Texture **textures) -> void
 	if (textures)
 	{
 		bool needUpdate = false;
+
 		for(int i = 0; i < units; i++)
 		{
 			Texture *tt = *(textures + i);
-
-			if (state_.shaderResources[i] != tt)
-			{
-				state_.shaderResources[i] = tt;
-				needUpdate = true;
-			}
-
 			if (tt)
 			{
 				DX11Texture* t = static_cast<DX11Texture*>(tt->GetCoreTexture());
 				srvs[i] = t->srView();
 				samplers[i] = t->sampler();
+
+				if (state_.srvs[i] != srvs[i])
+					needUpdate = true;
+			}
+			else
+			{
+				if (state_.srvs[i] != nullptr)
+					needUpdate = true;
 			}
 		}
 
 		if (needUpdate)
 		{
-			_context->PSSetShaderResources(0, units, srvs);
-			_context->PSSetSamplers(0, units, samplers);
+			memcpy(state_.srvs, srvs, sizeof(state_.srvs));
+
+			if (bool(flags & BIND_TETURE_FLAGS::PIXEL))
+			{
+				_context->PSSetShaderResources(0, units, srvs);
+				_context->PSSetSamplers(0, units, samplers);
+			}
+			if (bool(flags & BIND_TETURE_FLAGS::COMPUTE))
+			{
+				_context->CSSetShaderResources(0, units, srvs);
+				_context->CSSetSamplers(0, units, samplers);
+			}
 		}
 	} else
 	{
 		bool needUpdate = false;
+
 		for(int i = 0; i < units; i++)
 		{
-			if (state_.shaderResources[i])
-			{
-				state_.shaderResources[i] = nullptr;
+			if (state_.srvs[i])
 				needUpdate = true;
-			}
-
-			srvs[i] = nullptr;
-			samplers[i] = nullptr;
 		}
 
 		if (needUpdate)
 		{
-			_context->PSSetShaderResources(0, units, srvs);
-			_context->PSSetSamplers(0, units, samplers);
+			memset(state_.srvs, 0, sizeof(state_.srvs));
+			if (bool(flags & BIND_TETURE_FLAGS::PIXEL))
+			{
+				_context->PSSetShaderResources(0, units, srvs);
+				_context->PSSetSamplers(0, units, samplers);
+			}
+			if (bool(flags & BIND_TETURE_FLAGS::COMPUTE))
+			{
+				_context->CSSetShaderResources(0, units, srvs);
+				_context->CSSetSamplers(0, units, samplers);
+			}
 		}
 	}
 }
 
+auto DX11CoreRender::BindUnorderedAccessTextures(int units, Texture** textures) -> void
+{
+	ID3D11UnorderedAccessView* uavs[16]{};
+
+	if (textures)
+	{
+		bool needUpdate = false;
+
+		for (int i = 0; i < units; i++)
+		{
+			Texture* tt = *(textures + i);
+			if (tt)
+			{
+				DX11Texture* t = static_cast<DX11Texture*>(tt->GetCoreTexture());
+				uavs[i] = t->uavView();
+
+				if (state_.uavs[i] != uavs[i])
+					needUpdate = true;
+			}
+			else
+			{
+				if (state_.uavs[i] != nullptr)
+					needUpdate = true;
+			}
+		}
+
+		if (needUpdate)
+		{
+			memcpy(state_.uavs, uavs, sizeof(state_.uavs));
+			_context->CSSetUnorderedAccessViews(0, units, uavs, nullptr);
+		}
+	}
+	else
+	{
+		bool needUpdate = false;
+
+		for (int i = 0; i < units; i++)
+		{
+			if (state_.uavs[i])
+				needUpdate = true;
+		}
+
+		if (needUpdate)
+		{
+			memset(state_.uavs, 0, sizeof(state_.uavs));
+			_context->CSSetUnorderedAccessViews(0, units, uavs, nullptr);
+		}
+	}
+
+}
+
 auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void
 {
-	if (state_.shaderResources[unit] == buffer)
-		return;
-
 	if (buffer)
 	{
 		ICoreStructuredBuffer *coreBuffer = buffer->GetCoreBuffer();
 		DX11StructuredBuffer *dxBuffer = static_cast<DX11StructuredBuffer*>(coreBuffer);
 		ID3D11ShaderResourceView *srv = dxBuffer->SRV();
-		_context->VSSetShaderResources(unit, 1, &srv);
-		_context->PSSetShaderResources(unit, 1, &srv);
+
+		if (srv != state_.srvs[unit])
+		{
+			_context->VSSetShaderResources(unit, 1, &srv);
+			_context->PSSetShaderResources(unit, 1, &srv);
+		}
 	} else
 	{
 		ID3D11ShaderResourceView *srv = nullptr;
-		_context->VSSetShaderResources(unit, 1, &srv);
-		_context->PSSetShaderResources(unit, 1, &srv);
-	}
 
-	state_.shaderResources[unit] = buffer;
+		if (state_.srvs[unit])
+		{
+			state_.srvs[unit] = nullptr;
+			_context->VSSetShaderResources(unit, 1, &srv);
+			_context->PSSetShaderResources(unit, 1, &srv);
+		}
+	}
 }
 
 auto DX11CoreRender::SetRenderTextures(int units, Texture **textures, Texture *depthTex) -> void
@@ -1187,6 +1297,7 @@ auto DX11CoreRender::SetShader(Shader *shader) -> void
 		_context->VSSetShader(nullptr, nullptr, 0);
 		_context->PSSetShader(nullptr, nullptr, 0);
 		_context->GSSetShader(nullptr, nullptr, 0);
+		_context->CSSetShader(nullptr, nullptr, 0);
 	}
 }
 
@@ -1220,6 +1331,11 @@ auto DX11CoreRender::Draw(Mesh *mesh, uint instances) -> void
 	stat_.drawCalls++;
 	stat_.instances += instances;
 	stat_.triangles += instances * dxMesh->vertexNumber() / 3;
+}
+
+auto DX11CoreRender::Dispatch(uint x, uint y, uint z) -> void
+{
+	_context->Dispatch(x, y, z);
 }
 
 auto DX11CoreRender::Clear() -> void
@@ -1335,8 +1451,8 @@ void DX11CoreRender::createCurrentSurface(int w, int h)
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	ThrowIfFailed(_device->CreateSamplerState(&sampDesc, &sampler));
 
-	DX11Texture *dxTex = new DX11Texture(tex, nullptr, nullptr, rtv, nullptr, TEXTURE_FORMAT::RGBA8);
-	DX11Texture *dxDepthTex = new DX11Texture(depthTex, sampler, srv, nullptr, dsv, TEXTURE_FORMAT::D24S8);
+	DX11Texture *dxTex = new DX11Texture(tex, nullptr, nullptr, rtv, nullptr, nullptr, TEXTURE_FORMAT::RGBA8);
+	DX11Texture *dxDepthTex = new DX11Texture(depthTex, sampler, srv, nullptr, dsv, nullptr, TEXTURE_FORMAT::D24S8);
 
 	surface->w = w;
 	surface->h = h;

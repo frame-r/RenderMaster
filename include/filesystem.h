@@ -22,6 +22,8 @@ public:
 	auto DLLEXPORT ClearFile(const char *path) -> void;
 	auto DLLEXPORT FilterPaths(const char *ext) -> std::vector<std::string>;
 	auto DLLEXPORT CreateMemoryMapedFile(const char *path) -> FileMapping;
+	auto DLLEXPORT getFileName(const std::string& filePath, bool withExtension = true) -> string;
+	
 };
 
 struct FileMapping

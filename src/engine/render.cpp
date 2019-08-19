@@ -194,13 +194,13 @@ auto Render::GetShader(const char *path, Mesh *mesh, const vector<string>& defin
 		*(text + size) = '\0';
 		f.Read((uint8*)text, size);
 
-		const char *textVert;
-		const char *textFrag;
+		const char *textVertParced;
+		process_shader(textVertParced, text, fileIn, "out_v.shader", 0);
 
-		process_shader(textVert, text, fileIn, "out_v.shader", 0);
-		process_shader(textFrag, text, fileIn, "out_f.shader", 1);
+		const char *textFragParced;
+		process_shader(textFragParced, text, fileIn, "out_f.shader", 1);
 
-		shader = RES_MAN->CreateShader(textVert, nullptr, textFrag);
+		shader = RES_MAN->CreateShader(textVertParced, nullptr, textFragParced);
 
 		if (!shader)
 			LogCritical("Render::GetShader(): can't compile %s standard shader", path);
@@ -208,6 +208,76 @@ auto Render::GetShader(const char *path, Mesh *mesh, const vector<string>& defin
 		runtimeShaders.emplace(shaderKey, shader);
 	}
 	return shader.get();
+}
+
+auto DLLEXPORT Render::GetComputeShader(const char* path, const vector<string>& defines) -> Shader*
+{
+	SharedPtr<Shader> shader;
+
+	string shaderKey = string(path);
+
+	for (const string& def : defines)
+		shaderKey += def;
+
+
+	auto it = runtimeShaders.find(shaderKey);
+
+	if (it != runtimeShaders.end())
+	{
+		return it->second.get();
+	}
+	else
+	{
+		const auto process_shader = [&](const char*& ppTextOut, const char* ppTextIn, const string& fullPath, const string&& fileNameOut, int type) -> void
+		{
+			simplecpp::DUI dui;
+
+			copy(begin(defines), end(defines), back_inserter(dui.defines));
+
+			simplecpp::OutputList outputList;
+			std::vector<std::string> files;
+			string textIn = ppTextIn;
+			std::stringstream f(textIn);
+			std::map<std::string, simplecpp::TokenList*> included;
+
+			simplecpp::TokenList rawtokens(f, files, fullPath, &outputList);
+
+			simplecpp::TokenList outputTokens(files);
+
+			simplecpp::preprocess(outputTokens, rawtokens, files, included, dui, &outputList);
+			const string out = outputTokens.stringify();
+			auto size = out.size();
+
+			char* tmp = new char[size + 1];
+			strncpy(tmp, out.c_str(), size);
+			tmp[size] = '\0';
+
+			ppTextOut = tmp;
+		};
+
+		char* text;
+
+		string dataDir = _core->GetDataPath();
+		string fileIn = dataDir + '\\' + string(SHADER_DIR) + path;
+
+		File f = FS->OpenFile(fileIn.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+		size_t size = f.FileSize();
+		text = new char[size + 1];
+		*(text + size) = '\0';
+		f.Read((uint8*)text, size);
+
+		const char* textVertParced;
+		process_shader(textVertParced, text, fileIn, "out_v.shader", 0);
+
+		shader = RES_MAN->CreateComputeShader(textVertParced);
+
+		if (!shader)
+			LogCritical("Render::GetShader(): can't compile %s standard shader", path);
+
+		runtimeShaders.emplace(shaderKey, shader);
+	}
+	return shader.get();
+
 }
 
 auto DLLEXPORT Render::ReloadShaders() -> void

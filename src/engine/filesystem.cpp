@@ -145,6 +145,29 @@ auto DLLEXPORT FileSystem::CreateMemoryMapedFile(const char* path) -> FileMappin
 	return mapping;
 }
 
+auto DLLEXPORT FileSystem::getFileName(const std::string& filePath, bool withExtension) -> string
+{
+	// Create a Path object from File Path
+	fs::path pathObj(filePath);
+
+	// Check if file name is required without extension
+	if (withExtension == false)
+	{
+		// Check if file has stem i.e. filename without extension
+		if (pathObj.has_stem())
+		{
+			// return the stem (file name without extension) from path object
+			return pathObj.stem().string();
+		}
+		return "";
+	}
+	else
+	{
+		// return the file name with extension from path object
+		return pathObj.filename().string();
+	}
+}
+
 File::File(const std::ios_base::openmode & fileMode, const std::filesystem::path & path)
 {
 	fsPath_ = path;

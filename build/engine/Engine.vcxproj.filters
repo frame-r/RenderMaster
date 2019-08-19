@@ -46,7 +46,6 @@
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11texture.h">
       <Filter>corerender\dx11</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\engine\dds.h" />
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11structured_buffer.h">
       <Filter>corerender\dx11</Filter>
     </ClInclude>
@@ -64,6 +63,88 @@
     </ClInclude>
     <ClInclude Include="..\..\resources\standard\shaders\vertex_post.hlsli">
       <Filter>shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\images.h" />
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jconfig.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jdct.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jerror.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jinclude.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jmemsys.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jmorecfg.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jpegint.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jpeglib.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jversion.h">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\pnglib\png.h">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\pnglib\pngconf.h">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\pnglib\pngdebug.h">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\pnglib\pnginfo.h">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\pnglib\pngpriv.h">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\pnglib\pngstruct.h">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\pnglib\pnglibconf.h">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\crc32.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\deflate.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\gzguts.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\inffast.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\inffixed.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\inflate.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\inftrees.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\trees.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\zconf.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\zlib.h">
+      <Filter>thirdparty\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\thirdparty\zlib\zutil.h">
+      <Filter>thirdparty\zlib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -107,7 +188,6 @@
     <ClCompile Include="..\..\src\engine\corerender\dx11\dx11texture.cpp">
       <Filter>corerender\dx11</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\engine\dds.cpp" />
     <ClCompile Include="..\..\src\engine\corerender\dx11\dx11structured_buffer.cpp">
       <Filter>corerender\dx11</Filter>
     </ClCompile>
@@ -118,6 +198,238 @@
     <ClCompile Include="..\..\src\engine\material_manager.cpp" />
     <ClCompile Include="..\..\src\engine\thirdparty\pugixml\pugixml.cpp">
       <Filter>thirdparty\pugixml</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\images.cpp" />
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jaricom.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcapimin.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcapistd.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcarith.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jccolor.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcdctmgr.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jchuff.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcinit.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcmainct.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcmarker.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcmaster.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcomapi.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcparam.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcprepct.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jcsample.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jctrans.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdapimin.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdapistd.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdarith.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdatadst.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdatasrc.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdcoefct.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdcolor.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jddctmgr.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdhuff.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdinput.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdmainct.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdmarker.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdmaster.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdmerge.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdpostct.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdsample.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jdtrans.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jerror.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jfdctflt.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jfdctfst.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jfdctint.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jidctflt.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jidctfst.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jidctint.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jmemmgr.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jmemnobs.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jquant1.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jquant2.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jutils.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\jpeglib\jccoefct.c">
+      <Filter>thirdparty\jpeglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\png.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngerror.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngget.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngmem.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngpread.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngread.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngrio.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngrtran.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngrutil.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngset.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngtest.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngtrans.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngwio.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngwrite.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngwtran.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\pnglib\pngwutil.c">
+      <Filter>thirdparty\pnglib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\adler32.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\compress.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\crc32.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\deflate.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\gzclose.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\gzlib.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\gzread.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\gzwrite.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\infback.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\inffast.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\inflate.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\inftrees.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\trees.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\uncompr.c">
+      <Filter>thirdparty\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\thirdparty\zlib\zutil.c">
+      <Filter>thirdparty\zlib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +453,15 @@
     </Filter>
     <Filter Include="thirdparty\pugixml">
       <UniqueIdentifier>{79094ae7-6db3-44c4-966b-bdc937fb9448}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\jpeglib">
+      <UniqueIdentifier>{4257e6c4-d1f3-4325-94d3-cb533947ccfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\pnglib">
+      <UniqueIdentifier>{acf69533-f38a-41f0-bf10-ef62f3fb3844}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\zlib">
+      <UniqueIdentifier>{5060a3f3-bce7-452e-a983-54feb174ab01}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -190,5 +511,10 @@
     <None Include="..\..\resources\standard\shaders\taa.hlsl">
       <Filter>shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\resources\standard\shaders\mipmap.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

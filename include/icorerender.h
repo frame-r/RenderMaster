@@ -11,6 +11,13 @@ class Mesh;
 class Texture;
 class StructuredBuffer;
 
+enum class BIND_TETURE_FLAGS
+{
+	PIXEL = 1 << 0,
+	COMPUTE = 1 << 1
+};
+DEFINE_ENUM_OPERATORS(BIND_TETURE_FLAGS)
+
 class NOVTABLE ICoreRender
 {
 public:
@@ -27,8 +34,9 @@ public:
 	auto virtual GetSurfaceDepthTexture() -> Texture* = 0;
 
 	auto virtual CreateMesh(const MeshDataDesc *dataDesc, const MeshIndexDesc *indexDesc, VERTEX_TOPOLOGY mode) -> ICoreMesh* = 0;
-	auto virtual CreateTexture(uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) -> ICoreTexture* = 0;
+	auto virtual CreateTexture(const uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) -> ICoreTexture* = 0;
 	auto virtual CreateShader(const char *vertText, const char *fragText, const char *geomText, ERROR_COMPILE_SHADER &err) -> ICoreShader* = 0;
+	auto virtual CreateComputeShader(const char *compText, ERROR_COMPILE_SHADER &err) -> ICoreShader* = 0;
 	auto virtual CreateStructuredBuffer(uint size, uint elementSize) -> ICoreStructuredBuffer* = 0;
 
 	auto virtual PushStates() -> void = 0;
@@ -39,11 +47,13 @@ public:
 	auto virtual SetDepthTest(int enabled) -> void = 0;
 	auto virtual SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void = 0;
 	auto virtual SetCullingMode(CULLING_MODE value) -> void = 0;
-	auto virtual BindTextures(int units, Texture **textures) -> void = 0;
+	auto virtual BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags = BIND_TETURE_FLAGS::PIXEL) -> void = 0;
+	auto virtual BindUnorderedAccessTextures(int units, Texture **textures) -> void = 0;
 	auto virtual BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void = 0;
 	auto virtual SetMesh(Mesh* mesh) -> void = 0;
 	auto virtual SetShader(Shader *shader) -> void = 0;
 	auto virtual Draw(Mesh *mesh, uint instances) -> void = 0;
+	auto virtual Dispatch(uint x, uint y, uint z) -> void = 0;
 	auto virtual GetViewport(uint* w, uint* h) -> void = 0;
 	auto virtual SetViewport(int w, int h) -> void = 0;
 
@@ -80,6 +90,7 @@ public:
 	auto virtual GetHeight() -> int = 0;
 	auto virtual GetMipmaps() -> int = 0;
 	auto virtual ReadPixel2D(void *data, int x, int y) -> int = 0;
+	auto virtual GetData(uint8_t* pDataOut, size_t length) -> void = 0;
 };
 
 class NOVTABLE ICoreStructuredBuffer
