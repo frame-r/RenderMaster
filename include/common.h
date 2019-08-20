@@ -676,7 +676,6 @@ template<typename T>
 class ManagedPtr
 {
 	IResource<T> *resource_{nullptr};
-	std::string __empty; // return if resource_= = null
 
 	inline void grab()
 	{
@@ -730,10 +729,10 @@ public:
 	{
 		return resource_ ? resource_->isLoaded() : false;
 	}
-	std::string& path()
+	const std::string path()
 	{
 		if (!resource_)
-			return __empty;
+			return "";
 		return resource_->getPath();
 	}
 };
