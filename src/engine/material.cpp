@@ -458,7 +458,11 @@ auto DLLEXPORT Material::GetDef(const char* name) -> int
 
 auto DLLEXPORT Material::SetTexture(const char* name, const char* path) -> void
 {
-	runtimeTextures_[name] = { string(path), RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_8X) };
+	vec4 uvOld;
+	auto it = runtimeTextures_.find(name);
+	if (it != runtimeTextures_.end())
+		uvOld = it->second.uv;
+	runtimeTextures_[name] = { string(path), RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS | TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_8X), uvOld };
 }
 
 auto DLLEXPORT Material::GetTexture(const char* name) -> const char*
