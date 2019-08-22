@@ -729,10 +729,11 @@ public:
 	{
 		return resource_ ? resource_->isLoaded() : false;
 	}
-	const std::string path()
+	const std::string& path()
 	{
+		static std::string empty;
 		if (!resource_)
-			return "";
+			return empty;
 		return resource_->getPath();
 	}
 };
