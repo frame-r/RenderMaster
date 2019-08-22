@@ -23,8 +23,8 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 	float3 color = float3(0, 0, 0);
 	int2 idx = dispatchThreadId.xy * 2;
-	float Width = float(tex_in_width / 2u);
-	float Height = float(tex_in_height / 2u);
+	float Width = max(1, float(tex_in_width / 2u));
+	float Height = max(1, float(tex_in_height / 2u));
 	float x = idx.x;
 	float y = idx.y;
 

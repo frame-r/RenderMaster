@@ -500,6 +500,8 @@ static void saveToDDS(const char* path, uint width, uint height, const uint8_t* 
 		++mipmaps;
 		bufferInBytes += (size_t)w * h * 4;
 	}
+	bufferInBytes += 1;
+
 	buffer = unique_ptr<uint8_t[]>(new uint8_t[bufferInBytes]);
 	memcpy(buffer.get(), outputRGBA, baseSize);
 
