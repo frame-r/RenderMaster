@@ -76,7 +76,7 @@ private slots:
 private:
 	void engineNotLoaded();
 	void engineLoaded();
-	void calculateCameraData(CameraData& data);
+	bool calculateCameraData(CameraData& data);
 
 	QLabel *label{};
 	QHBoxLayout *layout{};

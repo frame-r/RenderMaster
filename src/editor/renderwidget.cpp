@@ -180,8 +180,11 @@ void RenderWidget::keyReleaseEvent(QKeyEvent *event)
 	if (event->key() == Qt::Key_Alt) {/*qDebug() << "Widget release";*/keyAlt = 0; }
 }
 
-void RenderWidget::calculateCameraData(CameraData &data)
+bool RenderWidget::calculateCameraData(CameraData &data)
 {
+	if (rect().width() <= 0 || rect().height() <= 0)
+		return false;
+
 	data.pos = camPos;
 	data.rot = camRot;
 	data.fovInDegrees = fovInDegrees_;
@@ -196,6 +199,8 @@ void RenderWidget::calculateCameraData(CameraData &data)
 	data.ViewProjMat = data.ProjectionMat * data.ViewMat;
 
 	data.ViewWorldDirection = -data.WorldTransform.Column3(2).Normalized();
+
+	return true;
 }
 
 void RenderWidget::onRender()
@@ -329,7 +334,8 @@ void RenderWidget::onRender()
 void RenderWidget::onUpdate(float dt)
 {
 	CameraData cam;
-	calculateCameraData(cam);
+	if (!calculateCameraData(cam))
+		return;
 
 	if (editor->NumSelectedObjects() == 1 && editor->currentManipulator)
 	{
@@ -409,7 +415,8 @@ void RenderWidget::onUpdate(float dt)
 void RenderWidget::onFocus(const vec3 &worldCenter)
 {
 	CameraData cam;
-	calculateCameraData(cam);
+	if (!calculateCameraData(cam))
+		return;
 
 	isFocusing = 1;
 
