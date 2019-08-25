@@ -59,7 +59,7 @@ void GameObject::Update(float dt)
 		childs_[i]->Update(dt);
 }
 
-void GameObject::Serialize(void *yaml)
+void GameObject::SaveYAML(void *yaml)
 {
 	YAML::Emitter *_n = static_cast<YAML::Emitter*>(yaml);
 	YAML::Emitter& n = *_n;
@@ -70,7 +70,7 @@ void GameObject::Serialize(void *yaml)
 	n << YAML::Key << "worldTransform" << YAML::Value << worldTransform_;
 }
 
-void GameObject::Deserialize(void * yaml)
+void GameObject::LoadYAML(void * yaml)
 {
 	YAML::Node *_n = static_cast<YAML::Node*>(yaml);
 	YAML::Node& n = *_n;

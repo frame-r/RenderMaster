@@ -10,14 +10,14 @@ class Camera : public GameObject
 
 protected:
 	virtual void Copy(GameObject *original) override;
+	virtual void SaveYAML(void *yaml) override;
+	virtual void LoadYAML(void *yaml) override;
 
 public:
 	Camera();
-	virtual ~Camera(){}
+	virtual ~Camera() = default;
 
 	virtual void Update(float dt);
-	virtual void Serialize(void *yaml) override;
-	virtual void Deserialize(void *yaml) override;
 
 public:
 	auto DLLEXPORT GetViewMatrix() -> mat4;

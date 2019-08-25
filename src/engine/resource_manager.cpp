@@ -479,7 +479,7 @@ void saveObj(Emitter& out, GameObject *o)
 
 	out << YAML::BeginMap;
 	out << Key << "childs" << Value << o->GetNumChilds();
-	o->Serialize(static_cast<void*>(&out));
+	o->SaveYAML(static_cast<void*>(&out));
 	out << YAML::EndMap;
 
 	for (int i = 0; i < o->GetNumChilds(); i++)
@@ -545,7 +545,7 @@ void loadObj(YAML::Node& objects_yaml, int *i, GameObject *parent, Signal<GameOb
 	else
 		rootObjectsVec.push_back(g);
 
-	g->Deserialize(static_cast<void*>(&obj_yaml));
+	g->LoadYAML(static_cast<void*>(&obj_yaml));
 
 	sig.Invoke(g);
 

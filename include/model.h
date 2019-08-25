@@ -12,13 +12,13 @@ class Model final : public GameObject
 
 protected:
 	virtual void Copy(GameObject *original) override;
-	virtual void Serialize(void *yaml) override;
-	virtual void Deserialize(void *yaml) override;
+	virtual void SaveYAML(void *yaml) override;
+	virtual void LoadYAML(void *yaml) override;
 
 public:
 	Model();
 	Model(ManagedPtr<Mesh> mesh);
-	virtual ~Model(){}
+	virtual ~Model() = default;
 
 public:
 	auto DLLEXPORT virtual GetMesh() -> Mesh*;

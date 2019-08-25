@@ -49,9 +49,9 @@ auto DLLEXPORT Model::Clone() -> GameObject *
 	return m;
 }
 
-void Model::Serialize(void * yaml)
+void Model::SaveYAML(void * yaml)
 {
-	GameObject::Serialize(yaml);
+	GameObject::SaveYAML(yaml);
 
 	YAML::Emitter *_n = static_cast<YAML::Emitter*>(yaml);
 	YAML::Emitter& n = *_n;
@@ -63,9 +63,9 @@ void Model::Serialize(void * yaml)
 		n << YAML::Key << "material" << YAML::Value << mat_->GetId();
 }
 
-void Model::Deserialize(void * yaml)
+void Model::LoadYAML(void * yaml)
 {
-	GameObject::Deserialize(yaml);
+	GameObject::LoadYAML(yaml);
 
 	YAML::Node *_n = static_cast<YAML::Node*>(yaml);
 	YAML::Node& n = *_n;

@@ -10,9 +10,9 @@ void Light::Copy(GameObject * original)
 	intensity_ = original_light->intensity_;
 }
 
-void Light::Serialize(void * yaml)
+void Light::SaveYAML(void * yaml)
 {
-	GameObject::Serialize(yaml);
+	GameObject::SaveYAML(yaml);
 
 	YAML::Emitter *_n = static_cast<YAML::Emitter*>(yaml);
 	YAML::Emitter& n = *_n;
@@ -20,9 +20,9 @@ void Light::Serialize(void * yaml)
 	n << YAML::Key << "intensity" << YAML::Value << intensity_;
 }
 
-void Light::Deserialize(void * yaml)
+void Light::LoadYAML(void * yaml)
 {
-	GameObject::Deserialize(yaml);
+	GameObject::LoadYAML(yaml);
 
 	YAML::Node *_n = static_cast<YAML::Node*>(yaml);
 	YAML::Node& n = *_n;

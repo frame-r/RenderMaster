@@ -70,9 +70,9 @@ void Camera::Update(float dt)
 	}
 }
 
-void Camera::Serialize(void *yaml)
+void Camera::SaveYAML(void *yaml)
 {
-	GameObject::Serialize(yaml);
+	GameObject::SaveYAML(yaml);
 
 	YAML::Emitter *_n = static_cast<YAML::Emitter*>(yaml);
 	YAML::Emitter& n = *_n;
@@ -82,9 +82,9 @@ void Camera::Serialize(void *yaml)
 	n << YAML::Key << "fovAngle" << YAML::Value << fovAngle_;
 }
 
-void Camera::Deserialize(void *yaml)
+void Camera::LoadYAML(void *yaml)
 {
-	GameObject::Deserialize(yaml);
+	GameObject::LoadYAML(yaml);
 
 	YAML::Node *_n = static_cast<YAML::Node*>(yaml);
 	YAML::Node& n = *_n;

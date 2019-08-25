@@ -46,8 +46,8 @@ public:
 
 	// Interanl API
 	virtual void Update(float dt);
-	virtual void Serialize(void *yaml);
-	virtual void Deserialize(void *yaml);
+	virtual void SaveYAML(void *yaml);
+	virtual void LoadYAML(void *yaml);
 
 public:
 	auto DLLEXPORT GetName() -> const char* { return name_.c_str(); }

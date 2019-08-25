@@ -8,12 +8,12 @@ class Light : public GameObject
 
 protected:
 	virtual void Copy(GameObject *original) override;
-	virtual void Serialize(void *yaml) override;
-	virtual void Deserialize(void *yaml) override;
+	virtual void SaveYAML(void *yaml) override;
+	virtual void LoadYAML(void *yaml) override;
 
 public:
 	Light();
-	virtual ~Light(){}
+	virtual ~Light() = default;
 
 public:
 
