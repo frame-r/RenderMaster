@@ -593,7 +593,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		CORE_RENDER->SetRenderTextures(2, rts, nullptr);
 		CORE_RENDER->Clear();
 
-		Shader *shader = GetShader("deferred_light.shader", planeMesh.get());
+		Shader *shader = GetShader("deferred_light.hlsl", planeMesh.get());
 		if (shader && scene.lights.size())
 		{
 			CORE_RENDER->SetShader(shader);

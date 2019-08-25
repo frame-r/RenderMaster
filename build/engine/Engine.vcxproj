@@ -945,7 +945,6 @@
     <None Include="..\..\resources\standard\shaders\composite.hlsl" />
     <None Include="..\..\resources\standard\shaders\copy.genericmat" />
     <None Include="..\..\resources\standard\shaders\copy.hlsl" />
-    <None Include="..\..\resources\standard\shaders\deferred_light.shader" />
     <None Include="..\..\resources\standard\shaders\font.hlsl" />
     <None Include="..\..\resources\standard\shaders\id.hlsl" />
     <None Include="..\..\resources\standard\shaders\mesh.genericmat" />
@@ -958,6 +957,12 @@
     <None Include="..\..\src\engine\yaml.inl" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\..\resources\standard\shaders\deferred_light.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\..\resources\standard\shaders\mipmap.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

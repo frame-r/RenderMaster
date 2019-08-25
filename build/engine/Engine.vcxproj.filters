@@ -472,13 +472,7 @@
       <Filter>corerender\dx11</Filter>
     </None>
     <None Include="..\..\src\engine\yaml.inl" />
-    <None Include="..\..\resources\standard\shaders\deferred_light.shader">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="..\..\resources\standard\shaders\copy.genericmat">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\composite.genericmat">
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\resources\standard\shaders\mesh.genericmat">
@@ -511,9 +505,15 @@
     <None Include="..\..\resources\standard\shaders\taa.hlsl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="..\..\resources\standard\shaders\composite.genericmat">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\resources\standard\shaders\mipmap.hlsl">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\resources\standard\shaders\deferred_light.hlsl">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
