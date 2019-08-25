@@ -7,6 +7,8 @@
 class FileSystem final
 {
 
+	bool isInvalidSymbol(char c);
+
 public:
 	// Internal API
 
@@ -22,7 +24,9 @@ public:
 	auto DLLEXPORT ClearFile(const char *path) -> void;
 	auto DLLEXPORT FilterPaths(const char *ext) -> std::vector<std::string>;
 	auto DLLEXPORT CreateMemoryMapedFile(const char *path) -> FileMapping;
-	auto DLLEXPORT getFileName(const std::string& filePath, bool withExtension = true) -> string;
+	auto DLLEXPORT GetFileName(const std::string& filePath, bool withExtension = true) -> string;
+	auto DLLEXPORT IsValid(const std::string& filePath) -> bool;
+	auto DLLEXPORT ToValid(string& filePath) -> void;
 	
 };
 

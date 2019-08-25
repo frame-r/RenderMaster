@@ -145,7 +145,7 @@ auto DLLEXPORT FileSystem::CreateMemoryMapedFile(const char* path) -> FileMappin
 	return mapping;
 }
 
-auto DLLEXPORT FileSystem::getFileName(const std::string& filePath, bool withExtension) -> string
+auto DLLEXPORT FileSystem::GetFileName(const std::string& filePath, bool withExtension) -> string
 {
 	// Create a Path object from File Path
 	fs::path pathObj(filePath);
@@ -166,6 +166,31 @@ auto DLLEXPORT FileSystem::getFileName(const std::string& filePath, bool withExt
 		// return the file name with extension from path object
 		return pathObj.filename().string();
 	}
+}
+
+bool FileSystem::isInvalidSymbol(char c)
+{
+	return
+		c == '/' ||
+		c == ':' ||
+		c == '*' ||
+		c == '?' ||
+		c == '"' ||
+		c == '<' ||
+		c == '>' ||
+		c == '>';
+}
+
+auto DLLEXPORT FileSystem::IsValid(const std::string& filePath) -> bool
+{
+	auto f = std::bind(std::mem_fn(&FileSystem::isInvalidSymbol), this, std::placeholders::_1);
+	return !std::any_of(std::begin(filePath), std::end(filePath), f);
+}
+
+auto DLLEXPORT FileSystem::ToValid(std::string& filePath) -> void
+{
+	auto f = std::bind(std::mem_fn(&FileSystem::isInvalidSymbol), this, std::placeholders::_1);
+	filePath.erase(std::remove_if(filePath.begin(), filePath.end(), f));
 }
 
 File::File(const std::ios_base::openmode & fileMode, const std::filesystem::path & path)

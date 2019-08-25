@@ -598,7 +598,7 @@ static void saveToDDS(const char* path, uint width, uint height, const uint8_t* 
 	uint8* imageData = ddsImage.get() + headerInBytes;
 	memcpy(imageData, buffer.get(), bufferInBytes);
 
-	auto filename = FS->getFileName(path, false);
+	auto filename = FS->GetFileName(path, false);
 	string p = RES_MAN->GetImportMeshDir() + '\\' + filename + ".dds";
 
 	File f = FS->OpenFile(p.c_str(), FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);

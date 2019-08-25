@@ -17,7 +17,7 @@ bool _FBX_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFil
 void _FBX_load_scene_hierarchy(FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
 void _FBX_load_node(FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath, int& meshes);
 void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
-void _FBX_load_node_transform(FbxNode* pNode, const char *str);
+void _FBX_skip_loading(const char *node, const char *name);
 
 
 void importFbx(const char * path)
@@ -153,15 +153,22 @@ void _FBX_load_node(FbxNode* pNode, int depth, const char *fullPath, const char 
 
 	switch (lAttributeType)
 	{
-		case FbxNodeAttribute::eMesh:		if (meshes==0) _FBX_load_mesh((FbxMesh*)pNode->GetNodeAttribute(), pNode, fullPath, path); meshes++; break; // load only first mesh
-		case FbxNodeAttribute::eMarker:		Log(("(eMarker) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::eSkeleton:	Log(("(eSkeleton) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::eNurbs:		Log(("(eNurbs) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::ePatch:		Log(("(ePatch) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::eCamera:		_FBX_load_node_transform(pNode, ("(eCamera) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::eLight:		Log(("(eLight) " + lString + pNode->GetName()).Buffer()); break;
-		case FbxNodeAttribute::eLODGroup:	Log(("(eLODGroup) " + lString + pNode->GetName()).Buffer()); break;
-		default:							_FBX_load_node_transform(pNode, ("(unknown!) " + lString + pNode->GetName()).Buffer()); break;
+		case FbxNodeAttribute::eMesh:
+			if (meshes==0)
+				_FBX_load_mesh((FbxMesh*)pNode->GetNodeAttribute(), pNode, fullPath, path);
+			else
+				_FBX_skip_loading("eMesh", pNode->GetName());
+			meshes++;
+			break; // load only first mesh
+
+		case FbxNodeAttribute::eMarker:		_FBX_skip_loading("eMarker", pNode->GetName()); break;
+		case FbxNodeAttribute::eSkeleton:	_FBX_skip_loading("eSkeleton", pNode->GetName()); break;
+		case FbxNodeAttribute::eNurbs:		_FBX_skip_loading("eNurbs", pNode->GetName()); break;
+		case FbxNodeAttribute::ePatch:		_FBX_skip_loading("ePatch", pNode->GetName()); break;
+		case FbxNodeAttribute::eCamera:		_FBX_skip_loading("eCamera", pNode->GetName()); break;
+		case FbxNodeAttribute::eLight:		_FBX_skip_loading("eLight", pNode->GetName()); break;
+		case FbxNodeAttribute::eLODGroup:	_FBX_skip_loading("eLODGroup", pNode->GetName()); break;
+		default:							_FBX_skip_loading("eUnknown", pNode->GetName()); break;
 	}
 
 	int childs = pNode->GetChildCount();
@@ -184,14 +191,14 @@ void add_tabs(FbxString& buff, int tabs)
 void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const char *path)
 {
 	const int control_points_count = pMesh->GetControlPointsCount();
-	const int polygon_count = pMesh->GetPolygonCount();
+	const uint32_t polygon_count = (size_t)pMesh->GetPolygonCount();
 	const int normal_element_count = pMesh->GetElementNormalCount();
 	const int uv_layer_count = pMesh->GetElementUVCount();
 	const int tangent_layers_count = pMesh->GetElementTangentCount();
 	const int binormal_layers_count = pMesh->GetElementBinormalCount();
 	const int color_layers_count = pMesh->GetElementVertexColorCount();
 
-	const int vertecies = polygon_count * 3;
+	const uint32_t vertecies = polygon_count * 3;
 
 	const int is_normals = normal_element_count > 0;
 	const int is_uv = uv_layer_count > 0;
@@ -204,7 +211,7 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 	const int is_color = 0; //color_layers_count > 0;
 
 	vector<float> data;
-	data.reserve(vertecies * (4 + is_normals * 4 + is_uv * 2));
+	data.reserve(vertecies * (4u + is_normals * 4u + is_uv * 2u));
 
 	vec3 minCoord, maxCoord;
 	
@@ -226,12 +233,12 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 	int vertexId = 0;
 	int vertexes = 0;
 
-	for (int i = 0; i < polygon_count; i++)
+	for (uint32_t i = 0; i < polygon_count; ++i)
 	{
 		int polygon_size = pMesh->GetPolygonSize(i);
 
-		for (int t = 0; t < polygon_size - 2; t++) // triangulate large polygons
-			for (int j = 0; j < 3; j++)
+		for (int t = 0; t < polygon_size - 2; ++t) // triangulate large polygons
+			for (int j = 0; j < 3; ++j)
 			{
 				int localVertId = t + j;
 				if (j == 0)
@@ -426,21 +433,29 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 	header.maxY = maxCoord.y;
 	header.maxZ = maxCoord.z;
 
-	string p = RES_MAN->GetImportMeshDir() + '\\' + pNode->GetName() + ".mesh";
+	string name = pNode->GetName();
+	if (!FS->IsValid(name))
+	{
+		LogWarning("_FBX_load_mesh(): name '%s' is not valid", name.c_str());
+
+		FS->ToValid(name);
+
+		LogWarning("name -> '%s'", name.c_str());
+	}
+
+	string p = RES_MAN->GetImportMeshDir() + '\\' + name + ".mesh";
 
 	File f = FS->OpenFile(p.c_str(), FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
 
 	f.Write(reinterpret_cast<uint8*>(&header), sizeof(MeshHeader));
 	f.Write(reinterpret_cast<uint8*>(&data[0]), data.size() * sizeof(float));
+
+	Log("Mesh '%s' -> '%s'", name.c_str(), p.c_str());
 }
 
-void _FBX_load_node_transform(FbxNode* pNode, const char *str)
+void _FBX_skip_loading(const char* node, const char* name)
 {
-	FbxVector4 tr = pNode->EvaluateGlobalTransform().GetT();
-	FbxVector4 rot = pNode->EvaluateGlobalTransform().GetR();
-	FbxVector4 sc = pNode->EvaluateGlobalTransform().GetS();
-
-	if (fbxDebug)
-		Log("%s T=(%.1f %.1f %.1f) R=(%.1f %.1f %.1f) S=(%.1f %.1f %.1f)", str, tr[0], tr[1], tr[2], rot[0], rot[1], rot[2], sc[0], sc[1], sc[2]);
+	Log("%s %s skipped", node, name);
 }
+
 
