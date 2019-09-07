@@ -34,6 +34,7 @@ DX11Texture::DX11Texture(ID3D11Resource *res, ID3D11SamplerState *sampler, ID3D1
 	_height = _desc.Height;
 	_mipmaps = _desc.MipLevels;
 	GetSurfaceInfo(_width, _height, _desc.Format, &bytes, nullptr, nullptr);
+	bytes *= _desc.SampleDesc.Count;
 }
 
 DX11Texture::~DX11Texture()

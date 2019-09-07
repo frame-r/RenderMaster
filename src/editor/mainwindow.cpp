@@ -39,6 +39,7 @@ struct WindowData
 {
 	ADS_NS::SectionContent::RefPtr ptr;
 	QAction *act;
+	QWidget *w;
 	bool visible;
 };
 
@@ -63,6 +64,7 @@ static T* createWidget(const QString& name, int id, ADS_NS::DropArea drop, QMenu
 
 	auto sc = ADS_NS::SectionContent::newSectionContent(name, _container, new IconTitleWidget(QIcon(), name), w);
 	_windows[id].ptr = sc;
+	_windows[id].w = w;
 	_container->addSectionContent(sc, nullptr, drop);
 
 	if (hidden)
@@ -277,6 +279,13 @@ WId MainWindow::getWindowHandle()
 {
 	QWidget *render_view = findChild<RenderWidget*>("RenderWidget");
 	return render_view->winId();
+}
+
+Settings *MainWindow::GetSettings()
+{
+	WindowData& data = _windows[SETTINGS];
+	Settings *s = static_cast<Settings*>(data.w);
+	return s;
 }
 
 void MainWindow::closeEvent(QCloseEvent* e)

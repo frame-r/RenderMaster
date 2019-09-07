@@ -18,7 +18,6 @@ public:
 	bool virtual isMouseIntersect(const vec2 &normalizedMousePos) = 0;
 	void virtual mousePress(const CameraData& cam, const mat4& selectionTransform,const QRect &screen, const vec2 &normalizedMousePos) = 0;
 	void virtual mouseRelease() = 0;
-	bool virtual isNeedDepthBuffer() = 0;
 };
 
 extern float SelectionThresholdInPixels;

@@ -8,23 +8,23 @@ objects:
     intensity: 1
   - childs: 0
     id: 1540049954
-    enabled: true
+    enabled: false
     type: Model
-    worldTransform: [-0.1242989, 0.9922478, 0, -0.379, -0.9922471, -0.1242989, 0, 1.002, 0, 0, 1, 1.276, 0, 0, 0, 1]
+    worldTransform: [-0.1242945, 0.9922485, 0, -0.379, -0.9922478, -0.1242945, 0, 1.002, 0, 0, 1, 1.276, 0, 0, 0, 1]
     mesh: .import\sphere.mesh
     material: material_0
   - childs: 0
     id: 431980828
-    enabled: true
+    enabled: false
     type: Model
-    worldTransform: [0.6385207, -0.5170094, 0.5701011, -1.6, 0.7692022, 0.4531486, -0.4505643, 5.15, -0.02539429, 0.7262138, 0.6870157, 1.501, 0, 0, 0, 1]
+    worldTransform: [0.6385205, -0.5170094, 0.5701012, -1.6, 0.7692021, 0.4531486, -0.4505644, 5.15, -0.02539428, 0.7262138, 0.6870158, 1.501, 0, 0, 0, 1]
     mesh: .import\cube.mesh
     material: material_1
   - childs: 0
     id: 1113097840
     enabled: true
     type: Model
-    worldTransform: [-1, 1.755556e-05, 0, 4.504, 0, 0, 1, 1.52, 1.755555e-05, 1, 0, 0.054, 0, 0, 0, 1]
+    worldTransform: [-1, 1.755557e-05, 0, 0.022, 0, 0, 1, -5.264, 1.755557e-05, 1, 0, 0.0540782, 0, 0, 0, 1]
     mesh: .import\Teapot_Node.mesh
     material: material_2
   - childs: 0

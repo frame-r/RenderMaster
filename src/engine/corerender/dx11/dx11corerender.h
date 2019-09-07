@@ -87,7 +87,7 @@ public:
 		FLOAT depthClearColor = 1.0f;
 		UINT8 stencilClearColor = 0;
 
-		FLOAT clearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+		FLOAT clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	};
 
 public:
@@ -114,6 +114,7 @@ public:
 	auto SetRenderTextures(int units, Texture **textures, Texture *depthTex) -> void override;
 	auto Clear() -> void override;
 	auto SetDepthTest(int enabled) -> void override;
+	auto SetMSAA(int enabled) -> void override;
 	auto SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void override;
 	auto SetCullingMode(CULLING_MODE value) -> void override;
 	auto BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags) -> void override;

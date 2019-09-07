@@ -45,6 +45,7 @@ public:
 	auto virtual SetRenderTextures(int units, Texture **textures, Texture *depthTex) -> void = 0;
 	auto virtual Clear() -> void = 0;
 	auto virtual SetDepthTest(int enabled) -> void = 0;
+	auto virtual SetMSAA(int enabled) -> void = 0;
 	auto virtual SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void = 0;
 	auto virtual SetCullingMode(CULLING_MODE value) -> void = 0;
 	auto virtual BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags = BIND_TETURE_FLAGS::PIXEL) -> void = 0;

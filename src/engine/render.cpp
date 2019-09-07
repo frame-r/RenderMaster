@@ -47,6 +47,7 @@ struct RenderTexture
 	uint width;
 	uint height;
 	TEXTURE_FORMAT format;
+	int msaaSamples;
 	SharedPtr<Texture> pointer;
 	PREV_TEXTURES id{ PREV_TEXTURES ::UNKNOWN};
 };
@@ -421,11 +422,12 @@ auto DLLEXPORT Render::DrawMeshes(PASS pass) -> void
 	drawMeshes(pass, meshes);
 }
 
-auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format) -> Texture *
+auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples) -> Texture *
 {
-	auto it = std::find_if(renderTextures.begin(), renderTextures.end(), [width, height, format](const RenderTexture& tex)
+	auto it = std::find_if(renderTextures.begin(), renderTextures.end(),
+		[width, height, format, msaaSamples](const RenderTexture& tex)
 		{
-			return tex.free && width == tex.width && height == tex.height && format == tex.format;
+			return tex.free && width == tex.width && height == tex.height && format == tex.format && msaaSamples == tex.msaaSamples;
 		});
 
 	if (it != renderTextures.end())
@@ -436,9 +438,20 @@ auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT 
 	}
 
 	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT;
+
+	switch (msaaSamples)
+	{
+		case 0:
+		case 1: break;
+		case 2: flags = flags | TEXTURE_CREATE_FLAGS::MSAA_2x; break;
+		case 4: flags = flags | TEXTURE_CREATE_FLAGS::MSAA_4x; break;
+		case 8: flags = flags | TEXTURE_CREATE_FLAGS::MSAA_8x; break;
+		default: LogWarning("Render::GetRenderTexture(): Unknown number of MSAA samples"); break;
+	}
+
 	SharedPtr<Texture> tex = RES_MAN->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
 
-	renderTextures.push_back({_core->frame(), 0, width, height, format, tex});
+	renderTextures.push_back({_core->frame(), 0, width, height, format, msaaSamples, tex });
 
 	return tex.get();
 }
@@ -788,7 +801,7 @@ Texture* Render::GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height,
 	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT;
 	SharedPtr<Texture> tex = RES_MAN->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
 
-	prevRenderTextures.push_back({ _core->frame(), 0, width, height, format, tex, id });
+	prevRenderTextures.push_back({ _core->frame(), 0, width, height, format, 0, tex, id });
 
 	return tex.get();
 }

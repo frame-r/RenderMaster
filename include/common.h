@@ -260,34 +260,41 @@ enum class TEXTURE_FORMAT
 
 	UNKNOWN
 };
-enum class TEXTURE_CREATE_FLAGS
+enum class TEXTURE_CREATE_FLAGS : uint32_t
 {
 	NONE					= 0x00000000,
 
-	FILTER_POINT			= 1 << 1, // magn = point,	min = point,	mip = point
-	FILTER_BILINEAR			= 1 << 2, // magn = linear,	min = linear,	mip = point
-	FILTER_TRILINEAR		= 1 << 3, // magn = linear,	min = linear,	mip = lenear
-	FILTER_ANISOTROPY_2X	= 1 << 4,
-	FILTER_ANISOTROPY_4X	= 1 << 5,
-	FILTER_ANISOTROPY_8X	= 1 << 6,
-	FILTER_ANISOTROPY_16X	= 1 << 7,
-	FILTER = 0xFF,
+	FILTER					= 0x0000000F,
+	FILTER_POINT			= 1, // magn = point,	min = point,	mip = point
+	FILTER_BILINEAR			= 2, // magn = linear,	min = linear,	mip = point
+	FILTER_TRILINEAR		= 3, // magn = linear,	min = linear,	mip = lenear
+	FILTER_ANISOTROPY_2X	= 4,
+	FILTER_ANISOTROPY_4X	= 5,
+	FILTER_ANISOTROPY_8X	= 6,
+	FILTER_ANISOTROPY_16X	= 7,
 
+
+	COORDS					= 0x00000F00,
 	COORDS_WRAP				= 1 << 8,
 	// TODO
-	//COORDS_MIRROR			= 0x00000200,
-	//COORDS_CLAMP			= 0x00000300,
-	//COORDS_BORDER			= 0x00000400,
-	COORDS = 0xF00,
+	//COORDS_MIRROR
+	//COORDS_CLAMP
+	//COORDS_BORDER
+	
 
+	USAGE					= 0x0000F000,
 	USAGE_RENDER_TARGET		= 1 << 12,
 	USAGE_UNORDRED_ACCESS	= 1 << 13,
-	USAGE = 0xF000,
 
-	GENERATE_MIPMAPS		= 1 << 16,
 
-	//CPU						= 0x000F0000,
-	//CPU_GPU_READ_WRITE		= 0x00010000
+	MSAA					= 0x000F0000,
+	MSAA_2x					= 2 << 16,
+	MSAA_4x					= 3 << 16,
+	MSAA_8x					= 4 << 16,
+
+
+	MISC					= 0xF0000000,
+	GENERATE_MIPMAPS		= 1 << 28,
 };
 DEFINE_ENUM_OPERATORS(TEXTURE_CREATE_FLAGS)
 

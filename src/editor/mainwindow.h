@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+class Settings;
+
 enum THEME
 {
 	LIGHT = 0,
@@ -43,6 +45,7 @@ public:
 	~MainWindow();
 
 	WId getWindowHandle();
+	Settings *GetSettings();
 
 protected:
 	virtual void closeEvent(QCloseEvent* e);

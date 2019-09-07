@@ -689,6 +689,19 @@ UINT bindFlags(TEXTURE_CREATE_FLAGS flags, TEXTURE_FORMAT format)
 	return bindFlags_;
 }
 
+UINT msaaSamples(TEXTURE_CREATE_FLAGS flags)
+{
+	TEXTURE_CREATE_FLAGS f = flags & TEXTURE_CREATE_FLAGS::MSAA;
+	switch(f)
+	{
+	case TEXTURE_CREATE_FLAGS::MSAA_2x: return 2;
+	case TEXTURE_CREATE_FLAGS::MSAA_4x: return 4;
+	case TEXTURE_CREATE_FLAGS::MSAA_8x: return 8;
+	}
+
+	return 1;
+}
+
 UINT getMisc(TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags)
 {
 	UINT ret = type == TEXTURE_TYPE::TYPE_CUBE ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0;
@@ -738,7 +751,7 @@ auto DX11CoreRender::CreateTexture(const uint8 *pData, uint width, uint height, 
 	desc.MipLevels = mipLevelsResource;
 	desc.ArraySize = arraySize;
 	desc.Format = engToDX11Format(format);
-	desc.SampleDesc.Count = 1; // TODO: MSAA textures
+	desc.SampleDesc.Count = msaaSamples(flags);
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = bindFlags(flags, format);
@@ -813,9 +826,11 @@ auto DX11CoreRender::CreateTexture(const uint8 *pData, uint width, uint height, 
 
 	// SRV
 	ID3D11ShaderResourceView *srv = nullptr;
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc{};
 	shaderResourceViewDesc.Format = engToD3DSRV(format);
-	shaderResourceViewDesc.ViewDimension = type == TEXTURE_TYPE::TYPE_CUBE ? D3D11_SRV_DIMENSION_TEXTURECUBE : D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.ViewDimension = type == TEXTURE_TYPE::TYPE_CUBE ?
+		D3D11_SRV_DIMENSION_TEXTURECUBE :
+		(desc.SampleDesc.Count > 1 ? D3D_SRV_DIMENSION_TEXTURE2DMS : D3D11_SRV_DIMENSION_TEXTURE2D);
 	shaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
 	shaderResourceViewDesc.TextureCube.MipLevels = desc.MipLevels;
 	
@@ -838,7 +853,7 @@ auto DX11CoreRender::CreateTexture(const uint8 *pData, uint width, uint height, 
 		{
 			D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
 			renderTargetViewDesc.Format = desc.Format;
-			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+			renderTargetViewDesc.ViewDimension = desc.SampleDesc.Count > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
 			renderTargetViewDesc.Texture2D.MipSlice = 0;
 
 			if (FAILED(_device->CreateRenderTargetView(tex, &renderTargetViewDesc, &rtv)))
@@ -853,7 +868,7 @@ auto DX11CoreRender::CreateTexture(const uint8 *pData, uint width, uint height, 
 			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
 			dsvDesc.Flags = 0;
 			dsvDesc.Format = engToD3DDSVFormat(format);
-			dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+			dsvDesc.ViewDimension = desc.SampleDesc.Count > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
 			dsvDesc.Texture2D.MipSlice = 0;
 
 			if (FAILED(_device->CreateDepthStencilView(tex, &dsvDesc, &dsv)))
@@ -1205,6 +1220,17 @@ auto DX11CoreRender::SetDepthTest(int enabled) -> void
 		state_.depthStencilDesc.DepthEnable = enabled;
 		state_.depthStencilState = _depthStencilStatePool.FetchState(state_.depthStencilDesc);
 		_context->OMSetDepthStencilState(state_.depthStencilState.Get(), 0);
+	}
+}
+
+auto DX11CoreRender::SetMSAA(int enabled) -> void
+{
+	if (state_.rasterStateDesc.AntialiasedLineEnable != enabled || state_.rasterStateDesc.MultisampleEnable != enabled)
+	{
+		state_.rasterStateDesc.AntialiasedLineEnable = enabled;
+		state_.rasterStateDesc.MultisampleEnable = enabled;
+		state_.rasterState = _rasterizerStatePool.FetchState(state_.rasterStateDesc);
+		_context->RSSetState(state_.rasterState.Get());
 	}
 }
 

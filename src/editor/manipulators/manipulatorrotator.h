@@ -36,7 +36,6 @@ public:
 	bool isMouseIntersect(const vec2 &normalizedMousePos) override;
 	void mousePress(const CameraData& cam, const mat4& selectionTransform, const QRect &screen, const vec2 &normalizedMousePos) override;
 	void mouseRelease() override;
-	bool isNeedDepthBuffer() override { return true; }
 
 };
 

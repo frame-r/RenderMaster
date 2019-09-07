@@ -5,6 +5,7 @@
 #include "icorerender.h"
 #include "editorcore.h"
 #include "gameobject.h"
+#include "settings.h"
 #include "editor_common.h"
 #include <QDebug>
 #include <QLabel>
@@ -24,6 +25,7 @@ static const float FocusingSpeed = 10.0f;
 static const int MOUSE_CLICK_MS_TRESHOLD = 200;
 static QTime myTimer;
 
+static ManagedPtr<Mesh> meshPlane;
 
 RenderWidget::RenderWidget(QWidget *parent) :
 	QWidget(parent, Qt::MSWindowsOwnDC)
@@ -56,10 +58,13 @@ RenderWidget::RenderWidget(QWidget *parent) :
 void RenderWidget::onEngineInited(Core *c)
 {
 	core = c;
+	auto *resMan = editor->core->GetResourceManager();
+	meshPlane = resMan->CreateStreamMesh("std#plane");
 }
 
 void RenderWidget::onEngineFree(Core *c)
 {
+	meshPlane.release();
 	core = nullptr;
 }
 
@@ -213,28 +218,58 @@ void RenderWidget::onRender()
 	ICoreRender *coreRender = core->GetCoreRender();
 	Render *render = editor->core->GetRender();
 	IManupulator *manipulator = editor->currentManipulator.get();
+	int w = size().width();
+	int h = size().height();
 
 	if (editor->NumSelectedObjects() == 1 && manipulator)
 	{
-		// clear depth
-		if (manipulator->isNeedDepthBuffer())
+		coreRender->PushStates();
+		coreRender->SetDepthTest(0);
+
+		Settings *settings = editor->window->GetSettings();
+
+		if (settings->isWireframeAntialiasing())
 		{
-			coreRender->SetRenderTextures(0, nullptr, coreRender->GetSurfaceDepthTexture());
-			coreRender->Clear();
+			coreRender->SetMSAA(1);
 
 			Texture *texs[1];
+
+			coreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
+
+			Texture *msaaTex = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8, 4);
+			texs[0] = msaaTex;
+			coreRender->SetRenderTextures(1, texs, nullptr);
+
+			coreRender->Clear();
+
+			manipulator->render(cam, editor->SelectionTransform(), rect());
+
+			coreRender->SetMSAA(0);
+			coreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
+
 			texs[0] = coreRender->GetSurfaceColorTexture();
-			coreRender->SetRenderTextures(1, texs, coreRender->GetSurfaceDepthTexture());
+			coreRender->SetRenderTextures(1, texs, nullptr);
+
+			Shader *shader;
+			shader = render->GetShader("msaa_resolve.hlsl", meshPlane.get());
+			coreRender->SetShader(shader);
+
+			Texture *tex_in[] = { msaaTex };
+			coreRender->BindTextures(1, tex_in, BIND_TETURE_FLAGS::PIXEL);
+			coreRender->Draw(meshPlane.get(), 1);
+
+			render->ReleaseRenderTexture(msaaTex);
+		} else
+		{
+			Texture *texs[1];
+			texs[0] = coreRender->GetSurfaceColorTexture();
+			coreRender->SetRenderTextures(1, texs, nullptr);
+
+			manipulator->render(cam, editor->SelectionTransform(), rect());
 		}
 
-		coreRender->PushStates();
-		manipulator->render(cam, editor->SelectionTransform(), rect());
 		coreRender->PopStates();
 	}
-
-
-	int w = size().width();
-	int h = size().height();
 
 	if (leftMouseClick && !keyAlt)
 	{

@@ -48,6 +48,11 @@ void Settings::OnEngineInit(Core *c)
 		render->SetTAA(value);
 	}));
 
+	_connections.emplace_back(connect(ui->wireframe_aa, &QCheckBox::toggled, [this](bool value)->void
+	{
+		this->wireframeAntialiasing = value;
+	}));
+
 	ui->diffuse_env_sl->setValue(render->GetDiffuseEnvironemnt() * ui->diffuse_env_sl->maximum());
 	setLabel(ui->diffuse_env_l, render->GetDiffuseEnvironemnt());
 
