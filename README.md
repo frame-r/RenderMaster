@@ -1,18 +1,18 @@
 # RenderMaster
 
-Graphic engine.
+Graphic engine for experiments with graphics and programming
 
 ## Features
 * Deferred render
-* Physically based materials
-* Image based lighting
-* Temporal anti-aliasing
+* PBR
+* TAA
 * Game objects hierarchy
 
 ### Editor
-* Manipulators (Translate, Rotate)
+* Manipulators (translate, rotate) + MSAA
 * Picking
-* Experimental Import FBX
+* Import .png, .jpg
+* Experimental import .fbx
 
 ## Building
 1) yaml-cpp.vcproj
