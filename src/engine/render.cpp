@@ -739,7 +739,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		Texture* wireframe_depth = CORE_RENDER->GetSurfaceDepthTexture();
 
 		const bool DepthTest = true;
-		CORE_RENDER->SetDepthTest(DepthTest); // TODO: with depth test
+		CORE_RENDER->SetDepthTest(DepthTest);
 
 		if (taa && DepthTest)
 		{

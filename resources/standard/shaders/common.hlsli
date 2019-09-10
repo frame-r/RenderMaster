@@ -12,6 +12,17 @@ static const float Reflectance = 0.4;
 #define TEXTURE_UV_SAMPLE(NAME, UV) \
 	texture_ ## NAME .Sample(sampler_ ## NAME , UV * uv_transform_ ## NAME .xy + uv_transform_ ## NAME  .zw)
 	
+static float2 neigbors_8[8] =
+{
+	float2(1, 0),
+	float2(-1, 0),
+	float2(0, 1),
+	float2(0,-1),
+	float2(-1,-1),
+	float2(1,-1),
+	float2(1, 1),
+	float2(-1, 1)
+};
 
 float3 depthToPosition(float depth, float2 uv, float4x4 projectionInv)
 {
