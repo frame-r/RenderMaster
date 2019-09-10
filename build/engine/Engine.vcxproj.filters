@@ -472,16 +472,10 @@
       <Filter>corerender\dx11</Filter>
     </None>
     <None Include="..\..\src\engine\yaml.inl" />
-    <None Include="..\..\resources\standard\shaders\copy.genericmat">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="..\..\resources\standard\shaders\common.hlsli">
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\resources\standard\shaders\composite.hlsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\copy.hlsl">
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\resources\standard\shaders\font.hlsl">
@@ -505,6 +499,9 @@
     <None Include="..\..\resources\standard\shaders\model\vertex.hlsli">
       <Filter>shaders\model</Filter>
     </None>
+    <None Include="..\..\resources\standard\shaders\final_post.genericmat">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\resources\standard\shaders\mipmap.hlsl">
@@ -521,6 +518,9 @@
     </FxCompile>
     <FxCompile Include="..\..\resources\standard\shaders\model\wireframe.hlsl">
       <Filter>shaders\model</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\resources\standard\shaders\final_post.hlsl">
+      <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>
