@@ -210,8 +210,10 @@
     <ClInclude Include="..\..\include\structured_buffer.h" />
     <ClInclude Include="..\..\include\texture.h" />
     <ClInclude Include="..\..\include\vector_math.h" />
-    <ClInclude Include="..\..\resources\standard\shaders\vertex.hlsli" />
-    <ClInclude Include="..\..\resources\standard\shaders\vertex_post.hlsli" />
+    <ClInclude Include="..\..\resources\standard\shaders\vertex_post.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="..\..\src\engine\console_window.h" />
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11corerender.h" />
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11mesh.h" />
@@ -940,18 +942,50 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\resources\standard\shaders\common.hlsli" />
-    <None Include="..\..\resources\standard\shaders\composite.genericmat" />
-    <None Include="..\..\resources\standard\shaders\composite.hlsl" />
-    <None Include="..\..\resources\standard\shaders\copy.genericmat" />
-    <None Include="..\..\resources\standard\shaders\copy.hlsl" />
-    <None Include="..\..\resources\standard\shaders\font.hlsl" />
-    <None Include="..\..\resources\standard\shaders\id.hlsl" />
-    <None Include="..\..\resources\standard\shaders\mesh.genericmat" />
-    <None Include="..\..\resources\standard\shaders\mesh.hlsl" />
-    <None Include="..\..\resources\standard\shaders\primitive.hlsl" />
-    <None Include="..\..\resources\standard\shaders\reprojection.hlsl" />
-    <None Include="..\..\resources\standard\shaders\taa.hlsl" />
+    <None Include="..\..\resources\standard\shaders\common.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\composite.genericmat">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\composite.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\copy.genericmat">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\copy.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\font.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\model\mesh.genericmat">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\model\vertex.hlsli">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\primitive.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\reprojection.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="..\..\resources\standard\shaders\taa.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
     <None Include="..\..\src\engine\corerender\dx11\dx_objects.inl" />
     <None Include="..\..\src\engine\corerender\dx11\states_pools.inl" />
     <None Include="..\..\src\engine\yaml.inl" />
@@ -964,6 +998,18 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\..\resources\standard\shaders\mipmap.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\resources\standard\shaders\model\id.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\resources\standard\shaders\model\mesh.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\..\resources\standard\shaders\model\wireframe.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

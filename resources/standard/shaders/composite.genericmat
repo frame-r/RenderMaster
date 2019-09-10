@@ -2,11 +2,12 @@
 <generic_material id="composite">
 	
 	<def id="specular_quality" 
-       value0="REFLECTION_MIPMAP" 
-       value1="REFLECTION_GGX_LOW"
-       value2="REFLECTION_GGX_MEDIUM"
-       value3="REFLECTION_GGX_HIGH"
-       >0</def>	
+    value0="REFLECTION_MIPMAP" 
+    value1="REFLECTION_GGX_LOW"
+    value2="REFLECTION_GGX_MEDIUM"
+    value3="REFLECTION_GGX_HIGH"
+    >0</def>
+    
 	<shader>composite.hlsl</shader>
 
 </generic_material>

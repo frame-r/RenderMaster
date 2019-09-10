@@ -62,6 +62,7 @@ struct GenericMaterial
 	std::string shader_;
 	std::string deferredShader_;
 	std::string idShader_;
+	std::string wireframeShader_;
 
 public:
 	GenericMaterial(std::string path) : path_(path){}
@@ -131,8 +132,10 @@ public:
 	auto DLLEXPORT SetUV(const char *name, const vec4& uv) -> void;
 	auto DLLEXPORT GetUV(const char *name) -> vec4;
 
+	// TODO: make one function GetShader(PASS)
 	auto DLLEXPORT GetShader(Mesh *mesh = nullptr) -> Shader*;
 	auto DLLEXPORT GetDeferredShader(Mesh *mesh = nullptr) -> Shader*;
 	auto DLLEXPORT GetIdShader(Mesh *mesh = nullptr) -> Shader*;
+	auto DLLEXPORT GetWireframeShader(Mesh *mesh = nullptr) -> Shader*;
 
 };

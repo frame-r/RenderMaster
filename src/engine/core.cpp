@@ -235,7 +235,7 @@ void Core::mainLoop()
 		mat4 ProjMat = camera->GetProjectionMatrix(aspect);
 		mat4 ViewMat = camera->GetViewMatrix();
 
-		render->RenderFrame(0, ViewMat, ProjMat);
+		render->RenderFrame(0, ViewMat, ProjMat, nullptr, 0);
 		CORE_RENDER->SwapBuffers();
 	}else
 	{
@@ -249,7 +249,7 @@ auto DLLEXPORT Core::ManualUpdate() -> void
 	engineUpdate();
 }
 
-auto DLLEXPORT Core::ManualRenderFrame(const WindowHandle *externHandle, const mat4& ViewMat, const mat4& ProjMat) -> void
+auto DLLEXPORT Core::ManualRenderFrame(const WindowHandle *externHandle, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum) -> void
 {
 	CORE_RENDER->MakeCurrent(externHandle);
 
@@ -274,7 +274,7 @@ auto DLLEXPORT Core::ManualRenderFrame(const WindowHandle *externHandle, const m
 
 	size_t viewID = windowToViewId[externHandle];
 
-	render->RenderFrame(viewID, ViewMat, ProjMat);
+	render->RenderFrame(viewID, ViewMat, ProjMat, wireframeModels, modelsNum);
 }
 
 auto DLLEXPORT Core::AddProfilerCallback(IProfilerCallback * c) -> void

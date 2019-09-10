@@ -213,7 +213,20 @@ void RenderWidget::onRender()
 	CameraData cam;
 	calculateCameraData(cam);
 
-	core->ManualRenderFrame(&h, cam.ViewMat, cam.ProjectionMat);
+	Model *selectedModel{};
+	int numSelected{};
+
+	if (editor->NumSelectedObjects())
+	{
+		GameObject *selected = editor->FirstSelectedObjects();
+		if (selected->GetType() == OBJECT_TYPE::MODEL)
+		{
+			numSelected = 1;
+			selectedModel = reinterpret_cast<Model*>(selected);
+		}
+	}
+
+	core->ManualRenderFrame(&h, cam.ViewMat, cam.ProjectionMat, &selectedModel, numSelected);
 
 	ICoreRender *coreRender = core->GetCoreRender();
 	Render *render = editor->core->GetRender();

@@ -13,11 +13,15 @@
 		<texture id="albedo" slot="0" condition="albedo_map">povement_albedo.dds</texture>
 		<texture id="normal" slot="1" condition="normal_map">povement_normal.dds</texture>
 		
-		<shader>mesh.hlsl</shader>
+		<shader>model/deferred.hlsl</shader>
 	</pass_deferred>
 	
-	<pass_id>		
-		<shader>id.hlsl</shader>
+	<pass_id>
+		<shader>model/id.hlsl</shader>
 	</pass_id>
+  
+	<pass_wireframe>
+		<shader>model/wireframe.hlsl</shader>
+	</pass_wireframe>
 	
 </generic_material>

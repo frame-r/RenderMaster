@@ -58,9 +58,6 @@
     <ClInclude Include="..\..\src\engine\thirdparty\pugixml\pugixml.hpp">
       <Filter>thirdparty\pugixml</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\resources\standard\shaders\vertex.hlsli">
-      <Filter>shaders</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\resources\standard\shaders\vertex_post.hlsli">
       <Filter>shaders</Filter>
     </ClInclude>
@@ -463,6 +460,9 @@
     <Filter Include="thirdparty\zlib">
       <UniqueIdentifier>{5060a3f3-bce7-452e-a983-54feb174ab01}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shaders\model">
+      <UniqueIdentifier>{80e192f0-b2bb-4e7c-bcc3-dddc17e91e5e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\engine\corerender\dx11\states_pools.inl">
@@ -473,9 +473,6 @@
     </None>
     <None Include="..\..\src\engine\yaml.inl" />
     <None Include="..\..\resources\standard\shaders\copy.genericmat">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\mesh.genericmat">
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\resources\standard\shaders\common.hlsli">
@@ -490,12 +487,6 @@
     <None Include="..\..\resources\standard\shaders\font.hlsl">
       <Filter>shaders</Filter>
     </None>
-    <None Include="..\..\resources\standard\shaders\id.hlsl">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\resources\standard\shaders\mesh.hlsl">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="..\..\resources\standard\shaders\primitive.hlsl">
       <Filter>shaders</Filter>
     </None>
@@ -508,6 +499,12 @@
     <None Include="..\..\resources\standard\shaders\composite.genericmat">
       <Filter>shaders</Filter>
     </None>
+    <None Include="..\..\resources\standard\shaders\model\mesh.genericmat">
+      <Filter>shaders\model</Filter>
+    </None>
+    <None Include="..\..\resources\standard\shaders\model\vertex.hlsli">
+      <Filter>shaders\model</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\resources\standard\shaders\mipmap.hlsl">
@@ -515,6 +512,15 @@
     </FxCompile>
     <FxCompile Include="..\..\resources\standard\shaders\deferred_light.hlsl">
       <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\resources\standard\shaders\model\id.hlsl">
+      <Filter>shaders\model</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\resources\standard\shaders\model\mesh.hlsl">
+      <Filter>shaders\model</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\resources\standard\shaders\model\wireframe.hlsl">
+      <Filter>shaders\model</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

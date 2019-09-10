@@ -66,7 +66,7 @@ public:
 	auto DLLEXPORT Free() -> void;
 	auto DLLEXPORT Start(Camera *cam) -> void;
 	auto DLLEXPORT ManualUpdate() -> void;
-	auto DLLEXPORT ManualRenderFrame(const WindowHandle* externHandle, const mat4& ViewMat, const mat4& ProjMat) -> void;
+	auto DLLEXPORT ManualRenderFrame(const WindowHandle* externHandle, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum) -> void;
 
 	auto DLLEXPORT GetRootPath() -> const std::string& { return rootPath_; }
 	auto DLLEXPORT GetDataPath() -> const std::string& { return dataPath_; }

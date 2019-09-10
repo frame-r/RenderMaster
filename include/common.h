@@ -206,6 +206,7 @@ enum class PASS
 	ALL = -1,
 	DEFERRED,
 	ID,
+	WIREFRAME,
 	COUNT
 };
 
@@ -229,6 +230,23 @@ enum class CULLING_MODE
 	NONE = 0,
 	FRONT,
 	BACK	
+};
+
+enum class FILLING_MODE
+{
+	WIREFRAME = 2,
+	SOLID = 3,
+};
+enum class DEPTH_FUNC
+{
+	NEVER = 1,
+	LESS = 2,
+	EQUAL = 3,
+	LESS_EQUAL = 4,
+	GREATER = 5,
+	NOT_EQUAL = 6,
+	GREATER_EQUAL = 7,
+	ALWAYS = 8
 };
 
 enum class TEXTURE_FORMAT

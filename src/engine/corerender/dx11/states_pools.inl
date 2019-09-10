@@ -9,6 +9,8 @@
 // For example:
 // D3D11_RASTERIZER_DESC -> ID3D11RasterizerState*
 
+#define DEFAULT_DEPTH_FUNC D3D11_COMPARISON_LESS_EQUAL
+
 struct RasterHash
 {
 	union CompactDesc
@@ -245,7 +247,7 @@ public:
 		// Depth test parameters
 		dsDesc.DepthEnable = true;
 		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+		dsDesc.DepthFunc = DEFAULT_DEPTH_FUNC;
 
 		// Stencil test parameters
 		dsDesc.StencilEnable = false;

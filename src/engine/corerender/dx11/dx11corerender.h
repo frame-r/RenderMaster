@@ -114,9 +114,11 @@ public:
 	auto SetRenderTextures(int units, Texture **textures, Texture *depthTex) -> void override;
 	auto Clear() -> void override;
 	auto SetDepthTest(int enabled) -> void override;
+	auto SetDepthFunc(DEPTH_FUNC func) -> void override;
 	auto SetMSAA(int enabled) -> void override;
 	auto SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void override;
 	auto SetCullingMode(CULLING_MODE value) -> void override;
+	auto SetFillingMode(FILLING_MODE value) -> void override;
 	auto BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags) -> void override;
 	auto BindUnorderedAccessTextures(int units, Texture **textures) -> void override;
 	auto BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void override;

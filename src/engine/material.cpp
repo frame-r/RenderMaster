@@ -134,6 +134,8 @@ void GenericMaterial::LoadXML()
 		loadPass(mat.child("pass_deferred"), deferredShader_, PASS::DEFERRED);
 	if (mat.child("pass_id"))
 		loadPass(mat.child("pass_id"), idShader_, PASS::ID);
+	if (mat.child("pass_wireframe"))
+		loadPass(mat.child("pass_wireframe"), wireframeShader_, PASS::WIREFRAME);
 }
 
 void GenericMaterial::Clear()
@@ -144,6 +146,7 @@ void GenericMaterial::Clear()
 	shader_.clear();
 	deferredShader_.clear();
 	idShader_.clear();
+	wireframeShader_.clear();
 }
 
 void Material::initializeFromParent()
@@ -494,4 +497,9 @@ Shader* Material::GetIdShader(Mesh* mesh)
 {
 	Render *render = _core->GetRender();
 	return render->GetShader(parent_->idShader_.c_str(), mesh, currentDefinesVec_);
+}
+Shader* Material::GetWireframeShader(Mesh* mesh)
+{
+	Render *render = _core->GetRender();
+	return render->GetShader(parent_->wireframeShader_.c_str(), mesh, currentDefinesVec_);
 }

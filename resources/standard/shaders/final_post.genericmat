@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<generic_material id="copy">
+<generic_material id="final_post">
   
 	<def id="view_mode" 
 		value0="VIEW_MODE_FINAL" 
@@ -11,6 +11,6 @@
 		value6="VIEW_MODE_COLOR_REPROJECTION"
 		>0</def>
 	
-	<shader>copy.hlsl</shader>
+	<shader>final_post.hlsl</shader>
 
 </generic_material>

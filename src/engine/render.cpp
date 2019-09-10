@@ -104,7 +104,7 @@ void addObjectsRecursive(std::vector<T*>& ret, GameObject *root, OBJECT_TYPE typ
 		addObjectsRecursive<T>(ret, g, type);
 	}
 
-	if (root->GetType() == type)
+	if (root->GetType() == type && root->IsEnabled())
 		ret.push_back(static_cast<T*>(root));
 }
 
@@ -461,16 +461,10 @@ auto DLLEXPORT Render::ReleaseRenderTexture(Texture* tex) -> void
 	std::for_each(renderTextures.begin(), renderTextures.end(), [tex](RenderTexture& t) { if (tex == t.pointer.get()) t.free = 1; });
 }
 
-void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat)
+void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
 {
 	uint w, h;
 	CORE_RENDER->GetViewport(&w, &h);
-
-	// turn off TAA if not final render to prevent jittering frame
-	// TODO: do TAA for debug views too
-	bool taa_prev_state = taa;
-	if (viewMode != VIEW_MODE::FINAL)
-		taa = false;
 
 	cameraProjUnjitteredMat_ = ProjMat;
 	cameraProjMat_ = ProjMat;
@@ -484,8 +478,10 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		taaOfffset = taaSamples[_core->frame() % 16];
 		taaOfffset = (taaOfffset * 2.0f - vec2(1, 1));
 
-		cameraProjMat_.el_2D[0][2] += taaOfffset.x / w;
-		cameraProjMat_.el_2D[1][2] += taaOfffset.y / h;
+		float needJitter = float(viewMode == VIEW_MODE::FINAL);
+
+		cameraProjMat_.el_2D[0][2] += needJitter * taaOfffset.x / w;
+		cameraProjMat_.el_2D[1][2] += needJitter * taaOfffset.y / h;
 
 		// rejitter prev
 		if (_core->frame() > 1)
@@ -532,7 +528,6 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		cameraPrevViewInvMat_ = cameraViewInvMat_;
 	}
 
-
 	bool colorReprojection = viewMode == VIEW_MODE::COLOR_REPROJECTION || taa;
 
 	// Save prev matricies
@@ -543,7 +538,6 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	prev.cameraWorldPos_ = cameraWorldPos_;
 	prev.cameraViewProjectionInvMat_ = cameraViewProjectionInvMat_;
 	prev.cameraViewInvMat_ = cameraViewInvMat_;
-
 
 	RenderBuffers buffers;
 	buffers.color =				GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
@@ -684,6 +678,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		}
 	}
 
+	// TAA
 	if (taa)
 		if (Shader *shader = GetShader("taa.hlsl", planeMesh.get()))
 		{
@@ -709,10 +704,11 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	Texture *rts[1] = {CORE_RENDER->GetSurfaceColorTexture()};
 	CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
 
+	// Final copy
 	{
-		copyMaterial->SetDef("view_mode", (int)viewMode);
+		finalPostMaterial->SetDef("view_mode", (int)viewMode);
 
-		if (auto shader = copyMaterial->GetShader(planeMesh.get()))
+		if (auto shader = finalPostMaterial->GetShader(planeMesh.get()))
 		{
 			constexpr int tex_count = 8;
 			Texture* texs[tex_count] = {
@@ -737,7 +733,78 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 	//renderGrid();
 
-	// renderVectors
+	// Wireframe
+	if (wireframeModels)
+	{
+		Texture* wireframe_depth = CORE_RENDER->GetSurfaceDepthTexture();
+
+		const bool DepthTest = true;
+		CORE_RENDER->SetDepthTest(DepthTest); // TODO: with depth test
+
+		if (taa && DepthTest)
+		{
+			if (Shader *shader = GetShader("depth_indentation.hlsl", planeMesh.get()))
+			{
+				CORE_RENDER->SetDepthFunc(DEPTH_FUNC::ALWAYS);
+				CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
+
+				wireframe_depth = GetRenderTexture(w, h, TEXTURE_FORMAT::D24S8);
+				CORE_RENDER->SetRenderTextures(1, nullptr, wireframe_depth); // set only depth
+
+				Texture* texs[1] = { CORE_RENDER->GetSurfaceDepthTexture() };
+				CORE_RENDER->BindTextures(1, texs);
+			
+			
+				CORE_RENDER->SetShader(shader);
+				CORE_RENDER->Draw(planeMesh.get(), 1);
+			
+				CORE_RENDER->BindTextures(1, nullptr);
+			
+				// Restore default render target
+				Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
+				CORE_RENDER->SetRenderTextures(1, rts, wireframe_depth);
+
+				CORE_RENDER->SetDepthFunc(DEPTH_FUNC::LESS_EQUAL);
+			}
+
+			// remove jitter form proj matrix
+			cameraViewProjMat_ = ProjMat * ViewMat;
+			cameraViewProjectionInvMat_ = cameraViewProjMat_.Inverse();
+		}
+
+		CORE_RENDER->SetFillingMode(FILLING_MODE::WIREFRAME);
+		CORE_RENDER->SetBlendState(BLEND_FACTOR::SRC_ALPHA, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
+
+		std::vector<RenderMesh> meshes;
+
+		for (int i = 0; i < modelsNum; ++i)
+		{
+			Model* m = wireframeModels[i];
+			Mesh* mesh = m->GetMesh();
+
+			if (!mesh)
+				continue;
+
+			meshes.emplace_back(RenderMesh{ m->GetId(), mesh, m->GetMaterial(), m->GetWorldTransform(), m->GetWorldTransformPrev() });
+		}
+
+		drawMeshes(PASS::WIREFRAME, meshes);
+
+		CORE_RENDER->SetFillingMode(FILLING_MODE::SOLID);
+
+		if (wireframe_depth != CORE_RENDER->GetSurfaceDepthTexture())
+		{
+			// Restore default render target
+			Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
+			CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
+
+			ReleaseRenderTexture(wireframe_depth);
+		}
+
+		CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
+	}
+
+	// Vectors
 	if (renderVectors.size())
 	{
 		CORE_RENDER->SetDepthTest(1);
@@ -777,8 +844,6 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 
 	ExchangePrevRenderTexture(colorPrev, buffers.color);
-
-	taa = taa_prev_state;
 }
 
 Texture* Render::GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format)
@@ -859,6 +924,8 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 			shader = mat->GetDeferredShader(renderMesh.mesh);
 		else if (pass == PASS::ID)
 			shader = mat->GetIdShader(renderMesh.mesh);
+		else if (pass == PASS::WIREFRAME)
+			shader = mat->GetWireframeShader(renderMesh.mesh);
 
 		if (!shader)
 			continue;
@@ -904,8 +971,8 @@ void Render::Init()
 	compositeMaterial = mm->CreateInternalMaterial("composite");
 	assert(compositeMaterial);
 
-	copyMaterial = mm->CreateInternalMaterial("copy");
-	assert(copyMaterial);
+	finalPostMaterial = mm->CreateInternalMaterial("final_post");
+	assert(finalPostMaterial);
 
 	Log("Render initialized");
 }

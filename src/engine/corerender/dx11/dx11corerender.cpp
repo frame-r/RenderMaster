@@ -1223,6 +1223,17 @@ auto DX11CoreRender::SetDepthTest(int enabled) -> void
 	}
 }
 
+auto DX11CoreRender::SetDepthFunc(DEPTH_FUNC func) -> void
+{
+	D3D11_COMPARISON_FUNC dx = static_cast<D3D11_COMPARISON_FUNC>(func);
+	if (state_.depthStencilDesc.DepthFunc != dx)
+	{
+		state_.depthStencilDesc.DepthFunc = dx;
+		state_.depthStencilState = _depthStencilStatePool.FetchState(state_.depthStencilDesc);
+		_context->OMSetDepthStencilState(state_.depthStencilState.Get(), 0);
+	}
+}
+
 auto DX11CoreRender::SetMSAA(int enabled) -> void
 {
 	if (state_.rasterStateDesc.AntialiasedLineEnable != enabled || state_.rasterStateDesc.MultisampleEnable != enabled)
@@ -1266,6 +1277,18 @@ auto DX11CoreRender::SetCullingMode(CULLING_MODE value) -> void
 		return;
 
 	state_.rasterStateDesc.CullMode = newMode;
+	state_.rasterState = _rasterizerStatePool.FetchState(state_.rasterStateDesc);
+	_context->RSSetState(state_.rasterState.Get());
+}
+
+auto DX11CoreRender::SetFillingMode(FILLING_MODE value) -> void
+{
+	D3D11_FILL_MODE newMode = static_cast<D3D11_FILL_MODE>((int)value);
+
+	if (state_.rasterStateDesc.FillMode == newMode)
+		return;
+
+	state_.rasterStateDesc.FillMode = newMode;
 	state_.rasterState = _rasterizerStatePool.FetchState(state_.rasterStateDesc);
 	_context->RSSetState(state_.rasterState.Get());
 }
