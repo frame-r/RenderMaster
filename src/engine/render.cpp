@@ -741,7 +741,8 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		const bool DepthTest = true;
 		CORE_RENDER->SetDepthTest(DepthTest);
 
-		if (taa && DepthTest)
+		// WTF? Why original depth buffer don't without TAA
+		if (/*taa &&*/ DepthTest)
 		{
 			if (Shader *shader = GetShader("depth_indentation.hlsl", planeMesh.get()))
 			{
@@ -749,11 +750,10 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 				CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
 
 				wireframe_depth = GetRenderTexture(w, h, TEXTURE_FORMAT::D24S8);
-				CORE_RENDER->SetRenderTextures(1, nullptr, wireframe_depth); // set only depth
+				CORE_RENDER->SetRenderTextures(1, nullptr, wireframe_depth);
 
 				Texture* texs[1] = { CORE_RENDER->GetSurfaceDepthTexture() };
 				CORE_RENDER->BindTextures(1, texs);
-			
 			
 				CORE_RENDER->SetShader(shader);
 				CORE_RENDER->Draw(planeMesh.get(), 1);

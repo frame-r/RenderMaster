@@ -714,15 +714,6 @@ UINT getMisc(TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flag
 
 void getFilter(D3D11_FILTER& ret, UINT& MaxAnisotropy, TEXTURE_CREATE_FLAGS flags)
 {
-	ret = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	MaxAnisotropy = 0;
-	if (bool(flags & TEXTURE_CREATE_FLAGS::FILTER_POINT))				{ ret = D3D11_FILTER_MIN_MAG_MIP_POINT;					}
-	else if (bool(flags & TEXTURE_CREATE_FLAGS::FILTER_BILINEAR))		{ ret = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT; 			}
-	else if (bool(flags & TEXTURE_CREATE_FLAGS::FILTER_TRILINEAR))		{ ret = D3D11_FILTER_MIN_MAG_MIP_LINEAR; 				}
-	else if (bool(flags & TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_2X))	{ ret = D3D11_FILTER_ANISOTROPIC; MaxAnisotropy = 1; 	}
-	else if (bool(flags & TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_4X))	{ ret = D3D11_FILTER_ANISOTROPIC; MaxAnisotropy = 2; 	}
-	else if (bool(flags & TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_8X))	{ ret = D3D11_FILTER_ANISOTROPIC; MaxAnisotropy = 3; 	}
-	else if (bool(flags & TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_16X))	{ ret = D3D11_FILTER_ANISOTROPIC; MaxAnisotropy = 4; 	}
 }
 
 int mipmapsNumber(int width, int height) // rounding down rule
@@ -821,7 +812,19 @@ auto DX11CoreRender::CreateTexture(const uint8 *pData, uint width, uint height, 
 	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	getFilter(sampDesc.Filter, sampDesc.MaxAnisotropy, flags);
+
+	switch (TEXTURE_CREATE_FLAGS::FILTER & flags)
+	{
+		case TEXTURE_CREATE_FLAGS::FILTER_POINT: sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT; break;
+		case TEXTURE_CREATE_FLAGS::FILTER_BILINEAR: sampDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT; break;
+		case TEXTURE_CREATE_FLAGS::FILTER_TRILINEAR: sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; break;
+		case TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_2X: sampDesc.Filter = D3D11_FILTER_ANISOTROPIC; sampDesc.MaxAnisotropy = 1; break;
+		case TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_4X: sampDesc.Filter = D3D11_FILTER_ANISOTROPIC; sampDesc.MaxAnisotropy = 2; break;
+		case TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_8X: sampDesc.Filter = D3D11_FILTER_ANISOTROPIC; sampDesc.MaxAnisotropy = 3; break;
+		case TEXTURE_CREATE_FLAGS::FILTER_ANISOTROPY_16X: sampDesc.Filter = D3D11_FILTER_ANISOTROPIC; sampDesc.MaxAnisotropy = 4; break;
+		default: sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; break;
+	}
+
 	ThrowIfFailed(_device->CreateSamplerState(&sampDesc, &sampler));
 
 	// SRV
