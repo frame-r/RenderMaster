@@ -23,6 +23,7 @@
 #include <QTimer>
 #include <QDebug>
 #include <QShortcut>
+#include <QCheckBox>
 
 #define MAIN_WINDOW_LT "MainWindow"
 #define WINDOWS_LT "Windows"
@@ -219,7 +220,6 @@ MainWindow::MainWindow(QWidget *parent) :
 			editor->core->SetProfiler(v);
 		}
 	});
-
 
 	QComboBox *view_cb = new QComboBox(this);
 	view_cb->addItem("Final");

@@ -1237,17 +1237,6 @@ auto DX11CoreRender::SetDepthFunc(DEPTH_FUNC func) -> void
 	}
 }
 
-auto DX11CoreRender::SetMSAA(int enabled) -> void
-{
-	if (state_.rasterStateDesc.AntialiasedLineEnable != enabled || state_.rasterStateDesc.MultisampleEnable != enabled)
-	{
-		state_.rasterStateDesc.AntialiasedLineEnable = enabled;
-		state_.rasterStateDesc.MultisampleEnable = enabled;
-		state_.rasterState = _rasterizerStatePool.FetchState(state_.rasterStateDesc);
-		_context->RSSetState(state_.rasterState.Get());
-	}
-}
-
 auto DX11CoreRender::SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void
 {
 	D3D11_BLEND_DESC blend_desc{};

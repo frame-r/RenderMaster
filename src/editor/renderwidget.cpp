@@ -243,8 +243,6 @@ void RenderWidget::onRender()
 
 		if (settings->isWireframeAntialiasing())
 		{
-			coreRender->SetMSAA(1);
-
 			Texture *texs[1];
 
 			coreRender->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
@@ -257,7 +255,6 @@ void RenderWidget::onRender()
 
 			manipulator->render(cam, editor->SelectionTransform(), rect());
 
-			coreRender->SetMSAA(0);
 			coreRender->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 
 			texs[0] = coreRender->GetSurfaceColorTexture();

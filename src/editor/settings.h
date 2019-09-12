@@ -13,13 +13,11 @@ class Settings : public QWidget
 {
 	Q_OBJECT
 
-	bool wireframeAntialiasing{true};
-
 public:
 	explicit Settings(QWidget *parent = nullptr);
 	~Settings();
 
-	bool isWireframeAntialiasing() const { return wireframeAntialiasing; }
+	bool isWireframeAntialiasing() const;
 
 private:
 	Ui::Settings *ui;

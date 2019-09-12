@@ -734,7 +734,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 	//renderGrid();
 
 	// Wireframe
-	if (wireframeModels)
+	if (wireframeModels && IsWireframe())
 	{
 		Texture* wireframe_depth = CORE_RENDER->GetSurfaceDepthTexture();
 
@@ -759,10 +759,6 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 				CORE_RENDER->Draw(planeMesh.get(), 1);
 			
 				CORE_RENDER->BindTextures(1, nullptr);
-			
-				// Restore default render target
-				Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
-				CORE_RENDER->SetRenderTextures(1, rts, wireframe_depth);
 
 				CORE_RENDER->SetDepthFunc(DEPTH_FUNC::LESS_EQUAL);
 			}
@@ -788,19 +784,60 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 			meshes.emplace_back(RenderMesh{ m->GetId(), mesh, m->GetMaterial(), m->GetWorldTransform(), m->GetWorldTransformPrev() });
 		}
 
-		drawMeshes(PASS::WIREFRAME, meshes);
+		// render to MSAA RT + resolve
 
-		CORE_RENDER->SetFillingMode(FILLING_MODE::SOLID);
+		if (IsWireframeAA())
+		{
+			Texture* msaaTex = { GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8, 4) };
+			CORE_RENDER->SetRenderTextures(1, &msaaTex, nullptr);
+
+			CORE_RENDER->Clear();
+
+			CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
+			CORE_RENDER->SetDepthTest(0);
+
+			CORE_RENDER->BindTextures(1, &wireframe_depth);
+
+				drawMeshes(PASS::WIREFRAME, meshes);
+
+			CORE_RENDER->SetDepthTest(1);
+			CORE_RENDER->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
+			CORE_RENDER->SetFillingMode(FILLING_MODE::SOLID);
+
+			// Restore default render target
+			Texture* rts_[1] = { CORE_RENDER->GetSurfaceColorTexture() };
+			CORE_RENDER->SetRenderTextures(1, rts_, CORE_RENDER->GetSurfaceDepthTexture());
+
+			Shader* shader = GetShader("msaa_resolve.hlsl", planeMesh.get());
+			CORE_RENDER->SetShader(shader);
+
+			CORE_RENDER->BindTextures(1, &msaaTex, BIND_TETURE_FLAGS::PIXEL);
+			CORE_RENDER->Draw(planeMesh.get(), 1);
+			CORE_RENDER->BindTextures(1, nullptr, BIND_TETURE_FLAGS::PIXEL);
+
+			ReleaseRenderTexture(msaaTex);
+		}
+		else
+		{
+			Texture* rts_[1] = { CORE_RENDER->GetSurfaceColorTexture() };
+			CORE_RENDER->SetRenderTextures(1, rts_, nullptr);
+
+			CORE_RENDER->BindTextures(1, &wireframe_depth);
+				drawMeshes(PASS::WIREFRAME, meshes);
+			CORE_RENDER->BindTextures(1, nullptr);
+
+			CORE_RENDER->SetFillingMode(FILLING_MODE::SOLID);
+		}
 
 		if (wireframe_depth != CORE_RENDER->GetSurfaceDepthTexture())
 		{
-			// Restore default render target
-			Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
-			CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
-
 			ReleaseRenderTexture(wireframe_depth);
 		}
 
+		// Restore default render target
+		Texture* rts_[1] = { CORE_RENDER->GetSurfaceColorTexture() };
+		CORE_RENDER->SetRenderTextures(1, rts_, nullptr);
+		
 		CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
 	}
 

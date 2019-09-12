@@ -23,6 +23,12 @@ Settings::~Settings()
 	delete ui;
 }
 
+bool Settings::isWireframeAntialiasing() const
+{
+	Render *render = editor->core->GetRender();
+	return render->IsWireframeAA();
+}
+
 void Settings::OnEngineFree(Core *c)
 {
 	for (auto& conn : _connections)
@@ -50,7 +56,14 @@ void Settings::OnEngineInit(Core *c)
 
 	_connections.emplace_back(connect(ui->wireframe_aa, &QCheckBox::toggled, [this](bool value)->void
 	{
-		this->wireframeAntialiasing = value;
+		Render *render = editor->core->GetRender();
+		render->SetWireframeAA(value);
+	}));
+
+	_connections.emplace_back(connect(ui->wireframe_, &QCheckBox::toggled, [this](bool value)->void
+	{
+		Render *render = editor->core->GetRender();
+		render->SetWireframe(value);
 	}));
 
 	ui->diffuse_env_sl->setValue(render->GetDiffuseEnvironemnt() * ui->diffuse_env_sl->maximum());
@@ -62,7 +75,8 @@ void Settings::OnEngineInit(Core *c)
 	ui->spec_quality_cb->setCurrentIndex(render->GetSpecularQuality());
 
 	ui->taa_cb->setChecked(render->IsTAA());
-
+	ui->wireframe_aa->setChecked(render->IsWireframeAA());
+	ui->wireframe_->setChecked(render->IsWireframe());
 }
 
 void Settings::sliderOChanged(int i)

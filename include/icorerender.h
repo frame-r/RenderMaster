@@ -46,7 +46,6 @@ public:
 	auto virtual Clear() -> void = 0;
 	auto virtual SetDepthTest(int enabled) -> void = 0;
 	auto virtual SetDepthFunc(DEPTH_FUNC func) -> void = 0;
-	auto virtual SetMSAA(int enabled) -> void = 0;
 	auto virtual SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void = 0;
 	auto virtual SetCullingMode(CULLING_MODE value) -> void = 0;
 	auto virtual SetFillingMode(FILLING_MODE value) -> void = 0;

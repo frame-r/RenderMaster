@@ -96,6 +96,8 @@ class Render
 	float debugParam1{1};
 
 	bool taa{true};
+	bool wireframeAA{false};
+	bool wireframe{true};
 
 	std::vector<RenderMesh> getRenderMeshes();
 	RenderScene getRenderScene();
@@ -130,6 +132,10 @@ public:
 	auto DLLEXPORT GetViewMode() -> VIEW_MODE { return viewMode; }
 	auto DLLEXPORT IsTAA() -> bool { return taa; }
 	auto DLLEXPORT SetTAA(bool value) -> void { taa = value; }
+	auto DLLEXPORT IsWireframeAA() -> bool { return wireframeAA; }
+	auto DLLEXPORT SetWireframeAA(bool value) -> void { wireframeAA = value; }
+	auto DLLEXPORT IsWireframe() -> bool { return wireframe; }
+	auto DLLEXPORT SetWireframe(bool value) -> void { wireframe = value; }
 
 	// debug
 	auto DLLEXPORT SetDebugParam(float v) -> void { debugParam = v; }

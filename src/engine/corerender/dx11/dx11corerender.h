@@ -115,7 +115,6 @@ public:
 	auto Clear() -> void override;
 	auto SetDepthTest(int enabled) -> void override;
 	auto SetDepthFunc(DEPTH_FUNC func) -> void override;
-	auto SetMSAA(int enabled) -> void override;
 	auto SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void override;
 	auto SetCullingMode(CULLING_MODE value) -> void override;
 	auto SetFillingMode(FILLING_MODE value) -> void override;
