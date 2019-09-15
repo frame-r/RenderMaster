@@ -555,12 +555,44 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 	RenderScene scene = getRenderScene();
 
+	// write sky velocity
+	{
+		Shader* shader = GetShader("sky_velocity.hlsl", planeMesh.get());
+		if (shader)
+		{
+			CORE_RENDER->SetShader(shader);
+
+			CORE_RENDER->SetRenderTextures(1, &buffers.velocity, nullptr);
+			CORE_RENDER->Clear();
+
+			mat4 m = cameraPrevViewMat_;
+			m.SetColumn3(3, vec3(0, 0, 0)); // remove translation
+			m = cameraPrevProjUnjitteredMat_ * cameraPrevViewMat_;
+			shader->SetMat4Parameter("VP_prev", &m);
+
+			m = ViewMat;
+			m.SetColumn3(3, vec3(0, 0, 0));
+			m = cameraProjUnjitteredMat_ * m;
+			m = m.Inverse();
+			shader->SetMat4Parameter("VP_inv", &m);
+
+			shader->FlushParameters();
+
+			CORE_RENDER->Draw(planeMesh.get(), 1);
+
+			CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
+		}
+	}
+
 	// G-buffer
 	{
-		Texture *texs[4] = { buffers.albedo, buffers.shading, buffers.velocity, buffers.normal};
-		CORE_RENDER->SetRenderTextures(4, texs, buffers.depth);
-		CORE_RENDER->SetDepthTest(1);
+		Texture *texs[4] = { buffers.albedo, buffers.shading, buffers.normal, buffers.velocity };
+		CORE_RENDER->SetRenderTextures(3, texs, buffers.depth);
 		CORE_RENDER->Clear();
+
+		CORE_RENDER->SetRenderTextures(4, texs, buffers.depth);
+
+		CORE_RENDER->SetDepthTest(1);
 		{
 			drawMeshes(PASS::DEFERRED, scene.meshes);
 		}

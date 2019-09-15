@@ -399,7 +399,7 @@ struct mat4
 		return vec3(el_2D[0][i], el_2D[1][i], el_2D[2][i]);
 	}
 
-	vec3 SetColumn3(int i, const vec3& vec)
+	void SetColumn3(int i, const vec3& vec)
 	{
 		el_2D[0][i] = vec.x;
 		el_2D[1][i] = vec.y;

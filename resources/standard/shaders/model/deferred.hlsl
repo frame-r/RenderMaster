@@ -27,8 +27,8 @@
 	{
 		float4 color : SV_Target0;
 		float4 shading : SV_Target1;
-		float4 velocity : SV_Target2;
-		float4 normal : SV_Target3;
+		float4 normal : SV_Target2;
+		float4 velocity : SV_Target3;
 	};
 
 	FS_OUT mainFS(VS_OUT fs_input)
