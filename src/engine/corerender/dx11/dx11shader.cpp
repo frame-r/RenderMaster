@@ -207,16 +207,16 @@ void DX11Shader::bind()
 	BUND_CONSTANT_BUFFERS(CS, c._bufferIndicies)
 }
 
-void DX11Shader::setParameter(const char *name, const void *data)
+void DX11Shader::setParameter(std::string_view name, const void *data)
 {
 	auto it = _parameters.find(name);
 	if (it == _parameters.end())
 	{
-		auto &p = _parameters[name];
-		LogWarning("DX11Shader::setParameter() unable find parameter \"%s\"", name);
+		LogWarning("DX11Shader::setParameter() unable find parameter \"%s\"", name.data());
+		return;
 	}
 
-	Parameter &p = _parameters[name];
+	Parameter &p = it->second;
 
 	if (p.bufferIndex < 0 || p.parameterIndex < 0)
 		return;

@@ -1,7 +1,7 @@
 #pragma once
 #include "common.h"
 #include "icorerender.h"
-
+#include <map>
 
 class DX11Shader : public ICoreShader
 {
@@ -19,7 +19,7 @@ class DX11Shader : public ICoreShader
 		int bufferIndex = -1; // index of ConstantBuffer in ConstantBufferPool
 		int parameterIndex = -1; // index in ConstantBuffer::parameters
 	};
-	std::unordered_map<std::string, Parameter> _parameters; // all shader parameters
+	std::map<std::string, Parameter, std::less<>> _parameters; // all shader parameters
 
 	SubShader v{};
 	SubShader f{};
@@ -27,7 +27,7 @@ class DX11Shader : public ICoreShader
 	SubShader c{};
 
 	void initSubShader(ShaderInitData& data, SHADER_TYPE type);
-	void setParameter(const char *name, const void *data);
+	void setParameter(std::string_view name, const void *data);
 
 public:
 
