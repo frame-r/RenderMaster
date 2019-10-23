@@ -2,9 +2,10 @@
 #include <cmath> // sqrt
 
 #pragma warning(disable : 4201) // ignore non standard unnamed struct in union
-#define EPSILON 1e-5f
-#define DEGTORAD (3.141592654f / 180.0f)
-#define RADTODEG (180.0f / 3.141592654f)
+
+inline constexpr float EPSILON = 1e-5f;
+inline constexpr float DEGTORAD = 3.141592654f / 180.0f;
+inline constexpr float RADTODEG = 180.0f / 3.141592654f;
 
 struct vec2;
 struct vec3;
