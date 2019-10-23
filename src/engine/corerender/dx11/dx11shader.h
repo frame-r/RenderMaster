@@ -9,17 +9,16 @@ class DX11Shader : public ICoreShader
 	{
 		ID3D11DeviceChild *pointer;
 
-		// all buffers need to bind for work with shader
-		// slot -> index of Constant Buffer in ConstantBufferPool
-		std::vector<size_t> _bufferIndicies;
+		// all buffers in ConstantBufferPool
+		std::vector<size_t> buffers;
 	};
 
 	struct Parameter
 	{
-		int bufferIndex = -1; // index of ConstantBuffer in ConstantBufferPool
-		int parameterIndex = -1; // index in ConstantBuffer::parameters
+		int bufferIndex = -1; // in ConstantBufferPool
+		int parameterIndex = -1; // in ConstantBuffer::parameters
 	};
-	std::map<std::string, Parameter, std::less<>> _parameters; // all shader parameters
+	std::map<std::string, Parameter, std::less<>> parameters; // all shader parameters
 
 	SubShader v{};
 	SubShader f{};

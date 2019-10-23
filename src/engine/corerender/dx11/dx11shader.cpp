@@ -42,16 +42,6 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 		D3D11_SHADER_BUFFER_DESC bufferDesc;
 		buffer->GetDesc(&bufferDesc);
 
-		unsigned int registerIndex = 0;
-		for(unsigned int k = 0; k < shaderDesc.BoundResources; ++k)
-		{
-			D3D11_SHADER_INPUT_BIND_DESC ibdesc;
-			reflection->GetResourceBindingDesc(k, &ibdesc);
-
-			if(!strcmp(ibdesc.Name, bufferDesc.Name))
-				registerIndex = ibdesc.BindPoint;
-		}
-
 		vector<ConstantBuffer::Parameter> cbParameters;
 
 		// each parameters
@@ -61,13 +51,10 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			D3D11_SHADER_VARIABLE_DESC varDesc;
 			var->GetDesc(&varDesc);
 
-			uint bytesVariable = varDesc.Size;
-
 			ConstantBuffer::Parameter p;
 			p.name = varDesc.Name;
 			p.bytes = varDesc.Size;
 			p.offset = varDesc.StartOffset;
-			p.elements = 1; // TODO: arrays
 
 			cbParameters.push_back(p);
 		}
@@ -79,8 +66,8 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			{
 				bool isEqual = true;
 
-				if (ConstantBufferPool[j].name != bufferDesc.Name)
-					isEqual = false;
+				//if (ConstantBufferPool[j].name != bufferDesc.Name)
+				//	isEqual = false;
 
 				if (ConstantBufferPool[j].bytes != bufferDesc.Size)
 					isEqual = false;
@@ -92,8 +79,7 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 				{
 					if (ConstantBufferPool[j].parameters[k].name != cbParameters[k].name ||
 						ConstantBufferPool[j].parameters[k].bytes != cbParameters[k].bytes ||
-						ConstantBufferPool[j].parameters[k].offset != cbParameters[k].offset ||
-						ConstantBufferPool[j].parameters[k].elements != cbParameters[k].elements)
+						ConstantBufferPool[j].parameters[k].offset != cbParameters[k].offset)
 					{
 						isEqual = 0;
 					}
@@ -104,32 +90,13 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			}
 		}
 
-		vector<size_t> *buf = nullptr;
-
-		switch (type)
+		if (indexFound == -1) // create new constant buffer
 		{
-			case SHADER_TYPE::SHADER_VERTEX:	buf = &v._bufferIndicies; break;
-			case SHADER_TYPE::SHADER_GEOMETRY:	buf = &g._bufferIndicies; break;
-			case SHADER_TYPE::SHADER_FRAGMENT:	buf = &f._bufferIndicies; break;
-			case SHADER_TYPE::SHADER_COMPUTE:	buf = &c._bufferIndicies; break;
-		};
+			indexFound = (int)ConstantBufferPool.size();
 
-		if (indexFound != -1) // buffer found
-		{
-			buf->push_back(indexFound);
-
-			for (int i = 0; i < cbParameters.size(); i++)
-			{
-				_parameters[cbParameters[i].name] = {(int)indexFound, (int)i};
-			}
-		} else // not found => create new
-		{
-			WRL::ComPtr<ID3D11Buffer> dxBuffer;
+			WRL::ComPtr<ID3D11Buffer> buffer;
 		
-			// make byte width multiplied by 16
-			uint size = bufferDesc.Size;
-			if (size % 16 != 0)
-				size = 16 * ((size / 16) + 1);
+			uint size = (bufferDesc.Size + 15) & ~15; // make byte width multiplied by 16
 		
 			D3D11_BUFFER_DESC desc{};
 			desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -137,17 +104,22 @@ void DX11Shader::initSubShader(ShaderInitData& data, SHADER_TYPE type)
 			desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 			desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-			ThrowIfFailed(getDevice()->CreateBuffer(&desc, nullptr, dxBuffer.GetAddressOf()));
+			ThrowIfFailed(getDevice()->CreateBuffer(&desc, nullptr, buffer.GetAddressOf()));
 
-			buf->push_back(ConstantBufferPool.size());
-
-			for (int k = 0; k < cbParameters.size(); k++)
-			{
-				_parameters[cbParameters[k].name] = {(int)ConstantBufferPool.size(), (int)k};
-			}
-
-			ConstantBufferPool.emplace_back(dxBuffer, size, bufferDesc.Name, cbParameters);
+			ConstantBufferPool.emplace_back(buffer, size, bufferDesc.Name, cbParameters);
 		}
+
+		switch (type)
+		{
+			case SHADER_TYPE::SHADER_VERTEX:	v.buffers.push_back(indexFound); break;
+			case SHADER_TYPE::SHADER_GEOMETRY:	g.buffers.push_back(indexFound); break;
+			case SHADER_TYPE::SHADER_FRAGMENT:	f.buffers.push_back(indexFound); break;
+			case SHADER_TYPE::SHADER_COMPUTE:	c.buffers.push_back(indexFound); break;
+		};
+
+		for (int i = 0; i < cbParameters.size(); i++)
+			parameters[cbParameters[i].name] = { (int)indexFound, (int)i };
+
 	}
 }
 
@@ -195,22 +167,22 @@ void DX11Shader::bind()
 		}
 
 	if (vs())
-	BUND_CONSTANT_BUFFERS(VS, v._bufferIndicies)
+	BUND_CONSTANT_BUFFERS(VS, v.buffers)
 
 	if (fs())
-	BUND_CONSTANT_BUFFERS(PS, f._bufferIndicies)
+	BUND_CONSTANT_BUFFERS(PS, f.buffers)
 
 	if (gs())
-	BUND_CONSTANT_BUFFERS(GS, g._bufferIndicies)
+	BUND_CONSTANT_BUFFERS(GS, g.buffers)
 
 	if (cs())
-	BUND_CONSTANT_BUFFERS(CS, c._bufferIndicies)
+	BUND_CONSTANT_BUFFERS(CS, c.buffers)
 }
 
 void DX11Shader::setParameter(std::string_view name, const void *data)
 {
-	auto it = _parameters.find(name);
-	if (it == _parameters.end())
+	auto it = parameters.find(name);
+	if (it == parameters.end())
 	{
 		LogWarning("DX11Shader::setParameter() unable find parameter \"%s\"", name.data());
 		return;
@@ -274,10 +246,10 @@ auto DX11Shader::FlushParameters() -> void
 		}
 	};
 
-	if (vs()) updateBuffers(v._bufferIndicies);
-	if (fs()) updateBuffers(f._bufferIndicies);
-	if (gs()) updateBuffers(g._bufferIndicies);
-	if (cs()) updateBuffers(c._bufferIndicies);
+	if (vs()) updateBuffers(v.buffers);
+	if (fs()) updateBuffers(f.buffers);
+	if (gs()) updateBuffers(g.buffers);
+	if (cs()) updateBuffers(c.buffers);
 }
 
 
