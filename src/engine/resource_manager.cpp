@@ -424,9 +424,9 @@ public:
 		switch (i)
 		{
 			case 0: return "==== Resource Manager ====";
-			case 1: return "textures: " + std::to_string(textures) + " (" + bytesToMBytes(texBytes) + " Mb)";
-			case 2: return "meshes: " + std::to_string(meshes) + " (" + bytesToMBytes(meshBytes) + " Mb)";
-			case 3: return "structured buffers: " + std::to_string(structuredBuffersSet.size()) + " (" + bytesToMBytes(buffersBytes) + " Mb)";
+			case 1: return "Textures: " + std::to_string(textures) + " (" + bytesToMBytes(texBytes) + " Mb)";
+			case 2: return "Meshes: " + std::to_string(meshes) + " (" + bytesToMBytes(meshBytes) + " Mb)";
+			case 3: return "Structured Buffers: " + std::to_string(structuredBuffersSet.size()) + " (" + bytesToMBytes(buffersBytes) + " Mb)";
 		}
 		return "";
 	}

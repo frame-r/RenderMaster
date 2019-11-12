@@ -463,6 +463,12 @@ auto DLLEXPORT Render::ReleaseRenderTexture(Texture* tex) -> void
 
 void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
 {
+	uint32 timerID = uint32_t(_core->frame() % maxFrames);
+	uint32 dataTimerID = uint32_t((_core->frame() > maxFrames ? _core->frame() - 3: 0u) % maxFrames);
+
+	CORE_RENDER->TimersBeginFrame(timerID);
+	CORE_RENDER->TimersBeginPoint(timerID, T_ALL_FRAME);
+
 	uint w, h;
 	CORE_RENDER->GetViewport(&w, &h);
 
@@ -586,6 +592,8 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 	// G-buffer
 	{
+		CORE_RENDER->TimersBeginPoint(timerID, T_GBUFFER);
+
 		Texture *texs[4] = { buffers.albedo, buffers.shading, buffers.normal, buffers.velocity };
 		CORE_RENDER->SetRenderTextures(3, texs, buffers.depth);
 		CORE_RENDER->Clear();
@@ -599,6 +607,9 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		CORE_RENDER->SetRenderTextures(4, nullptr, nullptr);
 
 		CORE_RENDER->SetDepthTest(0);
+
+		CORE_RENDER->TimersEndPoint(timerID, T_GBUFFER);
+		gbufferMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID, T_GBUFFER);
 	}
 
 	// Color reprojection
@@ -627,6 +638,8 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 	// Lights
 	{
+		CORE_RENDER->TimersBeginPoint(timerID, T_LIGHTS);
+
 		CORE_RENDER->SetDepthTest(0);
 		Texture *rts[2] = {buffers.diffuseLight, buffers.specularLight};
 		CORE_RENDER->SetRenderTextures(2, rts, nullptr);
@@ -660,10 +673,16 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		}
 
 		CORE_RENDER->SetRenderTextures(2, nullptr, nullptr);
+
+		CORE_RENDER->TimersEndPoint(timerID, T_LIGHTS);
+		lightsMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID, T_LIGHTS);
+
 	}
 
 	// Composite
 	{
+		CORE_RENDER->TimersBeginPoint(timerID, T_COMPOSITE);
+
 		compositeMaterial->SetDef("specular_quality", specualrQuality);
 		
 		if (auto shader = compositeMaterial->GetShader(planeMesh.get()))
@@ -708,6 +727,9 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 			}
 			CORE_RENDER->BindTextures(tex_count, nullptr);
 		}
+
+		CORE_RENDER->TimersEndPoint(timerID, T_COMPOSITE);
+		compositeMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID, T_COMPOSITE);
 	}
 
 	// TAA
@@ -913,6 +935,11 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 
 	ExchangePrevRenderTexture(colorPrev, buffers.color);
+
+	CORE_RENDER->TimersEndPoint(timerID, T_ALL_FRAME);
+	frameMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID, T_ALL_FRAME);
+
+	CORE_RENDER->TimersEndFrame(timerID);
 }
 
 Texture* Render::GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format)
@@ -1023,6 +1050,17 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 	}
 }
 
+std::string Render::getString(uint i)
+{
+	switch (i)
+	{
+		case 0: return "Frame GPU: " + std::to_string(frameMs); break;
+		case 1: return "GBuffer GPU: " + std::to_string(gbufferMs); break;
+		case 2: return "Lights GPU: " + std::to_string(lightsMs); break;
+		case 3: return "Composite GPU: " + std::to_string(compositeMs); break;
+	}
+}
+
 void Render::Init()
 {
 	environmentTexture = RES_MAN->CreateStreamTexture(TEXTURES_DIR"output_skybox.dds", TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
@@ -1042,6 +1080,12 @@ void Render::Init()
 
 	finalPostMaterial = mm->CreateInternalMaterial("final_post");
 	assert(finalPostMaterial);
+
+	// GPU timers
+	for(int i = 0; i < maxFrames; ++i)
+		CORE_RENDER->CreateTimer();
+
+	_core->AddProfilerCallback(this);
 
 	Log("Render initialized");
 }

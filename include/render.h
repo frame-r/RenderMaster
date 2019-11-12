@@ -12,7 +12,15 @@ struct ViewData
 	mat4 cameraViewInvMat_;
 };
 
-class Render
+enum TIMER_ID
+{
+	T_GBUFFER = 0,
+	T_LIGHTS,
+	T_COMPOSITE,
+	T_ALL_FRAME
+};
+
+class Render : public IProfilerCallback
 {
 	struct RenderBuffers
 	{
@@ -103,6 +111,17 @@ class Render
 	RenderScene getRenderScene();
 	void renderGrid();
 	void drawMeshes(PASS pass, std::vector<RenderMesh>& meshes);
+
+	const uint64_t maxFrames = 8;
+	float gbufferMs;
+	float lightsMs;
+	float compositeMs;
+	float frameMs;
+
+public:
+	// IProfilerCallback
+	uint getNumLines() override { return 4; }
+	std::string getString(uint i) override;
 
 public:
 	void Init();

@@ -126,10 +126,10 @@ std::string DX11CoreRender::getString(uint i)
 	switch (i)
 	{
 		case 0: return "==== DX11 Core Render ====";
-		case 1: return "draw calls: " + std::to_string(oldStat_.drawCalls);
-		case 2: return "triangles: " + std::to_string(oldStat_.triangles);
-		case 3: return "instances: " + std::to_string(oldStat_.instances);
-		case 4: return "clear calls: " + std::to_string(oldStat_.clearCalls);
+		case 1: return "Draw Calls: " + std::to_string(oldStat_.drawCalls);
+		case 2: return "Triangles: " + std::to_string(oldStat_.triangles);
+		case 3: return "Instances: " + std::to_string(oldStat_.instances);
+		case 4: return "Clear calls: " + std::to_string(oldStat_.clearCalls);
 	}
 	return "";
 }
@@ -228,6 +228,8 @@ auto DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSync
 	state_.blendState->GetDesc(&state_.blendStateDesc);
 
 	_core->AddProfilerCallback(this);
+
+	timers.clear();
 
 	Log("DX11CoreRender Inited");
 	return true;
@@ -1436,6 +1438,110 @@ auto DX11CoreRender::SetViewport(int newWidth, int newHeight) -> void
 
 		_context->RSSetViewports(1, &dxViewport);
 	}
+}
+
+auto DX11CoreRender::CreateTimer() -> uint32_t
+{
+	uint32_t id = (uint32_t)timers.size();
+
+	D3D11_QUERY_DESC desc{};
+	desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+
+	ComPtr<ID3D11Query> disjointQuery;
+	ThrowIfFailed(_device->CreateQuery(&desc, &disjointQuery));
+
+	timers.emplace_back(disjointQuery);
+
+	return id;
+}
+
+auto DX11CoreRender::TimersBeginFrame(uint32_t timerID) -> void
+{
+	assert(timerID < timers.size());
+
+	Timer& timer = timers[timerID];
+
+	_context->Begin(timer.disjontQuery.Get());
+}
+
+auto DX11CoreRender::TimersEndFrame(uint32_t timerID) -> void
+{
+	assert(timerID < timers.size());
+
+	Timer& timer = timers[timerID];
+	_context->End(timer.disjontQuery.Get());
+}
+
+auto DX11CoreRender::TimersBeginPoint(uint32_t timerID, uint32_t pointID) -> void
+{
+	assert(timerID < timers.size());
+
+	Timer& timer = timers[timerID];
+	if (pointID >= timer.TimerPoints.size())
+	{
+		for (int i = timer.TimerPoints.size(); i <= pointID; ++i)
+		{
+			D3D11_QUERY_DESC desc{};
+			desc.Query = D3D11_QUERY_TIMESTAMP;
+
+			ComPtr<ID3D11Query> queryBegin, queryEnd;
+			ThrowIfFailed(_device->CreateQuery(&desc, &queryBegin));
+			ThrowIfFailed(_device->CreateQuery(&desc, &queryEnd));
+
+			timer.TimerPoints.push_back({ std::move(queryBegin),std::move(queryEnd) } );
+		}
+	}
+
+	_context->End(timer.TimerPoints[pointID].beginQuery.Get());
+}
+
+auto DX11CoreRender::TimersEndPoint(uint32_t timerID, uint32_t pointID) -> void
+{
+	assert(timerID < timers.size());
+
+	Timer& timer = timers[timerID];
+	if (pointID >= timer.TimerPoints.size())
+	{
+		for (int i = 0; i < pointID; ++i)
+		{
+			D3D11_QUERY_DESC desc{};
+			desc.Query = D3D11_QUERY_TIMESTAMP;
+
+			ComPtr<ID3D11Query> queryBegin, queryEnd;
+			ThrowIfFailed(_device->CreateQuery(&desc, &queryBegin));
+			ThrowIfFailed(_device->CreateQuery(&desc, &queryBegin));
+
+			timer.TimerPoints.push_back({ std::move(queryBegin),std::move(queryEnd) });
+		}
+	}
+
+	_context->End(timer.TimerPoints[pointID].endQuery.Get());
+}
+
+auto DX11CoreRender::GetTimeInMsForPoint(uint32_t timerID, uint32_t pointID) -> float
+{
+	assert(timerID < timers.size());
+
+	Timer& timer = timers[timerID];
+
+	if (_context->GetData(timer.disjontQuery.Get(), NULL, 0, 0) == S_FALSE)
+		return 0.0f;
+
+	// Check whether timestamps were disjoint during the last frame
+	D3D11_QUERY_DATA_TIMESTAMP_DISJOINT tsDisjoint;
+	_context->GetData(timer.disjontQuery.Get(), &tsDisjoint, sizeof(tsDisjoint), 0);
+	if (tsDisjoint.Disjoint)
+	{
+		return 0.0f;
+	}
+
+	UINT64 tsBeginPoint, tsEndPoint;
+
+	_context->GetData(timer.TimerPoints[pointID].beginQuery.Get(), &tsBeginPoint, sizeof(UINT64), 0);
+	_context->GetData(timer.TimerPoints[pointID].endQuery.Get(), &tsEndPoint, sizeof(UINT64), 0);
+	
+	float msShadowClear = float(tsEndPoint - tsBeginPoint) /	float(tsDisjoint.Frequency) * 1000.0f;
+	return msShadowClear;
 }
 
 void DX11CoreRender::createCurrentSurface(int w, int h)

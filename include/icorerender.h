@@ -59,6 +59,13 @@ public:
 	auto virtual GetViewport(uint* w, uint* h) -> void = 0;
 	auto virtual SetViewport(int w, int h) -> void = 0;
 
+	auto virtual CreateTimer()->uint32_t;
+	auto virtual TimersBeginFrame(uint32_t timerID) -> void;
+	auto virtual TimersEndFrame(uint32_t timerID) -> void;
+	auto virtual TimersBeginPoint(uint32_t timerID, uint32_t pointID) -> void;
+	auto virtual TimersEndPoint(uint32_t timerID, uint32_t pointID) -> void;
+	auto virtual GetTimeInMsForPoint(uint32_t timerID, uint32_t pointID) -> float;
+
 	auto virtual GetName() -> const char * = 0;
 };
 

@@ -35,6 +35,24 @@ class DX11CoreRender final : public ICoreRender, IProfilerCallback
 	WRL::ComPtr<ID3DBlob> createShader(ID3D11DeviceChild *&poiterOut, SHADER_TYPE type, const char *src, ERROR_COMPILE_SHADER &err);
 	UINT MSAAquality(DXGI_FORMAT format, int MSAASamples);
 
+	struct Timer
+	{
+		Timer(WRL::ComPtr<ID3D11Query> disjontQuery_) :
+			disjontQuery(disjontQuery_)
+		{}
+
+		WRL::ComPtr<ID3D11Query> disjontQuery;
+
+		struct TimerPoint
+		{
+			WRL::ComPtr<ID3D11Query> beginQuery;
+			WRL::ComPtr<ID3D11Query> endQuery;
+		};
+
+		std::vector<TimerPoint> TimerPoints;
+	};
+	std::vector<Timer> timers;
+
 	struct Stat
 	{
 		int drawCalls{0};
@@ -127,6 +145,13 @@ public:
 	auto Dispatch(uint x, uint y, uint z) -> void override;
 	auto GetViewport(uint* w, uint* h) -> void override;
 	auto SetViewport(int w, int h) ->void override;
+
+	auto CreateTimer() -> uint32_t override;
+	auto TimersBeginFrame(uint32_t timerID) -> void override;
+	auto TimersEndFrame(uint32_t timerID) -> void override;
+	auto TimersBeginPoint(uint32_t timerID, uint32_t pointID) -> void override;
+	auto TimersEndPoint(uint32_t timerID, uint32_t pointID) -> void override;
+	auto GetTimeInMsForPoint(uint32_t timerID, uint32_t pointID) -> float override;
 
 	auto GetName() -> const char * { return "dx11corerender"; }
 
