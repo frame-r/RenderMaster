@@ -6,7 +6,7 @@
 #include "yaml.inl"
 
 #define MOVE_SPEED 30.f
-#define ROTATE_SPEED 13.f
+#define ROTATE_SPEED 0.2f
 
 void Camera::Update(float dt)
 {
@@ -60,8 +60,8 @@ void Camera::Update(float dt)
 
 		quat rot = GetLocalRotation();
 
-		quat dxRot = quat(-dM.y * dt * ROTATE_SPEED, 0.0f, 0.0f);
-		quat dyRot = quat(0.0f, 0.0f,-dM.x * dt * ROTATE_SPEED);
+		quat dxRot = quat(-dM.y * ROTATE_SPEED, 0.0f, 0.0f);
+		quat dyRot = quat(0.0f, 0.0f,-dM.x  * ROTATE_SPEED);
 
 		rot = dyRot * rot * dxRot;
 
