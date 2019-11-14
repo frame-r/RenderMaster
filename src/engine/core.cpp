@@ -49,6 +49,8 @@ Core::Core()
 	input = new Input;
 	render = new Render;
 	matManager = new MaterialManager;
+
+	SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 }
 
 bool Core::Init(const char* rootPath, const WindowHandle* externHandle, INIT_FLAGS flags)
