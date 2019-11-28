@@ -71,23 +71,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>..\..\..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
-    <IntDir>..\..\..\..\bin\$(Platform)\$(Configuration)\Engine\yaml-cpp\obj\</IntDir>
+    <OutDir>..\..\..\..\bin\</OutDir>
+    <IntDir>..\..\..\..\obj\yaml-cpp\$(Platform)\$(Configuration)</IntDir>
+    <TargetName>$(ProjectName)_$(PlatformShortName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>..\..\..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
-    <IntDir>..\..\..\..\bin\$(Platform)\$(Configuration)\Engine\yaml-cpp\obj\</IntDir>
+    <OutDir>..\..\..\..\bin\</OutDir>
+    <IntDir>..\..\..\..\obj\yaml-cpp\$(Platform)\$(Configuration)</IntDir>
+    <TargetName>$(ProjectName)_$(PlatformShortName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>..\..\..\..\bin\engine\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\..\..\..\bin\engine\$(Platform)\$(Configuration)\yaml-cpp\obj\</IntDir>
+    <OutDir>..\..\..\..\bin\</OutDir>
+    <IntDir>..\..\..\..\obj\yaml-cpp\$(Platform)\$(Configuration)</IntDir>
+    <TargetName>$(ProjectName)_$(PlatformShortName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
-    <OutDir>..\..\..\..\bin\engine\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\..\..\..\bin\engine\$(Platform)\$(Configuration)\yaml-cpp\obj\</IntDir>
+    <OutDir>..\..\..\..\bin\</OutDir>
+    <IntDir>..\..\..\..\obj\yaml-cpp\$(Platform)\$(Configuration)</IntDir>
+    <TargetName>$(ProjectName)_$(PlatformShortName)_$(Configuration)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

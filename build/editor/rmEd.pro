@@ -8,7 +8,12 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = rmEd
+CONFIG( debug, debug|release ) {
+    TARGET = rmEd_x64d
+} else {
+    TARGET = rmEd_x64
+}
+
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -27,17 +32,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++17
 
 # execubale
-CONFIG( debug, debug|release ) {
-    DESTDIR = $$PWD/../../bin/editor/debug
-} else {
-    DESTDIR = $$PWD/../../bin/editor/release
-}
+DESTDIR = $$PWD/../../bin
+# CONFIG( debug, debug|release ) {
+#     DESTDIR = $$PWD/../../bin/editor/debug
+# } else {
+#     DESTDIR = $$PWD/../../bin/editor/release
+# }
 
 # objs
 CONFIG( debug, debug|release ) {
-    OBJECTS_DIR = $$PWD/../../bin/editor/obj/debug
+    OBJECTS_DIR = $$PWD/../../obj/editor/debug
 } else {
-    OBJECTS_DIR = $$PWD/../../bin/editor/obj/release
+    OBJECTS_DIR = $$PWD/../../obj/editor/release
 }
 
 SOURCES += \
@@ -143,15 +149,15 @@ DEPENDPATH += $$PWD/../../include
 
 CONFIG( debug, debug|release ) {
     # debug
-    LIBS += -L$$PWD/../../bin/engine/x64/Debug -lEngine
+    LIBS += -L$$PWD/../../bin/ -lEngine_x64d
     # force relink
-    PRE_TARGETDEPS += $$PWD/../../bin/engine/x64/Debug/Engine.lib
+    PRE_TARGETDEPS += $$PWD/../../bin/Engine_x64d.lib
 
 } else {
     # release
-    LIBS += -L$$PWD/../../bin/engine/x64/Release -lEngine
+    LIBS += -L$$PWD/../../bin/ -lEngine_x64
     # force relink
-    PRE_TARGETDEPS += $$PWD/../../bin/engine/x64/Release/Engine.lib
+    PRE_TARGETDEPS += $$PWD/../../bin/Engine_x64.lib
 }
 
 # visual leak detector

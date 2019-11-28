@@ -12,7 +12,7 @@
 
 #define RESOURCE_DIR "\\resources"
 #define FPS_UPDATE_INTERVAL 0.3f
-
+#define DEFAULT_ROOT_RELATIVE_BIN "../"
 Core *_core;
 
 char logBuffer__[5000];
@@ -65,7 +65,7 @@ bool Core::Init(const char* rootPath, const WindowHandle* externHandle, INIT_FLA
 		workingPath_ = fs->GetWorkingPath("");
 		string rootRelativeToWorking_;
 		if (strlen(rootPath) == 0)
-			rootRelativeToWorking_ = string("../../../../");
+			rootRelativeToWorking_ = DEFAULT_ROOT_RELATIVE_BIN;
 		else
 			rootRelativeToWorking_ = rootPath;
 		rootPath_ = fs->GetWorkingPath(rootRelativeToWorking_.c_str());; 

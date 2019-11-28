@@ -144,7 +144,7 @@ auto DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSync
 {
 	HRESULT hr = S_OK;
 	HWND hwnd = *handle;
-	UINT createDeviceFlags = 0;
+	UINT createDeviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
 	#ifdef _DEBUG
 		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	#endif
@@ -1479,7 +1479,7 @@ auto DX11CoreRender::TimersBeginPoint(uint32_t timerID, uint32_t pointID) -> voi
 	Timer& timer = timers[timerID];
 	if (pointID >= timer.TimerPoints.size())
 	{
-		for (int i = timer.TimerPoints.size(); i <= pointID; ++i)
+		for (uint32_t i = timer.TimerPoints.size(); i <= pointID; ++i)
 		{
 			D3D11_QUERY_DESC desc{};
 			desc.Query = D3D11_QUERY_TIMESTAMP;
@@ -1502,7 +1502,7 @@ auto DX11CoreRender::TimersEndPoint(uint32_t timerID, uint32_t pointID) -> void
 	Timer& timer = timers[timerID];
 	if (pointID >= timer.TimerPoints.size())
 	{
-		for (int i = 0; i < pointID; ++i)
+		for (uint32_t i = 0; i < pointID; ++i)
 		{
 			D3D11_QUERY_DESC desc{};
 			desc.Query = D3D11_QUERY_TIMESTAMP;

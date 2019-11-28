@@ -73,31 +73,35 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
-    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\obj\</IntDir>
+    <OutDir>..\..\bin\</OutDir>
+    <IntDir>..\..\obj\engine\$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
-    <LibraryPath>..\..\bin\$(Platform)\$(Configuration)\Engine\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\bin\;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_x86d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\bin\engine\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\..\bin\engine\$(Platform)\$(Configuration)\obj\</IntDir>
+    <OutDir>..\..\bin\</OutDir>
+    <IntDir>..\..\obj\engine\$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
-    <LibraryPath>..\..\bin\engine\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\bin\;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_x64d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\bin\$(Platform)\$(Configuration)\Engine\</OutDir>
-    <IntDir>..\..\bin\$(Platform)\$(Configuration)\Engine\obj\</IntDir>
+    <OutDir>..\..\bin\</OutDir>
+    <IntDir>..\..\obj\engine\$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
-    <LibraryPath>..\..\bin\$(Platform)\$(Configuration)\Engine\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\bin\;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_x86</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\bin\engine\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\..\bin\engine\$(Platform)\$(Configuration)\obj\</IntDir>
+    <OutDir>..\..\bin\</OutDir>
+    <IntDir>..\..\obj\engine\$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
-    <LibraryPath>..\..\bin\engine\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\bin\;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)_x64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -116,7 +120,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_$(PlatformShortName)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -136,7 +140,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp.lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\debug\libfbxsdk.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_$(PlatformShortName)_$(Configuration).lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\debug\libfbxsdk.lib</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
@@ -163,7 +167,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_$(PlatformShortName)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -187,7 +191,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp.lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\release\libfbxsdk.lib</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_$(PlatformShortName)_$(Configuration).lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\release\libfbxsdk.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
