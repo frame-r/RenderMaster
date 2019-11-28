@@ -1,0 +1,5 @@
+1. copy bin/ resources/ -> build\installer\packages\xx.framer.engine\data
+2. open editor_ecosystem.pro in Qt
+3. ensure that in project settings build directory is "../obj/"
+4. build project installer.pro
+5. RenderMasterInstaller_v*.exe must be created
