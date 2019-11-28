@@ -1,4 +1,9 @@
+
+
 1. copy bin/ resources/ -> build\installer\packages\xx.framer.engine\data
+Then copy with all dependecies:
+C:\Qt\Qt5.12.3\5.12.3\msvc2017_64\bin>windeployqt.exe <path to bin>\rmEd_x64.exe --release --verbose 2
+
 2. open editor_ecosystem.pro in Qt
 3. ensure that in project settings build directory is "../obj/"
 4. build project installer.pro
