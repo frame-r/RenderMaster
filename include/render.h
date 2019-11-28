@@ -105,7 +105,7 @@ class Render : public IProfilerCallback
 
 	bool taa{true};
 	bool wireframeAA{false};
-	bool wireframe{true};
+	bool wireframe{false};
 
 	std::vector<RenderMesh> getRenderMeshes();
 	RenderScene getRenderScene();
