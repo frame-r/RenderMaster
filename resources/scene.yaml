@@ -10,7 +10,7 @@ objects:
     id: 1113097840
     enabled: true
     type: Model
-    worldTransform: [-1, 1.755557e-05, 0, -0.072, 0, 0, 1, -5.528, 1.755557e-05, 1, 0, 0.054, 0, 0, 0, 1]
+    worldTransform: [-1, 1.755556e-05, 0, -0.072, 0, 0, 1, -5.528, 1.755556e-05, 1, 0, 0.054, 0, 0, 0, 1]
     mesh: .import\Teapot_Node.mesh
     material: material_1
   - childs: 0
