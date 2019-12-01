@@ -17,6 +17,7 @@
 #include "common.h"
 #include "../editor_common.h"
 #include "../texturelineedit.h"
+#include <string>
 
 inline QColor EngToQtColor(const vec4& v)
 {
@@ -52,6 +53,22 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 	if (!mat)
 		return;
 
+	auto get_pretty_name = [](const char *name) -> QString
+	{
+		std::string name_ = name;
+		std::replace( name_.begin(), name_.end(), '_', ' ');
+
+		bool last = true;
+		for (char& c : name_)
+		{
+			c = last ? std::toupper(c) : std::tolower(c);
+			last = std::isspace(c);
+		}
+
+		return QString(name_.c_str());
+	};
+
+
 	bool disable = mat == editor->core->GetMaterialManager()->GetDiffuseMaterial();
 
 	GenericMaterial *genmat = mat->GetGenericMaterial();
@@ -82,7 +99,7 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 		});
 
 		sl->setOrientation(Qt::Orientation::Horizontal);
-		ui->material_lt->addRow(tr(p.id.c_str()), sl);
+		ui->material_lt->addRow(get_pretty_name(p.id.c_str()), sl);
 	}
 
 	// color
@@ -105,7 +122,7 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 			mat->SetParamFloat4(p.id.c_str(), c);
 		});
 
-		ui->material_lt->addRow(tr(p.id.c_str()), sl);
+		ui->material_lt->addRow(get_pretty_name(p.id.c_str()), sl);
 	}
 
 	// defines
@@ -122,7 +139,7 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 			needRecreatematerialGroup = true;
 		});
 
-		ui->material_lt->addRow(tr(v.first.c_str()), cb);
+		ui->material_lt->addRow(get_pretty_name(v.first.c_str()), cb);
 	}
 
 	// textures
@@ -133,7 +150,7 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 				continue;
 
 		TextureLineEdit *l = new TextureLineEdit(this);
-		ui->material_lt->addRow(tr(v.id.c_str()), l);
+		ui->material_lt->addRow(get_pretty_name(v.id.c_str()), l);
 		l->SetPath(mat->GetTexture(v.id.c_str()));
 		l->SetUV(mat->GetUV(v.id.c_str()));
 
