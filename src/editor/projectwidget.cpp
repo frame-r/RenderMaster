@@ -17,14 +17,14 @@ public:
 
 				if(info.isFile())
 				{
-					if(info.suffix() == "dds")
-						return QPixmap(":/icons/icon_img.png");
-					else if (info.suffix() == "mat")
-						return  QPixmap(":/icons/icon_mat.png");
-//					else if (info.suffix() == "fbx")
-//						return  QPixmap(":/icons/icon_3d.png");
+					if(info.suffix() == "dds" || info.suffix() == "png" || info.suffix() == "jpg" || info.suffix() == "jpeg")
+						return QPixmap(":/icons/img.png");
+					else if (info.suffix() == "mat" || info.suffix() == "genericmat")
+						return  QPixmap(":/icons/material.png");
+					else if (info.suffix() == "fbx" || info.suffix() == "mesh")
+						return  QPixmap(":/icons/mesh.png");
 					else
-						return  QPixmap(":/icons/icon_bin.png");
+						return  QPixmap(":/icons/bin.png");
 				}
 			}
 		return QFileSystemModel::data(index, role);
@@ -36,9 +36,16 @@ ProjectWidget::ProjectWidget(QWidget *parent) :
 	ui(new Ui::ProjectWidget)
 {
 	ui->setupUi(this);
+
 	model = new MyFileSystemModel;
 	model->setRootPath(QDir::currentPath());
-	ui->treeView->setModel(model);
+
+	QTreeView *view = ui->treeView;
+	view->setModel(model);
+	view->setHeaderHidden(true);
+
+	for (int i = 1; i < model->columnCount(); ++i)
+		view->hideColumn(i);
 
 	connect(editor, &EditorCore::OnEngineInit, this, &ProjectWidget::onEngineInited, Qt::DirectConnection);
 	connect(editor, &EditorCore::OnEngineFree, this, &ProjectWidget::onEngineFree, Qt::DirectConnection);
@@ -59,7 +66,6 @@ void ProjectWidget::onEngineInited(Core *c)
 
 void ProjectWidget::onEngineFree(Core *c)
 {
-
 }
 
 ProjectWidget::~ProjectWidget()

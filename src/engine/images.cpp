@@ -813,11 +813,11 @@ void importPNG(const char* path)
 	if (color_type == PNG_COLOR_TYPE_RGB)
 	{
 		outputRGBA = convertRGBtoRGBA(data, width, height, false, false);
-		delete[] data;
-		data = outputRGBA.get();
+		saveToDDS(path, width, height, outputRGBA.get());
+	} else
+	{
+		saveToDDS(path, width, height, data);
 	}
-
-	saveToDDS(path, width, height, data);
 
 	delete[] data;
 }

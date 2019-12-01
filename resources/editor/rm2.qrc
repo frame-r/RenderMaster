@@ -12,6 +12,10 @@
         <file>check_box.png</file>
         <file>manipulator_rotate.png</file>
         <file>manipulator_scale.png</file>
+        <file>bin.png</file>
+        <file>img.png</file>
+        <file>mesh.png</file>
+        <file>material.png</file>
     </qresource>
     <qresource prefix="/styles">
         <file>dark.qss</file>
