@@ -21,7 +21,6 @@
 		float4 environment_resolution; // w, h, mipmaps, 0
 		float4 environment_intensity; // diffuse, specular, 0, 0
 	};
-	static float3x3 ReflRotMat = float3x3(float3(1, 0, 0), float3(0, 0, 1), float3(0, 1, 0));
 
 	cbuffer camera_parameters
 	{
@@ -67,7 +66,7 @@
 			#ifdef WHITE_BAKGROUND
 				specularEnv = float3(0.5, 0.5, 0.5);
 			#else
-				specularEnv = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, L), specularMip).rgb;
+				specularEnv = texture_environment.SampleLevel(sampler_environment, L, specularMip).rgb;
 			#endif
 		
 
@@ -101,7 +100,7 @@
 #ifdef WHITE_BAKGROUND
 				float3 SampleColor = float3(0.5, 0.5, 0.5);
 #else
-				float3 SampleColor = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, L), lod).rgb;
+				float3 SampleColor = texture_environment.SampleLevel(sampler_environment, L, lod).rgb;
 #endif
 				//float G = geometrySmith(N, V, L, Roughness);
 				//float Fc = pow(1 - VoH, 5);
@@ -149,11 +148,11 @@
 				diffuseEnv += dot(N, sample4) * float3(0.5,0.5,0.5);
 				diffuseEnv += dot(N, sample5) * float3(0.5,0.5,0.5);
 			#else
-				diffuseEnv +=					texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, N), ambientlMip).rgb;
-				diffuseEnv += dot(N, sample2) * texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, sample2), ambientlMip).rgb;
-				diffuseEnv += dot(N, sample3) * texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, sample3), ambientlMip).rgb;
-				diffuseEnv += dot(N, sample4) * texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, sample4), ambientlMip).rgb;
-				diffuseEnv += dot(N, sample5) * texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, sample5), ambientlMip).rgb;
+				diffuseEnv +=					texture_environment.SampleLevel(sampler_environment, N, ambientlMip).rgb;
+				diffuseEnv += dot(N, sample2) * texture_environment.SampleLevel(sampler_environment, sample2, ambientlMip).rgb;
+				diffuseEnv += dot(N, sample3) * texture_environment.SampleLevel(sampler_environment, sample3, ambientlMip).rgb;
+				diffuseEnv += dot(N, sample4) * texture_environment.SampleLevel(sampler_environment, sample4, ambientlMip).rgb;
+				diffuseEnv += dot(N, sample5) * texture_environment.SampleLevel(sampler_environment, sample5, ambientlMip).rgb;
 			#endif
 			
 			diffuseEnv *= albedo / (ambientSampels);
@@ -174,7 +173,7 @@
 		#ifdef WHITE_BAKGROUND
 			float3 bkg = float3(0.5, 0.5, 0.5);
 		#else
-			float3 bkg = texture_environment.SampleLevel(sampler_environment, mul(ReflRotMat, -V), 0).rgb;
+			float3 bkg = texture_environment.SampleLevel(sampler_environment, -V, 0).rgb;
 		#endif
 		
 		color = lerp(color, bkg, float(depth == 1.0f));

@@ -461,6 +461,20 @@ auto DLLEXPORT Render::ReleaseRenderTexture(Texture* tex) -> void
 	std::for_each(renderTextures.begin(), renderTextures.end(), [tex](RenderTexture& t) { if (tex == t.pointer.get()) t.free = 1; });
 }
 
+auto DLLEXPORT Render::SetEnvironmentTexturePath(const char* path) -> void
+{
+	if (path == envirenmentTexturePath)
+		return;
+
+	envirenmentTexturePath = path;
+	environmentTexture = RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
+}
+
+auto DLLEXPORT Render::GetEnvironmentTexturePath() -> const char*
+{
+	return envirenmentTexturePath.c_str();
+}
+
 void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
 {
 	uint32 timerID = uint32_t(_core->frame() % maxFrames);
@@ -1063,7 +1077,9 @@ std::string Render::getString(uint i)
 
 void Render::Init()
 {
-	environmentTexture = RES_MAN->CreateStreamTexture(TEXTURES_DIR"output_skybox.dds", TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
+	envirenmentTexturePath = TEXTURES_DIR"cube_room.dds";
+	environmentTexture = RES_MAN->CreateStreamTexture(envirenmentTexturePath.c_str(), TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
+
 	fontTexture = RES_MAN->CreateStreamTexture(TEXTURES_DIR"font.dds", TEXTURE_CREATE_FLAGS::NONE);
 	planeMesh = RES_MAN->CreateStreamMesh("std#plane");
 	gridMesh = RES_MAN->CreateStreamMesh("std#grid");

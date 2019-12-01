@@ -80,11 +80,13 @@ class Render : public IProfilerCallback
 
 	// Render internal resources
 	ManagedPtr<Texture> fontTexture;
-	ManagedPtr<Texture> environmentTexture;
 	Texture* whiteTexture;
 	ManagedPtr<Mesh> planeMesh;
 	ManagedPtr<Mesh> gridMesh;
 	ManagedPtr<Mesh> lineMesh;
+
+	std::string envirenmentTexturePath;
+	ManagedPtr<Texture> environmentTexture;
 
 	Material* compositeMaterial{};
 	Material* finalPostMaterial{};
@@ -155,6 +157,8 @@ public:
 	auto DLLEXPORT SetWireframeAA(bool value) -> void { wireframeAA = value; }
 	auto DLLEXPORT IsWireframe() -> bool { return wireframe; }
 	auto DLLEXPORT SetWireframe(bool value) -> void { wireframe = value; }
+	auto DLLEXPORT SetEnvironmentTexturePath(const char* path) -> void;
+	auto DLLEXPORT GetEnvironmentTexturePath() -> const char*;
 
 	// debug
 	auto DLLEXPORT SetDebugParam(float v) -> void { debugParam = v; }

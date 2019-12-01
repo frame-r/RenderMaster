@@ -4,6 +4,7 @@
 #include "render.h"
 #include <QCheckBox>
 #include <QComboBox>
+#include "mylineedit.h"
 
 static std::vector<QMetaObject::Connection> _connections;
 
@@ -66,6 +67,23 @@ void Settings::OnEngineInit(Core *c)
 		render->SetWireframe(value);
 	}));
 
+	_connections.emplace_back(connect(ui->env_le, &QLineEdit::returnPressed, [this]()->void
+	{
+		Render *render = editor->core->GetRender();
+		render->SetEnvironmentTexturePath(ui->env_le->text().toLatin1());
+	}));
+
+	_connections.emplace_back(QObject::connect(ui->env_le, &MyLineEdit::fileDropped,
+	[this](QString relativePath)
+	{
+		if (isTexture(relativePath))
+		{
+			ui->env_le->setText(relativePath);
+			Render *render = editor->core->GetRender();
+			render->SetEnvironmentTexturePath(ui->env_le->text().toLatin1());
+		}
+	}));
+
 	ui->diffuse_env_sl->setValue(render->GetDiffuseEnvironemnt() * ui->diffuse_env_sl->maximum());
 	setLabel(ui->diffuse_env_l, render->GetDiffuseEnvironemnt());
 
@@ -77,6 +95,8 @@ void Settings::OnEngineInit(Core *c)
 	ui->taa_cb->setChecked(render->IsTAA());
 	ui->wireframe_aa->setChecked(render->IsWireframeAA());
 	ui->wireframe_->setChecked(render->IsWireframe());
+
+	ui->env_le->setText(render->GetEnvironmentTexturePath());
 }
 
 void Settings::sliderOChanged(int i)
