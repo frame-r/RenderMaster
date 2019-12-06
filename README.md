@@ -27,9 +27,7 @@ Note: Solution configured to find FBX SDK at C:\Program Files\Autodesk\FBX\FBX S
 Editor can be run form Qt Designer or Visual Studio (Editor.vcproj applied).
 Don't forget to set the environment variable PATH within IDE for: Engine.dll, FBX SDK dll, Qt binaries (only for editor).
 
-![Alt text](preview1.png?raw=true "Editor preview")
-![Alt text](preview2.png?raw=true "Matte")
-![Alt text](preview3.png?raw=true "Normal mapping")
+![Alt text](preview.png?raw=true "Preview")
 
 ## Keys
 * ASWD - camera moving
