@@ -23,7 +23,7 @@
     <ProjectGuid>{9BE5DB79-9152-4553-A2C0-21ADFB76F240}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ConstructorTest</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>Engine</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

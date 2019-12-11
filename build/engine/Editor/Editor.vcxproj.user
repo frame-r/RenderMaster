@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LocalDebuggerCommand>..\..\rmEd\bin\debug\rmEd.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerEnvironment>PATH=%PATH%;C:\Qt\5.12.0\msvc2017_64\bin</LocalDebuggerEnvironment>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\..\..\rmEd\bin</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommand>..\..\rmEd\bin\release\rmEd.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\..\rmEd\bin</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerEnvironment>PATH=%PATH%;C:\Qt\5.12.0\msvc2017_64\bin</LocalDebuggerEnvironment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LocalDebuggerCommand>$(ProjectDir)..\..\..\bin\rmEd_x64d.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerEnvironment>PATH=%PATH%;C:\Qt\Qt5.12.3\5.12.3\msvc2017_64\bin;$(ProjectDir)..\..\..\bin\engine\x64\Debug;C:\Program Files\Autodesk\FBX\FBX SDK\2018.0\lib\vs2015\x64\debug</LocalDebuggerEnvironment>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\..\bin\</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LocalDebuggerCommand>$(ProjectDir)..\..\..\bin\rmEd_x64.exe</LocalDebuggerCommand>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(ProjectDir)..\..\..\bin\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerEnvironment>PATH=%PATH%;C:\Qt\Qt5.12.3\5.12.3\msvc2017_64\bin;$(ProjectDir)..\..\..\bin\engine\x64\Release;C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\release</LocalDebuggerEnvironment>
+  </PropertyGroup>
+</Project>

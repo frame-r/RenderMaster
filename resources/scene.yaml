@@ -4,13 +4,13 @@ objects:
     id: 845369033
     enabled: true
     type: Light
-    worldTransform: [0.8472722, 0.3067082, 0.4336592, 0, 0.3057736, 0.3859436, -0.8703737, 0, -0.4343187, 0.8700448, 0.233216, 0, 0, 0, 0, 1]
+    worldTransform: [0.8472725, 0.3067083, 0.4336593, 0, 0.3057738, 0.3859437, -0.8703738, 0, -0.4343189, 0.8700449, 0.233216, 0, 0, 0, 0, 1]
     intensity: 1
   - childs: 0
     id: 1113097840
     enabled: true
     type: Model
-    worldTransform: [-1, 1.755556e-05, 0, -0.072, 0, 0, 1, -5.528, 1.755556e-05, 1, 0, 0.054, 0, 0, 0, 1]
+    worldTransform: [-1, 1.755557e-05, 0, 0, 0, 0, 1, 0, 1.755557e-05, 1, 0, 0, 0, 0, 0, 1]
     mesh: .import\Teapot_Node.mesh
     material: material_1
   - childs: 0
