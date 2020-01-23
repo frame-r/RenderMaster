@@ -2,27 +2,40 @@
 #include "ui_consolewidget.h"
 #include "editorcore.h"
 #include "console.h"
+#include <QQueue>
 
-static ConsoleWidget *instance;
+static QQueue<QPair<QString, LOG_TYPE>> messageQueue;
+ConsoleWidget* ConsoleWidget::instance;
 
 void onEngineLog(const char *msg, LOG_TYPE type)
 {
-	QString color = "";
+	messageQueue.enqueue({msg, type});
+}
 
-	if (type == LOG_TYPE::WARNING)
-		color = " color=#bbbb00";
-	if (type == LOG_TYPE::CRITICAL || type == LOG_TYPE::FATAL)
-		color = " color=#cc0000";
+void ConsoleWidget::ProcessMessageQueue()
+{
+	while (!messageQueue.isEmpty())
+	{
+		auto& message = messageQueue.head();
+		QString color = "";
 
-	QString str = QString("<font")+ color +QString(">") + QString(msg) + QString("</font>");
+		if (message.second == LOG_TYPE::WARNING)
+			color = " color=#bbbb00";
+		else if (message.second == LOG_TYPE::CRITICAL || message.second == LOG_TYPE::FATAL)
+			color = " color=#cc0000";
 
-	instance->ui->plainTextEdit->appendHtml(str);
+		QString str = QString("<font")+ color +QString(">") + message.first + QString("</font>");
+
+		instance->ui->plainTextEdit->appendHtml(str);
+		messageQueue.dequeue();
+	}
 }
 
 ConsoleWidget::ConsoleWidget(QWidget *parent) :
 	QWidget(parent),
 	ui(new Ui::ConsoleWidget)
 {
+	assert(instance == nullptr);
 	instance = this;
 
 	ui->setupUi(this);
@@ -33,6 +46,7 @@ ConsoleWidget::ConsoleWidget(QWidget *parent) :
 
 ConsoleWidget::~ConsoleWidget()
 {
+	instance = 0;
 	delete ui;
 }
 
@@ -49,3 +63,8 @@ void ConsoleWidget::onEngineFree(Core *c)
 }
 
 
+
+void ConsoleWidget::on_clear_btn_clicked()
+{
+	ui->plainTextEdit->clear();
+}

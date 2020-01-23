@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+#include "console.h"
 
 extern Core *_core;
 
@@ -37,6 +38,9 @@ class Core final : IProfilerCallback
 
 	std::vector<IProfilerCallback*> profilerCallbacks;
 
+	std::mutex logMtx;
+	char logBuffer__[5000];
+
 	void freeCoreRender();
 	bool initCoreRender(WindowHandle *handle);
 	void engineUpdate();
@@ -60,6 +64,17 @@ public:
 	IProfilerCallback *getCallback(int i) const { return profilerCallbacks[i]; }
 	float deltaTime() { return _dt; }
 	int64_t frame() { return _frame; }
+
+	template<class T, typename... Arguments>
+	void _Log(LOG_TYPE type, T a, Arguments ...args)
+	{
+		std::lock_guard<std::mutex> guard(logMtx);
+
+		if (strlen(a) > 4999) abort();
+		sprintf(logBuffer__, a, args...);
+		if (_core->GetConsole())
+			_core->GetConsole()->Log(logBuffer__, type);
+	}
 
 public:
 	auto DLLEXPORT Init(const char* rootPath, const WindowHandle* externHandle, INIT_FLAGS flags = INIT_FLAGS::NONE) -> bool;
@@ -90,36 +105,25 @@ public:
 DLLEXPORT Core* GetCore();
 DLLEXPORT void ReleaseCore(Core* core);
 
-extern char logBuffer__[5000];
-
-template<class T, typename... Arguments>
-void _Log(LOG_TYPE type, T a, Arguments ...args)
-{
-	if (strlen(a) > 4999) abort();
-	sprintf(logBuffer__, a, args...);
-	if (_core->GetConsole())
-		_core->GetConsole()->Log(logBuffer__, type);
-}
 template<typename... Arguments>
 void Log(Arguments ...args)
 {
-	_Log(LOG_TYPE::NORMAL, args...);
+	_core->_Log(LOG_TYPE::NORMAL, args...);
 }
 template<typename... Arguments>
 void LogWarning(Arguments ...args)
 {
-	_Log(LOG_TYPE::WARNING, args...);
+	_core->_Log(LOG_TYPE::WARNING, args...);
 }
 template<typename... Arguments>
 void LogCritical(Arguments ...args)
 {
-	_Log(LOG_TYPE::CRITICAL, args...);
+	_core->_Log(LOG_TYPE::CRITICAL, args...);
 }
 template<typename... Arguments>
 void LogFatal(Arguments ...args)
 {
-	_Log(LOG_TYPE::FATAL, args...);
-	abort();
+	_core->_Log(LOG_TYPE::FATAL, args...);
 }
 
 

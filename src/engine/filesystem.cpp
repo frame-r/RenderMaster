@@ -8,12 +8,10 @@ namespace fs = std::filesystem;
 
 void FileSystem::Init()
 {
-	//std::cout << "FileSystem Inited\n";
 }
 
 void FileSystem::Free()
 {
-	//std::cout << "FileSystem Free\n";
 }
 
 bool static _exist(const char *path)
@@ -191,6 +189,17 @@ auto DLLEXPORT FileSystem::ToValid(std::string& filePath) -> void
 {
 	auto f = std::bind(std::mem_fn(&FileSystem::isInvalidSymbol), this, std::placeholders::_1);
 	filePath.erase(std::remove_if(filePath.begin(), filePath.end(), f));
+}
+
+auto DLLEXPORT FileSystem::GetTime(std::string& path) -> int64_t
+{
+	fs::path fsPath = fs::u8path(path);
+	auto timestampt = fs::last_write_time(fsPath);
+
+	using namespace std::chrono_literals;
+	auto ftime = fs::last_write_time(fsPath);
+	auto a = ftime.time_since_epoch();
+	return a.count();
 }
 
 File::File(const std::ios_base::openmode & fileMode, const std::filesystem::path & path)

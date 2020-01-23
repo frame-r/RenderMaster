@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QProgressBar>
 
 class Settings;
 
@@ -38,6 +39,9 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
+	QProgressBar *progressBar;
+	int progress_{};
+
 	THEME theme{};
 
 public:
@@ -46,6 +50,11 @@ public:
 
 	WId getWindowHandle();
 	Settings *GetSettings();
+
+	// [0, 100]
+	void SetProgressBar(int progress);
+	void HideProgressBar();
+	void ShowProgressBar();
 
 protected:
 	virtual void closeEvent(QCloseEvent* e);

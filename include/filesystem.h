@@ -6,9 +6,7 @@
 
 class FileSystem final
 {
-
 	bool isInvalidSymbol(char c);
-
 public:
 	// Internal API
 
@@ -26,8 +24,8 @@ public:
 	auto DLLEXPORT CreateMemoryMapedFile(const char *path) -> FileMapping;
 	auto DLLEXPORT GetFileName(const std::string& filePath, bool withExtension = true) -> std::string;
 	auto DLLEXPORT IsValid(const std::string& filePath) -> bool;
-	auto DLLEXPORT ToValid(std::string& filePath) -> void;
-	
+	auto DLLEXPORT ToValid(std::string& path) -> void;
+	auto DLLEXPORT GetTime(std::string& path) -> int64_t;
 };
 
 struct FileMapping

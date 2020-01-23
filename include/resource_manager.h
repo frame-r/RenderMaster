@@ -15,7 +15,6 @@ class ManagedPtr;
 template<typename T>
 using SharedPtr = std::shared_ptr<T>;
 
-
 class ResourceManager
 {
 	template<typename T>
@@ -46,7 +45,7 @@ public:
 	auto DLLEXPORT CreateStreamTexture(const char *path, TEXTURE_CREATE_FLAGS flags) -> ManagedPtr<Texture>;
 	auto DLLEXPORT CreateStreamMesh(const char *path) -> ManagedPtr<Mesh>;
 
-	auto DLLEXPORT Import(const char *path) -> void;
+	auto DLLEXPORT Import(const char *path, ProgressCallback callback) -> void;
 	auto DLLEXPORT GetImportedMeshes() -> std::vector<std::string>;
 
 	// TODO: Move all GameObject stuff to SceneManager class

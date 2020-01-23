@@ -14,9 +14,15 @@
 #include <memory>
 #include <sstream>
 
+struct ShaderInstance
+{
+	SharedPtr<Shader> shader;
+	std::string path;
+	int64_t time;
+	std::set<std::string> includes;
+};
 
-static std::unordered_map<string, SharedPtr<Shader>> runtimeShaders; // defines -> Shader
-
+static std::unordered_map<string, ShaderInstance> runtimeShaders; // defines -> Shader
 static std::unordered_map<size_t, ViewData> viewsDataMap; // view ID -> Data
 
 
@@ -120,7 +126,49 @@ void getObjects(vector<T*>& vec, OBJECT_TYPE type)
 	}
 }
 
-auto Render::GetShader(const char *path, Mesh *mesh, const vector<string>& defines) ->Shader*
+static void process_shader(INPUT_ATTRUBUTE attrib, const vector<string>* defines, const char*& ppTextOut, const char* ppTextIn,
+					const string& fullPath, const string&& fileNameOut, int type, set<string>& includes)
+{
+	simplecpp::DUI dui;
+
+	if (defines)
+		copy(begin(*defines), end(*defines), back_inserter(dui.defines));
+
+	if ((int)(attrib & INPUT_ATTRUBUTE::NORMAL)) dui.defines.push_back("ENG_INPUT_NORMAL");
+	if ((int)(attrib & INPUT_ATTRUBUTE::TEX_COORD)) dui.defines.push_back("ENG_INPUT_TEXCOORD");
+	if ((int)(attrib & INPUT_ATTRUBUTE::COLOR)) dui.defines.push_back("ENG_INPUT_COLOR");
+
+	if (type == 0)
+		dui.defines.push_back("ENG_SHADER_VERTEX");
+	else if (type == 1)
+		dui.defines.push_back("ENG_SHADER_PIXEL");
+	else if (type == 2)
+		dui.defines.push_back("ENG_SHADER_GEOMETRY");
+	else if (type == 3)
+		dui.defines.push_back("ENG_SHADER_COMPUTE");
+
+	simplecpp::OutputList outputList;
+	std::vector<std::string> files;
+	string textIn = ppTextIn;
+	std::stringstream f(textIn);
+	std::map<std::string, simplecpp::TokenList*> included;
+	simplecpp::TokenList rawtokens(f, files, fullPath, &outputList);
+	simplecpp::TokenList outputTokens(files);
+
+	simplecpp::preprocess(outputTokens, rawtokens, files, included, dui, &outputList);
+
+	for (auto& i : included)
+		includes.insert(i.first);
+
+	const string out = outputTokens.stringify();
+	auto size = out.size();
+	char* tmp = new char[size + 1];
+	strncpy(tmp, out.c_str(), size);
+	tmp[size] = '\0';
+	ppTextOut = tmp;
+};
+
+auto Render::GetShader(const char *name, Mesh *mesh, const vector<string>* defines, LOAD_SHADER_FLAGS flags) ->Shader*
 {
 	SharedPtr<Shader> shader;
 
@@ -129,10 +177,11 @@ auto Render::GetShader(const char *path, Mesh *mesh, const vector<string>& defin
 	if (mesh)
 		attrib = mesh->GetAttributes();
 
-	string shaderKey = string(path) + '-';
+	string shaderKey = string(name) + '-';
 
-	for(const string& def : defines)
-		shaderKey += def;
+	if (defines)
+		for(const string& def : *defines)
+			shaderKey += def;
 
 	if ((int)(attrib & INPUT_ATTRUBUTE::NORMAL)) shaderKey += "ENG_INPUT_NORMAL";
 	if ((int)(attrib & INPUT_ATTRUBUTE::TEX_COORD)) shaderKey += "ENG_INPUT_TEXCOORD";
@@ -142,140 +191,91 @@ auto Render::GetShader(const char *path, Mesh *mesh, const vector<string>& defin
 
 	if (it != runtimeShaders.end())
 	{
-		return it->second.get();
+		return it->second.shader.get();
 	}
 	else
 	{
-		const auto process_shader = [&](const char *&ppTextOut, const char *ppTextIn, const string& fullPath, const string&& fileNameOut, int type) -> void
-		{
-			simplecpp::DUI dui;
-
-			copy(begin(defines), end(defines), back_inserter(dui.defines));
-
-			if ((int)(attrib & INPUT_ATTRUBUTE::NORMAL)) dui.defines.push_back("ENG_INPUT_NORMAL");
-			if ((int)(attrib & INPUT_ATTRUBUTE::TEX_COORD)) dui.defines.push_back("ENG_INPUT_TEXCOORD");
-			if ((int)(attrib & INPUT_ATTRUBUTE::COLOR)) dui.defines.push_back("ENG_INPUT_COLOR");
-
-			if (type == 0)
-				dui.defines.push_back("ENG_SHADER_VERTEX");
-			else if (type == 1)
-				dui.defines.push_back("ENG_SHADER_PIXEL");
-			else if (type == 2)
-				dui.defines.push_back("ENG_SHADER_GEOMETRY");
-			
-			simplecpp::OutputList outputList;
-			std::vector<std::string> files;
-			string textIn = ppTextIn;
-			std::stringstream f(textIn);
-			std::map<std::string, simplecpp::TokenList*> included;
-
-			simplecpp::TokenList rawtokens(f, files, fullPath, &outputList);
-
-			simplecpp::TokenList outputTokens(files);
-
-			simplecpp::preprocess(outputTokens, rawtokens, files, included, dui, &outputList);
-			const string out = outputTokens.stringify();
-			auto size = out.size();
-
-			char *tmp = new char[size + 1];
-			strncpy(tmp, out.c_str(), size);
-			tmp[size] = '\0';
-
-			ppTextOut = tmp;
-		};
-
-		char *text;
-
-		string dataDir = _core->GetDataPath();
-		string fileIn = dataDir + '\\' + string(SHADER_DIR) + path;
-
-		File f = FS->OpenFile(fileIn.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
+		string fullPath = _core->GetDataPath() + '\\' + string(SHADER_DIR) + name;
+		File f = FS->OpenFile(fullPath.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
 		size_t size = f.FileSize();
-		text = new char[size + 1];
-		*(text + size) = '\0';
-		f.Read((uint8*)text, size);
+
+		char* textRaw = new char[size + 1];
+		*(textRaw + size) = '\0';
+
+		f.Read((uint8*)textRaw, size);
+
+		set<string> includes;
 
 		const char *textVertParced;
-		process_shader(textVertParced, text, fileIn, "out_v.shader", 0);
+		process_shader(attrib, defines, textVertParced, textRaw, fullPath, "out_v.shader", 0, includes);
 
 		const char *textFragParced;
-		process_shader(textFragParced, text, fileIn, "out_f.shader", 1);
+		process_shader(attrib, defines, textFragParced, textRaw, fullPath, "out_f.shader", 1, includes);
 
-		shader = RES_MAN->CreateShader(textVertParced, nullptr, textFragParced);
+		const char *textGeomParced = nullptr;
+		if (bool(flags & LS_GEOMETRY))
+			process_shader(attrib, defines, textGeomParced, textRaw, fullPath, "out_g.shader", 2, includes);
+
+		ShaderInstance runtime;
+		runtime.shader = RES_MAN->CreateShader(textVertParced, textGeomParced, textFragParced);
+		runtime.time = FS->GetTime(fullPath);
+		runtime.path = fullPath;
+		runtime.includes = std::move(includes);
+
+		shader = runtime.shader;
 
 		if (!shader)
-			LogCritical("Render::GetShader(): can't compile %s standard shader", path);
+			LogCritical("Render::GetShader(): can't compile %s standard shader", name);
 
-		runtimeShaders.emplace(shaderKey, shader);
+		runtimeShaders.emplace(shaderKey, runtime);
 	}
 	return shader.get();
 }
 
-auto DLLEXPORT Render::GetComputeShader(const char* path, const vector<string>& defines) -> Shader*
+auto DLLEXPORT Render::GetComputeShader(const char* name, const vector<string>* defines) -> Shader*
 {
 	SharedPtr<Shader> shader;
 
-	string shaderKey = string(path);
+	string shaderKey = string(name);
 
-	for (const string& def : defines)
+	if (defines)
+	for (const string& def : *defines)
 		shaderKey += def;
-
 
 	auto it = runtimeShaders.find(shaderKey);
 
 	if (it != runtimeShaders.end())
 	{
-		return it->second.get();
+		return it->second.shader.get();
 	}
 	else
 	{
-		const auto process_shader = [&](const char*& ppTextOut, const char* ppTextIn, const string& fullPath, const string&& fileNameOut, int type) -> void
-		{
-			simplecpp::DUI dui;
-
-			copy(begin(defines), end(defines), back_inserter(dui.defines));
-
-			simplecpp::OutputList outputList;
-			std::vector<std::string> files;
-			string textIn = ppTextIn;
-			std::stringstream f(textIn);
-			std::map<std::string, simplecpp::TokenList*> included;
-
-			simplecpp::TokenList rawtokens(f, files, fullPath, &outputList);
-
-			simplecpp::TokenList outputTokens(files);
-
-			simplecpp::preprocess(outputTokens, rawtokens, files, included, dui, &outputList);
-			const string out = outputTokens.stringify();
-			auto size = out.size();
-
-			char* tmp = new char[size + 1];
-			strncpy(tmp, out.c_str(), size);
-			tmp[size] = '\0';
-
-			ppTextOut = tmp;
-		};
-
-		char* text;
-
-		string dataDir = _core->GetDataPath();
-		string fileIn = dataDir + '\\' + string(SHADER_DIR) + path;
-
+		string fileIn = _core->GetDataPath() + '\\' + string(SHADER_DIR) + name;
 		File f = FS->OpenFile(fileIn.c_str(), FILE_OPEN_MODE::READ | FILE_OPEN_MODE::BINARY);
 		size_t size = f.FileSize();
-		text = new char[size + 1];
-		*(text + size) = '\0';
-		f.Read((uint8*)text, size);
 
-		const char* textVertParced;
-		process_shader(textVertParced, text, fileIn, "out_v.shader", 0);
+		char* textRaw = new char[size + 1];
+		*(textRaw + size) = '\0';
 
-		shader = RES_MAN->CreateComputeShader(textVertParced);
+		f.Read((uint8*)textRaw, size);
+
+		set<string> includes;
+
+		const char* textParced;
+		process_shader(INPUT_ATTRUBUTE::UNKNOWN, defines, textParced, textRaw, fileIn, "out_c.shader", 3, includes);
+
+		ShaderInstance runtime;
+		runtime.shader = RES_MAN->CreateComputeShader(textParced);
+		runtime.time = FS->GetTime(fileIn);
+		runtime.path = fileIn;
+		runtime.includes = std::move(includes);
+
+		shader = runtime.shader;
 
 		if (!shader)
-			LogCritical("Render::GetShader(): can't compile %s standard shader", path);
+			LogCritical("Render::GetShader(): can't compile %s standard shader", name);
 
-		runtimeShaders.emplace(shaderKey, shader);
+		runtimeShaders.emplace(shaderKey, runtime);
 	}
 	return shader.get();
 
@@ -284,7 +284,16 @@ auto DLLEXPORT Render::GetComputeShader(const char* path, const vector<string>& 
 auto DLLEXPORT Render::ReloadShaders() -> void
 {
 	Log("Reloading shaders...");
-	runtimeShaders.clear();
+
+	for (auto iter = runtimeShaders.begin(); iter != runtimeShaders.end(); )
+	{
+		if (iter->second.time != FS->GetTime(iter->second.path)) {
+			iter = runtimeShaders.erase(iter);
+		}
+		else {
+			++iter;
+		}
+	}
 }
 
 auto DLLEXPORT Render::RenderGUI() -> void
@@ -413,6 +422,11 @@ Render::RenderScene Render::getRenderScene()
 	}
 	scene.hasWorldLight = scene.lights.size() > 0;
 
+	if (scene.hasWorldLight)
+		scene.sun_direction = scene.lights[0].worldDirection;
+	else
+		scene.sun_direction = vec4(0, 0, 1, 0);
+
 	return scene;
 }
 
@@ -422,7 +436,7 @@ auto DLLEXPORT Render::DrawMeshes(PASS pass) -> void
 	drawMeshes(pass, meshes);
 }
 
-auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples) -> Texture *
+auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples, TEXTURE_TYPE type, bool mips) -> Texture *
 {
 	auto it = std::find_if(renderTextures.begin(), renderTextures.end(),
 		[width, height, format, msaaSamples](const RenderTexture& tex)
@@ -437,7 +451,9 @@ auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT 
 		return it->pointer.get();
 	}
 
-	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_POINT;
+	TEXTURE_CREATE_FLAGS flags = TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET | TEXTURE_CREATE_FLAGS::COORDS_WRAP | TEXTURE_CREATE_FLAGS::FILTER_TRILINEAR;
+	if (mips)
+		flags = flags | TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS;
 
 	switch (msaaSamples)
 	{
@@ -449,7 +465,7 @@ auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT 
 		default: LogWarning("Render::GetRenderTexture(): Unknown number of MSAA samples"); break;
 	}
 
-	SharedPtr<Texture> tex = RES_MAN->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, format, flags);
+	SharedPtr<Texture> tex = RES_MAN->CreateTexture(width, height, type, format, flags);
 
 	renderTextures.push_back({_core->frame(), 0, width, height, format, msaaSamples, tex });
 
@@ -458,33 +474,40 @@ auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT 
 
 auto DLLEXPORT Render::ReleaseRenderTexture(Texture* tex) -> void
 {
+	if (!tex) return;
 	std::for_each(renderTextures.begin(), renderTextures.end(), [tex](RenderTexture& t) { if (tex == t.pointer.get()) t.free = 1; });
 }
 
 auto DLLEXPORT Render::SetEnvironmentTexturePath(const char* path) -> void
 {
-	if (path == envirenmentTexturePath)
+	if (path == envirenmentHDRIPath)
 		return;
 
-	envirenmentTexturePath = path;
-	environmentTexture = RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
+	envirenmentHDRIPath = path;
+	environmentHDRI = RES_MAN->CreateStreamTexture(path, TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
 }
 
 auto DLLEXPORT Render::GetEnvironmentTexturePath() -> const char*
 {
-	return envirenmentTexturePath.c_str();
+	return envirenmentHDRIPath.c_str();
+}
+
+auto DLLEXPORT Render::SetEnvironmentType(ENVIRONMENT_TYPE type) -> void
+{
+	environmentType = static_cast<ENVIRONMENT_TYPE>(type);
 }
 
 void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
 {
 	uint32 timerID = uint32_t(_core->frame() % maxFrames);
-	uint32 dataTimerID = uint32_t((_core->frame() > maxFrames ? _core->frame() - 3: 0u) % maxFrames);
+	uint32 dataTimerID = uint32_t((_core->frame() > (int64_t)maxFrames ? _core->frame() - 3 : 0) % maxFrames);
 
 	CORE_RENDER->TimersBeginFrame(timerID);
 	CORE_RENDER->TimersBeginPoint(timerID, T_ALL_FRAME);
 
 	uint w, h;
 	CORE_RENDER->GetViewport(&w, &h);
+	CORE_RENDER->ResizeBuffersByViewort();
 
 	cameraProjUnjitteredMat_ = ProjMat;
 	cameraProjMat_ = ProjMat;
@@ -575,33 +598,73 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 
 	RenderScene scene = getRenderScene();
 
-	// write sky velocity
+	// Atmosphere
+	if (environmentType == ENVIRONMENT_TYPE::ATMOSPHERE)
 	{
-		Shader* shader = GetShader("sky_velocity.hlsl", planeMesh.get());
-		if (shader)
+		if (Shader *shader = GetShader("environment_cubemap.hlsl", planeMesh.get(), nullptr, LS_GEOMETRY))
 		{
-			CORE_RENDER->SetShader(shader);
+			environment = environmentAtmosphere;
 
-			CORE_RENDER->SetRenderTextures(1, &buffers.velocity, nullptr);
-			CORE_RENDER->Clear();
+			AtmosphereHash atmnnNextHash;
+			calculateAtmosphereHash(scene.sun_direction, atmnnNextHash);
 
-			mat4 m = cameraPrevViewMat_;
-			m.SetColumn3(3, vec3(0, 0, 0)); // remove translation
-			m = cameraPrevProjUnjitteredMat_ * cameraPrevViewMat_;
-			shader->SetMat4Parameter("VP_prev", &m);
+			if (!(atmnnNextHash == atmosphereHash))
+			{
+				atmosphereHash = atmnnNextHash;
 
-			m = ViewMat;
-			m.SetColumn3(3, vec3(0, 0, 0));
-			m = cameraProjUnjitteredMat_ * m;
-			m = m.Inverse();
-			shader->SetMat4Parameter("VP_inv", &m);
+				CORE_RENDER->SetRenderTextures(1, &environment, nullptr);
 
-			shader->FlushParameters();
+				uint w, h;
+				CORE_RENDER->GetViewport(&w, &h);
+				CORE_RENDER->SetViewport(environmentCubemapSize, environmentCubemapSize, 6);
 
-			CORE_RENDER->Draw(planeMesh.get(), 1);
+				CORE_RENDER->SetShader(shader);
+				CORE_RENDER->SetDepthTest(0);
 
-			CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
+				shader->SetVec4Parameter("sun_direction", &scene.sun_direction);
+				shader->FlushParameters();
+
+				CORE_RENDER->Draw(planeMesh.get(), 6);
+
+				CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
+				CORE_RENDER->SetViewport(w, h);
+
+				environment->CreateMipmaps();
+			}
 		}
+		else
+		{
+			environment = environmentHDRI.get();
+		}
+	}else
+	{
+		environment = environmentHDRI.get();
+	}
+
+	// Sky velocity
+	if (Shader *shader = GetShader("sky_velocity.hlsl", planeMesh.get()))
+	{
+		CORE_RENDER->SetShader(shader);
+
+		CORE_RENDER->SetRenderTextures(1, &buffers.velocity, nullptr);
+		CORE_RENDER->Clear();
+
+		mat4 m = cameraPrevViewMat_;
+		m.SetColumn3(3, vec3(0, 0, 0)); // remove translation
+		m = cameraPrevProjUnjitteredMat_ * cameraPrevViewMat_;
+		shader->SetMat4Parameter("VP_prev", &m);
+
+		m = ViewMat;
+		m.SetColumn3(3, vec3(0, 0, 0));
+		m = cameraProjUnjitteredMat_ * m;
+		m = m.Inverse();
+		shader->SetMat4Parameter("VP_inv", &m);
+
+		shader->FlushParameters();
+
+		CORE_RENDER->Draw(planeMesh.get(), 1);
+
+		CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
 	}
 
 	// G-buffer
@@ -698,6 +761,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 		CORE_RENDER->TimersBeginPoint(timerID, T_COMPOSITE);
 
 		compositeMaterial->SetDef("specular_quality", specualrQuality);
+		compositeMaterial->SetDef("environment_type", static_cast<int>(environmentType));
 		
 		if (auto shader = compositeMaterial->GetShader(planeMesh.get()))
 		{
@@ -706,9 +770,9 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 			CORE_RENDER->SetShader(shader);
 
 			vec4 environment_resolution;
-			environment_resolution.x = float(environmentTexture.get()->GetWidth());
-			environment_resolution.y = float(environmentTexture.get()->GetHeight());
-			environment_resolution.z = float(environmentTexture.get()->GetMipmaps());
+			environment_resolution.x = float(environment->GetWidth());
+			environment_resolution.y = float(environment->GetHeight());
+			environment_resolution.z = float(environment->GetMipmaps());
 			shader->SetVec4Parameter("environment_resolution", &environment_resolution);
 
 			vec4 environment_intensity;
@@ -719,6 +783,14 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 			shader->SetVec4Parameter("camera_position", &cameraWorldPos_);
 
 			shader->SetMat4Parameter("camera_view_projection_inv", &cameraViewProjectionInvMat_);
+
+			vec4 sun_disrection = vec4(0, 0, 1, 0);
+			if (scene.hasWorldLight)
+			{
+				//RenderVector(scene.lights[0].worldDirection, vec4(1, 0, 0, 1));
+				sun_disrection = scene.lights[0].worldDirection;
+			}
+			shader->SetVec4Parameter("sun_disrection", &sun_disrection);
 
 			shader->FlushParameters();
 
@@ -732,7 +804,7 @@ void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat
 				buffers.diffuseLight,
 				buffers.specularLight,
 				buffers.depth,
-				environmentTexture.get()
+				environment
 			};
 
 			CORE_RENDER->BindTextures(tex_count, texs);
@@ -1064,6 +1136,11 @@ void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
 	}
 }
 
+void Render::calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash)
+{
+	memcpy(&hash, &sun_direction, 4 * 3);
+}
+
 std::string Render::getString(uint i)
 {
 	switch (i)
@@ -1073,12 +1150,13 @@ std::string Render::getString(uint i)
 		case 2: return "Lights GPU: " + std::to_string(lightsMs); break;
 		case 3: return "Composite GPU: " + std::to_string(compositeMs); break;
 	}
+	return "";
 }
 
 void Render::Init()
 {
-	envirenmentTexturePath = TEXTURES_DIR"cube_room.dds";
-	environmentTexture = RES_MAN->CreateStreamTexture(envirenmentTexturePath.c_str(), TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
+	envirenmentHDRIPath = TEXTURES_DIR"cube_room.dds";
+	environmentHDRI = RES_MAN->CreateStreamTexture(envirenmentHDRIPath.c_str(), TEXTURE_CREATE_FLAGS::GENERATE_MIPMAPS);
 
 	fontTexture = RES_MAN->CreateStreamTexture(TEXTURES_DIR"font.dds", TEXTURE_CREATE_FLAGS::NONE);
 	planeMesh = RES_MAN->CreateStreamMesh("std#plane");
@@ -1102,6 +1180,8 @@ void Render::Init()
 		CORE_RENDER->CreateTimer();
 
 	_core->AddProfilerCallback(this);
+
+	environmentAtmosphere = GetRenderTexture(environmentCubemapSize, environmentCubemapSize, TEXTURE_FORMAT::RGBA16F, 1, TEXTURE_TYPE::TYPE_CUBE, true);
 
 	Log("Render initialized");
 }
@@ -1127,8 +1207,9 @@ void Render::Update()
 
 void Render::Free()
 {
+	ReleaseRenderTexture(environmentAtmosphere);
 	delete whiteTexture;
-	environmentTexture.release();
+	environmentHDRI.release();
 	records.clear();
 	lineMesh.release();
 	fontTexture.release();

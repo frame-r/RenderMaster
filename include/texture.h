@@ -21,4 +21,5 @@ public:
 	auto DLLEXPORT GetMipmaps() -> int;
 	auto DLLEXPORT ReadPixel2D(void *data, int x, int y) -> int;
 	auto DLLEXPORT GetData(uint8_t* pDataOut, size_t length) -> void;
+	auto DLLEXPORT CreateMipmaps() -> void;
 };

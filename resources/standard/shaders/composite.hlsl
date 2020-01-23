@@ -1,7 +1,8 @@
 #include "common.hlsli"
 #include "vertex_post.hlsli"
+#include "atmosphere.hlsli"
 
-//#define WHITE_BAKGROUND
+//#define WHITE_BAKGROUND 
 
 
 #ifdef ENG_SHADER_PIXEL
@@ -27,6 +28,7 @@
 		float4 camera_position;
 		float4x4 camera_view_projection_inv;
 		float4x4 camera_view_inv;
+		float4 sun_disrection;
 	};
 
 	float4 mainFS(VS_OUT fs_input, float4 screenPos : SV_Position) : SV_Target0
@@ -155,9 +157,8 @@
 				diffuseEnv += dot(N, sample5) * texture_environment.SampleLevel(sampler_environment, sample5, ambientlMip).rgb;
 			#endif
 			
-			diffuseEnv *= albedo / (ambientSampels);
+			diffuseEnv *= albedo / float(ambientSampels);
 		}
-
 
 		//
 		// Environment + lights
@@ -172,8 +173,12 @@
 		
 		#ifdef WHITE_BAKGROUND
 			float3 bkg = float3(0.5, 0.5, 0.5);
-		#else
-			float3 bkg = texture_environment.SampleLevel(sampler_environment, -V, 0).rgb;
+		#else			
+			#ifdef ENVIREMENT_TYPE_CUBEMAP
+				float3 bkg = texture_environment.SampleLevel(sampler_environment, -V, 0).rgb;
+			#elif ENVIREMENT_TYPE_ATMOSPHERE
+				float3 bkg = get_atm(-V.xzy, sun_disrection.xzy);
+			#endif
 		#endif
 		
 		color = lerp(color, bkg, float(depth == 1.0f));

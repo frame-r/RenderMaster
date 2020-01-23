@@ -242,6 +242,15 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(timer, &QTimer::timeout, []() { updateMenuButtons(); });
 	timer->start(700);
 
+	progressBar = new QProgressBar(ui->statusBar);
+	ui->statusBar->addPermanentWidget(progressBar);
+	progressBar->setMinimum(0);
+	progressBar->setMaximum(100);
+	progressBar->setValue(0);
+	progressBar->setAlignment(Qt::AlignRight);
+	progressBar->setMaximumSize(120, 16);
+	progressBar->setTextVisible(false);
+	progressBar->setHidden(true);
 }
 
 //void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -286,6 +295,30 @@ Settings *MainWindow::GetSettings()
 	WindowData& data = _windows[SETTINGS];
 	Settings *s = static_cast<Settings*>(data.w);
 	return s;
+}
+
+void MainWindow::SetProgressBar(int progress)
+{
+	if (progressBar)
+	{
+		if (progress_ != progress)
+		{
+			progress_ = progress;
+			progressBar->setValue(progress);
+		}
+	}
+}
+
+void MainWindow::HideProgressBar()
+{
+	if (progressBar)
+		progressBar->setHidden(true);
+}
+
+void MainWindow::ShowProgressBar()
+{
+	if (progressBar)
+		progressBar->setHidden(false);
 }
 
 void MainWindow::closeEvent(QCloseEvent* e)

@@ -41,6 +41,12 @@ void Settings::OnEngineInit(Core *c)
 {
 	Render *render = editor->core->GetRender();
 
+	_connections.emplace_back(connect(ui->env_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int idx)->void
+	{
+		Render *render = editor->core->GetRender();
+		render->SetEnvironmentType(static_cast<ENVIRONMENT_TYPE>(ui->env_cb->currentIndex()));
+	}));
+
 	_connections.emplace_back(connect(ui->diffuse_env_sl, &QSlider::valueChanged, this, &Settings::sliderOChanged, Qt::DirectConnection));
 	_connections.emplace_back(connect(ui->specular_env_sl, &QSlider::valueChanged, this, &Settings::slider1Changed, Qt::DirectConnection));
 	_connections.emplace_back(connect(ui->spec_quality_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int idx)->void
@@ -91,11 +97,10 @@ void Settings::OnEngineInit(Core *c)
 	setLabel(ui->specular_env_l, render->GetSpecularEnvironemnt());
 
 	ui->spec_quality_cb->setCurrentIndex(render->GetSpecularQuality());
-
+	ui->env_cb->setCurrentIndex(static_cast<int>(render->GetEnvironmentType()));
 	ui->taa_cb->setChecked(render->IsTAA());
 	ui->wireframe_aa->setChecked(render->IsWireframeAA());
 	ui->wireframe_->setChecked(render->IsWireframe());
-
 	ui->env_le->setText(render->GetEnvironmentTexturePath());
 }
 

@@ -20,6 +20,26 @@ enum TIMER_ID
 	T_ALL_FRAME
 };
 
+enum LOAD_SHADER_FLAGS
+{
+	LS_NONE = 0,
+	LS_GEOMETRY = 1,
+};
+
+struct AtmosphereHash
+{
+	uint32_t value[3];
+
+	bool operator==(const AtmosphereHash& r)
+	{
+		return memcmp(&r, value, sizeof(AtmosphereHash)) == 0;
+	}
+	void operator=(const AtmosphereHash& r)
+	{
+		memcpy(&value, &r.value, sizeof(AtmosphereHash));
+	}
+};
+
 class Render : public IProfilerCallback
 {
 	struct RenderBuffers
@@ -55,6 +75,7 @@ class Render : public IProfilerCallback
 		std::vector<RenderMesh> meshes;
 		std::vector<RenderLight> lights;
 		bool hasWorldLight;
+		vec4 sun_direction;
 	};
 
 	// Frame data
@@ -85,9 +106,6 @@ class Render : public IProfilerCallback
 	ManagedPtr<Mesh> gridMesh;
 	ManagedPtr<Mesh> lineMesh;
 
-	std::string envirenmentTexturePath;
-	ManagedPtr<Texture> environmentTexture;
-
 	Material* compositeMaterial{};
 	Material* finalPostMaterial{};
 
@@ -98,8 +116,6 @@ class Render : public IProfilerCallback
 	};
 	std::vector<RenderVector> renderVectors;
 
-	float diffuseEnvironemnt{1.0f};
-	float specularEnvironemnt{1.0f};
 	int specualrQuality{};
 	VIEW_MODE viewMode{VIEW_MODE::FINAL};
 	float debugParam{1};
@@ -108,6 +124,16 @@ class Render : public IProfilerCallback
 	bool taa{true};
 	bool wireframeAA{false};
 	bool wireframe{false};
+
+	ENVIRONMENT_TYPE environmentType{ENVIRONMENT_TYPE::CUBEMAP};
+	const int environmentCubemapSize = 256;
+	AtmosphereHash atmosphereHash{};
+	Texture *environment;
+	std::string envirenmentHDRIPath;
+	ManagedPtr<Texture> environmentHDRI;
+	Texture *environmentAtmosphere;
+	float diffuseEnvironemnt{ 1.0f };
+	float specularEnvironemnt{ 1.0f };
 
 	std::vector<RenderMesh> getRenderMeshes();
 	RenderScene getRenderScene();
@@ -120,7 +146,9 @@ class Render : public IProfilerCallback
 	float compositeMs;
 	float frameMs;
 
+	void calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash);
 public:
+
 	// IProfilerCallback
 	uint getNumLines() override { return 4; }
 	std::string getString(uint i) override;
@@ -134,12 +162,12 @@ public:
 	void ExchangePrevRenderTexture(Texture *prev, Texture *some);
 
 public:
-	auto DLLEXPORT GetShader(const char* path, Mesh* meshattrib = nullptr, const std::vector<std::string>& defines = std::vector<std::string>()) -> Shader*;
-	auto DLLEXPORT GetComputeShader(const char* path, const std::vector<std::string>& defines) -> Shader*;
+	auto DLLEXPORT GetShader(const char* path, Mesh* meshattrib = nullptr, const std::vector<std::string>* defines = nullptr, LOAD_SHADER_FLAGS flags = LS_NONE) -> Shader*;
+	auto DLLEXPORT GetComputeShader(const char* path, const std::vector<std::string>* defines) -> Shader*;
 	auto DLLEXPORT ReloadShaders() -> void;
 	auto DLLEXPORT RenderGUI() -> void;
 	auto DLLEXPORT DrawMeshes(PASS pass) -> void;
-	auto DLLEXPORT GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples = 0) -> Texture*;
+	auto DLLEXPORT GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples = 0, TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D, bool mips = false) -> Texture*;
 	auto DLLEXPORT ReleaseRenderTexture(Texture *tex) -> void;
 	auto DLLEXPORT RenderVector(const vec3& end, const vec4& c) -> void { renderVectors.push_back({c, end}); }
 
@@ -159,6 +187,8 @@ public:
 	auto DLLEXPORT SetWireframe(bool value) -> void { wireframe = value; }
 	auto DLLEXPORT SetEnvironmentTexturePath(const char* path) -> void;
 	auto DLLEXPORT GetEnvironmentTexturePath() -> const char*;
+	auto DLLEXPORT GetEnvironmentType() const -> ENVIRONMENT_TYPE { return static_cast<ENVIRONMENT_TYPE>(environmentType); }
+	auto DLLEXPORT SetEnvironmentType(ENVIRONMENT_TYPE type) -> void;
 
 	// debug
 	auto DLLEXPORT SetDebugParam(float v) -> void { debugParam = v; }

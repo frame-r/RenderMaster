@@ -24,9 +24,15 @@ static ID3D11Device* getDevice()
 	return dxRender->getDevice();
 }
 
-DX11Texture::DX11Texture(ID3D11Resource *res, ID3D11SamplerState *sampler, ID3D11ShaderResourceView *srv, ID3D11RenderTargetView * rtv, ID3D11DepthStencilView *dsv, ID3D11UnorderedAccessView* uav, TEXTURE_FORMAT format)
- : _resource(res), _sampler(sampler), _shaderView(srv), _renderTargetView(rtv), _depthStencilView(dsv), _unorderedAccessView(uav), _format(format)
+DX11Texture::DX11Texture(ID3D11Resource *res, ID3D11SamplerState *sampler,
+						 ID3D11ShaderResourceView *srv, ID3D11RenderTargetView* rtv, ID3D11DepthStencilView* dsv, ID3D11UnorderedAccessView* uav,
+						 TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags_, TEXTURE_TYPE type_)
+ : _resource(res), _sampler(sampler), _shaderView(srv),
+	_unorderedAccessView(uav), _format(format), flags(flags_), type(type_)
 {
+	_renderTargetView = rtv;
+	_depthStencilView = dsv;
+
 	// TODO make other types!
 	ID3D11Texture2D *tex2D = static_cast<ID3D11Texture2D*>(res);
 	tex2D->GetDesc(&_desc);
@@ -41,10 +47,62 @@ DX11Texture::~DX11Texture()
 {
 	if (_resource) { _resource->Release(); _resource = nullptr;	}
 	if (_sampler) { _sampler->Release(); _sampler = nullptr;	}
-	if (_shaderView) { _shaderView->Release(); _shaderView = nullptr;	}
-	if (_renderTargetView) { _renderTargetView->Release(); _renderTargetView = nullptr;	}
+	if (_shaderView) { _shaderView->Release(); _shaderView = nullptr; }
+	if (_renderTargetView) {_renderTargetView->Release(); _renderTargetView = nullptr; }
 	if (_depthStencilView) { _depthStencilView->Release(); _depthStencilView = nullptr;	}
 	if (_unorderedAccessView) { _unorderedAccessView->Release(); _unorderedAccessView = nullptr;	}
+}
+
+ID3D11RenderTargetView* DX11Texture::rtView()
+{
+	if (_renderTargetView)
+		return _renderTargetView;
+
+	assert(int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET) && isColorFormat(_format));
+
+	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+	renderTargetViewDesc.Format = _desc.Format;
+	if (type == TEXTURE_TYPE::TYPE_CUBE)
+	{
+		renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+		renderTargetViewDesc.Texture2DArray.ArraySize = 6;
+		renderTargetViewDesc.Texture2DArray.FirstArraySlice = 0;
+		renderTargetViewDesc.Texture2DArray.MipSlice = 0;
+	}
+	else
+	{
+		renderTargetViewDesc.ViewDimension = _desc.SampleDesc.Count > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+		renderTargetViewDesc.Texture2D.MipSlice = 0;
+	}
+
+	if (FAILED(getDevice()->CreateRenderTargetView(_resource, &renderTargetViewDesc, &_renderTargetView)))
+	{
+		LogCritical("DX11CoreRender::CreateTexture(): can't create render target view\n");
+		return nullptr;
+	}
+	return _renderTargetView;
+}
+
+ID3D11DepthStencilView* DX11Texture::dsView()
+{
+	if (_depthStencilView)
+		return _depthStencilView;
+
+	assert(int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET) && !isColorFormat(_format) && type != TEXTURE_TYPE::TYPE_CUBE);
+	
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+	dsvDesc.Flags = 0;
+	dsvDesc.Format = engToD3DDSVFormat(_format);
+	dsvDesc.ViewDimension = _desc.SampleDesc.Count > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Texture2D.MipSlice = 0;
+
+	if (FAILED(getDevice()->CreateDepthStencilView(_resource, &dsvDesc, &_depthStencilView)))
+	{
+		LogCritical("DX11CoreRender::CreateTexture(): can't create depth stencil view\n");
+		return nullptr;
+	}
+
+	return _depthStencilView;
 }
 
 auto DX11Texture::GetVideoMemoryUsage() -> size_t
@@ -128,6 +186,11 @@ auto DX11Texture::ReadPixel2D(void *data, int x, int y) -> int
 auto DX11Texture::GetData(uint8_t* pDataOut, size_t length) -> void
 {
 	getData(pDataOut, length);
+}
+
+auto DX11Texture::CreateMipmaps() -> void
+{
+	getContext()->GenerateMips(_shaderView);
 }
 
 size_t BitsPerPixel(_In_ DXGI_FORMAT fmt)

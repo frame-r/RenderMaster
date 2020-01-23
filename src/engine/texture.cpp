@@ -100,3 +100,8 @@ auto DLLEXPORT Texture::GetData(uint8_t* pDataOut, size_t length) -> void
 {
 	return coreTexture_->GetData(pDataOut, length);
 }
+
+auto DLLEXPORT Texture::CreateMipmaps() -> void
+{
+	coreTexture_->CreateMipmaps();
+}

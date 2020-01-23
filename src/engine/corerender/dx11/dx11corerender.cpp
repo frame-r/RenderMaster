@@ -850,41 +850,7 @@ auto DX11CoreRender::CreateTexture(const uint8 *pData, uint width, uint height, 
 		_context->GenerateMips(srv);
 
 	// RTV or DSV
-	ID3D11RenderTargetView *rtv{};
-	ID3D11DepthStencilView *dsv{};
-	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET))
-	{
-		if (isColorFormat(format))
-		{
-			D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-			renderTargetViewDesc.Format = desc.Format;
-			renderTargetViewDesc.ViewDimension = desc.SampleDesc.Count > 1 ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
-			renderTargetViewDesc.Texture2D.MipSlice = 0;
-
-			if (FAILED(_device->CreateRenderTargetView(tex, &renderTargetViewDesc, &rtv)))
-			{
-				tex->Release();
-				srv->Release();
-				LogCritical("DX11CoreRender::CreateTexture(): can't create render target view\n");
-				return nullptr;
-			}
-		} else
-		{
-			D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-			dsvDesc.Flags = 0;
-			dsvDesc.Format = engToD3DDSVFormat(format);
-			dsvDesc.ViewDimension = desc.SampleDesc.Count > 1 ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
-			dsvDesc.Texture2D.MipSlice = 0;
-
-			if (FAILED(_device->CreateDepthStencilView(tex, &dsvDesc, &dsv)))
-			{
-				tex->Release();
-				srv->Release();
-				LogCritical("DX11CoreRender::CreateTexture(): can't create depth stencil view\n");
-				return nullptr;
-			}
-		}
-	}
+	// on demand in texture
 
 	ID3D11UnorderedAccessView* uav{};
 	if (int(flags & TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS))
@@ -898,14 +864,12 @@ auto DX11CoreRender::CreateTexture(const uint8 *pData, uint width, uint height, 
 		{
 			tex->Release();
 			srv->Release();
-			if (rtv)
-				rtv->Release();
 			LogCritical("DX11CoreRender::CreateTexture(): can't create UAV\n");
 			return nullptr;
 		}
 	}
 
-	DX11Texture *dxTex = new DX11Texture(tex, sampler, srv, rtv, dsv, uav, format);
+	DX11Texture *dxTex = new DX11Texture(tex, sampler, srv, nullptr, nullptr, uav, format, flags, type);
 	return dxTex;
 }
 
@@ -1201,10 +1165,10 @@ auto DX11CoreRender::SetRenderTextures(int units, Texture **textures, Texture *d
 	{
 		for(int i = 0; i < units; i++)
 		{
-			Texture *tt = *(textures + i);
-			DX11Texture *t = static_cast<DX11Texture*>(tt->GetCoreTexture());
-			renderTargetViews[i] = t->rtView();
-			state_.renderTargets[i] = tt;
+			Texture *tex = *(textures + i);
+			DX11Texture *dx11tex = static_cast<DX11Texture*>(tex->GetCoreTexture());
+			renderTargetViews[i] = dx11tex->rtView();
+			state_.renderTargets[i] = tex;
 		}
 	}
 
@@ -1408,35 +1372,53 @@ auto DX11CoreRender::GetViewport(uint * w, uint * h) -> void
 	*h = state_.heigth;
 }
 
-auto DX11CoreRender::SetViewport(int newWidth, int newHeight) -> void
+auto DX11CoreRender::SetViewport(int newWidth, int newHeight, int count) -> void
 {
 	if (newWidth < 1 || newHeight < 1)
 		return;
-
-	if (surface->w != newWidth || surface->h != newHeight)
-	{
-		surface->color = nullptr;
-		surface->depth = nullptr;
-
-		ThrowIfFailed(surface->swapChain->ResizeBuffers(1, newWidth, newHeight, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
-
-		createCurrentSurface(newWidth, newHeight);
-
-		bindSurface();
-	}
 
 	if (state_.width != newWidth || state_.heigth != newHeight)
 	{
 		state_.width = newWidth;
 		state_.heigth = newHeight;
 
-		D3D11_VIEWPORT dxViewport{};
-		dxViewport.Height = (float)newHeight;
-		dxViewport.Width = (float)newWidth;
-		dxViewport.MinDepth = MIN_DEPTH;
-		dxViewport.MaxDepth = MAX_DEPTH;
+		D3D11_VIEWPORT dxViewport[8]{};
+		D3D11_RECT scissors[8]{};
 
-		_context->RSSetViewports(1, &dxViewport);
+		for (int i = 0; i < count; i++)
+		{
+			dxViewport[i].Height = (float)newHeight;
+			dxViewport[i].Width = (float)newWidth;
+			dxViewport[i].MinDepth = MIN_DEPTH;
+			dxViewport[i].MaxDepth = MAX_DEPTH;
+
+			scissors->left = 0;
+			scissors->top = 0;
+			scissors->right = newWidth;
+			scissors->bottom = newHeight;
+		}
+		_context->RSSetViewports(count, dxViewport);
+
+		D3D11_RECT s[8];
+		UINT c = 8;
+		_context->RSGetScissorRects(&c, s);
+		int y = 9;
+		//_context->RSSetScissorRects(count, scissors);
+	}
+}
+
+auto DX11CoreRender::ResizeBuffersByViewort() -> void
+{
+	if (surface->w != state_.width || surface->h != state_.heigth)
+	{
+		surface->color = nullptr;
+		surface->depth = nullptr;
+
+		ThrowIfFailed(surface->swapChain->ResizeBuffers(1, state_.width, state_.heigth, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
+
+		createCurrentSurface(state_.width, state_.heigth);
+
+		bindSurface();
 	}
 }
 
@@ -1479,7 +1461,7 @@ auto DX11CoreRender::TimersBeginPoint(uint32_t timerID, uint32_t pointID) -> voi
 	Timer& timer = timers[timerID];
 	if (pointID >= timer.TimerPoints.size())
 	{
-		for (uint32_t i = timer.TimerPoints.size(); i <= pointID; ++i)
+		for (size_t i = timer.TimerPoints.size(); i <= pointID; ++i)
 		{
 			D3D11_QUERY_DESC desc{};
 			desc.Query = D3D11_QUERY_TIMESTAMP;
@@ -1598,8 +1580,8 @@ void DX11CoreRender::createCurrentSurface(int w, int h)
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	ThrowIfFailed(_device->CreateSamplerState(&sampDesc, &sampler));
 
-	DX11Texture *dxTex = new DX11Texture(tex, nullptr, nullptr, rtv, nullptr, nullptr, TEXTURE_FORMAT::RGBA8);
-	DX11Texture *dxDepthTex = new DX11Texture(depthTex, sampler, srv, nullptr, dsv, nullptr, TEXTURE_FORMAT::D24S8);
+	DX11Texture *dxTex = new DX11Texture(tex, nullptr, nullptr, rtv, nullptr, nullptr, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::NONE, TEXTURE_TYPE::TYPE_2D);
+	DX11Texture *dxDepthTex = new DX11Texture(depthTex, sampler, srv, nullptr, dsv, nullptr, TEXTURE_FORMAT::D24S8, TEXTURE_CREATE_FLAGS::NONE, TEXTURE_TYPE::TYPE_2D);
 
 	surface->w = w;
 	surface->h = h;

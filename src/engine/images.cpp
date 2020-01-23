@@ -529,7 +529,7 @@ static void saveToDDS(const char* path, uint width, uint height, const uint8_t* 
 		if (newHeight * 2 == h)
 			defines.push_back("Y_EVEN");
 
-		Shader* shader = RENDER->GetComputeShader("mipmap.hlsl", defines);
+		Shader* shader = RENDER->GetComputeShader("mipmap.hlsl", &defines);
 		if (shader)
 		{
 			CORE_RENDER->SetShader(shader);

@@ -10,6 +10,8 @@
 #include "treenode.h"
 #include "manipulators/manipulatortranslator.h"
 #include "manipulators/manipulatorrotator.h"
+#include "consolewidget.h"
+#include <qstatusbar.h>
 
 #define upd_interv 1.0f
 #define timer_interval 16
@@ -21,6 +23,7 @@
 		return; \
 	}
 
+static std::thread importThread;
 
 EditorCore *editor;
 
@@ -33,6 +36,7 @@ EditorCore::EditorCore(QApplication& app) : app_(app)
 	obj_to_treenode[nullptr] = rootNode;
 
 	timer = new QTimer(this);
+	timerEditorGUI = new QTimer(this);
 	window = new MainWindow;
 
 	connect(&app_, &QGuiApplication::applicationStateChanged, this, &EditorCore::OnAppStateChanged);
@@ -63,19 +67,27 @@ EditorCore::~EditorCore()
 void EditorCore::Init()
 {
 	connect(timer, SIGNAL(timeout()), this, SLOT(OnTimer()));
+	connect(timerEditorGUI, SIGNAL(timeout()), this, SLOT(OnTimerEditorGUI()));
+	timerEditorGUI->start(500);
 
 	window->show();
 
 	// load engine at start
 	LoadEngine();
+
+	importThread = std::thread(ImportThread::Init);
 }
 
 void EditorCore::Free()
 {
+	ImportThread::Free();
+	importThread.join();
+
 	UnloadEngine();
 
 	delete window;
 	delete timer;
+	delete timerEditorGUI;
 }
 
 void EditorCore::LoadEngine()
@@ -129,7 +141,28 @@ void EditorCore::UnloadEngine()
 void EditorCore::ReloadShaders()
 {
 	CHECK_ENGINE
-	core->GetRender()->ReloadShaders();
+			core->GetRender()->ReloadShaders();
+}
+
+void EditorCore::Log(const char *message)
+{
+	CHECK_ENGINE
+	//core->_Log(LOG_TYPE::NORMAL, "%s", message);
+}
+
+void EditorCore::RunImportFileTask(const QString& path)
+{
+	ImportThread::AddTask(path);
+}
+
+void EditorCore::SetProgerssBar(int progress)
+{
+	window->SetProgressBar(progress);
+}
+
+void EditorCore::SetProgressBarMessage(const QString &message)
+{
+	window->statusBar()->showMessage(message);
 }
 
 //void EditorCore::ReloadCoreRender()
@@ -181,35 +214,7 @@ void EditorCore::CloneSelectedGameObject()
 void EditorCore::DestroyGameObject(GameObject *obj)
 {
 	CHECK_ENGINE
-
 	resMan->DestroyObject(obj);
-
-	//auto it = obj_to_treenode.find(obj);
-	//if (it == obj_to_treenode.end())
-	//{
-	//	qDebug() << "it should not be happened";
-	//	return;
-	//}
-	//
-	//TreeNode *node = *it;
-	//if (!node || node == rootNode)
-	//	return;
-	//
-	//if (obj->GetParent() == nullptr)
-	//	resMan->RemoveObject(obj);
-	//else
-	//	obj->GetParent()->RemoveChild(obj);
-	//
-	//emit OnObjectRemoved(node);
-	//
-	////TreeNode *parent = node->parentNode();
-	////parent->removeChild(node->row());
-	//
-	//delete obj;
-	//delete node;
-
-	//obj_to_treenode.erase(it);
-	//qDebug() << "obj_to_treenode.size()=" << editor->obj_to_treenode.size();
 }
 
 void EditorCore::onEngineObejctAdded(GameObject *obj)
@@ -362,23 +367,8 @@ void EditorCore::OnTimer()
 	if (!IsEngineLoaded() || !isActive)
 		return;
 
-	//static float accum = 0.0f;
-
 	std::chrono::duration<float> _durationSec = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - start);
 	float dt = _durationSec.count();
-
-	//accum += dt;
-
-	//if (accum > upd_interv)
-	//{
-	//	accum = 0.0f;
-	//	int fps = static_cast<int>(1.0f / dt);
-	//	std::string fps_str = std::to_string(fps);
-	//	std::wstring fps_strw = std::wstring(L"Test [") + std::wstring(fps_str.begin(), fps_str.end()) + std::wstring(L"]");
-	//	static char buf[40];
-	//	//sprintf(buf, "FPS = %i", fps);
-	//   // pCore->Log(buf, RENDER_MASTER::LOG_TYPE::NORMAL);
-	//}
 
 	start = std::chrono::steady_clock::now();
 
@@ -386,6 +376,28 @@ void EditorCore::OnTimer()
 
 	emit OnUpdate(dt); // all editor-related logic updates
 	emit OnRender();
+}
+
+void EditorCore::OnTimerEditorGUI()
+{
+	if (ConsoleWidget::getInstance())
+		ConsoleWidget::getInstance()->ProcessMessageQueue();
+
+	int progress = ImportThread::GetImportProgress();
+	if (progressBarLastValue != progress)
+	{
+		if (progress >= 100)
+		{
+			progressBarLastValue = 0;
+			window->HideProgressBar();
+		}
+		else {
+			if (progressBarLastValue<=0)
+				window->ShowProgressBar();
+			window->SetProgressBar(progress);
+			progressBarLastValue = progress;
+		}
+	}
 }
 
 void EditorCore::OnAppStateChanged(Qt::ApplicationState state)

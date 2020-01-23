@@ -11,31 +11,46 @@
 #define IOS_REF (*(pManager->GetIOSettings()))
 #endif
 
-const int fbxDebug = 1;
+struct ProgressContext
+{
+	ProgressCallback callback{};
+	int meshes{};
+	float totalMeshesInv{};
+	int totalMeshes{};
+};
 
-bool _FBX_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
-void _FBX_load_scene_hierarchy(FbxScene* pScene, const char *pFullPath, const char *pRelativePath);
-void _FBX_load_node(FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath, int& meshes);
-void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath);
-void _FBX_skip_loading(const char *node, const char *name);
+bool fbx_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename);
+void fbx_load_scene_hierarchy(FbxScene* pScene, const char *pFullPath, const char *pRelativePath, ProgressContext& progress);
+void fbx_count_meshes(FbxNode* pScene, int& meshes);
+void fbx_load_node(FbxNode* pNode, int pDepth, const char *pFullPath, const char *pRelativePath, ProgressContext& progress);
+void fbx_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *pFullPath, const char *pRelativePath, ProgressContext& progress);
+void fbx_skip_loading(const char *node, const char *name);
 
+constexpr bool fbxDebug = false;
 
-void importFbx(const char * path)
+template<typename... Arguments>
+void LogFbxVerbose(Arguments ...args)
+{
+	if (fbxDebug)
+		Log(args...);
+}
+
+void importFbx(const char * path, ProgressCallback callback)
 {
 	FbxManager* lSdkManager = NULL;
 	FbxScene* lScene = NULL;
 
-	if (fbxDebug) Log("Initializing FBX SDK...");
+	LogFbxVerbose("Initializing FBX SDK...");
 
 	lSdkManager = FbxManager::Create();
 
 	if (!lSdkManager)
 	{
-		if (fbxDebug) LogCritical("Error: Unable to create FBX Manager!");
+		LogFbxVerbose("Error: Unable to create FBX Manager!");
 		return;
 	}
 
-	if (fbxDebug) Log("Autodesk FBX SDK version %s", lSdkManager->GetVersion());
+	LogFbxVerbose("Autodesk FBX SDK version %s", lSdkManager->GetVersion());
 
 	FbxIOSettings* ios = FbxIOSettings::Create(lSdkManager, IOSROOT);
 	lSdkManager->SetIOSettings(ios);
@@ -53,20 +68,29 @@ void importFbx(const char * path)
 
 	FbxString lFilePath(path);
 
-	Log("Loading file: %s", lFilePath.Buffer());
+	LogFbxVerbose("Loading file: %s", lFilePath.Buffer());
 
-	bool lResult = _FBX_load_scene(lSdkManager, lScene, lFilePath.Buffer());
-
+	bool lResult = fbx_load_scene(lSdkManager, lScene, lFilePath.Buffer());
 	if (!lResult)
+	{
 		LogCritical("An error occurred while loading the scene");
-	else
-		_FBX_load_scene_hierarchy(lScene, path, path);
+		LogFbxVerbose("Destroying FBX SDK...");
+		if (lSdkManager) lSdkManager->Destroy();
+	}
 
-	if (fbxDebug) Log("Destroying FBX SDK...");
+	ProgressContext progressCtx;
+	progressCtx.callback = callback;
+	FbxNode* lRootNode = lScene->GetRootNode();
+	fbx_count_meshes(lRootNode, progressCtx.totalMeshes);
+	progressCtx.totalMeshesInv = progressCtx.totalMeshes ? 1.0f / progressCtx.totalMeshes : 1.0f;
+
+	fbx_load_scene_hierarchy(lScene, path, path, progressCtx);
+
+	LogFbxVerbose("Destroying FBX SDK...");
 	if (lSdkManager) lSdkManager->Destroy();
 }
 
-bool _FBX_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename)
+bool fbx_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFilename)
 {
 	int lFileMajor, lFileMinor, lFileRevision;
 	int lSDKMajor, lSDKMinor, lSDKRevision;
@@ -97,19 +121,19 @@ bool _FBX_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFil
 		return false;
 	}
 
-	if (fbxDebug) Log("FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
+	LogFbxVerbose("FBX file format version for this FBX SDK is %d.%d.%d", lSDKMajor, lSDKMinor, lSDKRevision);
 
 	if (lImporter->IsFBX())
 	{
-		if (fbxDebug) Log("FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
+		LogFbxVerbose("FBX file format version for file '%s' is %d.%d.%d", pFilename, lFileMajor, lFileMinor, lFileRevision);
 
 		// From this point, it is possible to access animation stack information without
 		// the expense of loading the entire file.
 		lAnimStackCount = lImporter->GetAnimStackCount();
 
-		if (fbxDebug) Log("Animation Stack Information:");
-		if (fbxDebug) Log("Number of Animation Stacks: %d", lAnimStackCount);
-		if (fbxDebug) Log("Current Animation Stack: \"%s\"", lImporter->GetActiveAnimStackName().Buffer());
+		LogFbxVerbose("Animation Stack Information:");
+		LogFbxVerbose("Number of Animation Stacks: %d", lAnimStackCount);
+		LogFbxVerbose("Current Animation Stack: \"%s\"", lImporter->GetActiveAnimStackName().Buffer());
 
 		// Set the import states. By default, the import states are always set to 
 		// true. The code below shows how to change these states.
@@ -133,18 +157,36 @@ bool _FBX_load_scene(FbxManager* pManager, FbxDocument* pScene, const char* pFil
 	return lStatus;
 }
 
-void _FBX_load_scene_hierarchy(FbxScene *pScene, const char *pFullPath, const char *path)
+void fbx_load_scene_hierarchy(FbxScene *pScene, const char *pFullPath, const char *path, ProgressContext& progress)
 {
 	FbxString lString;
 
-	if (fbxDebug) Log("Scene hierarchy:");
+	LogFbxVerbose("Scene hierarchy:");
 
 	FbxNode* lRootNode = pScene->GetRootNode();
 	int meshes = 0;
-	_FBX_load_node(lRootNode, 0, pFullPath, path, meshes);
+	fbx_load_node(lRootNode, 0, pFullPath, path, progress);
 }
 
-void _FBX_load_node(FbxNode* pNode, int depth, const char *fullPath, const char *path, int& meshes)
+void fbx_count_meshes(FbxNode* scene, int& meshes)
+{
+	FbxNodeAttribute* node = scene->GetNodeAttribute();
+	FbxNodeAttribute::EType lAttributeType = FbxNodeAttribute::eUnknown;
+	if (node) lAttributeType = node->GetAttributeType();
+	if (lAttributeType == FbxNodeAttribute::eMesh)
+		meshes++;
+
+	int childs = scene->GetChildCount();
+	if (childs)
+	{
+		for (int i = 0; i < childs; i++)
+		{
+			fbx_count_meshes(scene->GetChild(i), meshes);
+		}
+	}
+}
+
+void fbx_load_node(FbxNode* pNode, int depth, const char *fullPath, const char *path, ProgressContext& progress)
 {
 	FbxString lString;
 	FbxNodeAttribute* node = pNode->GetNodeAttribute();
@@ -154,30 +196,30 @@ void _FBX_load_node(FbxNode* pNode, int depth, const char *fullPath, const char 
 	switch (lAttributeType)
 	{
 		case FbxNodeAttribute::eMesh:
-			if (meshes==0)
-				_FBX_load_mesh((FbxMesh*)pNode->GetNodeAttribute(), pNode, fullPath, path);
-			else
-				_FBX_skip_loading("eMesh", pNode->GetName());
-			meshes++;
+			//if (progress .meshes == 0)
+				fbx_load_mesh((FbxMesh*)pNode->GetNodeAttribute(), pNode, fullPath, path, progress);
+			//else
+			//	fbx_skip_loading("eMesh", pNode->GetName());
+			progress.meshes++;
 			break; // load only first mesh
 
-		case FbxNodeAttribute::eMarker:		_FBX_skip_loading("eMarker", pNode->GetName()); break;
-		case FbxNodeAttribute::eSkeleton:	_FBX_skip_loading("eSkeleton", pNode->GetName()); break;
-		case FbxNodeAttribute::eNurbs:		_FBX_skip_loading("eNurbs", pNode->GetName()); break;
-		case FbxNodeAttribute::ePatch:		_FBX_skip_loading("ePatch", pNode->GetName()); break;
-		case FbxNodeAttribute::eCamera:		_FBX_skip_loading("eCamera", pNode->GetName()); break;
-		case FbxNodeAttribute::eLight:		_FBX_skip_loading("eLight", pNode->GetName()); break;
-		case FbxNodeAttribute::eLODGroup:	_FBX_skip_loading("eLODGroup", pNode->GetName()); break;
-		default:							_FBX_skip_loading("eUnknown", pNode->GetName()); break;
+		case FbxNodeAttribute::eMarker:		fbx_skip_loading("eMarker", pNode->GetName()); break;
+		case FbxNodeAttribute::eSkeleton:	fbx_skip_loading("eSkeleton", pNode->GetName()); break;
+		case FbxNodeAttribute::eNurbs:		fbx_skip_loading("eNurbs", pNode->GetName()); break;
+		case FbxNodeAttribute::ePatch:		fbx_skip_loading("ePatch", pNode->GetName()); break;
+		case FbxNodeAttribute::eCamera:		fbx_skip_loading("eCamera", pNode->GetName()); break;
+		case FbxNodeAttribute::eLight:		fbx_skip_loading("eLight", pNode->GetName()); break;
+		case FbxNodeAttribute::eLODGroup:	fbx_skip_loading("eLODGroup", pNode->GetName()); break;
+		default:							fbx_skip_loading("eUnknown", pNode->GetName()); break;
 	}
 
 	int childs = pNode->GetChildCount();
 	if (childs)
 	{
-		if (fbxDebug) Log("for node=%s childs=%i", pNode->GetName(), childs);
+		LogFbxVerbose("for node=%s childs=%i", pNode->GetName(), childs);
 		for (int i = 0; i < childs; i++)
 		{
-			_FBX_load_node(pNode->GetChild(i), depth + 1, fullPath, path, meshes);
+			fbx_load_node(pNode->GetChild(i), depth + 1, fullPath, path, progress);
 		}
 	}
 }
@@ -188,7 +230,7 @@ void add_tabs(FbxString& buff, int tabs)
 		buff += " ";
 }
 
-void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const char *path)
+void fbx_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const char *path, ProgressContext& progress)
 {
 	const int control_points_count = pMesh->GetControlPointsCount();
 	const uint32_t polygon_count = (size_t)pMesh->GetPolygonCount();
@@ -197,14 +239,9 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 	const int tangent_layers_count = pMesh->GetElementTangentCount();
 	const int binormal_layers_count = pMesh->GetElementBinormalCount();
 	const int color_layers_count = pMesh->GetElementVertexColorCount();
-
 	const uint32_t vertecies = polygon_count * 3;
-
 	const int is_normals = normal_element_count > 0;
 	const int is_uv = uv_layer_count > 0;
-
-	//pMesh->GenerateNormals();
-
 	// TODO: binormal, tangent, color
 	const int is_tangent = 0; //tangent_layers_count > 0;
 	const int is_binormal = 0; //binormal_layers_count > 0;
@@ -233,8 +270,16 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 	int vertexId = 0;
 	int vertexes = 0;
 
+	float meshesProgress = 100.0f * progress.meshes * progress.totalMeshesInv;
+
 	for (uint32_t i = 0; i < polygon_count; ++i)
 	{
+		if (progress.callback)
+		{
+			float vertextProgress = 100.0f * progress.totalMeshesInv * float(i) / polygon_count;
+			progress.callback(int(meshesProgress + vertextProgress));
+		}
+
 		int polygon_size = pMesh->GetPolygonSize(i);
 
 		for (int t = 0; t < polygon_size - 2; ++t) // triangulate large polygons
@@ -435,27 +480,21 @@ void _FBX_load_mesh(FbxMesh *pMesh, FbxNode *pNode, const char *fullPath, const 
 
 	string name = pNode->GetName();
 	if (!FS->IsValid(name))
-	{
-		LogWarning("_FBX_load_mesh(): name '%s' is not valid", name.c_str());
-
 		FS->ToValid(name);
 
-		LogWarning("name -> '%s'", name.c_str());
-	}
+	string p =  name + ".mesh";
+	Log("Import '%s'", p.c_str());
 
-	string p = RES_MAN->GetImportMeshDir() + '\\' + name + ".mesh";
+	p = RES_MAN->GetImportMeshDir() + '\\' + p;
 
 	File f = FS->OpenFile(p.c_str(), FILE_OPEN_MODE::WRITE | FILE_OPEN_MODE::BINARY);
-
 	f.Write(reinterpret_cast<uint8*>(&header), sizeof(MeshHeader));
-	f.Write(reinterpret_cast<uint8*>(&data[0]), data.size() * sizeof(float));
-
-	Log("Mesh '%s' -> '%s'", name.c_str(), p.c_str());
+	f.Write(reinterpret_cast<uint8*>(&data[0]), data.size() * sizeof(float));	
 }
 
-void _FBX_skip_loading(const char* node, const char* name)
+void fbx_skip_loading(const char* node, const char* name)
 {
-	Log("%s %s skipped", node, name);
+	LogFbxVerbose("%s %s skipped", node, name);
 }
 
 

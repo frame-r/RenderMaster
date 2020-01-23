@@ -144,7 +144,8 @@ public:
 	auto Draw(Mesh *mesh, uint instances) -> void override;
 	auto Dispatch(uint x, uint y, uint z) -> void override;
 	auto GetViewport(uint* w, uint* h) -> void override;
-	auto SetViewport(int w, int h) ->void override;
+	auto SetViewport(int w, int h, int count = 1) ->void override;
+	auto ResizeBuffersByViewort() -> void override;
 
 	auto CreateTimer() -> uint32_t override;
 	auto TimersBeginFrame(uint32_t timerID) -> void override;

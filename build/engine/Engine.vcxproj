@@ -76,7 +76,7 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>..\..\obj\engine\$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
-    <LibraryPath>..\..\bin\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\bin;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_x86d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -84,7 +84,7 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>..\..\obj\engine\$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
-    <LibraryPath>..\..\bin\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\bin;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_x64d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -92,7 +92,7 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>..\..\obj\engine\$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
-    <LibraryPath>..\..\bin\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\bin;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_x86</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -100,7 +100,7 @@
     <OutDir>..\..\bin\</OutDir>
     <IntDir>..\..\obj\engine\$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
-    <LibraryPath>..\..\bin\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\bin;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)_x64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

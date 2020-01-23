@@ -64,14 +64,18 @@ auto DLLEXPORT ResourceManager::CreateShader(const char *vert, const char *geom,
 	{
 		const char *shaderText = nullptr;
 
+		string err_compile = "err_compile";
+
 		switch (err)
 		{
-			case ERROR_COMPILE_SHADER::VERTEX: shaderText = vert; break;
-			case ERROR_COMPILE_SHADER::FRAGMENT: shaderText = frag; break;
-			case ERROR_COMPILE_SHADER::GEOM: shaderText = geom; break;
+			case ERROR_COMPILE_SHADER::VERTEX: shaderText = vert; err_compile += "_vertex"; break;
+			case ERROR_COMPILE_SHADER::FRAGMENT: shaderText = frag; err_compile += "_fragment"; break;
+			case ERROR_COMPILE_SHADER::GEOM: shaderText = geom; err_compile += "_geom"; break;
 		};
+
+		err_compile += ".shader";
 	
-		File f = FS->OpenFile("err_compile.shader", FILE_OPEN_MODE::WRITE);
+		File f = FS->OpenFile(err_compile.c_str(), FILE_OPEN_MODE::WRITE);
 		f.Write((uint8 *)shaderText, strlen(shaderText));
 
 		return SharedPtr<Shader>(nullptr, removeShader);
@@ -361,7 +365,7 @@ auto DLLEXPORT ResourceManager::GetImportedMeshes() -> std::vector<std::string>
 	return paths;
 }
 
-auto DLLEXPORT ResourceManager::Import(const char *path) -> void
+auto DLLEXPORT ResourceManager::Import(const char *path, ProgressCallback callback) -> void
 {
 	Log("Importing '%s'...", path);
 
@@ -376,7 +380,7 @@ auto DLLEXPORT ResourceManager::Import(const char *path) -> void
 	// TODO: copy file to resources
 
 	if (ext == "fbx")
-		importFbx(path);
+		importFbx(path, callback);
 	else if (ext == "jpg" || ext == "jpeg")
 		importJPEG(path);
 	else if (ext == "png")

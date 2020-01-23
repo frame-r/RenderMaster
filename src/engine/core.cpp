@@ -15,8 +15,6 @@
 #define DEFAULT_ROOT_RELATIVE_BIN "../"
 Core *_core;
 
-char logBuffer__[5000];
-
 //
 static std::chrono::steady_clock::time_point start;
 
@@ -379,9 +377,10 @@ void Core::freeCoreRender()
 
 DLLEXPORT Core* GetCore()
 {
-	Core* c = new Core();
-	_core = c;
-	return c;
+	if (_core)
+		return _core;
+	_core = new Core();
+	return _core;
 }
 DLLEXPORT void ReleaseCore(Core* c)
 {

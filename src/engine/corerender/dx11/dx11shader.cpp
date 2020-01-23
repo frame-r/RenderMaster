@@ -149,10 +149,10 @@ void DX11Shader::bind()
 {
 	ID3D11DeviceContext *ctx = getContext();
 
-	if (vs()) ctx->VSSetShader(vs(), nullptr, 0);
-	if (fs()) ctx->PSSetShader(fs(), nullptr, 0);
-	if (gs()) ctx->GSSetShader(gs(), nullptr, 0);
-	if (cs()) ctx->CSSetShader(cs(), nullptr, 0);
+	ctx->VSSetShader(vs(), nullptr, 0);
+	ctx->PSSetShader(fs(), nullptr, 0);
+	ctx->GSSetShader(gs(), nullptr, 0);
+	ctx->CSSetShader(cs(), nullptr, 0);
 
 	ID3D11Buffer *pointers[128];
 

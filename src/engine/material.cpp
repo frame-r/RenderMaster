@@ -486,20 +486,20 @@ auto DLLEXPORT Material::GetUV(const char* name) -> vec4
 Shader* Material::GetShader(Mesh* mesh)
 {
 	Render *render = _core->GetRender();
-	return render->GetShader(parent_->shader_.c_str(), mesh, currentDefinesVec_);
+	return render->GetShader(parent_->shader_.c_str(), mesh, &currentDefinesVec_);
 }
 Shader* Material::GetDeferredShader(Mesh* mesh)
 {
 	Render *render = _core->GetRender();
-	return render->GetShader(parent_->deferredShader_.c_str(), mesh, currentDefinesVec_);
+	return render->GetShader(parent_->deferredShader_.c_str(), mesh, &currentDefinesVec_);
 }
 Shader* Material::GetIdShader(Mesh* mesh)
 {
 	Render *render = _core->GetRender();
-	return render->GetShader(parent_->idShader_.c_str(), mesh, currentDefinesVec_);
+	return render->GetShader(parent_->idShader_.c_str(), mesh, &currentDefinesVec_);
 }
 Shader* Material::GetWireframeShader(Mesh* mesh)
 {
 	Render *render = _core->GetRender();
-	return render->GetShader(parent_->wireframeShader_.c_str(), mesh, currentDefinesVec_);
+	return render->GetShader(parent_->wireframeShader_.c_str(), mesh, &currentDefinesVec_);
 }

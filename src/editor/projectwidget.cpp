@@ -82,8 +82,18 @@ void ProjectWidget::on_pushButton_clicked()
 
 	std::string p = editor->core->GetDataPath();
 	QString	path = QString(p.c_str());
-	QString file1Name = QFileDialog::getOpenFileName(this, tr("Open File"), path, tr("All files (*.*);;JPEG (*.jpg *.jpeg);;FBX Files (*.fbx)"));
+	QStringList filenames = QFileDialog::getOpenFileNames(this, tr("Open File"), path, tr("All files (*.*);;JPEG (*.jpg *.jpeg);;FBX Files (*.fbx)"));
 
 	auto *resMan = editor->core->GetResourceManager();
-	resMan->Import(file1Name.toLatin1());
+
+	QStringList::const_iterator constIterator;
+	for (constIterator = filenames.constBegin(); constIterator != filenames.constEnd(); ++constIterator)
+	{
+		auto &file = *constIterator;
+
+		if (file.endsWith(".fbx")) // only import mesh thread safe
+			editor->RunImportFileTask(file);
+		else
+			resMan->Import(file.toLatin1(), nullptr);
+	}
 }

@@ -21,6 +21,7 @@
 #include <functional>
 #include <fstream>
 #include <assert.h>
+#include <mutex>
 
 #include <d3d11_2.h>
 #include <d3dcompiler.h>

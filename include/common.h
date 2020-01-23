@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <mutex>
 //
 
 #include "vector_math.h"
@@ -76,6 +77,7 @@ typedef unsigned char uint8;
 typedef void (*ConsoleCallback)(const char *, LOG_TYPE);
 typedef void (*ObjectCallback)(GameObject*);
 typedef void (*WindowCallback)(WINDOW_MESSAGE, uint32, uint32, void*);
+typedef void (*ProgressCallback)(int);
 
 extern Core *_core;
 
@@ -479,11 +481,19 @@ enum class VIEW_MODE
 	COLOR_REPROJECTION
 };
 
+enum class ENVIRONMENT_TYPE
+{
+	CUBEMAP,
+	ATMOSPHERE
+};
+
 enum class PREV_TEXTURES
 {
 	UNKNOWN,
 	COLOR
 };
+
+DXGI_FORMAT engToD3DDSVFormat(TEXTURE_FORMAT format);
 
 struct MeshDataDesc
 {

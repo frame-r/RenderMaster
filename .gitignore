@@ -15,8 +15,8 @@
 bin/
 obj/
 build/engine/Editor/x64
-err_compile.shader
-
+err_compile*
+resources/.import/*
 
 
 

@@ -69,6 +69,7 @@ SOURCES += \
     $$PWD/../../src/editor/propertieswidgets/lightpropertywidget.cpp \
     $$PWD/../../src/editor/settings.cpp \
     $$PWD/../../src/editor/texturelineedit.cpp \
+    ../../src/editor/importthread.cpp \
     ../../src/editor/manipulators/manipulatorrotator.cpp \
     ../../src/editor/mylineedit.cpp
 
@@ -97,6 +98,7 @@ HEADERS += \
     $$PWD/../../src/editor/propertieswidgets/lightpropertywidget.h \
     $$PWD/../../src/editor/settings.h \
     $$PWD/../../src/editor/texturelineedit.h \
+    ../../src/editor/importthread.h \
     ../../src/editor/manipulators/manipulatorrotator.h
 
 INCLUDEPATH += "$$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/include"

@@ -57,8 +57,9 @@ public:
 	auto virtual Draw(Mesh *mesh, uint instances) -> void = 0;
 	auto virtual Dispatch(uint x, uint y, uint z) -> void = 0;
 	auto virtual GetViewport(uint* w, uint* h) -> void = 0;
-	auto virtual SetViewport(int w, int h) -> void = 0;
-
+	auto virtual SetViewport(int w, int h, int count = 1) -> void = 0;
+	auto virtual ResizeBuffersByViewort() -> void = 0;
+	
 	auto virtual CreateTimer()->uint32_t;
 	auto virtual TimersBeginFrame(uint32_t timerID) -> void;
 	auto virtual TimersEndFrame(uint32_t timerID) -> void;
@@ -100,6 +101,7 @@ public:
 	auto virtual GetMipmaps() -> int = 0;
 	auto virtual ReadPixel2D(void *data, int x, int y) -> int = 0;
 	auto virtual GetData(uint8_t* pDataOut, size_t length) -> void = 0;
+	auto virtual CreateMipmaps() -> void = 0;
 };
 
 class NOVTABLE ICoreStructuredBuffer

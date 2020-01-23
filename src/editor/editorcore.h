@@ -12,6 +12,7 @@
 
 #include "core.h"
 #include "resource_manager.h"
+#include "importthread.h"
 
 class EditorCore;
 class TreeNode;
@@ -38,6 +39,7 @@ class EditorCore : public QObject
 	bool preventFocusOnWorldLoad{false};
 
 	QTimer *timer{nullptr};
+	QTimer *timerEditorGUI{nullptr}; // gui
 	std::chrono::steady_clock::time_point start;
 
 	TreeNode *rootNode{nullptr};
@@ -46,6 +48,8 @@ class EditorCore : public QObject
 	QSet<GameObject*> selectedObjects;
 
 	MANIPULATOR maipulatorType_ = MANIPULATOR::SELECT;
+
+	int progressBarLastValue{0};
 
 	void onEngineInited();
 	void onEngineFree();
@@ -71,7 +75,12 @@ public:
 	auto IsEngineLoaded() -> bool { return core != nullptr; }
 	//auto ReloadCoreRender() -> void;
 	auto ReloadShaders() -> void;
+	auto Log(const char *message) -> void;
+	auto RunImportFileTask(const QString& file)->void;
 
+	// Global Progeress bar [0, 100]
+	void SetProgerssBar(int progress);
+	void SetProgressBarMessage(const QString& message);
 
 	//----Objects-----
 
@@ -118,6 +127,7 @@ signals:
 
 private slots:
 	void OnTimer();
+	void OnTimerEditorGUI();
 	void OnAppStateChanged(Qt::ApplicationState state);
 };
 
