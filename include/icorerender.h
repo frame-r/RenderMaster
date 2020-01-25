@@ -50,7 +50,7 @@ public:
 	auto virtual SetCullingMode(CULLING_MODE value) -> void = 0;
 	auto virtual SetFillingMode(FILLING_MODE value) -> void = 0;
 	auto virtual BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags = BIND_TETURE_FLAGS::PIXEL) -> void = 0;
-	auto virtual BindUnorderedAccessTextures(int units, Texture **textures) -> void = 0;
+	auto virtual CSBindUnorderedAccessTextures(int units, Texture **textures) -> void = 0;
 	auto virtual BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void = 0;
 	auto virtual SetMesh(Mesh* mesh) -> void = 0;
 	auto virtual SetShader(Shader *shader) -> void = 0;

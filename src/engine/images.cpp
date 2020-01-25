@@ -544,7 +544,7 @@ static void saveToDDS(const char* path, uint width, uint height, const uint8_t* 
 			ICoreTexture* coreTexOut = CORE_RENDER->CreateTexture(nullptr, w, h, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS, false);
 			unique_ptr<Texture> texOut(new Texture(unique_ptr<ICoreTexture>(coreTexOut)));
 			Texture* uavs[] = { texOut.get() };
-			CORE_RENDER->BindUnorderedAccessTextures(1, uavs);
+			CORE_RENDER->CSBindUnorderedAccessTextures(1, uavs);
 
 			constexpr uint warpSize = 16;
 			int numGroupsX = (w + (warpSize - 1)) / warpSize;
@@ -563,7 +563,7 @@ static void saveToDDS(const char* path, uint width, uint height, const uint8_t* 
 	CORE_RENDER->BindTextures(1, texsIn);
 
 	Texture* uavs[1] = {};
-	CORE_RENDER->BindUnorderedAccessTextures(1, uavs);
+	CORE_RENDER->CSBindUnorderedAccessTextures(1, uavs);
 
 	CORE_RENDER->PopStates();
 

@@ -1087,7 +1087,7 @@ auto DX11CoreRender::BindTextures(int units, Texture **textures, BIND_TETURE_FLA
 	}
 }
 
-auto DX11CoreRender::BindUnorderedAccessTextures(int units, Texture** textures) -> void
+auto DX11CoreRender::CSBindUnorderedAccessTextures(int units, Texture** textures) -> void
 {
 	ID3D11UnorderedAccessView* uavs[16]{};
 

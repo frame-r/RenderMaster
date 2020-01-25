@@ -70,45 +70,6 @@ class DX11CoreRender final : public ICoreRender, IProfilerCallback
 	};
 
 public:
-	// IProfilerCallback
-	uint getNumLines() override;
-	std::string getString(uint i) override;
-
-public:
-	// Internal API
-	void Update() override;
-
-public:
-	struct State
-	{
-		int x = 0, y = 0;
-		int width = 0, heigth = 0;
-
-		Shader *shader{};
-		Mesh *mesh{};
-
-		ID3D11ShaderResourceView* srvs[16]{};
-
-		ID3D11UnorderedAccessView* uavs[16]{};
-
-		Texture* renderTargets[8]{};
-		Texture* renderDepth{};
-
-		D3D11_BLEND_DESC blendStateDesc{};
-		WRL::ComPtr<ID3D11BlendState> blendState;
-
-		D3D11_RASTERIZER_DESC rasterStateDesc{};
-		WRL::ComPtr<ID3D11RasterizerState> rasterState;
-
-		D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
-		WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
-		FLOAT depthClearColor = 1.0f;
-		UINT8 stencilClearColor = 0;
-
-		FLOAT clearColor[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	};
-
-public:
 	ID3D11Device* getDevice() { return _device.Get(); }
 	ID3D11DeviceContext* getContext() { return _context.Get(); }
 
@@ -137,7 +98,7 @@ public:
 	auto SetCullingMode(CULLING_MODE value) -> void override;
 	auto SetFillingMode(FILLING_MODE value) -> void override;
 	auto BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags) -> void override;
-	auto BindUnorderedAccessTextures(int units, Texture **textures) -> void override;
+	auto CSBindUnorderedAccessTextures(int units, Texture **textures) -> void override;
 	auto BindStructuredBuffer(int unit, StructuredBuffer *buffer) -> void override;
 	auto SetMesh(Mesh* mesh) -> void override;
 	auto SetShader(Shader *shader) -> void override;
@@ -155,6 +116,43 @@ public:
 	auto GetTimeInMsForPoint(uint32_t timerID, uint32_t pointID) -> float override;
 
 	auto GetName() -> const char * { return "dx11corerender"; }
+
+public:
+		struct State
+		{
+			int x = 0, y = 0;
+			int width = 0, heigth = 0;
+
+			Shader* shader{};
+			Mesh* mesh{};
+
+			ID3D11ShaderResourceView* srvs[16]{};
+
+			ID3D11UnorderedAccessView* uavs[16]{};
+
+			Texture* renderTargets[8]{};
+			Texture* renderDepth{};
+
+			D3D11_BLEND_DESC blendStateDesc{};
+			WRL::ComPtr<ID3D11BlendState> blendState;
+
+			D3D11_RASTERIZER_DESC rasterStateDesc{};
+			WRL::ComPtr<ID3D11RasterizerState> rasterState;
+
+			D3D11_DEPTH_STENCIL_DESC depthStencilDesc{};
+			WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
+			FLOAT depthClearColor = 1.0f;
+			UINT8 stencilClearColor = 0;
+
+			FLOAT clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		};
+
+
+public:
+	// Internal API
+	uint getNumLines() override;
+	std::string getString(uint i) override;
+	void Update() override;
 
 private:
 	State state_{};
