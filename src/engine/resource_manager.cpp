@@ -119,9 +119,9 @@ auto DLLEXPORT ResourceManager::CreateComputeShader(const char* compText) -> Sha
 
 }
 
-auto DLLEXPORT ResourceManager::CreateStructuredBuffer(uint size, uint elementSize) -> SharedPtr<StructuredBuffer>
+auto DLLEXPORT ResourceManager::CreateStructuredBuffer(uint size, uint elementSize, BUFFER_USAGE usage) -> SharedPtr<StructuredBuffer>
 {
-	ICoreStructuredBuffer *c = CORE_RENDER->CreateStructuredBuffer(size, elementSize);
+	ICoreStructuredBuffer *c = CORE_RENDER->CreateStructuredBuffer(size, elementSize, usage);
 
 	StructuredBuffer *buffer = new StructuredBuffer(unique_ptr<ICoreStructuredBuffer>(c));
 	structuredBuffersSet.emplace(buffer);

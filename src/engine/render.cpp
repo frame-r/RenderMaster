@@ -342,7 +342,7 @@ auto DLLEXPORT Render::RenderGUI() -> void
 				if (!r.buffer || r.length < line.size())
 				{
 					r.length = line.size();
-					r.buffer = RES_MAN->CreateStructuredBuffer((uint)r.length * sizeof(charr), sizeof(charr));
+					r.buffer = RES_MAN->CreateStructuredBuffer((uint)r.length * sizeof(charr), sizeof(charr), BUFFER_USAGE::CPU_WRITE);
 					r.bufferData = unique_ptr<charr[]>(new charr[r.length]);
 				}	
 

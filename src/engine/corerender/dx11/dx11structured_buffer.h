@@ -8,9 +8,10 @@ class DX11StructuredBuffer : public ICoreStructuredBuffer
 	ID3D11ShaderResourceView *srv = nullptr;
 	uint size = 0;
 	uint elementSize = 0;
+	BUFFER_USAGE usage;
 
 public:
-	DX11StructuredBuffer(ID3D11Buffer *bufIn, ID3D11ShaderResourceView *srvIn);
+	DX11StructuredBuffer(ID3D11Buffer *buf_, ID3D11ShaderResourceView *srv_, BUFFER_USAGE usage_);
 	virtual ~DX11StructuredBuffer();
 
 	ID3D11ShaderResourceView *SRV() const { return srv; }

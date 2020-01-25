@@ -593,6 +593,11 @@ enum class ERROR_COMPILE_SHADER
 	COMP
 };
 
+enum BUFFER_USAGE
+{
+	CPU_WRITE,
+	GPU_READ
+};
 
 template<typename... Args>
 class Signal

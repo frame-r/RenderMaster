@@ -124,7 +124,7 @@ public:
 	auto CreateTexture(const uint8 *pData, uint width, uint height, TEXTURE_TYPE type, TEXTURE_FORMAT format, TEXTURE_CREATE_FLAGS flags, int mipmapsPresented) -> ICoreTexture* override;
 	auto CreateShader(const char *vertText, const char *fragText, const char *geomText, ERROR_COMPILE_SHADER &err) -> ICoreShader* override;
 	auto CreateComputeShader(const char *compText, ERROR_COMPILE_SHADER &err) -> ICoreShader* override;
-	auto CreateStructuredBuffer(uint size, uint elementSize) -> ICoreStructuredBuffer* override;
+	auto CreateStructuredBuffer(uint size, uint elementSize, BUFFER_USAGE usage) -> ICoreStructuredBuffer* override;
 
 	auto PushStates() -> void override;
 	auto PopStates() -> void override;

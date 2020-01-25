@@ -978,7 +978,7 @@ auto DX11CoreRender::CreateComputeShader(const char* compText, ERROR_COMPILE_SHA
 	return new DX11Shader(vi);
 }
 
-auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize) -> ICoreStructuredBuffer*
+auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize, BUFFER_USAGE usage) -> ICoreStructuredBuffer*
 {
 	assert(size % 16 == 0);
 
@@ -1000,10 +1000,21 @@ auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize) -> ICor
 	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
 	srvDesc.BufferEx.NumElements = desc.ByteWidth / desc.StructureByteStride;
 
+	ID3D11UnorderedAccessView* uav_ = nullptr;
+	if (false) // TODO
+	{
+		D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+		uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+		uavDesc.Buffer.FirstElement = 0;
+		uavDesc.Buffer.NumElements = size / elementSize;
+
+		ThrowIfFailed(_device->CreateUnorderedAccessView(pBuffer, &uavDesc, &uav_));
+	}
+
 	ID3D11ShaderResourceView *pSRVOut;
 	ThrowIfFailed(_device->CreateShaderResourceView(pBuffer, &srvDesc, &pSRVOut));
 
-	return new DX11StructuredBuffer(pBuffer, pSRVOut);
+	return new DX11StructuredBuffer(pBuffer, pSRVOut, usage);
 }
 
 auto DX11CoreRender::BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags) -> void
@@ -1139,6 +1150,7 @@ auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) ->
 		{
 			_context->VSSetShaderResources(unit, 1, &srv);
 			_context->PSSetShaderResources(unit, 1, &srv);
+			state_.srvs[unit] = srv;
 		}
 	} else
 	{
@@ -1146,9 +1158,9 @@ auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) ->
 
 		if (state_.srvs[unit])
 		{
-			state_.srvs[unit] = nullptr;
 			_context->VSSetShaderResources(unit, 1, &srv);
 			_context->PSSetShaderResources(unit, 1, &srv);
+			state_.srvs[unit] = nullptr;
 		}
 	}
 }

@@ -14,10 +14,11 @@ static ID3D11Device* getDevice()
 	return dxRender->getDevice();
 }
 
-DX11StructuredBuffer::DX11StructuredBuffer(ID3D11Buffer * bufIn, ID3D11ShaderResourceView * srvIn) : buf(bufIn), srv(srvIn)
+DX11StructuredBuffer::DX11StructuredBuffer(ID3D11Buffer * buf_, ID3D11ShaderResourceView * srv_, BUFFER_USAGE usage_)
+	: buf(buf_), srv(srv_), usage(usage_)
 {
 	D3D11_BUFFER_DESC desc;
-	bufIn->GetDesc(&desc);
+	buf_->GetDesc(&desc);
 	size = desc.ByteWidth;
 	elementSize = desc.StructureByteStride;
 }
@@ -34,12 +35,21 @@ auto DX11StructuredBuffer::SetData(uint8 *data, size_t size) -> void
 {
 	ID3D11DeviceContext *ctx = getContext();
 
-	D3D11_MAPPED_SUBRESOURCE mappedResource{};
-	ctx->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-
-	memcpy(mappedResource.pData, data, size);
-
-	ctx->Unmap(buf, 0);
+	if (usage == BUFFER_USAGE::CPU_WRITE)
+	{
+		D3D11_MAPPED_SUBRESOURCE mappedResource{};
+		ctx->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+		memcpy(mappedResource.pData, data, size);
+		ctx->Unmap(buf, 0);
+	}
+	else if (usage == BUFFER_USAGE::GPU_READ)
+	{
+		D3D11_BOX box{};
+		box.right = size;
+		box.bottom = 1;
+		box.back = 1;
+		ctx->UpdateSubresource(buf, 0, &box, data, size, 0);
+	}
 }
 
 auto DX11StructuredBuffer::GetSize() -> uint
