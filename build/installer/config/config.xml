@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Installer>
-    <Name>Render Master Installer</Name>
+    <Name>Render Master</Name>
     <Version>0.1</Version>
-    <Title>Render Master Installer</Title>
+    <Title>Render Master</Title>
     <Publisher>framer</Publisher>
-    <StartMenuDir>Installer</StartMenuDir>
+	<StartMenuDir>RenderMaster</StartMenuDir>
     <TargetDir>@RootDir@Program Files (x86)\United Systems\RenderMaster</TargetDir>
-        <AllowSpaceInPath>true</AllowSpaceInPath>
+	<Banner>banner.png</Banner>
+	<WizardStyle>Modern</WizardStyle>
+    <AllowSpaceInPath>true</AllowSpaceInPath>
     <RemoteRepositories>
         <Repository>
             <Url>http://www.rendermaster.com</Url>

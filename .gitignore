@@ -17,6 +17,7 @@ obj/
 build/engine/Editor/x64
 err_compile*
 resources/.import/*
+build/installer/packages/com.framer.engine/data
 
 
 

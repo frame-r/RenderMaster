@@ -3,9 +3,10 @@
     <DisplayName>Engine</DisplayName>
     <Description>Engine, rmEd, core resources</Description>
     <Version>0.1</Version>
-    <ReleaseDate>2019-11-28</ReleaseDate>
+    <ReleaseDate>2020-01-26</ReleaseDate>
         <Default>true</Default>
 		<Name>com.framer.engine</Name>
     <ForcedInstallation>true</ForcedInstallation>
     <RequiresAdminRights>true</RequiresAdminRights>
+	<Script>installscript.qs</Script>	
 </Package>

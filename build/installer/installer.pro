@@ -29,5 +29,7 @@ QMAKE_EXTRA_COMPILERS += offlineInstaller
 ##}
 
 DISTFILES += \
+    packages/com.framer.engine/meta/installscript.qs \
+    packages/com.framer.engine/meta/package.xml \
     packages/xx.framer.engine/meta/package.xml \
     config/config.xml
