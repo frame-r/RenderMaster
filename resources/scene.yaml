@@ -1,4 +1,4 @@
-roots: 3
+roots: 5
 objects:
   - childs: 0
     id: 845369033
@@ -19,4 +19,18 @@ objects:
     type: Model
     worldTransform: [100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     mesh: std#plane
+    material: material_0
+  - childs: 0
+    id: 1483175451
+    enabled: true
+    type: Model
+    worldTransform: [-1, 1.755557e-05, 0, 3.185, 0, 0, 1, 0, 1.755557e-05, 1, 0, -5.539726e-05, 0, 0, 0, 1]
+    mesh: .import\Teapot_Node.mesh
+    material: material_3
+  - childs: 0
+    id: 1833474593
+    enabled: true
+    type: Model
+    worldTransform: [-1, 1.755557e-05, 0, -3.344, 0, 0, 1, 0, 1.755557e-05, 1, 0, 6.046855e-05, 0, 0, 0, 1]
+    mesh: .import\Teapot_Node.mesh
     material: material_2

@@ -9,7 +9,7 @@
 *.opensdf
 *.opendb
 *.7z
-*.mat
+resources/*.mat
 
 .vs/
 bin/

@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<material id="mesh_standard" generic_material="mesh">
+	<param id="roughness">0.282828</param>
+</material>

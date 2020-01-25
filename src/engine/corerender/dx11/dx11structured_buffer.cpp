@@ -45,7 +45,7 @@ auto DX11StructuredBuffer::SetData(uint8 *data, size_t size) -> void
 	else if (usage == BUFFER_USAGE::GPU_READ)
 	{
 		D3D11_BOX box{};
-		box.right = size;
+		box.right = (UINT)size;
 		box.bottom = 1;
 		box.back = 1;
 		ctx->UpdateSubresource(buf, 0, &box, data, size, 0);

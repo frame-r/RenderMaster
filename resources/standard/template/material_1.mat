@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<material id="material_1" generic_material="mesh">
+	<def id="albedo_map">1</def>
+	<param id="roughness">0.000000</param>
+	<param id="metallness">1.000000</param>
+	<texture id="albedo" uv="1.000000 1.000000 0.000000 0.000000">standard/textures/ground1_albedo.dds</texture>
+	<texture id="normal" uv="1.000000 1.000000 0.000000 0.000000">standard/textures/sttones_normal.dds</texture>
+</material>
