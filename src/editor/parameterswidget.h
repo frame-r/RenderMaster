@@ -25,6 +25,8 @@ class ParametersWidget : public QWidget
 
 	QWidget *dynamicWidget = nullptr;
 
+	QList<QDoubleSpinBox*> spinBoxes;
+
 public:
 	explicit ParametersWidget(QWidget *parent = nullptr);
 	~ParametersWidget();

@@ -32,17 +32,18 @@ void ParametersWidget::clearUI()
 	ui->lineEdit->setEnabled(false);
 	ui->enabled_cb->setEnabled(false);
 
-	ui->pos_x_sb->clear();
-	ui->pos_y_sb->clear();
-	ui->pos_z_sb->clear();
+	spinBoxes.append(ui->pos_x_sb);
+	spinBoxes.append(ui->pos_y_sb);
+	spinBoxes.append(ui->pos_z_sb);
+	spinBoxes.append(ui->rot_x_sb);
+	spinBoxes.append(ui->rot_y_sb);
+	spinBoxes.append(ui->rot_z_sb);
+	spinBoxes.append(ui->scale_x_sb);
+	spinBoxes.append(ui->scale_y_sb);
+	spinBoxes.append(ui->scale_z_sb);
 
-	ui->rot_x_sb->clear();
-	ui->rot_y_sb->clear();
-	ui->rot_z_sb->clear();
-
-	ui->scale_x_sb->clear();
-	ui->scale_y_sb->clear();
-	ui->scale_z_sb->clear();
+	for (auto *sp : spinBoxes)
+		sp->clear();
 
 	ui->groupBox->setEnabled(false);
 }
@@ -51,6 +52,9 @@ void ParametersWidget::OnSelectionChanged(QSet<GameObject *> &objects)
 {
 	if (objects.size() == 1)
 	{
+		for (auto *sp : spinBoxes)
+			sp->blockSignals(true);
+
 		g = *objects.begin();
 
 		ui->lineEdit->setEnabled(true);
@@ -63,6 +67,7 @@ void ParametersWidget::OnSelectionChanged(QSet<GameObject *> &objects)
 		ui->lineEdit->setText(name);
 
 		pos_ = g->GetWorldPosition();
+
 		ui->pos_x_sb->setValue(static_cast<double>(pos_.x));
 		ui->pos_y_sb->setValue(static_cast<double>(pos_.y));
 		ui->pos_z_sb->setValue(static_cast<double>(pos_.z));
@@ -110,6 +115,8 @@ void ParametersWidget::OnSelectionChanged(QSet<GameObject *> &objects)
 		if (dynamicWidget)
 			ui->dynamic_block->addWidget(dynamicWidget);
 
+		for (auto *sp : spinBoxes)
+			sp->blockSignals(false);
 	} else
 	{
 		for (auto& conn : _connections)
