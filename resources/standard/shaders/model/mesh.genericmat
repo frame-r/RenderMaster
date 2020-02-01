@@ -2,16 +2,21 @@
 <generic_material id="mesh">
 	
 	<pass_deferred>
-		<def id="normal_map">0</def>
+		<def id="normal_map">1</def>
 		<def id="albedo_map">0</def>
+		<def id="roughness_map">0</def>
+		<def id="is_smoothness">0</def>
+		<def id="metalness_map">0</def>
 		
 		<param id="roughness" type="float">1.0</param>
-		<param id="metallness" type="float">0.0</param>
+		<param id="metalness" type="float">1.0</param>
 		<param id="normal_intensity" type="float">1</param>
 		<param id="base_color" type="color">1 1 1 1</param>
 		
-		<texture id="albedo" slot="0" condition="albedo_map">povement_albedo.dds</texture>
-		<texture id="normal" slot="1" condition="normal_map">povement_normal.dds</texture>
+		<texture id="albedo" slot="0" condition="albedo_map">standard/textures/chipped-paint-metal-albedo_3_512x512.dds</texture>
+		<texture id="normal" slot="1" condition="normal_map">standard/textures/chipped-paint-metal-normal-dxt.dds</texture>
+		<texture id="roughness" slot="2" condition="roughness_map">standard/textures/chipped-paint-metal-rough2_512x512.dds</texture>
+		<texture id="metalness" slot="3" condition="metalness_map">standard/textures/chipped-paint-metal-metal-dxt.dds</texture>
 		
 		<shader>model/deferred.hlsl</shader>
 	</pass_deferred>

@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
 <material id="material_2" generic_material="mesh">
-	<param id="roughness">0.535354</param>
+	<def id="normal_map">0</def>
+	<param id="roughness">0.000000</param>
+	<param id="metalness">0.000000</param>
 	<param id="base_color">0.000000 0.000000 0.000000 1.000000</param>
+	<texture id="albedo" uv="0.500000 0.500000 0.000000 0.000000">standard/textures/chipped-paint-metal-albedo_3_512x512.dds</texture>
+	<texture id="metalness" uv="0.500000 0.500000 0.000000 0.000000">standard/textures/chipped-paint-metal-metal-dxt.dds</texture>
+	<texture id="normal" uv="0.500000 0.500000 0.000000 0.000000">standard/textures/chipped-paint-metal-normal-dxt.dds</texture>
+	<texture id="roughness" uv="0.500000 0.500000 0.000000 0.000000">standard/textures/chipped-paint-metal-rough2_512x512.dds</texture>
 </material>

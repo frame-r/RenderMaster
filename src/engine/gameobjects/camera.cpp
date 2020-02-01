@@ -106,8 +106,8 @@ void Camera::Copy(GameObject * original)
 Camera::Camera()
 {
 	type_ = OBJECT_TYPE::CAMERA;
-	SetWorldPosition(vec3(0.0f, -15.0f, 5.0f));
-	SetLocalRotation(quat(80.0f, 0.0f, 0.0f));
+	SetWorldPosition(vec3(0.0f, -5.0f, 5.0f));
+	SetLocalRotation(quat(65.0f, 0.0f, 0.0f));
 }
 
 auto DLLEXPORT Camera::Clone() -> GameObject *

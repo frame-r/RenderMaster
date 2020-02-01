@@ -51,7 +51,7 @@ RenderWidget::RenderWidget(QWidget *parent) :
 
 	h = (HWND)winId();
 
-	camPos = vec3(0.0f, -10.0f, 4.0f);
+	camPos = vec3(0.0f, -4.0f, 1.8f);
 	camRot = quat(70.0f, 0.0f, 0.0f);
 }
 

@@ -10,7 +10,7 @@
 		float4 camera_position;
 		float4 base_color;
 		float roughness;
-		float metallness;
+		float metalness;
 		float normal_intensity;
 		float4 albedo_uv;
 	};
@@ -21,6 +21,14 @@
 	
 	#if defined(ENG_INPUT_TEXCOORD) && defined(ENG_INPUT_NORMAL) && defined(normal_map)
 		TEXTURE_DECL(normal, 1)	
+	#endif
+
+	#if defined(ENG_INPUT_TEXCOORD) && defined(roughness_map)
+		TEXTURE_DECL(roughness, 2)	
+	#endif
+
+	#if defined(ENG_INPUT_TEXCOORD) && defined(metalness_map)
+		TEXTURE_DECL(metalness, 3)	
 	#endif
 
 	struct FS_OUT
@@ -36,9 +44,21 @@
 		FS_OUT out_color;
 
 		out_color.color = base_color;
-		out_color.shading.x = roughness;
-		out_color.shading.y = metallness;
 		
+		out_color.shading.x = roughness;
+		#if defined(ENG_INPUT_TEXCOORD) && defined(roughness_map)
+			#ifdef is_smoothness
+				out_color.shading.x *= (/*roughness*/ srgbInv(TEXTURE_UV_SAMPLE(roughness, fs_input.TexCoord.xy)).r);
+			#else
+				out_color.shading.x *= (/*smoothness*/ 1.0f - srgbInv(TEXTURE_UV_SAMPLE(roughness, fs_input.TexCoord.xy)).r);
+			#endif
+		#endif
+		
+		out_color.shading.y = metalness;
+		#if defined(ENG_INPUT_TEXCOORD) && defined(metalness_map)
+			out_color.shading.y *= TEXTURE_UV_SAMPLE(metalness, fs_input.TexCoord.xy).r;
+		#endif
+
 		#if defined(ENG_INPUT_TEXCOORD) && defined(albedo_map)
 			out_color.color *= srgbInv(TEXTURE_UV_SAMPLE(albedo, fs_input.TexCoord.xy));
 		#endif
