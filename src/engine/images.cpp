@@ -679,6 +679,8 @@ void importJPEG(const char* fullPath)
 	output = nullptr;
 
 	MipmapGenerationResult mipmaps = generateMipmapsGPU(width, height, outputRGBA.get());
+
+	saveDDS(mipmaps, fullPath);
 }
 
 struct ImageSource
