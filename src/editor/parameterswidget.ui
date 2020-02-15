@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>372</width>
+    <width>235</width>
     <height>320</height>
    </rect>
   </property>
@@ -419,15 +419,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>MySpinBox</class>
-   <extends>QDoubleSpinBox</extends>
-   <header>../../src/editor/myspinbox.h</header>
-   <header>../../src/editor/myspinbox.h</header>
-  </customwidget>
-  <customwidget>
    <class>MyLineEdit</class>
    <extends>QLineEdit</extends>
    <header>../../src/editor/mylineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MySpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>../../src/editor/myspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

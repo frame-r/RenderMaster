@@ -138,9 +138,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	// scene tree
 	SceneWidget *scene = createWidget<SceneWidget>(QString("Scene"), SCENETREE, DropArea::BottomDropArea, ui->menuLayout, this);
 
-	createWidget<debugwidget>(QString("DebugWidget"), DEBUG_WIDGET, DropArea::LeftDropArea, ui->menuLayout, this);
-	createWidget<ParametersWidget>(QString("ParametersWidget"), PARAMETERS, DropArea::LeftDropArea, ui->menuLayout, this);
-	createWidget<ProjectWidget>(QString("ProjectWidget"), PROJECT_WIDGET, DropArea::LeftDropArea, ui->menuLayout, this);
+	createWidget<debugwidget>(QString("Debug"), DEBUG_WIDGET, DropArea::LeftDropArea, ui->menuLayout, this);
+	createWidget<ParametersWidget>(QString("Properties"), PARAMETERS, DropArea::LeftDropArea, ui->menuLayout, this);
+	createWidget<ProjectWidget>(QString("Project"), PROJECT_WIDGET, DropArea::LeftDropArea, ui->menuLayout, this);
 	createWidget<Settings>(QString("Settings"), SETTINGS, DropArea::LeftDropArea, ui->menuLayout, this);
 
 	// create render widgets
