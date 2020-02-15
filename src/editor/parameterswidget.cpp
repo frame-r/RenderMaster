@@ -115,6 +115,8 @@ void ParametersWidget::OnSelectionChanged(QSet<GameObject *> &objects)
 		if (dynamicWidget)
 			ui->dynamic_block->addWidget(dynamicWidget);
 
+		ui->verticalSpacer->changeSize(0,0,QSizePolicy::Maximum,QSizePolicy::Maximum);
+
 		for (auto *sp : spinBoxes)
 			sp->blockSignals(false);
 	} else
@@ -132,6 +134,8 @@ void ParametersWidget::OnSelectionChanged(QSet<GameObject *> &objects)
 			delete dynamicWidget;
 			dynamicWidget = nullptr;
 		}
+
+		ui->verticalSpacer->changeSize(0,0,QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding);
 	}
 }
 
