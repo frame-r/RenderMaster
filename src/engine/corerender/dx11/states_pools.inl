@@ -140,7 +140,7 @@ struct BlendHash
 		cd.mask = desc.RenderTarget[0].RenderTargetWriteMask;
 		for (int i = 1; i < 8; ++i)
 		{
-			cd.be |= desc.RenderTarget[i].BlendEnable << i;
+			cd.be |= (uint64_t)desc.RenderTarget[i].BlendEnable << i;
 			cd.mask += desc.RenderTarget[i].RenderTargetWriteMask;
 		}
 		return cd.u64;
@@ -167,7 +167,7 @@ protected:
 		//}
 		_pool.clear(); 
 	}
-	virtual bool create_actually_state(const TDesc *pRasterizerDesc, _COM_Outptr_opt_  TState **ppRasterizerState) = 0;
+	virtual bool create_actually_state(const TDesc *pRasterizerDesc, TState **ppRasterizerState) = 0;
 
 public:
 	BaseStatePool(DX11CoreRender& parent) : _parent(parent)
@@ -197,7 +197,7 @@ class RasterizerStatePool : public BaseStatePool<D3D11_RASTERIZER_DESC, ID3D11Ra
 {
 	virtual bool create_actually_state(const D3D11_RASTERIZER_DESC *pRasterizerDesc, _COM_Outptr_opt_  ID3D11RasterizerState **ppRasterizerState) override
 	{
-		return _parent._device->CreateRasterizerState(pRasterizerDesc, ppRasterizerState) == S_OK;
+		return SUCCEEDED(_parent._device->CreateRasterizerState(pRasterizerDesc, ppRasterizerState));
 	}
 
 public:
@@ -230,9 +230,9 @@ public:
 
 class DepthStencilStatePool : public BaseStatePool<D3D11_DEPTH_STENCIL_DESC, ID3D11DepthStencilState, DepthStencilHash>
 {
-	virtual bool create_actually_state(const D3D11_DEPTH_STENCIL_DESC *desc, _COM_Outptr_opt_  ID3D11DepthStencilState **ppState) override
+	virtual bool create_actually_state(const D3D11_DEPTH_STENCIL_DESC *desc, ID3D11DepthStencilState **ppState) override
 	{
-		return _parent._device->CreateDepthStencilState(desc, ppState);
+		return SUCCEEDED(_parent._device->CreateDepthStencilState(desc, ppState));
 	}
 
 public:
@@ -277,9 +277,9 @@ public:
 
 class BlendStatePool : public BaseStatePool<D3D11_BLEND_DESC, ID3D11BlendState, BlendHash>
 {
-	virtual bool create_actually_state(const D3D11_BLEND_DESC *desc, _COM_Outptr_opt_  ID3D11BlendState **ppState) override
+	virtual bool create_actually_state(const D3D11_BLEND_DESC *desc, ID3D11BlendState **ppState) override
 	{
-		return _parent._device->CreateBlendState(desc, ppState);
+		return SUCCEEDED(_parent._device->CreateBlendState(desc, ppState));
 	}
 
 public:

@@ -48,7 +48,7 @@ auto DX11StructuredBuffer::SetData(uint8 *data, size_t size) -> void
 		box.right = (UINT)size;
 		box.bottom = 1;
 		box.back = 1;
-		ctx->UpdateSubresource(buf, 0, &box, data, size, 0);
+		ctx->UpdateSubresource(buf, 0, &box, data, (UINT)size, 0);
 	}
 }
 
@@ -64,5 +64,5 @@ auto DX11StructuredBuffer::GetElementSize() -> uint
 
 auto DX11StructuredBuffer::GetVideoMemoryUsage() -> size_t
 {
-	return size * elementSize;
+	return (size_t) size * elementSize;
 }
