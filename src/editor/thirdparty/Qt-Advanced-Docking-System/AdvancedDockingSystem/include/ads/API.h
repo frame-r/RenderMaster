@@ -8,11 +8,11 @@ class QSplitter;
 // DLL Export API
 #ifdef _WIN32
 	#if defined(ADS_IMPORT)
-		#define ADS_EXPORT_API
+		#define ADS_EXPORT_API __declspec(dllimport)
 	#elif defined(ADS_EXPORT)
 		#define ADS_EXPORT_API __declspec(dllexport)
 	#else
-		#define ADS_EXPORT_API __declspec(dllexport)
+		#define ADS_EXPORT_API
 	#endif
 #else
   #define ADS_EXPORT_API
@@ -20,7 +20,7 @@ class QSplitter;
 
 // Use namespace
 // Disabled with Qt4, it makes problems with signals and slots.
-#ifdef ADS_NAMESPACE_ENABLED
+#ifdef ADS_NAMESPACE_ENABLED //me: I think it can not compile with namespaces because all methods in .cpp withut ads::
 	#define ADS_NAMESPACE_BEGIN namespace ads {
 	#define ADS_NAMESPACE_END }
 	#define ADS_NS ::ads
@@ -32,9 +32,9 @@ class QSplitter;
 
 // Always enable "serialization" namespace.
 // It is not required for signals and slots.
-#define ADS_NAMESPACE_SER_BEGIN namespace ads { namespace serialization {
-#define ADS_NAMESPACE_SER_END }}
-#define ADS_NS_SER ::ads::serialization
+#define ADS_NAMESPACE_SER_BEGIN  namespace serialization {
+#define ADS_NAMESPACE_SER_END }
+#define ADS_NS_SER ::serialization
 
 // Width of the native window frame border (based on OS).
 #define ADS_WINDOW_FRAME_BORDER_WIDTH 7

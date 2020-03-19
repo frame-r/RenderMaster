@@ -19,5 +19,9 @@ err_compile*
 resources/.import/*
 build/installer/packages/com.framer.engine/data
 
+Makefile.*
+AdvancedDockingSystem_x64_resource.rc
+AdvancedDockingSystem_x64d_resource.rc
+
 
 

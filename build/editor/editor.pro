@@ -1,6 +1,7 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2019-03-09T23:11:59
+# Editor project.
+# Output: .exe
 #
 #-------------------------------------------------
 
@@ -127,18 +128,15 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin1
 
 CONFIG( debug, debug|release ) {
     # debug
-    win32:LIBS += "$$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/debug/AdvancedDockingSystem.lib"
+    win32:LIBS += "$$PWD/../../bin/AdvancedDockingSystem_x64d.lib"
     # force relink
-    PRE_TARGETDEPS += $$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/debug/AdvancedDockingSystem.lib
+    PRE_TARGETDEPS += $$PWD/../../bin/AdvancedDockingSystem_x64d.lib
 } else {
     # release
-    win32:LIBS += "$$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/release/AdvancedDockingSystem.lib"
+    win32:LIBS += "$$PWD/../../bin/AdvancedDockingSystem_x64.lib"
     # force relink
-    PRE_TARGETDEPS += $$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/release/AdvancedDockingSystem.lib
+    PRE_TARGETDEPS += $$PWD/../../bin/AdvancedDockingSystem_x64.lib
 }
-
-
-
 
 DISTFILES +=
 
@@ -167,4 +165,14 @@ INCLUDEPATH += $$(VLD_ROOT)/include
 DEPENDPATH += $$(VLD_ROOT)/include
 LIBS += -L$$(VLD_ROOT)/lib/Win64 -lvld
 
+# copy default editor settings
+copydata.commands = $(COPY_FILE) ..\..\resources\editor\save\MainWindow.dat ..\..\bin\MainWindow.dat &&
+copydata.commands += $(COPY_FILE) ..\..\resources\editor\save\Theme.dat ..\..\bin\Theme.dat &&
+copydata.commands += $(COPY_FILE) ..\..\resources\editor\save\Windows.dat ..\..\bin\Windows.dat
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
+
+message( "Executing qmake for editor..." )
 
