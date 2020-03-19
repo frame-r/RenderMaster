@@ -109,7 +109,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>_DLL_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_SECURE_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_DLL_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\include\;..\..\src\engine\;..\..\src\engine\thirdparty\yaml-cpp\include;..\..\src\engine\thirdparty\pnglib;..\..\src\engine\thirdparty\zlib;..\..\src\engine\thirdparty\jpeglib;</AdditionalIncludeDirectories>
@@ -120,7 +120,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_$(PlatformShortName)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_x86d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -129,7 +129,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>;_CRT_NO_SECURE_WARNINGS;_DLL_EXPORTS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_SECURE_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_DLL_EXPORTS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\include\;..\..\src\engine\;..\..\src\engine\thirdparty\yaml-cpp\include;..\..\src\engine\thirdparty\pnglib;..\..\src\engine\thirdparty\zlib;..\..\src\engine\thirdparty\jpeglib;C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\include</AdditionalIncludeDirectories>
@@ -140,7 +140,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_$(PlatformShortName)_$(Configuration).lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\debug\libfbxsdk.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_x64d.lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\debug\libfbxsdk.lib</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
@@ -154,7 +154,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>_DLL_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_SECURE_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_DLL_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\include\;..\..\src\engine\;..\..\src\engine\thirdparty\yaml-cpp\include;..\..\src\engine\thirdparty\pnglib;..\..\src\engine\thirdparty\zlib;..\..\src\engine\thirdparty\jpeglib;</AdditionalIncludeDirectories>
@@ -167,7 +167,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_$(PlatformShortName)_$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_x86.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -178,7 +178,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>;_CRT_NO_SECURE_WARNINGS;_DLL_EXPORTS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_SECURE_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_DLL_EXPORTS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>..\..\include\;..\..\src\engine\;..\..\src\engine\thirdparty\yaml-cpp\include;..\..\src\engine\thirdparty\pnglib;..\..\src\engine\thirdparty\zlib;..\..\src\engine\thirdparty\jpeglib;C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\include</AdditionalIncludeDirectories>
@@ -191,7 +191,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_$(PlatformShortName)_$(Configuration).lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\release\libfbxsdk.lib</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxguid.lib;yaml-cpp_x64.lib;%(AdditionalDependencies);C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\release\libfbxsdk.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

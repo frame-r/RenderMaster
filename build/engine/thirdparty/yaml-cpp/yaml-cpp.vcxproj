@@ -73,25 +73,25 @@
     <IncludePath>$(IncludePath)</IncludePath>
     <OutDir>..\..\..\..\bin\</OutDir>
     <IntDir>..\..\..\..\obj\yaml-cpp\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(PlatformShortName)_$(Configuration)</TargetName>
+    <TargetName>$(ProjectName)_x86d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(IncludePath)</IncludePath>
     <OutDir>..\..\..\..\bin\</OutDir>
     <IntDir>..\..\..\..\obj\yaml-cpp\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(PlatformShortName)_$(Configuration)</TargetName>
+    <TargetName>$(ProjectName)_x86</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
     <OutDir>..\..\..\..\bin\</OutDir>
     <IntDir>..\..\..\..\obj\yaml-cpp\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(PlatformShortName)_$(Configuration)</TargetName>
+    <TargetName>$(ProjectName)_x64d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(IncludePath)</IncludePath>
     <OutDir>..\..\..\..\bin\</OutDir>
     <IntDir>..\..\..\..\obj\yaml-cpp\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>$(ProjectName)_$(PlatformShortName)_$(Configuration)</TargetName>
+    <TargetName>$(ProjectName)_x64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
