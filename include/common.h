@@ -1,5 +1,9 @@
 #pragma once
 
+// Global defines.
+//#define USE_FBX // Uncommnent to compile with FBX SDK
+
+
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 

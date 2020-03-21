@@ -1,0 +1,5 @@
+1. Open build/editor/editor.pro in Qt Editor
+2. Set "..\obj\" in "Build directory". And ensure that checkbox "Shadow build" is set
+3. Run build for "Advanced docking system" subprojects first. bin/AdvancedDockingSystem_x64*.lib should be generated
+4. Run build for "editor" subproject
+5. Press Run in Qt Creator

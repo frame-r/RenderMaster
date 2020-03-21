@@ -1,0 +1,12 @@
+1. Open build/engine/Engine.sln in Visual Studio (recommended 2019)
+2. Build Engine project. bin/Engine*.dll should be genarated
+3. Build Example project
+4. Build editor in Qt Creator. See docs/editor_build.txt
+5. Run "Example" or "Editor" project 
+
+
+You can set inlude/common.h options:
+
+USE_FBX - build with FBX SDK
+
+ 

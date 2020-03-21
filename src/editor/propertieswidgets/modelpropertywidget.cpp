@@ -61,8 +61,8 @@ void ModelPropertyWidget::construct_material_group(Material *mat)
 		bool last = true;
 		for (char& c : name_)
 		{
-			c = last ? std::toupper(c) : std::tolower(c);
-			last = std::isspace(c);
+                        c = last ? toupper(c) : tolower(c);
+                        last = isspace(c);
 		}
 
 		return QString(name_.c_str());

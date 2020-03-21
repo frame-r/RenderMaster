@@ -161,9 +161,9 @@ CONFIG( debug, debug|release ) {
 }
 
 # visual leak detector
-INCLUDEPATH += $$(VLD_ROOT)/include
-DEPENDPATH += $$(VLD_ROOT)/include
-LIBS += -L$$(VLD_ROOT)/lib/Win64 -lvld
+#INCLUDEPATH += $$(VLD_ROOT)/include
+#DEPENDPATH += $$(VLD_ROOT)/include
+#LIBS += -L$$(VLD_ROOT)/lib/Win64 -lvld
 
 # copy default editor settings
 copydata.commands = $(COPY_FILE) ..\..\resources\editor\save\MainWindow.dat ..\..\bin\MainWindow.dat &&

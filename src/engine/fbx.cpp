@@ -4,6 +4,17 @@
 #include "filesystem.h"
 #include "resource_manager.h"
 #include "fbx.h"
+
+#ifndef USE_FBX
+void importFbx(const char *path, ProgressCallback callback)
+{
+	LogWarning("Not currently support FBX");
+}
+
+#else USE_FBX
+
+#pragma comment( lib, "C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64\debug\libfbxsdk.lib" )
+
 #include <fbxsdk.h>
 
 #ifdef IOS_REF
@@ -498,3 +509,4 @@ void fbx_skip_loading(const char* node, const char* name)
 }
 
 
+#endif
