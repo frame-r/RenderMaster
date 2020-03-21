@@ -167,7 +167,9 @@ void ParametersWidget::OnUpdate(float)
 		if (!Approximately(X, Y)) \
 		{ \
 			Y = X; \
+			ui-> F ->blockSignals(true); \
 			ui-> F ->setValue(static_cast<double>(X)); \
+			ui-> F->blockSignals(false); \
 		}
 
 		SET_VAL(p.x, pos_.x, pos_x_sb)
