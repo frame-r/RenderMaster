@@ -165,14 +165,14 @@ CONFIG( debug, debug|release ) {
 #DEPENDPATH += $$(VLD_ROOT)/include
 #LIBS += -L$$(VLD_ROOT)/lib/Win64 -lvld
 
-# copy default editor settings
-copydata.commands = $(COPY_FILE) ..\..\resources\editor\save\MainWindow.dat ..\..\bin\MainWindow.dat &&
-copydata.commands += $(COPY_FILE) ..\..\resources\editor\save\Theme.dat ..\..\bin\Theme.dat &&
-copydata.commands += $(COPY_FILE) ..\..\resources\editor\save\Windows.dat ..\..\bin\Windows.dat
-first.depends = $(first) copydata
-export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
+# Copy default editor settings
+# copydata.commands = $(COPY_FILE) ..\..\resources\editor\save\MainWindow.dat ..\..\bin\MainWindow.dat &&
+# copydata.commands += $(COPY_FILE) ..\..\resources\editor\save\Theme.dat ..\..\bin\Theme.dat &&
+# copydata.commands += $(COPY_FILE) ..\..\resources\editor\save\Windows.dat ..\..\bin\Windows.dat
+# first.depends = $(first) copydata
+# export(first.depends)
+# export(copydata.commands)
+# QMAKE_EXTRA_TARGETS += first copydata
 
 #message( "Executing qmake for editor..." )
 

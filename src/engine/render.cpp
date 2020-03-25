@@ -10,6 +10,7 @@
 #include "model.h"
 #include "camera.h"
 #include "filesystem.h"
+#include "render_paths/render_path_realtime.h"
 #include "thirdparty/simplecpp/SimpleCpp.h"
 #include <memory>
 #include <sstream>
@@ -23,7 +24,6 @@ struct ShaderInstance
 };
 
 static std::unordered_map<string, ShaderInstance> runtimeShaders; // defines -> Shader
-static std::unordered_map<size_t, ViewData> viewsDataMap; // view ID -> Data
 
 
 // One Profiler character
@@ -76,26 +76,6 @@ static const uint fontWidth[256] =
 ,7, 7, 7, 7, 3, 3, 3, 3, 9,10, 10,10,10,10,10,9,10, 9, 9, 9
 ,9, 7, 7, 7, 7, 7, 7, 7, 7, 7, 11, 6,7, 7, 7, 7, 3, 3, 3, 3
 ,7, 7, 8, 8, 8, 8, 8, 9, 8, 7, 7, 7, 7, 6, 8, 6
-};
-
-static const vec2 taaSamples[16] =
-{
-	vec2(1.0f / 2.0f,  1.0f / 3.0f),
-	vec2(1.0f / 4.0f,  2.0f / 3.0f),
-	vec2(3.0f / 4.0f,  1.0f / 9.0f),
-	vec2(1.0f / 8.0f,  4.0f / 9.0f),
-	vec2(5.0f / 8.0f,  7.0f / 9.0f),
-	vec2(3.0f / 8.0f,  2.0f / 9.0f),
-	vec2(7.0f / 8.0f,  5.0f / 9.0f),
-	vec2(1.0f / 16.0f,  8.0f / 9.0f),
-	vec2(9.0f / 16.0f,  1.0f / 27.0f),
-	vec2(5.0f / 16.0f, 10.0f / 27.0f),
-	vec2(13.0f / 16.0f, 19.0f / 27.0f),
-	vec2(3.0f / 16.0f,  4.0f / 27.0f),
-	vec2(11.0f / 16.0f, 13.0f / 27.0f),
-	vec2(7.0f / 16.0f, 22.0f / 27.0f),
-	vec2(15.0f / 16.0f,  7.0f / 27.0f),
-	vec2(1.0f / 32.0f, 16.0f / 27.0f)
 };
 
 
@@ -430,11 +410,11 @@ Render::RenderScene Render::getRenderScene()
 	return scene;
 }
 
-auto DLLEXPORT Render::DrawMeshes(PASS pass) -> void
-{
-	vector<RenderMesh> meshes = getRenderMeshes();
-	drawMeshes(pass, meshes);
-}
+//auto DLLEXPORT Render::DrawMeshes(PASS pass) -> void
+//{
+//	vector<RenderMesh> meshes = getRenderMeshes();
+//	drawMeshes(pass, meshes);
+//}
 
 auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples, TEXTURE_TYPE type, bool mips) -> Texture *
 {
@@ -499,509 +479,9 @@ auto DLLEXPORT Render::SetEnvironmentType(ENVIRONMENT_TYPE type) -> void
 
 void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
 {
-	uint32 timerID = uint32_t(_core->frame() % maxFrames);
-	uint32 dataTimerID = uint32_t((_core->frame() > (int64_t)maxFrames ? _core->frame() - 3 : 0) % maxFrames);
-
-	CORE_RENDER->TimersBeginFrame(timerID);
-	CORE_RENDER->TimersBeginPoint(timerID, T_ALL_FRAME);
-
-	uint w, h;
-	CORE_RENDER->GetViewport(&w, &h);
-	CORE_RENDER->ResizeBuffersByViewort();
-
-	// Init mats
-	mats.cameraProjUnjitteredMat_ = ProjMat;
-	mats.cameraProjMat_ = ProjMat;
-
-	ViewData& prev = viewsDataMap[viewID];
-
-	vec2 taaOffset;
-
-	if (taa)
-	{
-		taaOffset = taaSamples[_core->frame() % 16];
-		taaOffset = (taaOffset * 2.0f - vec2(1, 1));
-
-		float needJitter = float(viewMode == VIEW_MODE::FINAL);
-
-		mats.cameraProjMat_.el_2D[0][2] += needJitter * taaOffset.x / w;
-		mats.cameraProjMat_.el_2D[1][2] += needJitter * taaOffset.y / h;
-
-		// rejitter prev
-		if (_core->frame() > 1)
-			cameraPrevViewProjMatRejittered_ = prev.cameraProjUnjitteredMat_;
-		else
-			cameraPrevViewProjMatRejittered_ = ProjMat;
-
-		cameraPrevViewProjMatRejittered_.el_2D[0][2] += taaOffset.x / w;
-		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOffset.y / h;
-
-		if (_core->frame() > 1)
-			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * prev.cameraViewMat_;
-		else
-			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * ViewMat;
-	}
-	else
-		cameraPrevViewProjMatRejittered_ = prev.cameraProjMat_ * prev.cameraViewMat_;
-	
-	mats.cameraViewProjMat_			= mats.cameraProjMat_ * ViewMat;
-	mats.cameraViewMat_				= ViewMat;
-	mats.cameraWorldPos_				= ViewMat.Inverse().Column3(3);
-	mats.cameraViewProjectionInvMat_ = mats.cameraViewProjMat_.Inverse();
-	mats.cameraViewInvMat_			= mats.cameraViewMat_.Inverse();
-	//
-
-	// Restore prev matricies
-	if (_core->frame() > 1)
-		prevMats = prev;
-	else
-		prevMats = mats;
-
-	// Save prev matricies
-	prev = mats;
-
-	bool colorReprojection = viewMode == VIEW_MODE::COLOR_REPROJECTION || taa;
-
-	RenderBuffers buffers;
-	buffers.color =				GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-	buffers.velocity =			GetRenderTexture(w, h, TEXTURE_FORMAT::RG16F);
-	buffers.depth =				CORE_RENDER->GetSurfaceDepthTexture();
-	buffers.albedo =			GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-	buffers.diffuseLight =		GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA16F);
-	buffers.specularLight =		GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA16F);
-	buffers.normal =			GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA32F);
-	buffers.shading =			GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-	if (colorReprojection)
-		buffers.colorReprojected = GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-
-	Texture* colorPrev = GetPrevRenderTexture(PREV_TEXTURES::COLOR, w, h, TEXTURE_FORMAT::RGBA8);
-
-	RenderScene scene = getRenderScene();
-
-	// Atmosphere
-	if (environmentType == ENVIRONMENT_TYPE::ATMOSPHERE)
-	{
-		if (Shader *shader = GetShader("environment_cubemap.hlsl", planeMesh.get(), nullptr, LS_GEOMETRY))
-		{
-			environment = environmentAtmosphere;
-
-			AtmosphereHash atmnnNextHash;
-			calculateAtmosphereHash(scene.sun_direction, atmnnNextHash);
-
-			if (!(atmnnNextHash == atmosphereHash))
-			{
-				atmosphereHash = atmnnNextHash;
-
-				CORE_RENDER->SetRenderTextures(1, &environment, nullptr);
-
-				uint w, h;
-				CORE_RENDER->GetViewport(&w, &h);
-				CORE_RENDER->SetViewport(environmentCubemapSize, environmentCubemapSize, 6);
-
-				CORE_RENDER->SetShader(shader);
-				CORE_RENDER->SetDepthTest(0);
-
-				shader->SetVec4Parameter("sun_direction", &scene.sun_direction);
-				shader->FlushParameters();
-
-				CORE_RENDER->Draw(planeMesh.get(), 6);
-
-				CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
-				CORE_RENDER->SetViewport(w, h);
-
-				environment->CreateMipmaps();
-			}
-		}
-		else
-			environment = environmentHDRI.get();
-	}else
-		environment = environmentHDRI.get();
-
-	// Sky velocity
-	if (Shader *shader = GetShader("sky_velocity.hlsl", planeMesh.get()))
-	{
-		CORE_RENDER->SetShader(shader);
-
-		CORE_RENDER->SetRenderTextures(1, &buffers.velocity, nullptr);
-		CORE_RENDER->Clear();
-
-		mat4 m = prevMats.cameraViewMat_;
-		m.SetColumn3(3, vec3(0, 0, 0)); // remove translation
-		m = prevMats.cameraProjUnjitteredMat_ * prevMats.cameraViewMat_;
-		shader->SetMat4Parameter("VP_prev", &m);
-
-		m = ViewMat;
-		m.SetColumn3(3, vec3(0, 0, 0));
-		m = mats.cameraProjUnjitteredMat_ * m;
-		m = m.Inverse();
-		shader->SetMat4Parameter("VP_inv", &m);
-
-		shader->FlushParameters();
-
-		CORE_RENDER->Draw(planeMesh.get(), 1);
-
-		CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
-	}
-
-	// G-buffer
-	{
-		CORE_RENDER->TimersBeginPoint(timerID, T_GBUFFER);
-
-		Texture *texs[4] = { buffers.albedo, buffers.shading, buffers.normal, buffers.velocity };
-		CORE_RENDER->SetRenderTextures(3, texs, buffers.depth);
-		CORE_RENDER->Clear();
-
-		CORE_RENDER->SetRenderTextures(4, texs, buffers.depth);
-
-		CORE_RENDER->SetDepthTest(1);
-		{
-			drawMeshes(PASS::DEFERRED, scene.meshes);
-		}
-		CORE_RENDER->SetRenderTextures(4, nullptr, nullptr);
-
-		CORE_RENDER->SetDepthTest(0);
-
-		CORE_RENDER->TimersEndPoint(timerID, T_GBUFFER);
-		gbufferMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID, T_GBUFFER);
-	}
-
-	// Color reprojection
-	if (colorReprojection)
-	{
-		Shader* shader = GetShader("reprojection.hlsl", planeMesh.get());
-		if (shader)
-		{
-			Texture* texs_rt[1] = { buffers.colorReprojected };
-			CORE_RENDER->SetRenderTextures(1, texs_rt, nullptr);
-	
-			Texture* texs[2] = { colorPrev, buffers.velocity };
-			CORE_RENDER->BindTextures(2, texs);
-			CORE_RENDER->SetShader(shader);
-	
-			vec4 s((float)w, (float)h, 0, 0);
-			shader->SetVec4Parameter("bufer_size", &s);
-			shader->FlushParameters();
-	
-			CORE_RENDER->Draw(planeMesh.get(), 1);
-			CORE_RENDER->BindTextures(2, nullptr);
-	
-			CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
-		}
-	}
-
-	// Lights
-	{
-		CORE_RENDER->TimersBeginPoint(timerID, T_LIGHTS);
-
-		CORE_RENDER->SetDepthTest(0);
-		Texture *rts[2] = {buffers.diffuseLight, buffers.specularLight};
-		CORE_RENDER->SetRenderTextures(2, rts, nullptr);
-		CORE_RENDER->Clear();
-
-		Shader *shader = GetShader("deferred_light.hlsl", planeMesh.get());
-		if (shader && scene.lights.size())
-		{
-			CORE_RENDER->SetShader(shader);
-
-			shader->SetVec4Parameter("camera_position", &mats.cameraWorldPos_);
-			shader->SetMat4Parameter("camera_view_projection_inv", &mats.cameraViewProjectionInvMat_);
-
-			CORE_RENDER->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
-			Texture *texs[4] = {buffers.normal, buffers.shading, buffers.albedo, buffers.depth};
-			CORE_RENDER->BindTextures(4, texs);
-
-			for (RenderLight &renderLight : scene.lights)
-			{
-				vec4 lightColor(renderLight.light->GetIntensity());
-				vec4 dir = vec4(renderLight.worldDirection);
-
-				shader->SetVec4Parameter("light_color", &lightColor);
-				shader->SetVec4Parameter("light_direction", &dir);
-				shader->FlushParameters();
-
-				CORE_RENDER->Draw(planeMesh.get(), 1);
-			}
-			CORE_RENDER->BindTextures(4, nullptr);
-			CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
-		}
-
-		CORE_RENDER->SetRenderTextures(2, nullptr, nullptr);
-
-		CORE_RENDER->TimersEndPoint(timerID, T_LIGHTS);
-		lightsMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID, T_LIGHTS);
-
-	}
-
-	// Composite
-	{
-		CORE_RENDER->TimersBeginPoint(timerID, T_COMPOSITE);
-
-		compositeMaterial->SetDef("specular_quality", specualrQuality);
-		compositeMaterial->SetDef("environment_type", static_cast<int>(environmentType));
-		
-		if (auto shader = compositeMaterial->GetShader(planeMesh.get()))
-		{
-			Texture *rts[1] = { buffers.color };
-			CORE_RENDER->SetRenderTextures(1, rts, nullptr);
-			CORE_RENDER->SetShader(shader);
-
-			vec4 environment_resolution;
-			environment_resolution.x = float(environment->GetWidth());
-			environment_resolution.y = float(environment->GetHeight());
-			environment_resolution.z = float(environment->GetMipmaps());
-			shader->SetVec4Parameter("environment_resolution", &environment_resolution);
-
-			vec4 environment_intensity;
-			environment_intensity.x = diffuseEnvironemnt;
-			environment_intensity.y = specularEnvironemnt;
-			shader->SetVec4Parameter("environment_intensity", &environment_intensity);
-
-			shader->SetVec4Parameter("camera_position", &mats.cameraWorldPos_);
-
-			shader->SetMat4Parameter("camera_view_projection_inv", &mats.cameraViewProjectionInvMat_);
-
-			vec4 sun_disrection = vec4(0, 0, 1, 0);
-			if (scene.hasWorldLight)
-			{
-				//RenderVector(scene.lights[0].worldDirection, vec4(1, 0, 0, 1));
-				sun_disrection = scene.lights[0].worldDirection;
-			}
-			shader->SetVec4Parameter("sun_disrection", &sun_disrection);
-
-			shader->FlushParameters();
-
-			CORE_RENDER->SetDepthTest(0);
-
-			constexpr int tex_count = 7;
-			Texture *texs[tex_count] = {
-				buffers.albedo,
-				buffers.normal,
-				buffers.shading,
-				buffers.diffuseLight,
-				buffers.specularLight,
-				buffers.depth,
-				environment
-			};
-
-			CORE_RENDER->BindTextures(tex_count, texs);
-			{
-				CORE_RENDER->Draw(planeMesh.get(), 1);
-			}
-			CORE_RENDER->BindTextures(tex_count, nullptr);
-		}
-
-		CORE_RENDER->TimersEndPoint(timerID, T_COMPOSITE);
-		compositeMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID, T_COMPOSITE);
-	}
-
-	// TAA
-	if (taa)
-		if (Shader *shader = GetShader("taa.hlsl", planeMesh.get()))
-		{
-			Texture* taaOut = GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-
-			Texture* texs_rt[1] = { taaOut };
-			CORE_RENDER->SetRenderTextures(1, texs_rt, nullptr);
-	
-			Texture* texs[2] = { buffers.color, buffers.colorReprojected};
-			CORE_RENDER->BindTextures(2, texs);
-			CORE_RENDER->SetShader(shader);
-	
-			CORE_RENDER->Draw(planeMesh.get(), 1);
-			CORE_RENDER->BindTextures(2, nullptr);
-	
-			CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
-
-			std::swap(taaOut, buffers.color);
-			ReleaseRenderTexture(taaOut);
-		}
-
-	// Restore default render target
-	Texture *rts[1] = {CORE_RENDER->GetSurfaceColorTexture()};
-	CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
-
-	// Final copy
-	{
-		finalPostMaterial->SetDef("view_mode", (int)viewMode);
-
-		if (auto shader = finalPostMaterial->GetShader(planeMesh.get()))
-		{
-			constexpr int tex_count = 8;
-			Texture* texs[tex_count] = {
-				buffers.albedo,
-				buffers.normal,
-				buffers.shading,
-				buffers.diffuseLight,
-				buffers.specularLight,
-				buffers.velocity,
-				buffers.color,
-				colorReprojection ? buffers.colorReprojected : nullptr
-			};
-			int tex_bind = tex_count;
-			if (!colorReprojection) tex_bind--;
-
-			CORE_RENDER->BindTextures(tex_bind, texs);
-			CORE_RENDER->SetShader(shader);
-			CORE_RENDER->Draw(planeMesh.get(), 1);
-			CORE_RENDER->BindTextures(tex_bind, nullptr);
-		}
-	}
-
-	//renderGrid();
-
-	// Wireframe
-	if (wireframeModels && IsWireframe())
-	{
-		Texture* wireframe_depth = CORE_RENDER->GetSurfaceDepthTexture();
-
-		const bool DepthTest = true;
-		CORE_RENDER->SetDepthTest(DepthTest);
-
-		// WTF? Why original depth buffer don't without TAA
-		if (/*taa &&*/ DepthTest)
-		{
-			if (Shader *shader = GetShader("depth_indentation.hlsl", planeMesh.get()))
-			{
-				CORE_RENDER->SetDepthFunc(DEPTH_FUNC::ALWAYS);
-				CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
-
-				wireframe_depth = GetRenderTexture(w, h, TEXTURE_FORMAT::D24S8);
-				CORE_RENDER->SetRenderTextures(1, nullptr, wireframe_depth);
-
-				Texture* texs[1] = { CORE_RENDER->GetSurfaceDepthTexture() };
-				CORE_RENDER->BindTextures(1, texs);
-			
-				CORE_RENDER->SetShader(shader);
-				CORE_RENDER->Draw(planeMesh.get(), 1);
-			
-				CORE_RENDER->BindTextures(1, nullptr);
-
-				CORE_RENDER->SetDepthFunc(DEPTH_FUNC::LESS_EQUAL);
-			}
-
-			// remove jitter form proj matrix
-			mats.cameraViewProjMat_ = ProjMat * ViewMat;
-			mats.cameraViewProjectionInvMat_ = mats.cameraViewProjMat_.Inverse();
-		}
-
-		CORE_RENDER->SetFillingMode(FILLING_MODE::WIREFRAME);
-		CORE_RENDER->SetBlendState(BLEND_FACTOR::SRC_ALPHA, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
-
-		std::vector<RenderMesh> meshes;
-
-		for (int i = 0; i < modelsNum; ++i)
-		{
-			Model* m = wireframeModels[i];
-			Mesh* mesh = m->GetMesh();
-
-			if (!mesh)
-				continue;
-
-			meshes.emplace_back(RenderMesh{ m->GetId(), mesh, m->GetMaterial(), m->GetWorldTransform(), m->GetWorldTransformPrev() });
-		}
-
-		// render to MSAA RT + resolve
-
-		if (IsWireframeAA())
-		{
-			Texture* msaaTex = { GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8, 4) };
-			CORE_RENDER->SetRenderTextures(1, &msaaTex, nullptr);
-
-			CORE_RENDER->Clear();
-
-			CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
-			CORE_RENDER->SetDepthTest(0);
-
-			CORE_RENDER->BindTextures(1, &wireframe_depth);
-
-				drawMeshes(PASS::WIREFRAME, meshes);
-
-			CORE_RENDER->SetDepthTest(1);
-			CORE_RENDER->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
-			CORE_RENDER->SetFillingMode(FILLING_MODE::SOLID);
-
-			// Restore default render target
-			Texture* rts_[1] = { CORE_RENDER->GetSurfaceColorTexture() };
-			CORE_RENDER->SetRenderTextures(1, rts_, CORE_RENDER->GetSurfaceDepthTexture());
-
-			Shader* shader = GetShader("msaa_resolve.hlsl", planeMesh.get());
-			CORE_RENDER->SetShader(shader);
-
-			CORE_RENDER->BindTextures(1, &msaaTex, BIND_TETURE_FLAGS::PIXEL);
-			CORE_RENDER->Draw(planeMesh.get(), 1);
-			CORE_RENDER->BindTextures(1, nullptr, BIND_TETURE_FLAGS::PIXEL);
-
-			ReleaseRenderTexture(msaaTex);
-		}
-		else
-		{
-			Texture* rts_[1] = { CORE_RENDER->GetSurfaceColorTexture() };
-			CORE_RENDER->SetRenderTextures(1, rts_, nullptr);
-
-			CORE_RENDER->BindTextures(1, &wireframe_depth);
-				drawMeshes(PASS::WIREFRAME, meshes);
-			CORE_RENDER->BindTextures(1, nullptr);
-
-			CORE_RENDER->SetFillingMode(FILLING_MODE::SOLID);
-		}
-
-		if (wireframe_depth != CORE_RENDER->GetSurfaceDepthTexture())
-		{
-			ReleaseRenderTexture(wireframe_depth);
-		}
-
-		// Restore default render target
-		Texture* rts_[1] = { CORE_RENDER->GetSurfaceColorTexture() };
-		CORE_RENDER->SetRenderTextures(1, rts_, nullptr);
-		
-		CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
-	}
-
-	// Vectors
-	if (renderVectors.size())
-	{
-		CORE_RENDER->SetDepthTest(1);
-
-		if (auto shader = GetShader("primitive.hlsl", lineMesh.get()))
-		{
-			CORE_RENDER->SetShader(shader);
-
-			for (auto &v : renderVectors)
-			{
-				shader->SetVec4Parameter("main_color", &v.color);
-				mat4 transform(0.0f);
-				transform.el_2D[0][0] = v.v.x;
-				transform.el_2D[1][0] = v.v.y;
-				transform.el_2D[2][0] = v.v.z;
-				mat4 MVP = prev.cameraViewProjMat_ * transform;
-				shader->SetMat4Parameter("MVP", &MVP);
-				shader->FlushParameters();
-
-				CORE_RENDER->Draw(lineMesh.get(), 1);
-			}
-		}
-	}
-
-	RenderGUI();
-
-	buffers.depth = nullptr;
-	ReleaseRenderTexture(buffers.color);
-	ReleaseRenderTexture(buffers.albedo);
-	ReleaseRenderTexture(buffers.diffuseLight);
-	ReleaseRenderTexture(buffers.specularLight);
-	ReleaseRenderTexture(buffers.normal);
-	ReleaseRenderTexture(buffers.shading);
-	ReleaseRenderTexture(buffers.velocity);
-	if (colorReprojection)
-		ReleaseRenderTexture(buffers.colorReprojected);
-
-
-	ExchangePrevRenderTexture(colorPrev, buffers.color);
-
-	CORE_RENDER->TimersEndPoint(timerID, T_ALL_FRAME);
-	frameMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID, T_ALL_FRAME);
-
-	CORE_RENDER->TimersEndFrame(timerID);
+	path->FrameBegin(viewID, ViewMat, ProjMat, wireframeModels, modelsNum);
+	path->RenderFrame();
+	path->FrameEnd();
 }
 
 Texture* Render::GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format)
@@ -1052,64 +532,33 @@ void Render::ExchangePrevRenderTexture(Texture* prev, Texture* some)
 		LogWarning("ExchangePrevRenderTexture(): unable find textures");
 }
 
-void Render::renderGrid()
+void Render::GetEnvironmentResolution(vec4& environment_resolution)
 {
-	CORE_RENDER->SetDepthTest(1);
-
-	if (auto shader = GetShader("primitive.hlsl", gridMesh.get()))
-	{
-		CORE_RENDER->SetShader(shader);
-
-		shader->SetMat4Parameter("MVP", &mats.cameraViewProjMat_);
-		shader->SetVec4Parameter("main_color", &vec4(0.3f, 0.3f, 0.3f, 1.0f));
-		shader->FlushParameters();
-
-		CORE_RENDER->Draw(gridMesh.get(), 1);
-	}
+	environment_resolution.x = float(environment->GetWidth());
+	environment_resolution.y = float(environment->GetHeight());
+	environment_resolution.z = float(environment->GetMipmaps());
 }
 
-void Render::drawMeshes(PASS pass, std::vector<RenderMesh>& meshes)
+void Render::GetEnvironmentIntensity(vec4& environment_intensity)
 {
-	for(RenderMesh &renderMesh : meshes)
-	{
-		Material *mat = renderMesh.mat;
-		if (!mat)
-			continue;
+	environment_intensity.x = diffuseEnvironemnt;
+	environment_intensity.y = specularEnvironemnt;
+}
 
-		Shader *shader = nullptr;
+void Render::renderGrid()
+{
+	//CORE_RENDER->SetDepthTest(1);
 
-		if (pass == PASS::DEFERRED)
-			shader = mat->GetDeferredShader(renderMesh.mesh);
-		else if (pass == PASS::ID)
-			shader = mat->GetIdShader(renderMesh.mesh);
-		else if (pass == PASS::WIREFRAME)
-			shader = mat->GetWireframeShader(renderMesh.mesh);
+	//if (auto shader = GetShader("primitive.hlsl", gridMesh.get()))
+	//{
+	//	CORE_RENDER->SetShader(shader);
 
-		if (!shader)
-			continue;
-		
-		CORE_RENDER->SetShader(shader);
+	//	shader->SetMat4Parameter("MVP", &mats.cameraViewProjMat_);
+	//	shader->SetVec4Parameter("main_color", &vec4(0.3f, 0.3f, 0.3f, 1.0f));
+	//	shader->FlushParameters();
 
-		mat->UploadShaderParameters(shader, pass);
-		mat->BindShaderTextures(shader, pass);
-
-		mat4 MVP = mats.cameraViewProjMat_ * renderMesh.worldTransformMat;
-		mat4 MVP_prev = cameraPrevViewProjMatRejittered_ * renderMesh.worldTransformMatPrev;
-		mat4 M = renderMesh.worldTransformMat;
-		mat4 NM = M.Inverse().Transpose();
-
-		shader->SetMat4Parameter("MVP", &MVP);
-		shader->SetMat4Parameter("MVP_prev", &MVP_prev);
-		shader->SetMat4Parameter("M", &M);
-		shader->SetMat4Parameter("NM", &NM);
-
-		if (pass == PASS::ID)
-			shader->SetUintParameter("id", renderMesh.modelId);
-
-		shader->FlushParameters();
-
-		CORE_RENDER->Draw(renderMesh.mesh, 1);
-	}
+	//	CORE_RENDER->Draw(gridMesh.get(), 1);
+	//}
 }
 
 void Render::calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash)
@@ -1117,16 +566,67 @@ void Render::calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash)
 	memcpy(&hash, &sun_direction, 4 * 3);
 }
 
+void Render::updateEnvirenment(RenderScene& scene)
+{
+	// Atmosphere
+	if (GetEnvironmentType() == ENVIRONMENT_TYPE::ATMOSPHERE)
+	{
+		if (Shader * shader = GetShader("environment_cubemap.hlsl", fullScreen(), nullptr, Render::LS_GEOMETRY))
+		{
+			environment = environmentAtmosphere;
+
+			AtmosphereHash atmnnNextHash;
+			calculateAtmosphereHash(scene.sun_direction, atmnnNextHash);
+
+			if (!(atmnnNextHash == atmosphereHash))
+			{
+				atmosphereHash = atmnnNextHash;
+
+				CORE_RENDER->SetRenderTextures(1, &environment, nullptr);
+
+				uint w, h;
+				CORE_RENDER->GetViewport(&w, &h);
+				CORE_RENDER->SetViewport(environmentCubemapSize, environmentCubemapSize, 6);
+
+				CORE_RENDER->SetShader(shader);
+				CORE_RENDER->SetDepthTest(0);
+
+				shader->SetVec4Parameter("sun_direction", &scene.sun_direction);
+				shader->FlushParameters();
+
+				CORE_RENDER->Draw(planeMesh.get(), 6);
+
+				CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
+				CORE_RENDER->SetViewport(w, h);
+
+				environment->CreateMipmaps();
+			}
+		}
+		else
+			environment = environmentHDRI.get();
+	}
+	else
+		environment = environmentHDRI.get();
+}
+
+uint32 Render::timerID()
+{
+	return uint32_t(_core->frame() % maxFrames);;
+}
+
+uint32 Render::dataTimerID()
+{
+	return uint32_t((_core->frame() > (int64_t)maxFrames ? _core->frame() - 3 : 0) % maxFrames);;
+}
+
+uint Render::getNumLines()
+{
+	return path->getNumLines();
+}
+
 std::string Render::getString(uint i)
 {
-	switch (i)
-	{
-		case 0: return "Frame GPU: " + std::to_string(frameMs); break;
-		case 1: return "GBuffer GPU: " + std::to_string(gbufferMs); break;
-		case 2: return "Lights GPU: " + std::to_string(lightsMs); break;
-		case 3: return "Composite GPU: " + std::to_string(compositeMs); break;
-	}
-	return "";
+	return path->getString(i);
 }
 
 void Render::Init()
@@ -1145,12 +645,6 @@ void Render::Init()
 
 	MaterialManager* mm = _core->GetMaterialManager();
 
-	compositeMaterial = mm->CreateInternalMaterial("composite");
-	assert(compositeMaterial);
-
-	finalPostMaterial = mm->CreateInternalMaterial("final_post");
-	assert(finalPostMaterial);
-
 	// GPU timers
 	for(int i = 0; i < maxFrames; ++i)
 		CORE_RENDER->CreateTimer();
@@ -1158,6 +652,8 @@ void Render::Init()
 	_core->AddProfilerCallback(this);
 
 	environmentAtmosphere = GetRenderTexture(environmentCubemapSize, environmentCubemapSize, TEXTURE_FORMAT::RGBA16F, 1, TEXTURE_TYPE::TYPE_CUBE, true);
+
+	path = new RenderPathRealtime;
 
 	Log("Render initialized");
 }
@@ -1183,6 +679,9 @@ void Render::Update()
 
 void Render::Free()
 {
+	delete path;
+	path = nullptr;
+
 	ReleaseRenderTexture(environmentAtmosphere);
 	delete whiteTexture;
 	environmentHDRI.release();

@@ -1,33 +1,8 @@
 #pragma once
 #include "Common.h"
 
-struct ViewData
-{
-	mat4 cameraProjUnjitteredMat_;
-	mat4 cameraProjMat_;
-	mat4 cameraViewMat_;
-	mat4 cameraViewProjMat_;
-	vec4 cameraWorldPos_;
-	mat4 cameraViewProjectionInvMat_;
-	mat4 cameraViewInvMat_;
-};
-
 class Render : public IProfilerCallback
 {
-	enum TIMER_ID
-	{
-		T_GBUFFER = 0,
-		T_LIGHTS,
-		T_COMPOSITE,
-		T_ALL_FRAME
-	};
-
-	enum LOAD_SHADER_FLAGS
-	{
-		LS_NONE = 0,
-		LS_GEOMETRY = 1,
-	};
-
 	struct AtmosphereHash
 	{
 		uint32_t value[3];
@@ -42,46 +17,7 @@ class Render : public IProfilerCallback
 		}
 	};
 
-	struct RenderBuffers
-	{
-		Texture* color;
-		Texture* colorReprojected;
-		Texture* albedo;
-		Texture* normal;
-		Texture* shading;
-		Texture* depth;
-		Texture* diffuseLight;
-		Texture* specularLight;
-		Texture* velocity;
-	};
-
-	struct RenderMesh
-	{
-		int modelId;
-		Mesh* mesh{};
-		Material* mat{};
-		mat4 worldTransformMat;
-		mat4 worldTransformMatPrev;
-	};
-
-	struct RenderLight
-	{
-		Light *light;
-		vec3 worldDirection;
-	};
-
-	struct RenderScene
-	{
-		std::vector<RenderMesh> meshes;
-		std::vector<RenderLight> lights;
-		bool hasWorldLight;
-		vec4 sun_direction;
-	};
-
-	ViewData mats;
-	ViewData prevMats;
-
-	mat4 cameraPrevViewProjMatRejittered_; // previous Projection matrix with same jitter as current frame
+	RenderPathBase* path{};
 
 	// Render internal resources
 	ManagedPtr<Texture> fontTexture;
@@ -89,8 +25,6 @@ class Render : public IProfilerCallback
 	ManagedPtr<Mesh> planeMesh;
 	ManagedPtr<Mesh> gridMesh;
 	ManagedPtr<Mesh> lineMesh;
-	Material* compositeMaterial{};
-	Material* finalPostMaterial{};
 
 	struct RenderVector
 	{
@@ -114,21 +48,59 @@ class Render : public IProfilerCallback
 	float diffuseEnvironemnt{ 1.0f };
 	float specularEnvironemnt{ 1.0f };
 	const uint64_t maxFrames = 8;
-	float gbufferMs;
-	float lightsMs;
-	float compositeMs;
-	float frameMs;
 
-	std::vector<RenderMesh> getRenderMeshes();
-	RenderScene getRenderScene();
 	void renderGrid();
-	void drawMeshes(PASS pass, std::vector<RenderMesh>& meshes);
 	void calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash);
 
 public:
 
+	enum TIMER_ID
+	{
+		T_ALL_FRAME = 0,
+
+		T_GBUFFER,
+		T_LIGHTS,
+		T_COMPOSITE,
+	};
+
+	enum LOAD_SHADER_FLAGS
+	{
+		LS_NONE = 0,
+		LS_GEOMETRY = 1,
+	};
+
+	struct RenderMesh
+	{
+		int modelId;
+		Mesh* mesh{};
+		Material* mat{};
+		mat4 worldTransformMat;
+		mat4 worldTransformMatPrev;
+	};
+
+	struct RenderLight
+	{
+		Light* light;
+		vec3 worldDirection;
+	};
+
+	struct RenderScene
+	{
+		std::vector<RenderMesh> meshes;
+		std::vector<RenderLight> lights;
+		bool hasWorldLight;
+		vec4 sun_direction;
+	};
+
+	RenderScene getRenderScene();
+	std::vector<RenderMesh> getRenderMeshes();
+	Mesh* fullScreen() { return planeMesh.get(); }
+	void updateEnvirenment(RenderScene& scene);
+	uint32 timerID();
+	uint32 dataTimerID();
+
 	// IProfilerCallback
-	uint getNumLines() override { return 4; }
+	uint getNumLines() override;
 	std::string getString(uint i) override;
 
 public:
@@ -138,13 +110,16 @@ public:
 	void RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum);
 	auto GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format) -> Texture*;
 	void ExchangePrevRenderTexture(Texture *prev, Texture *some);
+	void GetEnvironmentResolution(vec4& out);
+	void GetEnvironmentIntensity(vec4& out);
+	Texture* GetEnvironmentTexture() { return environment; }
 
 public:
 	auto DLLEXPORT GetShader(const char* path, Mesh* meshattrib = nullptr, const std::vector<std::string>* defines = nullptr, LOAD_SHADER_FLAGS flags = LS_NONE) -> Shader*;
 	auto DLLEXPORT GetComputeShader(const char* path, const std::vector<std::string>* defines) -> Shader*;
 	auto DLLEXPORT ReloadShaders() -> void;
 	auto DLLEXPORT RenderGUI() -> void;
-	auto DLLEXPORT DrawMeshes(PASS pass) -> void;
+	//auto DLLEXPORT DrawMeshes(PASS pass) -> void;
 	auto DLLEXPORT GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples = 0, TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D, bool mips = false) -> Texture*;
 	auto DLLEXPORT ReleaseRenderTexture(Texture *tex) -> void;
 	auto DLLEXPORT RenderVector(const vec3& end, const vec4& c) -> void { renderVectors.push_back({c, end}); }

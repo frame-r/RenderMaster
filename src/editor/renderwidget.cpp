@@ -281,6 +281,8 @@ void RenderWidget::onRender()
 		coreRender->PopStates();
 	}
 
+	// TODO: repair picking
+	/*
 	if (leftMouseClick && !keyAlt)
 	{
 		if ((manipulator && !manipulator->isMouseIntersect(normalizedMousePos))
@@ -323,7 +325,7 @@ void RenderWidget::onRender()
 			editor->SelectObjects(slected);
 
 		}
-	}
+	}*/
 
 
 	coreRender->SwapBuffers();

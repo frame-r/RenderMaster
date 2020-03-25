@@ -140,6 +140,12 @@
     <ClInclude Include="..\..\src\engine\thirdparty\zlib\zutil.h">
       <Filter>thirdparty\zlib</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\engine\render_paths\render_path_realtime.h">
+      <Filter>render_paths</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\render_paths\render_path_base.h">
+      <Filter>render_paths</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\engine\pch.cpp" />
@@ -425,6 +431,12 @@
     <ClCompile Include="..\..\src\engine\thirdparty\zlib\zutil.c">
       <Filter>thirdparty\zlib</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\engine\render_paths\render_path_realtime.cpp">
+      <Filter>render_paths</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\render_paths\render_path_base.cpp">
+      <Filter>render_paths</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="corerender">
@@ -453,6 +465,9 @@
     </Filter>
     <Filter Include="thirdparty\zlib">
       <UniqueIdentifier>{5060a3f3-bce7-452e-a983-54feb174ab01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render_paths">
+      <UniqueIdentifier>{77aa1319-0a49-420e-a1c2-15e86755f6ed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

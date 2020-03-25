@@ -55,6 +55,8 @@ class MainWindow;
 class Camera;
 class Input;
 class Render;
+class RenderPathBase;
+class RenderPathRealtime;
 class IProfilerCallback;
 class File;
 struct FileMapping;
