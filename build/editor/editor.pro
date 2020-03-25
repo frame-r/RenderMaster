@@ -174,5 +174,5 @@ export(first.depends)
 export(copydata.commands)
 QMAKE_EXTRA_TARGETS += first copydata
 
-message( "Executing qmake for editor..." )
+#message( "Executing qmake for editor..." )
 

@@ -12,36 +12,37 @@ struct ViewData
 	mat4 cameraViewInvMat_;
 };
 
-enum TIMER_ID
-{
-	T_GBUFFER = 0,
-	T_LIGHTS,
-	T_COMPOSITE,
-	T_ALL_FRAME
-};
-
-enum LOAD_SHADER_FLAGS
-{
-	LS_NONE = 0,
-	LS_GEOMETRY = 1,
-};
-
-struct AtmosphereHash
-{
-	uint32_t value[3];
-
-	bool operator==(const AtmosphereHash& r)
-	{
-		return memcmp(&r, value, sizeof(AtmosphereHash)) == 0;
-	}
-	void operator=(const AtmosphereHash& r)
-	{
-		memcpy(&value, &r.value, sizeof(AtmosphereHash));
-	}
-};
-
 class Render : public IProfilerCallback
 {
+
+	enum TIMER_ID
+	{
+		T_GBUFFER = 0,
+		T_LIGHTS,
+		T_COMPOSITE,
+		T_ALL_FRAME
+	};
+
+	enum LOAD_SHADER_FLAGS
+	{
+		LS_NONE = 0,
+		LS_GEOMETRY = 1,
+	};
+
+	struct AtmosphereHash
+	{
+		uint32_t value[3];
+
+		bool operator==(const AtmosphereHash& r)
+		{
+			return memcmp(&r, value, sizeof(AtmosphereHash)) == 0;
+		}
+		void operator=(const AtmosphereHash& r)
+		{
+			memcpy(&value, &r.value, sizeof(AtmosphereHash));
+		}
+	};
+
 	struct RenderBuffers
 	{
 		Texture* color;
@@ -105,7 +106,6 @@ class Render : public IProfilerCallback
 	ManagedPtr<Mesh> planeMesh;
 	ManagedPtr<Mesh> gridMesh;
 	ManagedPtr<Mesh> lineMesh;
-
 	Material* compositeMaterial{};
 	Material* finalPostMaterial{};
 
@@ -118,13 +118,9 @@ class Render : public IProfilerCallback
 
 	int specualrQuality{};
 	VIEW_MODE viewMode{VIEW_MODE::FINAL};
-	float debugParam{1};
-	float debugParam1{1};
-
 	bool taa{true};
 	bool wireframeAA{false};
 	bool wireframe{false};
-
 	ENVIRONMENT_TYPE environmentType{ENVIRONMENT_TYPE::CUBEMAP};
 	const int environmentCubemapSize = 256;
 	AtmosphereHash atmosphereHash{};
@@ -134,18 +130,16 @@ class Render : public IProfilerCallback
 	Texture *environmentAtmosphere;
 	float diffuseEnvironemnt{ 1.0f };
 	float specularEnvironemnt{ 1.0f };
-
-	std::vector<RenderMesh> getRenderMeshes();
-	RenderScene getRenderScene();
-	void renderGrid();
-	void drawMeshes(PASS pass, std::vector<RenderMesh>& meshes);
-
 	const uint64_t maxFrames = 8;
 	float gbufferMs;
 	float lightsMs;
 	float compositeMs;
 	float frameMs;
 
+	std::vector<RenderMesh> getRenderMeshes();
+	RenderScene getRenderScene();
+	void renderGrid();
+	void drawMeshes(PASS pass, std::vector<RenderMesh>& meshes);
 	void calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash);
 public:
 
@@ -189,9 +183,5 @@ public:
 	auto DLLEXPORT GetEnvironmentTexturePath() -> const char*;
 	auto DLLEXPORT GetEnvironmentType() const -> ENVIRONMENT_TYPE { return static_cast<ENVIRONMENT_TYPE>(environmentType); }
 	auto DLLEXPORT SetEnvironmentType(ENVIRONMENT_TYPE type) -> void;
-
-	// debug
-	auto DLLEXPORT SetDebugParam(float v) -> void { debugParam = v; }
-	auto DLLEXPORT SetDebugParam1(float v) -> void { debugParam1 = v; }
 };
 

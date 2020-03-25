@@ -26,8 +26,8 @@ private slots:
 	void OnSelectionChanged(QSet<GameObject*>& objects);
 	void OnEngineFree(Core *c);
 	void OnEngineInit(Core *c);
-	void sliderOChanged(int i);
-	void slider1Changed(int i);
+//	void sliderOChanged(int i);
+//	void slider1Changed(int i);
 };
 
 #endif // DEBUGWIDGET_H

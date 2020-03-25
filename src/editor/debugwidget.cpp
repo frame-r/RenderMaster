@@ -123,18 +123,18 @@ void debugwidget::OnEngineFree(Core *c)
 
 void debugwidget::OnEngineInit(Core *c)
 {
-	_connections.emplace_back(connect(ui->slider_0, &QSlider::valueChanged, this, &debugwidget::sliderOChanged, Qt::DirectConnection));
-	_connections.emplace_back(connect(ui->slider_1, &QSlider::valueChanged, this, &debugwidget::slider1Changed, Qt::DirectConnection));
+//	_connections.emplace_back(connect(ui->slider_0, &QSlider::valueChanged, this, &debugwidget::sliderOChanged, Qt::DirectConnection));
+//	_connections.emplace_back(connect(ui->slider_1, &QSlider::valueChanged, this, &debugwidget::slider1Changed, Qt::DirectConnection));
 }
 
-void debugwidget::sliderOChanged(int i)
-{
-	Render *render = editor->core->GetRender();
-	render->SetDebugParam((float)ui->slider_0->value()/ui->slider_0->maximum());
-}
+//void debugwidget::sliderOChanged(int i)
+//{
+//	Render *render = editor->core->GetRender();
+//	render->SetDebugParam((float)ui->slider_0->value()/ui->slider_0->maximum());
+//}
 
-void debugwidget::slider1Changed(int i)
-{
-	Render *render = editor->core->GetRender();
-	render->SetDebugParam1((float)ui->slider_1->value()/ui->slider_1->maximum());
-}
+//void debugwidget::slider1Changed(int i)
+//{
+//	Render *render = editor->core->GetRender();
+//	render->SetDebugParam1((float)ui->slider_1->value()/ui->slider_1->maximum());
+//}

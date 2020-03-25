@@ -9,6 +9,8 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    editor \
-    ../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/Qt-Advanced-Docking-System.pro
+    ../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/Qt-Advanced-Docking-System.pro \
+    editor
+
+CONFIG += ordered
 

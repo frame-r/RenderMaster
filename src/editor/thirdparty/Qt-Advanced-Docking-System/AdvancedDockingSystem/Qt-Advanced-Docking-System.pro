@@ -53,7 +53,7 @@ CONFIG( debug, debug|release ) {
     OBJECTS_DIR = $$PWD/../../../../../obj/AdvancedDockingSystem/release
 }
 
-message("Executing qmake for AdvancedDockingSystem..." )
+#message("Executing qmake for AdvancedDockingSystem..." )
 #message(Object path for AdvancedDockingSystem = $$OBJECTS_DIR)
 #message(Dest path for AdvancedDockingSystem = $$DESTDIR)
 
