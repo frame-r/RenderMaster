@@ -14,7 +14,6 @@ struct ViewData
 
 class Render : public IProfilerCallback
 {
-
 	enum TIMER_ID
 	{
 		T_GBUFFER = 0,
@@ -79,26 +78,10 @@ class Render : public IProfilerCallback
 		vec4 sun_direction;
 	};
 
-	// Frame data
-	mat4 cameraProjUnjitteredMat_;
-	mat4 cameraProjMat_;
-	mat4 cameraViewMat_;
-	mat4 cameraViewProjMat_;
-	vec4 cameraWorldPos_;
-	mat4 cameraViewProjectionInvMat_;
-	mat4 cameraViewInvMat_;
-
-	// prev
-	mat4 cameraPrevProjUnjitteredMat_;
-	mat4 cameraPrevProjMat_;
-	mat4 cameraPrevViewMat_;
-	mat4 cameraPrevViewProjMat_;
-	vec4 cameraPrevWorldPos_;
-	mat4 cameraPrevViewProjectionInvMat_;
-	mat4 cameraPrevViewInvMat_;
+	ViewData mats;
+	ViewData prevMats;
 
 	mat4 cameraPrevViewProjMatRejittered_; // previous Projection matrix with same jitter as current frame
-
 
 	// Render internal resources
 	ManagedPtr<Texture> fontTexture;
@@ -141,6 +124,7 @@ class Render : public IProfilerCallback
 	void renderGrid();
 	void drawMeshes(PASS pass, std::vector<RenderMesh>& meshes);
 	void calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash);
+
 public:
 
 	// IProfilerCallback
