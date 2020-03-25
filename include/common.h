@@ -719,7 +719,7 @@ public:
 };
 
 template<typename T>
-class ManagedPtr
+class StreamPtr
 {
 	IResource<T> *resource_{nullptr};
 
@@ -730,19 +730,19 @@ class ManagedPtr
 	}
 
 public:
-	ManagedPtr() = default;
-	ManagedPtr(IResource<T> *resource) : resource_(resource)
+	StreamPtr() = default;
+	StreamPtr(IResource<T> *resource) : resource_(resource)
 	{
 		grab();
 	}
-	ManagedPtr(ManagedPtr& r)
+	StreamPtr(StreamPtr& r)
 	{
 		resource_ = r.resource_;
 		grab();
 	}
 
 	void release();
-	ManagedPtr& operator=(ManagedPtr& r)
+	StreamPtr& operator=(StreamPtr& r)
 	{
 		release();
 		resource_ = r.resource_;
@@ -750,12 +750,12 @@ public:
 
 		return *this;
 	}
-	ManagedPtr(ManagedPtr&& r)
+	StreamPtr(StreamPtr&& r)
 	{
 		resource_ = r.resource_;
 		r.resource_ = nullptr;
 	}
-	ManagedPtr& operator=(ManagedPtr&& r)
+	StreamPtr& operator=(StreamPtr&& r)
 	{
 		release();
 		resource_ = r.resource_;
@@ -763,7 +763,7 @@ public:
 
 		return *this;
 	}
-	~ManagedPtr()
+	~StreamPtr()
 	{
 		release();
 	}

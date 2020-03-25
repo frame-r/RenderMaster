@@ -10,7 +10,7 @@ template<typename T>
 class Resource;
 
 template<typename T>
-class ManagedPtr;
+class StreamPtr;
 
 template<typename T>
 using SharedPtr = std::shared_ptr<T>;
@@ -18,7 +18,7 @@ using SharedPtr = std::shared_ptr<T>;
 class ResourceManager
 {
 	template<typename T>
-	friend class ManagedPtr;
+	friend class StreamPtr;
 
 	Signal<GameObject*> onObjectAdded;
 	Signal<GameObject*> onObjectDestroy;
@@ -42,8 +42,8 @@ public:
 	auto DLLEXPORT CreateStructuredBuffer(uint size, uint elementSize, BUFFER_USAGE usage) -> SharedPtr<StructuredBuffer>;
 
 	// Render stream resources
-	auto DLLEXPORT CreateStreamTexture(const char *path, TEXTURE_CREATE_FLAGS flags) -> ManagedPtr<Texture>;
-	auto DLLEXPORT CreateStreamMesh(const char *path) -> ManagedPtr<Mesh>;
+	auto DLLEXPORT CreateStreamTexture(const char *path, TEXTURE_CREATE_FLAGS flags) -> StreamPtr<Texture>;
+	auto DLLEXPORT CreateStreamMesh(const char *path) -> StreamPtr<Mesh>;
 
 	auto DLLEXPORT Import(const char *path, ProgressCallback callback) -> void;
 	auto DLLEXPORT GetImportedMeshes() -> std::vector<std::string>;

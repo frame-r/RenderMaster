@@ -6,7 +6,7 @@
 
 class Model final : public GameObject
 {
-	ManagedPtr<Mesh> mesh_;
+	StreamPtr<Mesh> mesh_;
 	vec3 meshCeneter;
 	Material *mat_{nullptr};
 
@@ -17,7 +17,7 @@ protected:
 
 public:
 	Model();
-	Model(ManagedPtr<Mesh> mesh);
+	Model(StreamPtr<Mesh> mesh);
 	virtual ~Model() = default;
 
 public:

@@ -14,8 +14,8 @@ const static vec4 ColorGreen = vec4(0,1,0,1);
 static vec2 Segements[CircleSubdivision]{};
 const static float hordLen = sin(3.1415926f * 1.0f / CircleSubdivision);;
 
-static ManagedPtr<Mesh> meshLine;
-static ManagedPtr<Mesh> meshSphere;
+static StreamPtr<Mesh> meshLine;
+static StreamPtr<Mesh> meshSphere;
 
 static mat4 CircleCorrectionMat[3];
 

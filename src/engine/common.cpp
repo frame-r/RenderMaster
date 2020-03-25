@@ -278,7 +278,7 @@ mat4 DLLEXPORT perspectiveRH_ZO(float fov, float aspect, float zNear, float zFar
 }
 
 template <class T>
-void ManagedPtr<T>::release()
+void StreamPtr<T>::release()
 {
 	if (resource_)
 	{
@@ -322,8 +322,8 @@ T* Resource<T>::get()
 
 template class Resource<Mesh>;
 template class Resource<Texture>;
-template class DLLEXPORT ManagedPtr<Mesh>;
-template class DLLEXPORT ManagedPtr<Texture>;
+template class DLLEXPORT StreamPtr<Mesh>;
+template class DLLEXPORT StreamPtr<Texture>;
 
 /*
   Name  : CRC-16 CCITT

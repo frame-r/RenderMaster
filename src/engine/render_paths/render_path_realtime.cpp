@@ -110,14 +110,14 @@ void RenderPathRealtime::RenderFrame()
 		CORE_RENDER->SetRenderTextures(1, &buffers.velocity, nullptr);
 		CORE_RENDER->Clear();
 
-		mat4 m = prevMats.cameraViewMat_;
+		mat4 m = prevMats.ViewMat_;
 		m.SetColumn3(3, vec3(0, 0, 0)); // remove translation
-		m = prevMats.cameraProjUnjitteredMat_ * prevMats.cameraViewMat_;
+		m = prevMats.ProjUnjitteredMat_ * prevMats.ViewMat_;
 		shader->SetMat4Parameter("VP_prev", &m);
 
-		m = mats.cameraViewUnjitteredMat_;
+		m = mats.ViewUnjitteredMat_;
 		m.SetColumn3(3, vec3(0, 0, 0));
-		m = mats.cameraProjUnjitteredMat_ * m;
+		m = mats.ProjUnjitteredMat_ * m;
 		m = m.Inverse();
 		shader->SetMat4Parameter("VP_inv", &m);
 
@@ -144,7 +144,7 @@ void RenderPathRealtime::RenderFrame()
 
 		CORE_RENDER->SetDepthTest(1);
 		{
-			drawMeshes(PASS::DEFERRED, scene.meshes, mats.cameraViewProjMat_, cameraPrevViewProjMatRejittered_);
+			drawMeshes(PASS::DEFERRED, scene.meshes, mats.ViewProjMat_, cameraPrevViewProjMatRejittered_);
 		}
 		CORE_RENDER->SetRenderTextures(4, nullptr, nullptr);
 
@@ -192,8 +192,8 @@ void RenderPathRealtime::RenderFrame()
 		{
 			CORE_RENDER->SetShader(shader);
 
-			shader->SetVec4Parameter("camera_position", &mats.cameraWorldPos_);
-			shader->SetMat4Parameter("camera_view_projection_inv", &mats.cameraViewProjectionInvMat_);
+			shader->SetVec4Parameter("camera_position", &mats.WorldPos_);
+			shader->SetMat4Parameter("camera_view_projection_inv", &mats.ViewProjectionInvMat_);
 
 			CORE_RENDER->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 			Texture* texs[4] = { buffers.normal, buffers.shading, buffers.albedo, buffers.depth };
@@ -242,9 +242,9 @@ void RenderPathRealtime::RenderFrame()
 			render->GetEnvironmentIntensity(environment_intensity);
 			shader->SetVec4Parameter("environment_intensity", &environment_intensity);
 
-			shader->SetVec4Parameter("camera_position", &mats.cameraWorldPos_);
+			shader->SetVec4Parameter("camera_position", &mats.WorldPos_);
 
-			shader->SetMat4Parameter("camera_view_projection_inv", &mats.cameraViewProjectionInvMat_);
+			shader->SetMat4Parameter("camera_view_projection_inv", &mats.ViewProjectionInvMat_);
 
 			vec4 sun_disrection = vec4(0, 0, 1, 0);
 			if (scene.hasWorldLight)
@@ -366,8 +366,8 @@ void RenderPathRealtime::RenderFrame()
 			}
 
 			// remove jitter form proj matrix
-			mats.cameraViewProjMat_ = ProjMat * ViewMat;
-			mats.cameraViewProjectionInvMat_ = mats.cameraViewProjMat_.Inverse();
+			mats.ViewProjMat_ = ProjMat * ViewMat;
+			mats.ViewProjectionInvMat_ = mats.ViewProjMat_.Inverse();
 		}
 
 		CORE_RENDER->SetFillingMode(FILLING_MODE::WIREFRAME);
@@ -461,7 +461,7 @@ void RenderPathRealtime::RenderFrame()
 				transform.el_2D[0][0] = v.v.x;
 				transform.el_2D[1][0] = v.v.y;
 				transform.el_2D[2][0] = v.v.z;
-				mat4 MVP = prev.cameraViewProjMat_ * transform;
+				mat4 MVP = prev.ViewProjMat_ * transform;
 				shader->SetMat4Parameter("MVP", &MVP);
 				shader->FlushParameters();
 

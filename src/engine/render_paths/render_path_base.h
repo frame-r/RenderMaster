@@ -3,17 +3,18 @@
 
 struct Mats
 {
-	// original
-	mat4 cameraProjUnjitteredMat_;
-	mat4 cameraViewUnjitteredMat_;
+	// Original
+	mat4 ProjUnjitteredMat_;
+	mat4 ViewUnjitteredMat_;
 
-	// with jitters
-	mat4 cameraProjMat_;
-	mat4 cameraViewMat_;
-	mat4 cameraViewProjMat_;
-	vec4 cameraWorldPos_;
-	mat4 cameraViewProjectionInvMat_;
-	mat4 cameraViewInvMat_;
+	// Jittered
+	mat4 ProjMat_;
+	mat4 ViewMat_;
+	mat4 ViewProjMat_;
+	mat4 ViewProjectionInvMat_;
+	mat4 ViewInvMat_;
+
+	vec4 WorldPos_;
 };
 
 class RenderPathBase

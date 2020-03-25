@@ -153,7 +153,7 @@ auto DLLEXPORT ResourceManager::CreateCamera() -> Camera *
 
 auto DLLEXPORT ResourceManager::CreateModel(const char *path) -> Model*
 {
-	ManagedPtr<Mesh> meshPtr = CreateStreamMesh(path);
+	StreamPtr<Mesh> meshPtr = CreateStreamMesh(path);
 
 	Model *m = new Model(meshPtr);
 	rootObjectsVec.push_back(m);
@@ -332,27 +332,27 @@ public:
 	{}
 };
 
-auto DLLEXPORT ResourceManager::CreateStreamTexture(const char *path, TEXTURE_CREATE_FLAGS flags) -> ManagedPtr<Texture>
+auto DLLEXPORT ResourceManager::CreateStreamTexture(const char *path, TEXTURE_CREATE_FLAGS flags) -> StreamPtr<Texture>
 {
 	auto it = streamTexturesMap.find(path);
 	if (it != streamTexturesMap.end())
-		return ManagedPtr<Texture>(it->second);
+		return StreamPtr<Texture>(it->second);
 
 	TextureResource *resource = new TextureResource(path, flags);
 	streamTexturesMap[path] = resource;
-	return ManagedPtr<Texture>(resource);
+	return StreamPtr<Texture>(resource);
 }
 
 
-auto DLLEXPORT ResourceManager::CreateStreamMesh(const char *path) -> ManagedPtr<Mesh>
+auto DLLEXPORT ResourceManager::CreateStreamMesh(const char *path) -> StreamPtr<Mesh>
 {
 	auto it = streamMeshesMap.find(path);
 	if (it != streamMeshesMap.end())
-		return ManagedPtr<Mesh>(it->second);
+		return StreamPtr<Mesh>(it->second);
 
 	MeshResource *resource = new MeshResource(path);
 	streamMeshesMap[path] = resource;
-	return ManagedPtr<Mesh>(resource);
+	return StreamPtr<Mesh>(resource);
 }
 
 auto DLLEXPORT ResourceManager::GetImportedMeshes() -> std::vector<std::string>
@@ -533,7 +533,7 @@ void loadObj(YAML::Node& objects_yaml, int *i, GameObject *parent, Signal<GameOb
 		case OBJECT_TYPE::MODEL:
 		{
 			string mesh = obj_yaml["mesh"].as<string>();
-			ManagedPtr<Mesh> meshPtr = RES_MAN->CreateStreamMesh(mesh.c_str());
+			StreamPtr<Mesh> meshPtr = RES_MAN->CreateStreamMesh(mesh.c_str());
 			g = new Model(meshPtr);
 		}
 		break;

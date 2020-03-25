@@ -25,7 +25,7 @@ static const float FocusingSpeed = 10.0f;
 static const int MOUSE_CLICK_MS_TRESHOLD = 200;
 static QTime myTimer;
 
-static ManagedPtr<Mesh> meshPlane;
+static StreamPtr<Mesh> meshPlane;
 
 RenderWidget::RenderWidget(QWidget *parent) :
 	QWidget(parent, Qt::MSWindowsOwnDC)

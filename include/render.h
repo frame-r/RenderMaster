@@ -1,5 +1,5 @@
 #pragma once
-#include "Common.h"
+#include "common.h"
 
 class Render : public IProfilerCallback
 {
@@ -16,23 +16,20 @@ class Render : public IProfilerCallback
 			memcpy(&value, &r.value, sizeof(AtmosphereHash));
 		}
 	};
-
-	RenderPathBase* path{};
-
-	// Render internal resources
-	ManagedPtr<Texture> fontTexture;
-	Texture* whiteTexture;
-	ManagedPtr<Mesh> planeMesh;
-	ManagedPtr<Mesh> gridMesh;
-	ManagedPtr<Mesh> lineMesh;
-
 	struct RenderVector
 	{
 		vec4 color;
 		vec3 v;
 	};
-	std::vector<RenderVector> renderVectors;
 
+	RenderPathBase* path{};
+	
+	StreamPtr<Texture> fontTexture;
+	Texture* whiteTexture;
+	StreamPtr<Mesh> planeMesh;
+	StreamPtr<Mesh> gridMesh;
+	StreamPtr<Mesh> lineMesh;
+	std::vector<RenderVector> renderVectors;
 	int specualrQuality{};
 	VIEW_MODE viewMode{VIEW_MODE::FINAL};
 	bool taa{true};
@@ -43,7 +40,7 @@ class Render : public IProfilerCallback
 	AtmosphereHash atmosphereHash{};
 	Texture *environment;
 	std::string envirenmentHDRIPath;
-	ManagedPtr<Texture> environmentHDRI;
+	StreamPtr<Texture> environmentHDRI;
 	Texture *environmentAtmosphere;
 	float diffuseEnvironemnt{ 1.0f };
 	float specularEnvironemnt{ 1.0f };
@@ -66,7 +63,7 @@ public:
 	enum LOAD_SHADER_FLAGS
 	{
 		LS_NONE = 0,
-		LS_GEOMETRY = 1,
+		LS_GEOMETRY,
 	};
 
 	struct RenderMesh

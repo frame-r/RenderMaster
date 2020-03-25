@@ -21,7 +21,7 @@ Model::Model()
 	mat_ = MAT_MAN->GetDiffuseMaterial();
 }
 
-Model::Model(ManagedPtr<Mesh> mesh) : Model()
+Model::Model(StreamPtr<Mesh> mesh) : Model()
 {
 	mesh_ = mesh;
 }

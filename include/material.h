@@ -99,7 +99,7 @@ class Material
 	struct RuntimeTexture
 	{
 		std::string path;
-		ManagedPtr<Texture> ptr;
+		StreamPtr<Texture> ptr;
 		vec4 uv{1, 1, 0, 0};
 	};
 	std::map<std::string, RuntimeTexture> runtimeTextures_; // name -> texure

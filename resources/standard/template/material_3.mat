@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <material id="material_3" generic_material="mesh">
 	<def id="normal_map">0</def>
-	<param id="roughness">0.262626</param>
+	<param id="roughness">0.181818</param>
 	<param id="base_color">1.000000 0.831373 0.984314 1.000000</param>
 	<texture id="normal" uv="0.500000 0.500000 0.000000 0.000000">standard/textures/sttones_normal.dds</texture>
 </material>

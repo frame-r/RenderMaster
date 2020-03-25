@@ -46,9 +46,9 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 	CORE_RENDER->ResizeBuffersByViewort();
 
 	// Init mats
-	mats.cameraProjUnjitteredMat_ = ProjMat;
-	mats.cameraViewUnjitteredMat_ = ViewMat;
-	mats.cameraProjMat_ = ProjMat;
+	mats.ProjUnjitteredMat_ = ProjMat;
+	mats.ViewUnjitteredMat_ = ViewMat;
+	mats.ProjMat_ = ProjMat;
 
 	Mats& prev = viewsDataMap[viewID];
 
@@ -61,12 +61,12 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 
 		float needJitter = float(render->GetViewMode() == VIEW_MODE::FINAL);
 
-		mats.cameraProjMat_.el_2D[0][2] += needJitter * taaOffset.x / w;
-		mats.cameraProjMat_.el_2D[1][2] += needJitter * taaOffset.y / h;
+		mats.ProjMat_.el_2D[0][2] += needJitter * taaOffset.x / w;
+		mats.ProjMat_.el_2D[1][2] += needJitter * taaOffset.y / h;
 
 		// rejitter prev
 		if (_core->frame() > 1)
-			cameraPrevViewProjMatRejittered_ = prev.cameraProjUnjitteredMat_;
+			cameraPrevViewProjMatRejittered_ = prev.ProjUnjitteredMat_;
 		else
 			cameraPrevViewProjMatRejittered_ = ProjMat;
 
@@ -74,18 +74,18 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOffset.y / h;
 
 		if (_core->frame() > 1)
-			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * prev.cameraViewMat_;
+			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * prev.ViewMat_;
 		else
 			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * ViewMat;
 	}
 	else
-		cameraPrevViewProjMatRejittered_ = prev.cameraProjMat_ * prev.cameraViewMat_;
+		cameraPrevViewProjMatRejittered_ = prev.ProjMat_ * prev.ViewMat_;
 
-	mats.cameraViewProjMat_ = mats.cameraProjMat_ * ViewMat;
-	mats.cameraViewMat_ = ViewMat;
-	mats.cameraWorldPos_ = ViewMat.Inverse().Column3(3);
-	mats.cameraViewProjectionInvMat_ = mats.cameraViewProjMat_.Inverse();
-	mats.cameraViewInvMat_ = mats.cameraViewMat_.Inverse();
+	mats.ViewProjMat_ = mats.ProjMat_ * ViewMat;
+	mats.ViewMat_ = ViewMat;
+	mats.WorldPos_ = ViewMat.Inverse().Column3(3);
+	mats.ViewProjectionInvMat_ = mats.ViewProjMat_.Inverse();
+	mats.ViewInvMat_ = mats.ViewMat_.Inverse();
 	//
 
 	// Restore prev matricies

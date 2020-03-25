@@ -553,7 +553,7 @@ void Render::renderGrid()
 	//{
 	//	CORE_RENDER->SetShader(shader);
 
-	//	shader->SetMat4Parameter("MVP", &mats.cameraViewProjMat_);
+	//	shader->SetMat4Parameter("MVP", &mats.ViewProjMat_);
 	//	shader->SetVec4Parameter("main_color", &vec4(0.3f, 0.3f, 0.3f, 1.0f));
 	//	shader->FlushParameters();
 

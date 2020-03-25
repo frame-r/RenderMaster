@@ -18,9 +18,9 @@ const static vec4 ColorBlue = vec4(0,0,1,1);
 const static vec4 ColorMagneta = vec4(0,1,1,1);
 const static float PlaneScale = 0.2f;
 
-static ManagedPtr<Mesh> meshArrow;
-static ManagedPtr<Mesh> meshLine;
-static ManagedPtr<Mesh> meshPlane;
+static StreamPtr<Mesh> meshArrow;
+static StreamPtr<Mesh> meshLine;
+static StreamPtr<Mesh> meshPlane;
 
 static mat4 AxesCorrectionMat[3];
 
