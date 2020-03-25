@@ -11,7 +11,7 @@ void Model::Copy(GameObject * original)
 	GameObject::Copy(original);
 
 	Model *original_model = static_cast<Model*>(original);
-	mesh_ = original_model->mesh_;
+	meshPtr = original_model->meshPtr;
 	mat_ = original_model->mat_;
 }
 
@@ -23,21 +23,21 @@ Model::Model()
 
 Model::Model(StreamPtr<Mesh> mesh) : Model()
 {
-	mesh_ = mesh;
+	meshPtr = mesh;
 }
 
 auto DLLEXPORT Model::GetMesh() -> Mesh *
 {
-	return mesh_.get();
+	return meshPtr.get();
 }
 auto DLLEXPORT Model::GetMeshPath() -> const char *
 {
-	return mesh_.path().c_str();
+	return meshPtr.path().c_str();
 }
 
 auto DLLEXPORT Model::GetWorldCenter() -> vec3
 {
-	vec3 center = mesh_.isLoaded() ? mesh_.get()->GetCenter() : vec3();
+	vec3 center = meshPtr.isLoaded() ? meshPtr.get()->GetCenter() : vec3();
 	vec4 centerWS = worldTransform_ * vec4(center);
 	return (vec3)centerWS;
 }
@@ -56,8 +56,8 @@ void Model::SaveYAML(void * yaml)
 	YAML::Emitter *_n = static_cast<YAML::Emitter*>(yaml);
 	YAML::Emitter& n = *_n;
 
-	if (!mesh_.path().empty())
-		n << YAML::Key << "mesh" << YAML::Value << mesh_.path();
+	if (!meshPtr.path().empty())
+		n << YAML::Key << "mesh" << YAML::Value << meshPtr.path();
 
 	if (mat_)
 		n << YAML::Key << "material" << YAML::Value << mat_->GetId();

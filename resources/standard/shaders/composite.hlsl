@@ -178,6 +178,8 @@
 				float3 bkg = texture_environment.SampleLevel(sampler_environment, -V, 0).rgb;
 			#elif ENVIREMENT_TYPE_ATMOSPHERE
 				float3 bkg = get_atm(-V.xzy, sun_disrection.xzy);
+			#else
+				float3 bkg = float3(0,0,0);
 			#endif
 		#endif
 		

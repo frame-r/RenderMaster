@@ -15,11 +15,9 @@ protected:
 
 public:
 	Camera();
-	virtual ~Camera() = default;
 
 	virtual void Update(float dt);
 
-public:
 	auto DLLEXPORT GetViewMatrix() -> mat4;
 	auto DLLEXPORT GetViewProjectionMatrix(float aspect) -> mat4;
 	auto DLLEXPORT GetProjectionMatrix(float aspect) -> mat4;

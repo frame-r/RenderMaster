@@ -11,6 +11,7 @@
 	<def id="environment_type" 
     value0="ENVIREMENT_TYPE_CUBEMAP"
     value1="ENVIREMENT_TYPE_ATMOSPHERE"
+    value2="ENVIREMENT_TYPE_NONE"
     >0</def>
     
 	<shader>composite.hlsl</shader>

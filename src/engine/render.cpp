@@ -563,13 +563,13 @@ void Render::renderGrid()
 
 void Render::calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash)
 {
+	memset(&hash, 0, sizeof(AtmosphereHash));
 	memcpy(&hash, &sun_direction, 4 * 3);
 }
 
 void Render::updateEnvirenment(RenderScene& scene)
 {
-	// Atmosphere
-	if (GetEnvironmentType() == ENVIRONMENT_TYPE::ATMOSPHERE)
+	if (environmentType == ENVIRONMENT_TYPE::ATMOSPHERE)
 	{
 		if (Shader * shader = GetShader("environment_cubemap.hlsl", fullScreen(), nullptr, Render::LS_GEOMETRY))
 		{
@@ -605,8 +605,10 @@ void Render::updateEnvirenment(RenderScene& scene)
 		else
 			environment = environmentHDRI.get();
 	}
-	else
+	else if (environmentType == ENVIRONMENT_TYPE::CUBEMAP)
 		environment = environmentHDRI.get();
+	else
+		environment = blackCubemapTexture;
 }
 
 uint32 Render::timerID()
@@ -652,6 +654,7 @@ void Render::Init()
 	_core->AddProfilerCallback(this);
 
 	environmentAtmosphere = GetRenderTexture(environmentCubemapSize, environmentCubemapSize, TEXTURE_FORMAT::RGBA16F, 1, TEXTURE_TYPE::TYPE_CUBE, true);
+	blackCubemapTexture = new Texture(unique_ptr<ICoreTexture>(CORE_RENDER->CreateTexture(nullptr, 1, 1, TEXTURE_TYPE::TYPE_CUBE, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::NONE, false)));
 
 	path = new RenderPathRealtime;
 
@@ -684,6 +687,7 @@ void Render::Free()
 
 	ReleaseRenderTexture(environmentAtmosphere);
 	delete whiteTexture;
+	delete blackCubemapTexture;
 	environmentHDRI.release();
 	records.clear();
 	lineMesh.release();

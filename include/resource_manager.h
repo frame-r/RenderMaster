@@ -12,9 +12,6 @@ class Resource;
 template<typename T>
 class StreamPtr;
 
-template<typename T>
-using SharedPtr = std::shared_ptr<T>;
-
 class ResourceManager
 {
 	template<typename T>

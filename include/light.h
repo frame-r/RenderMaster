@@ -13,9 +13,6 @@ protected:
 
 public:
 	Light();
-	virtual ~Light() = default;
-
-public:
 
 	auto DLLEXPORT virtual GetIntensity() -> float { return intensity_; }
 	auto DLLEXPORT virtual SetIntensity(float v) -> void { intensity_ = v; }

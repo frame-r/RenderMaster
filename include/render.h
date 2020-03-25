@@ -26,6 +26,7 @@ class Render : public IProfilerCallback
 	
 	StreamPtr<Texture> fontTexture;
 	Texture* whiteTexture;
+	Texture* blackCubemapTexture;
 	StreamPtr<Mesh> planeMesh;
 	StreamPtr<Mesh> gridMesh;
 	StreamPtr<Mesh> lineMesh;

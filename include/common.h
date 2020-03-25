@@ -105,6 +105,9 @@ inline void ThrowIfFailed(HRESULT hr)
 		abort();
 }
 
+template<typename T>
+using SharedPtr = std::shared_ptr<T>;
+
 std::string msaa_to_string(int samples);
 std::string ConvertFromUtf16ToUtf8(const std::wstring& wstr);
 std::wstring ConvertFromUtf8ToUtf16(const std::string& str);
@@ -490,7 +493,8 @@ enum class VIEW_MODE
 enum class ENVIRONMENT_TYPE
 {
 	CUBEMAP,
-	ATMOSPHERE
+	ATMOSPHERE,
+	NONE
 };
 
 enum class PREV_TEXTURES

@@ -6,7 +6,7 @@
 
 class Model final : public GameObject
 {
-	StreamPtr<Mesh> mesh_;
+	StreamPtr<Mesh> meshPtr;
 	vec3 meshCeneter;
 	Material *mat_{nullptr};
 
@@ -18,9 +18,7 @@ protected:
 public:
 	Model();
 	Model(StreamPtr<Mesh> mesh);
-	virtual ~Model() = default;
 
-public:
 	auto DLLEXPORT virtual GetMesh() -> Mesh*;
 	auto DLLEXPORT virtual GetMeshPath() -> const char*;
 	auto DLLEXPORT virtual SetMaterial(Material *mat) -> void { mat_ = mat; }
