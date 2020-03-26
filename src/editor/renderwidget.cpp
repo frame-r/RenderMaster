@@ -210,6 +210,9 @@ bool RenderWidget::calculateCameraData(CameraData &data)
 
 void RenderWidget::onRender()
 {
+	if (!core)
+		return;
+
 	CameraData cam;
 	calculateCameraData(cam);
 

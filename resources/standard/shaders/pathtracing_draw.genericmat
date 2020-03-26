@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<generic_material id="pathtracing_draw">
+    
+	<shader>pathtracing_draw.hlsl</shader>
+
+</generic_material>

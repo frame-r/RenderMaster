@@ -221,20 +221,34 @@ MainWindow::MainWindow(QWidget *parent) :
 		}
 	});
 
-	QComboBox *view_cb = new QComboBox(this);
-	view_cb->addItem("Final");
-	view_cb->addItem("Normal");
-	view_cb->addItem("Albedo");
-	view_cb->addItem("Diffuse light (only analytic)");
-	view_cb->addItem("Specular light (only analytic)");
-	view_cb->addItem("Velocity");
-	view_cb->addItem("Color reprojection");
-	ui->mainToolBar->addWidget(view_cb);
-	connect(view_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [view_cb](int idx)->void
 	{
-		Render *render = editor->core->GetRender();
-		render->SetViewMode(static_cast<VIEW_MODE>(view_cb->currentIndex()));
-	});
+		QComboBox *view_cb = new QComboBox(this);
+		view_cb->addItem("Realtime");
+		view_cb->addItem("Path tracing");
+		ui->mainToolBar->addWidget(view_cb);
+		connect(view_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [view_cb](int idx)->void
+		{
+			Render *render = editor->core->GetRender();
+			render->SetRenderPath(static_cast<RENDER_PATH>(view_cb->currentIndex()));
+		});
+	}
+
+	{
+		QComboBox *view_cb = new QComboBox(this);
+		view_cb->addItem("Final");
+		view_cb->addItem("Normal");
+		view_cb->addItem("Albedo");
+		view_cb->addItem("Diffuse light (only analytic)");
+		view_cb->addItem("Specular light (only analytic)");
+		view_cb->addItem("Velocity");
+		view_cb->addItem("Color reprojection");
+		ui->mainToolBar->addWidget(view_cb);
+		connect(view_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [view_cb](int idx)->void
+		{
+			Render *render = editor->core->GetRender();
+			render->SetViewMode(static_cast<VIEW_MODE>(view_cb->currentIndex()));
+		});
+	}
 
 	switch_button(ui->actionselect);
 

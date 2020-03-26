@@ -11,6 +11,7 @@
 #include "camera.h"
 #include "filesystem.h"
 #include "render_paths/render_path_realtime.h"
+#include "render_paths/render_path_pathtracing.h"
 #include "thirdparty/simplecpp/SimpleCpp.h"
 #include <memory>
 #include <sstream>
@@ -477,11 +478,22 @@ auto DLLEXPORT Render::SetEnvironmentType(ENVIRONMENT_TYPE type) -> void
 	environmentType = static_cast<ENVIRONMENT_TYPE>(type);
 }
 
+auto DLLEXPORT Render::SetRenderPath(RENDER_PATH type) -> void
+{
+	if (type == RENDER_PATH::REALTIME)
+		renderpath = realtimeObj;
+	else if (type == RENDER_PATH::PATH_TRACING)
+		renderpath = pathtracingObj;
+	else
+		throw std::exception();
+	renderPathType = type;
+}
+
 void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
 {
-	path->FrameBegin(viewID, ViewMat, ProjMat, wireframeModels, modelsNum);
-	path->RenderFrame();
-	path->FrameEnd();
+	renderpath->FrameBegin(viewID, ViewMat, ProjMat, wireframeModels, modelsNum);
+	renderpath->RenderFrame();
+	renderpath->FrameEnd();
 }
 
 Texture* Render::GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format)
@@ -611,24 +623,24 @@ void Render::updateEnvirenment(RenderScene& scene)
 		environment = blackCubemapTexture;
 }
 
-uint32 Render::timerID()
+uint32 Render::frameID()
 {
-	return uint32_t(_core->frame() % maxFrames);;
+	return uint32_t(_core->frame() % maxFrames);
 }
 
-uint32 Render::dataTimerID()
+uint32 Render::readbackFrameID()
 {
 	return uint32_t((_core->frame() > (int64_t)maxFrames ? _core->frame() - 3 : 0) % maxFrames);;
 }
 
 uint Render::getNumLines()
 {
-	return path->getNumLines();
+	return renderpath->getNumLines();
 }
 
 std::string Render::getString(uint i)
 {
-	return path->getString(i);
+	return renderpath->getString(i);
 }
 
 void Render::Init()
@@ -648,15 +660,16 @@ void Render::Init()
 	MaterialManager* mm = _core->GetMaterialManager();
 
 	// GPU timers
-	for(int i = 0; i < maxFrames; ++i)
-		CORE_RENDER->CreateTimer();
+	CORE_RENDER->CreateGPUTiming(maxFrames, T_TIMERS_NUM);
 
 	_core->AddProfilerCallback(this);
 
 	environmentAtmosphere = GetRenderTexture(environmentCubemapSize, environmentCubemapSize, TEXTURE_FORMAT::RGBA16F, 1, TEXTURE_TYPE::TYPE_CUBE, true);
 	blackCubemapTexture = new Texture(unique_ptr<ICoreTexture>(CORE_RENDER->CreateTexture(nullptr, 1, 1, TEXTURE_TYPE::TYPE_CUBE, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::NONE, false)));
 
-	path = new RenderPathRealtime;
+	realtimeObj = new RenderPathRealtime;
+	pathtracingObj = new RenderPathPathTracing;
+	SetRenderPath(renderPathType);
 
 	Log("Render initialized");
 }
@@ -682,8 +695,11 @@ void Render::Update()
 
 void Render::Free()
 {
-	delete path;
-	path = nullptr;
+	delete realtimeObj;
+	realtimeObj = nullptr;
+
+	delete pathtracingObj;
+	pathtracingObj = nullptr;
 
 	ReleaseRenderTexture(environmentAtmosphere);
 	delete whiteTexture;

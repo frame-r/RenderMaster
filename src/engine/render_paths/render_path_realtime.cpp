@@ -128,13 +128,13 @@ void RenderPathRealtime::RenderFrame()
 		CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
 	}
 
-	uint32 timerID_ = render->timerID();
-	uint32 dataTimerID_ = render->dataTimerID();
+	uint32 frameID_ = render->frameID();
+	uint32 readbackFrameID_ = render->readbackFrameID();
 
 
 	// G-buffer
 	{
-		CORE_RENDER->TimersBeginPoint(timerID_, Render::T_GBUFFER);
+		CORE_RENDER->TimersBeginPoint(frameID_, Render::T_GBUFFER);
 
 		Texture* texs[4] = { buffers.albedo, buffers.shading, buffers.normal, buffers.velocity };
 		CORE_RENDER->SetRenderTextures(3, texs, buffers.depth);
@@ -150,8 +150,8 @@ void RenderPathRealtime::RenderFrame()
 
 		CORE_RENDER->SetDepthTest(0);
 
-		CORE_RENDER->TimersEndPoint(timerID_, Render::T_GBUFFER);
-		gbufferMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID_, Render::T_GBUFFER);
+		CORE_RENDER->TimersEndPoint(frameID_, Render::T_GBUFFER);
+		gbufferMs = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_GBUFFER);
 	}
 
 	// Color reprojection
@@ -180,7 +180,7 @@ void RenderPathRealtime::RenderFrame()
 
 	// Lights
 	{
-		CORE_RENDER->TimersBeginPoint(timerID_, Render::T_LIGHTS);
+		CORE_RENDER->TimersBeginPoint(frameID_, Render::T_LIGHTS);
 
 		CORE_RENDER->SetDepthTest(0);
 		Texture* rts[2] = { buffers.diffuseLight, buffers.specularLight };
@@ -216,14 +216,14 @@ void RenderPathRealtime::RenderFrame()
 
 		CORE_RENDER->SetRenderTextures(2, nullptr, nullptr);
 
-		CORE_RENDER->TimersEndPoint(timerID_, Render::T_LIGHTS);
-		lightsMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID_, Render::T_LIGHTS);
+		CORE_RENDER->TimersEndPoint(frameID_, Render::T_LIGHTS);
+		lightsMs = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_LIGHTS);
 
 	}
 
 	// Composite
 	{
-		CORE_RENDER->TimersBeginPoint(timerID_, Render::T_COMPOSITE);
+		CORE_RENDER->TimersBeginPoint(frameID_, Render::T_COMPOSITE);
 
 		compositeMaterial->SetDef("specular_quality", render->GetSpecularQuality());
 		compositeMaterial->SetDef("environment_type", static_cast<int>(render->GetEnvironmentType()));
@@ -276,8 +276,8 @@ void RenderPathRealtime::RenderFrame()
 			CORE_RENDER->BindTextures(tex_count, nullptr);
 		}
 
-		CORE_RENDER->TimersEndPoint(timerID_, Render::T_COMPOSITE);
-		compositeMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID_, Render::T_COMPOSITE);
+		CORE_RENDER->TimersEndPoint(frameID_, Render::T_COMPOSITE);
+		compositeMs = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_COMPOSITE);
 	}
 
 	// TAA

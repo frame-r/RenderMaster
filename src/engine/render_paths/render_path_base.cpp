@@ -35,8 +35,8 @@ RenderPathBase::RenderPathBase()
 
 void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
 {
-	uint32 timerID_ = render->timerID();
-	uint32 dataTimerID_ = render->dataTimerID();
+	uint32 timerID_ = render->frameID();
+	uint32 dataTimerID_ = render->readbackFrameID();
 
 	CORE_RENDER->TimersBeginFrame(timerID_);
 	CORE_RENDER->TimersBeginPoint(timerID_, Render::T_ALL_FRAME);
@@ -100,8 +100,8 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 
 void RenderPathBase::FrameEnd()
 {
-	uint32 timerID_ = render->timerID();
-	uint32 dataTimerID_ = render->dataTimerID();
+	uint32 timerID_ = render->frameID();
+	uint32 dataTimerID_ = render->readbackFrameID();
 
 	CORE_RENDER->TimersEndPoint(timerID_, Render::T_ALL_FRAME);
 	frameMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID_, Render::T_ALL_FRAME);

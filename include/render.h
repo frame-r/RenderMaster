@@ -1,6 +1,12 @@
 #pragma once
 #include "common.h"
 
+enum class RENDER_PATH
+{
+	REALTIME,
+	PATH_TRACING
+};
+
 class Render : public IProfilerCallback
 {
 	struct AtmosphereHash
@@ -22,7 +28,11 @@ class Render : public IProfilerCallback
 		vec3 v;
 	};
 
-	RenderPathBase* path{};
+	RENDER_PATH renderPathType{};
+
+	RenderPathBase *renderpath{};
+	RenderPathPathTracing *pathtracingObj{};
+	RenderPathRealtime *realtimeObj{};
 	
 	StreamPtr<Texture> fontTexture;
 	Texture* whiteTexture;
@@ -45,7 +55,7 @@ class Render : public IProfilerCallback
 	Texture *environmentAtmosphere;
 	float diffuseEnvironemnt{ 1.0f };
 	float specularEnvironemnt{ 1.0f };
-	const uint64_t maxFrames = 8;
+	const uint32_t maxFrames = 4;
 
 	void renderGrid();
 	void calculateAtmosphereHash(vec4 sun_direction, AtmosphereHash& hash);
@@ -59,6 +69,10 @@ public:
 		T_GBUFFER,
 		T_LIGHTS,
 		T_COMPOSITE,
+
+		T_PATH_TRACING_DRAW,
+
+		T_TIMERS_NUM
 	};
 
 	enum LOAD_SHADER_FLAGS
@@ -94,8 +108,8 @@ public:
 	std::vector<RenderMesh> getRenderMeshes();
 	Mesh* fullScreen() { return planeMesh.get(); }
 	void updateEnvirenment(RenderScene& scene);
-	uint32 timerID();
-	uint32 dataTimerID();
+	uint32 frameID();
+	uint32 readbackFrameID();
 
 	// IProfilerCallback
 	uint getNumLines() override;
@@ -140,5 +154,7 @@ public:
 	auto DLLEXPORT GetEnvironmentTexturePath() -> const char*;
 	auto DLLEXPORT GetEnvironmentType() const -> ENVIRONMENT_TYPE { return static_cast<ENVIRONMENT_TYPE>(environmentType); }
 	auto DLLEXPORT SetEnvironmentType(ENVIRONMENT_TYPE type) -> void;
+	auto DLLEXPORT GetRenderPath() const -> RENDER_PATH { return static_cast<RENDER_PATH>(renderPathType); }
+	auto DLLEXPORT SetRenderPath(RENDER_PATH type) -> void;
 };
 

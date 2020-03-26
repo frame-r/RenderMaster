@@ -57,6 +57,7 @@ class Input;
 class Render;
 class RenderPathBase;
 class RenderPathRealtime;
+class RenderPathPathTracing;
 class IProfilerCallback;
 class File;
 struct FileMapping;
@@ -500,7 +501,8 @@ enum class ENVIRONMENT_TYPE
 enum class PREV_TEXTURES
 {
 	UNKNOWN,
-	COLOR
+	COLOR,
+	PATH_TRACING_HDR
 };
 
 DXGI_FORMAT engToD3DDSVFormat(TEXTURE_FORMAT format);
