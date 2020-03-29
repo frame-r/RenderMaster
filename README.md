@@ -3,14 +3,11 @@
 Graphic engine for experiments with graphics and programming
 
 ## Features
-* Deferred render
-* PBR materials
-* TAA
-* Environment (HDR, atmosphere)
-* Game objects hierarchy
-* Manipulators
-* Picking
-* Import .png, .jpg, .fbx
+PBR materials and textures, deferred shading, TAA, MSAA, reprojection, environment HDR cubemap, atmosphere, game objects hierarchy, manipulators, picking, imports assets, debug views.
+
+## Planned
+path tracing for preview, RTX, SSR, reflection probes, prefiltered reflections.
+
 
 ## Building
 1) yaml-cpp.vcproj
@@ -26,10 +23,4 @@ Don't forget to set the environment variable PATH for your IDE: Engine.dll, FBX 
 
 ![Alt text](preview.png?raw=true "Preview")
 
-## Keys
-* ASWD - camera moving
-* F - focus object
-* hold Alt + left mouse - orbit mode, right - zoom
-* F5/F6 - switch black/white theme
-* F7 - reload all standard shaders
 

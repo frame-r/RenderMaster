@@ -5,6 +5,7 @@
 #include "shader.h"
 #include "material.h"
 #include "light.h"
+#include "mesh.h"
 #include "icorerender.h"
 #include "material_manager.h"
 
@@ -33,6 +34,11 @@ void RenderPathPathTracing::RenderFrame()
 	Texture* color = render->GetPrevRenderTexture(PREV_TEXTURES::PATH_TRACING_HDR, w, h, TEXTURE_FORMAT::RGBA16F);
 
 	Render::RenderScene scene = render->getRenderScene();
+
+	//if (_core->frame() == 100)
+	{
+		auto data = scene.meshes[0].mesh->GetTrianglesData();
+	}
 
 	//render->updateEnvirenment(scene);
 

@@ -42,6 +42,10 @@ auto DLLEXPORT Model::GetWorldCenter() -> vec3
 	return (vec3)centerWS;
 }
 
+auto DLLEXPORT Model::GetTrinaglesWorldSpace(std::unique_ptr<vec3[]>& out, uint* trinaglesNum) -> void
+{
+}
+
 auto DLLEXPORT Model::Clone() -> GameObject *
 {
 	Model *m = new Model;
