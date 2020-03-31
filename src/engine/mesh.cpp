@@ -19,10 +19,10 @@ bool Mesh::isSphere()
 	return strcmp(path_.c_str(), "standard\meshes\sphere.mesh") == 0;
 }
 
-static bool isStd(const char* name)
+bool Mesh::isStd()
 {
 	for (int i = 0; i < _countof(stdMeshses); ++i)
-		if (strcmp(name, stdMeshses[i]) == 0)
+		if (strcmp(path_.c_str(), stdMeshses[i]) == 0)
 			return true;
 	return false;
 }
@@ -159,7 +159,7 @@ ICoreMesh* createStdMesh(const char *path)
 
 bool Mesh::Load()
 {
-	if (isStd(path_.c_str()))
+	if (isStd())
 	{
 		coreMeshPtr.reset(createStdMesh(path_.c_str()));
 		return true;
@@ -231,12 +231,12 @@ bool Mesh::Load()
 	return true;
 }
 
-std::shared_ptr<MeshData> Mesh::GetTrianglesData()
+std::shared_ptr<MeshData> Mesh::GetTrianglesData(mat4 worldTransformMat)
 {
 	if (trianglesDataPtr)
 		return trianglesDataPtr;
 
-	if (isStd(path_.c_str()))
+	if (isStd())
 		throw new std::exception("not impl");
 
 	if (!FS->FileExist(path_.c_str()))
@@ -284,9 +284,9 @@ std::shared_ptr<MeshData> Mesh::GetTrianglesData()
 		vec4 p0 = *(vec4*)data;
 		vec4 p1 = *(vec4*)(data + stride);
 		vec4 p2 = *(vec4*)(data + 2u * stride);
-		ret->triangles[t++] = p0.operator vec3();
-		ret->triangles[t++] = p1.operator vec3();
-		ret->triangles[t++] = p2.operator vec3();
+		ret->triangles[t++] = worldTransformMat * p0;
+		ret->triangles[t++] = worldTransformMat * p1;
+		ret->triangles[t++] = worldTransformMat * p2;
 	}
 
 	trianglesDataPtr = shared_ptr<MeshData>(ret);

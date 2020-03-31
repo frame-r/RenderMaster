@@ -13,8 +13,14 @@
 #include "render_paths/render_path_realtime.h"
 #include "render_paths/render_path_pathtracing.h"
 #include "thirdparty/simplecpp/SimpleCpp.h"
+#include "crc.h"
 #include <memory>
 #include <sstream>
+
+namespace {
+	crc32 crc;
+}
+
 
 struct ShaderInstance
 {
@@ -715,4 +721,38 @@ void Render::Free()
 	prevRenderTextures.clear();
 }
 
+uint32_t Render::RenderScene::getHash()
+{
+	constexpr size_t approxMeshSize = sizeof(mat4) + 30 /*path*/ + 4;
+	constexpr size_t approxLightSize = sizeof(mat4);
+	size_t approxSize = approxMeshSize * meshes.size() + approxLightSize * lights.size();
+	
+	vector<uint8_t> data(approxSize);
+	size_t len = 1;
 
+	auto addData = [&len, &data](const void* src, size_t srcLen)
+	{
+		len += srcLen;
+		data.resize(len);
+		memcpy(data.data() + len - srcLen, src, srcLen);
+	};
+
+	for (size_t i = 0; i < meshes.size(); ++i)
+	{
+		RenderMesh& r = meshes[i];
+
+		addData(r.mesh->GetPath(), strlen(r.mesh->GetPath()));
+		addData(&r.worldTransformMat, sizeof(mat4));
+
+		if (r.mat)
+			addData(r.mat->GetId(), strlen(r.mat->GetId()));
+	}
+
+	for (size_t i = 0; i < lights.size(); ++i)
+	{
+		RenderLight& l = lights[i];
+		addData(&l.worldDirection, sizeof(vec3));
+	}
+
+	return crc.update(data.data(), data.size());
+}

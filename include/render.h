@@ -102,6 +102,8 @@ public:
 		std::vector<RenderLight> lights;
 		bool hasWorldLight;
 		vec4 sun_direction;
+
+		uint32_t getHash();
 	};
 
 	RenderScene getRenderScene();

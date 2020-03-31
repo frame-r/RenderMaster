@@ -5,7 +5,7 @@
 
 struct MeshData
 {
-	std::vector<vec3> triangles;
+	std::vector<vec4> triangles;
 };
 
 class Mesh
@@ -20,8 +20,9 @@ public:
 	~Mesh();
 
 	bool Load();
-	std::shared_ptr<MeshData> GetTrianglesData();
+	std::shared_ptr<MeshData> GetTrianglesData(mat4 worldTransformMat);
 	bool isSphere();
+	bool isStd();
 
 	auto DLLEXPORT GetCoreMesh() -> ICoreMesh* { return coreMeshPtr.get(); }
 	auto DLLEXPORT GetAttributes() -> INPUT_ATTRUBUTE;

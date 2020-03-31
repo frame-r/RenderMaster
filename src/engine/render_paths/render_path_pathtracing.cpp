@@ -34,10 +34,25 @@ void RenderPathPathTracing::RenderFrame()
 	Texture* color = render->GetPrevRenderTexture(PREV_TEXTURES::PATH_TRACING_HDR, w, h, TEXTURE_FORMAT::RGBA16F);
 
 	Render::RenderScene scene = render->getRenderScene();
+	uint32_t nextcrc = scene.getHash();
+
+	static uint32_t crc_;
+	if (crc_ != nextcrc)
+	{
+		crc_ = nextcrc;
+		Log("Scene changed %u\n", crc_);
+	}
 
 	//if (_core->frame() == 100)
+
+	for(int i = 0; i < scene.meshes.size(); ++i)
 	{
-		auto data = scene.meshes[0].mesh->GetTrianglesData();
+		Render::RenderMesh& r = scene.meshes[i];
+
+		if (r.mesh->isStd())
+			continue;
+
+		auto data = r.mesh->GetTrianglesData(r.worldTransformMat);
 	}
 
 	//render->updateEnvirenment(scene);
