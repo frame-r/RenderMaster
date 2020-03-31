@@ -4,6 +4,7 @@
 #include "core.h"
 #include "material_manager.h"
 #include "yaml.inl"
+#include "mesh.h"
 
 
 void Model::Copy(GameObject * original)
@@ -24,6 +25,30 @@ Model::Model()
 Model::Model(StreamPtr<Mesh> mesh) : Model()
 {
 	meshPtr = mesh;
+}
+
+std::shared_ptr<RaytracingData> Model::GetRaytracingData()
+{
+	vector<vec4>& dataIn = meshPtr.get()->GetRaytracingData()->triangles;
+
+	if (!trianglesDataPtrWorldSpace)
+	{
+		trianglesDataPtrWorldSpace = shared_ptr<RaytracingData>(new RaytracingData);
+		trianglesDataPtrWorldSpace->triangles.resize(dataIn.size());
+		trianglesDataTransform={};
+	}
+
+	if (memcmp(&trianglesDataTransform, &worldTransform_, sizeof(mat4)) != 0)
+	{
+		vector<vec4>& dataOut = trianglesDataPtrWorldSpace->triangles;
+
+		for (int i = 0; i < dataIn.size(); ++i)
+			dataOut[i] = worldTransform_ * dataIn[i];
+
+		trianglesDataTransform = worldTransform_;
+	}
+
+	return trianglesDataPtrWorldSpace;
 }
 
 auto DLLEXPORT Model::GetMesh() -> Mesh *

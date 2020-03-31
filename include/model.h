@@ -9,6 +9,8 @@ class Model final : public GameObject
 	StreamPtr<Mesh> meshPtr;
 	vec3 meshCeneter;
 	Material *mat_{nullptr};
+	std::shared_ptr<RaytracingData> trianglesDataPtrWorldSpace;
+	mat4 trianglesDataTransform;
 
 protected:
 	virtual void Copy(GameObject *original) override;
@@ -18,6 +20,8 @@ protected:
 public:
 	Model();
 	Model(StreamPtr<Mesh> mesh);
+
+	std::shared_ptr<RaytracingData> GetRaytracingData();
 
 	auto DLLEXPORT GetMesh() -> Mesh*;
 	auto DLLEXPORT GetMeshPath() -> const char*;

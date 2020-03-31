@@ -596,6 +596,11 @@ struct ShaderInitData
 	size_t size;
 };
 
+struct RaytracingData
+{
+	std::vector<vec4> triangles;
+};
+
 enum class SHADER_TYPE
 {
 	SHADER_VERTEX,

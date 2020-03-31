@@ -86,6 +86,7 @@ public:
 		int modelId;
 		Mesh* mesh{};
 		Material* mat{};
+		Model* model{};
 		mat4 worldTransformMat;
 		mat4 worldTransformMatPrev;
 	};

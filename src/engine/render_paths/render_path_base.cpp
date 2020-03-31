@@ -85,7 +85,7 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 	mats.ViewProjMat_ = mats.ProjMat_ * ViewMat;
 	mats.ViewMat_ = ViewMat;
 	mats.WorldPos_ = ViewMat.Inverse().Column3(3);
-	mats.ViewProjectionInvMat_ = mats.ViewProjMat_.Inverse();
+	mats.ViewProjInvMat_ = mats.ViewProjMat_.Inverse();
 	mats.ViewInvMat_ = mats.ViewMat_.Inverse();
 	//
 

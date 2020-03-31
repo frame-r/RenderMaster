@@ -12,7 +12,7 @@ struct Mats
 	mat4 ProjMat_;
 	mat4 ViewMat_;
 	mat4 ViewProjMat_;
-	mat4 ViewProjectionInvMat_;
+	mat4 ViewProjInvMat_;
 	mat4 ViewInvMat_;
 
 	vec4 WorldPos_;

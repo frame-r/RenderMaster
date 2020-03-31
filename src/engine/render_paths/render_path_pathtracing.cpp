@@ -5,9 +5,11 @@
 #include "shader.h"
 #include "material.h"
 #include "light.h"
+#include "model.h"
 #include "mesh.h"
 #include "icorerender.h"
 #include "material_manager.h"
+#include "resource_manager.h"
 
 RenderPathPathTracing::RenderPathPathTracing()
 {
@@ -19,6 +21,8 @@ RenderPathPathTracing::RenderPathPathTracing()
 	pathtracingPreviewMaterial = mm->CreateInternalMaterial("pathtracing_preview");
 	assert(pathtracingPreviewMaterial);
 
+	trianglesBufferLen = 256;
+	trianglesBuffer = RES_MAN->CreateStructuredBuffer(trianglesBufferLen * sizeof(Triangle), sizeof(Triangle), BUFFER_USAGE::GPU_READ);
 }
 
 std::string RenderPathPathTracing::getString(uint i)
@@ -55,6 +59,18 @@ void drawMeshes(Material * pathtracingPreviewMaterial, std::vector<Render::Rende
 	}
 }
 
+void uploadSceneToGPU(Render::RenderScene& scene)
+{
+	for (int i = 0; i < scene.meshes.size(); ++i)
+	{
+		Render::RenderMesh& r = scene.meshes[i];
+
+		if (r.mesh->isStd())
+			continue;
+
+		std::shared_ptr rtWorldTriangles = r.model->GetRaytracingData();
+	}
+}
 
 void RenderPathPathTracing::RenderFrame()
 {
@@ -70,17 +86,8 @@ void RenderPathPathTracing::RenderFrame()
 	if (crc_ != nextcrc)
 	{
 		crc_ = nextcrc;
+		uploadSceneToGPU(scene);
 		Log("Scene changed %u\n", crc_);
-	}
-
-	for(int i = 0; i < scene.meshes.size(); ++i)
-	{
-		Render::RenderMesh& r = scene.meshes[i];
-
-		if (r.mesh->isStd())
-			continue;
-
-		std::shared_ptr rtData = r.mesh->GetRaytracingData(r.worldTransformMat);
 	}
 
 	//render->updateEnvirenment(scene);

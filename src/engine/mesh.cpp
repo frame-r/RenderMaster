@@ -231,10 +231,10 @@ bool Mesh::Load()
 	return true;
 }
 
-std::shared_ptr<RaytracingData> Mesh::GetRaytracingData(mat4 worldTransformMat)
+std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 {
-	if (trianglesDataPtr)
-		return trianglesDataPtr;
+	if (trianglesDataObjectSpace)
+		return trianglesDataObjectSpace;
 
 	if (isStd())
 		throw new std::exception("not impl");
@@ -242,8 +242,8 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData(mat4 worldTransformMat)
 	if (!FS->FileExist(path_.c_str()))
 	{
 		LogCritical("Mesh::Load(): file '%s' not found", path_);
-		trianglesDataPtr = nullptr;
-		return trianglesDataPtr;
+		trianglesDataObjectSpace = nullptr;
+		return trianglesDataObjectSpace;
 	}
 
 	FileMapping mappedFile = FS->CreateMemoryMapedFile(path_.c_str());
@@ -273,25 +273,22 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData(mat4 worldTransformMat)
 
 	assert(desc.numberOfVertex % 3 == 0);
 
-	RaytracingData *ret = new RaytracingData;
-	ret->triangles.resize(desc.numberOfVertex);
+	trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData);
+	
+	trianglesDataObjectSpace->triangles.resize(desc.numberOfVertex);
+	
+	vector<vec4>& in = trianglesDataObjectSpace->triangles;
 
 	uint32_t stride = header.positionStride;
-	uint32_t tris = desc.numberOfVertex / 3;
-	size_t t = 0;
-	for (int i = 0; i < tris; ++i)
+	triangles = desc.numberOfVertex / 3;
+
+	for (int i = 0; i < desc.numberOfVertex; ++i)
 	{
-		vec4 p0 = *(vec4*)data;
-		vec4 p1 = *(vec4*)(data + stride);
-		vec4 p2 = *(vec4*)(data + 2u * stride);
-		ret->triangles[t++] = worldTransformMat * p0;
-		ret->triangles[t++] = worldTransformMat * p1;
-		ret->triangles[t++] = worldTransformMat * p2;
+		in[i] = (vec4)*data;
+		data += stride;
 	}
 
-	trianglesDataPtr = shared_ptr<RaytracingData>(ret);
-
-	return trianglesDataPtr;
+	return trianglesDataObjectSpace;
 }
 
 auto DLLEXPORT Mesh::GetAttributes() -> INPUT_ATTRUBUTE

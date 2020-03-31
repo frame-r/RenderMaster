@@ -384,7 +384,7 @@ vector<Render::RenderMesh> Render::getRenderMeshes()
 		if (!mesh)
 			continue;
 
-		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetMaterial(), model->GetWorldTransform(), model->GetWorldTransformPrev()});
+		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetMaterial(), model, model->GetWorldTransform(), model->GetWorldTransformPrev()});
 	}
 	return meshesVec;
 }
