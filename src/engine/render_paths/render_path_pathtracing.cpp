@@ -73,8 +73,6 @@ void RenderPathPathTracing::RenderFrame()
 		Log("Scene changed %u\n", crc_);
 	}
 
-	//if (_core->frame() == 100)
-
 	for(int i = 0; i < scene.meshes.size(); ++i)
 	{
 		Render::RenderMesh& r = scene.meshes[i];
@@ -90,77 +88,22 @@ void RenderPathPathTracing::RenderFrame()
 	uint32 frameID_ = render->frameID();
 	uint32 readbackFrameID_ = render->readbackFrameID();
 
+	CORE_RENDER->TimersBeginPoint(frameID_, Render::T_PATH_TRACING_DRAW);
+
 	{
-		CORE_RENDER->TimersBeginPoint(frameID_, Render::T_PATH_TRACING_DRAW);
+		Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
+		CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
+		CORE_RENDER->Clear();
+		CORE_RENDER->SetDepthTest(1);
 
-		//compositeMaterial->SetDef("specular_quality", render->GetSpecularQuality());
-		//compositeMaterial->SetDef("environment_type", static_cast<int>(render->GetEnvironmentType()));
-
-		//if (auto shader = pathtracingDrawMaterial->GetShader(render->fullScreen()))
-		{
-			//Texture* rts[1] = { color };
-			//CORE_RENDER->SetRenderTextures(1, rts, nullptr);
-			Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
-			CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
-			CORE_RENDER->Clear();
-
-			//CORE_RENDER->SetShader(shader);
-			CORE_RENDER->SetDepthTest(1);
-
-			//constexpr int tex_count = 7;
-			//Texture* texs[tex_count] = {
-			//	buffers.albedo,
-			//	buffers.normal,
-			//	buffers.shading,
-			//	buffers.diffuseLight,
-			//	buffers.specularLight,
-			//	buffers.depth,
-			//	render->GetEnvironmentTexture()
-			//};
-
-			drawMeshes(pathtracingPreviewMaterial, scene.meshes, mats.ViewProjUnjitteredMat_, scene.sun_direction);
-
-			//CORE_RENDER->BindTextures(tex_count, texs);
-			//{
-			//	CORE_RENDER->Draw(render->fullScreen(), 1);
-			//}
-			//CORE_RENDER->BindTextures(tex_count, nullptr);
-		}
-
-		CORE_RENDER->TimersEndPoint(frameID_, Render::T_PATH_TRACING_DRAW);
-		drawMS = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_PATH_TRACING_DRAW);
+		drawMeshes(pathtracingPreviewMaterial, scene.meshes, mats.ViewProjUnjitteredMat_, scene.sun_direction);
 	}
 
-	// Restore default render target
-	//Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
-	//CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
+	CORE_RENDER->TimersEndPoint(frameID_, Render::T_PATH_TRACING_DRAW);
+	drawMS = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_PATH_TRACING_DRAW);
 
-	// Final copy
-	//{
-	//	finalPostMaterial->SetDef("view_mode", (int)render->GetViewMode());
 
-	//	if (auto shader = finalPostMaterial->GetShader(render->fullScreen()))
-	//	{
-	//		constexpr int tex_count = 8;
-	//		Texture* texs[tex_count] = {
-	//			buffers.albedo,
-	//			buffers.normal,
-	//			buffers.shading,
-	//			buffers.diffuseLight,
-	//			buffers.specularLight,
-	//			buffers.velocity,
-	//			buffers.color,
-	//			colorReprojection ? buffers.colorReprojected : nullptr
-	//		};
-	//		int tex_bind = tex_count;
-	//		if (!colorReprojection) tex_bind--;
 
-	//		CORE_RENDER->BindTextures(tex_bind, texs);
-	//		CORE_RENDER->SetShader(shader);
-	//		CORE_RENDER->Draw(render->fullScreen(), 1);
-	//		CORE_RENDER->BindTextures(tex_bind, nullptr);
-	//	}
-	//}
 
 	render->RenderGUI();
 }
