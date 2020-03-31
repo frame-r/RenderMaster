@@ -226,6 +226,7 @@ enum class PASS
 	DEFERRED,
 	ID,
 	WIREFRAME,
+	FORWARD,
 	COUNT
 };
 

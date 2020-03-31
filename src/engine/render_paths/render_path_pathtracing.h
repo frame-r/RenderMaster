@@ -5,6 +5,7 @@
 class RenderPathPathTracing : public RenderPathBase
 {
 	Material* pathtracingDrawMaterial{};
+	Material* pathtracingPreviewMaterial{};
 	float drawMS;
 
 public:

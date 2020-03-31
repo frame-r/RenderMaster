@@ -136,6 +136,8 @@ void GenericMaterial::LoadXML()
 		loadPass(mat.child("pass_id"), idShader_, PASS::ID);
 	if (mat.child("pass_wireframe"))
 		loadPass(mat.child("pass_wireframe"), wireframeShader_, PASS::WIREFRAME);
+	if (mat.child("pass_forward"))
+		loadPass(mat.child("pass_forward"), forwardShader_, PASS::FORWARD);
 }
 
 void GenericMaterial::Clear()
@@ -147,6 +149,7 @@ void GenericMaterial::Clear()
 	deferredShader_.clear();
 	idShader_.clear();
 	wireframeShader_.clear();
+	forwardShader_.clear();
 }
 
 void Material::initializeFromParent()
@@ -502,4 +505,9 @@ Shader* Material::GetWireframeShader(Mesh* mesh)
 {
 	Render *render = _core->GetRender();
 	return render->GetShader(parent_->wireframeShader_.c_str(), mesh, &currentDefinesVec_);
+}
+Shader* Material::GetForwardShader(Mesh* mesh)
+{
+	Render *render = _core->GetRender();
+	return render->GetShader(parent_->forwardShader_.c_str(), mesh, &currentDefinesVec_);
 }

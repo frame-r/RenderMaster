@@ -6,6 +6,7 @@ struct Mats
 	// Original
 	mat4 ProjUnjitteredMat_;
 	mat4 ViewUnjitteredMat_;
+	mat4 ViewProjUnjitteredMat_;
 
 	// Jittered
 	mat4 ProjMat_;

@@ -48,6 +48,7 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 	// Init mats
 	mats.ProjUnjitteredMat_ = ProjMat;
 	mats.ViewUnjitteredMat_ = ViewMat;
+	mats.ViewProjUnjitteredMat_ = ProjMat * ViewMat;
 	mats.ProjMat_ = ProjMat;
 
 	Mats& prev = viewsDataMap[viewID];
