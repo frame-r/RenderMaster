@@ -3,7 +3,7 @@
 #include "icorerender.h"
 
 
-struct MeshData
+struct RaytracingData
 {
 	std::vector<vec4> triangles;
 };
@@ -13,14 +13,14 @@ class Mesh
 	std::unique_ptr<ICoreMesh> coreMeshPtr;
 	std::string path_;
 	vec3 center_;
-	std::shared_ptr<MeshData> trianglesDataPtr;
+	std::shared_ptr<RaytracingData> trianglesDataPtr;
 
 public:
 	Mesh(const std::string& path);
 	~Mesh();
 
 	bool Load();
-	std::shared_ptr<MeshData> GetTrianglesData(mat4 worldTransformMat);
+	std::shared_ptr<RaytracingData> GetRaytracingData(mat4 worldTransformMat);
 	bool isSphere();
 	bool isStd();
 

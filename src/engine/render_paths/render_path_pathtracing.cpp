@@ -52,7 +52,7 @@ void RenderPathPathTracing::RenderFrame()
 		if (r.mesh->isStd())
 			continue;
 
-		auto data = r.mesh->GetTrianglesData(r.worldTransformMat);
+		std::shared_ptr rtData = r.mesh->GetRaytracingData(r.worldTransformMat);
 	}
 
 	//render->updateEnvirenment(scene);

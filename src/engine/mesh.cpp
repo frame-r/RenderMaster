@@ -231,7 +231,7 @@ bool Mesh::Load()
 	return true;
 }
 
-std::shared_ptr<MeshData> Mesh::GetTrianglesData(mat4 worldTransformMat)
+std::shared_ptr<RaytracingData> Mesh::GetRaytracingData(mat4 worldTransformMat)
 {
 	if (trianglesDataPtr)
 		return trianglesDataPtr;
@@ -273,7 +273,7 @@ std::shared_ptr<MeshData> Mesh::GetTrianglesData(mat4 worldTransformMat)
 
 	assert(desc.numberOfVertex % 3 == 0);
 
-	MeshData *ret = new MeshData;
+	RaytracingData *ret = new RaytracingData;
 	ret->triangles.resize(desc.numberOfVertex);
 
 	uint32_t stride = header.positionStride;
@@ -289,7 +289,7 @@ std::shared_ptr<MeshData> Mesh::GetTrianglesData(mat4 worldTransformMat)
 		ret->triangles[t++] = worldTransformMat * p2;
 	}
 
-	trianglesDataPtr = shared_ptr<MeshData>(ret);
+	trianglesDataPtr = shared_ptr<RaytracingData>(ret);
 
 	return trianglesDataPtr;
 }
