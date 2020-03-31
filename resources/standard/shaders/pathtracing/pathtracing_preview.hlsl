@@ -80,7 +80,7 @@ VS_OUT mainVS(VS_IN vs_input)
 	FS_OUT mainFS(VS_OUT fs_input)
 	{
 		FS_OUT out_color;
-		out_color.color = max(dot(fs_input.Normal.xyz, sun_dir.xyz), 0);
+		out_color.color = max(dot(normalize(fs_input.Normal.xyz), sun_dir.xyz), 0);
 		return out_color;
 	}
 
