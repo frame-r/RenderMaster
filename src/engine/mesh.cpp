@@ -5,6 +5,20 @@
 #include "filesystem.h"
 #include "icorerender.h"
 
+static float vertexPlane[40] =
+{
+	-1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 1.0f,
+	 1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		1.0f, 0.0f,
+	 1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		1.0f, 1.0f,
+	-1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 0.0f
+};
+
+static unsigned short indexPlane[6]
+{
+	0, 2, 1,
+	0, 1, 3
+};
+
 
 static const char* stdMeshses[] =
 {
@@ -17,6 +31,11 @@ static const char* stdMeshses[] =
 bool Mesh::isSphere()
 {
 	return strcmp(path_.c_str(), "standard\meshes\sphere.mesh") == 0;
+}
+
+bool Mesh::isPlane()
+{
+	return strcmp(path_.c_str(), "std#plane") == 0;
 }
 
 bool Mesh::isStd()
@@ -42,22 +61,8 @@ ICoreMesh* createStdMesh(const char *path)
 
 	if (!strcmp(path, "std#plane"))
 	{
-		float vertex[40] =
-		{
-			-1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 1.0f,
-			 1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		1.0f, 0.0f,
-			 1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		1.0f, 1.0f,
-			-1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 0.0f
-		};
-	
-		unsigned short indexPlane[6]
-		{
-			0, 2, 1,
-			0, 1, 3
-		};
-
 		MeshDataDesc desc;
-		desc.pData = reinterpret_cast<uint8*>(vertex);
+		desc.pData = reinterpret_cast<uint8*>(vertexPlane);
 		desc.numberOfVertex = 4;
 		desc.positionStride = 40;
 		desc.normalsPresented = true;
@@ -237,8 +242,24 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 		return trianglesDataObjectSpace;
 
 	if (isStd())
-		throw new std::exception("not impl");
+	{
+		if (isPlane())
+		{
+			trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData);
+			trianglesDataObjectSpace->triangles.resize(6);
 
+			vector<vec4>& trinagles = trianglesDataObjectSpace->triangles;
+
+			for (int i = 0; i < _countof(indexPlane); ++i)
+			{
+				trinagles[i] = vec4(vertexPlane[i * 10], vertexPlane[i * 10 + 1], vertexPlane[i * 10 + 2], vertexPlane[i * 10 + 3]);
+			}
+
+			return trianglesDataObjectSpace;
+
+		} else
+			throw new std::exception("not impl");
+	}
 	if (!FS->FileExist(path_.c_str()))
 	{
 		LogCritical("Mesh::Load(): file '%s' not found", path_);
@@ -274,7 +295,6 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 	assert(desc.numberOfVertex % 3 == 0);
 
 	trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData);
-	
 	trianglesDataObjectSpace->triangles.resize(desc.numberOfVertex);
 	
 	vector<vec4>& in = trianglesDataObjectSpace->triangles;

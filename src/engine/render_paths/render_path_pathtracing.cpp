@@ -65,10 +65,11 @@ void uploadSceneToGPU(Render::RenderScene& scene)
 	{
 		Render::RenderMesh& r = scene.meshes[i];
 
-		if (r.mesh->isStd())
+		if (r.mesh->isStd() && !r.mesh->isPlane())
 			continue;
 
 		std::shared_ptr rtWorldTriangles = r.model->GetRaytracingData();
+		//trianglesBuffer = RES_MAN->CreateStructuredBuffer(trianglesBufferLen * sizeof(Triangle), sizeof(Triangle), BUFFER_USAGE::GPU_READ);
 	}
 }
 

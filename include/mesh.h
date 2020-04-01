@@ -18,6 +18,7 @@ public:
 	bool Load();
 	std::shared_ptr<RaytracingData> GetRaytracingData();
 	bool isSphere();
+	bool isPlane();
 	bool isStd();
 
 	auto DLLEXPORT GetCoreMesh() -> ICoreMesh* { return coreMeshPtr.get(); }
