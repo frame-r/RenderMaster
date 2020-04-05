@@ -597,8 +597,12 @@ struct ShaderInitData
 };
 
 struct RaytracingData
-{
+{	
 	std::vector<vec4> triangles;
+
+public:
+	RaytracingData(size_t len) : triangles(len) {}
+	size_t size() { return triangles.size(); }
 };
 
 enum class SHADER_TYPE

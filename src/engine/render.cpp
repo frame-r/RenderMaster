@@ -675,7 +675,7 @@ void Render::Init()
 
 	realtimeObj = new RenderPathRealtime;
 	pathtracingObj = new RenderPathPathTracing;
-	SetRenderPath(renderPathType);
+	SetRenderPath(RENDER_PATH::PATH_TRACING);
 
 	Log("Render initialized");
 }

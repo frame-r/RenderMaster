@@ -33,8 +33,7 @@ std::shared_ptr<RaytracingData> Model::GetRaytracingData()
 
 	if (!trianglesDataPtrWorldSpace)
 	{
-		trianglesDataPtrWorldSpace = shared_ptr<RaytracingData>(new RaytracingData);
-		trianglesDataPtrWorldSpace->triangles.resize(dataIn.size());
+		trianglesDataPtrWorldSpace = shared_ptr<RaytracingData>(new RaytracingData(dataIn.size()));
 		trianglesDataTransform = {};
 	}
 

@@ -2,5 +2,5 @@
 <material id="material_0" generic_material="mesh">
 	<def id="albedo_map">1</def>
 	<def id="normal_map">0</def>
-	<texture id="albedo" uv="50.000000 50.000000 0.000000 0.000000">standard/textures/ground2_albedo.dds</texture>
+	<texture id="albedo" uv="1.000000 1.000000 0.000000 0.000000">standard/textures/ground2_albedo.dds</texture>
 </material>

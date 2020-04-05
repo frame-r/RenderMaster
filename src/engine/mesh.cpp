@@ -245,9 +245,7 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 	{
 		if (isPlane())
 		{
-			trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData);
-			trianglesDataObjectSpace->triangles.resize(6);
-
+			trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(6));
 			vector<vec4>& trinagles = trianglesDataObjectSpace->triangles;
 
 			for (int i = 0; i < _countof(indexPlane); ++i)
@@ -294,9 +292,7 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 
 	assert(desc.numberOfVertex % 3 == 0);
 
-	trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData);
-	trianglesDataObjectSpace->triangles.resize(desc.numberOfVertex);
-	
+	trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(desc.numberOfVertex));	
 	vector<vec4>& in = trianglesDataObjectSpace->triangles;
 
 	uint32_t stride = header.positionStride;

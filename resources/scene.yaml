@@ -1,4 +1,4 @@
-roots: 5
+roots: 4
 objects:
   - childs: 0
     id: 845369033
@@ -7,30 +7,23 @@ objects:
     worldTransform: [0.8472725, 0.3067083, 0.4336593, 0, 0.3057738, 0.3859437, -0.8703738, 0, -0.4343189, 0.8700449, 0.233216, 0, 0, 0, 0, 1]
     intensity: 1
   - childs: 0
-    id: 1113097840
-    enabled: true
-    type: Model
-    worldTransform: [-1, 1.755557e-05, 0, 0, 0, 0, 1, 0, 1.755557e-05, 1, 0, 0, 0, 0, 0, 1]
-    mesh: standard\meshes\Teapot_Node.mesh
-    material: material_1
-  - childs: 0
     id: 36578474
     enabled: true
     type: Model
-    worldTransform: [100, 0, 0, 0, 0, 100, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    worldTransform: [6, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
     mesh: std#plane
     material: material_0
   - childs: 0
-    id: 1483175451
+    id: 1985095428
     enabled: true
     type: Model
-    worldTransform: [-1, 1.755557e-05, 0, 3.185, 0, 0, 1, 0, 1.755557e-05, 1, 0, -5.539726e-05, 0, 0, 0, 1]
-    mesh: standard\meshes\Teapot_Node.mesh
-    material: material_3
+    worldTransform: [6, 0, 0, 0, 0, 0, -1.000001, 2.965281, 0, 3.000001, 0, 2.598138, 0, 0, 0, 1]
+    mesh: std#plane
+    material: material_0
   - childs: 0
-    id: 1833474593
+    id: 2076238944
     enabled: true
     type: Model
-    worldTransform: [-1, 1.755557e-05, 0, -3.344, 0, 0, 1, 0, 1.755557e-05, 1, 0, 6.046855e-05, 0, 0, 0, 1]
-    mesh: standard\meshes\Teapot_Node.mesh
-    material: material_2
+    worldTransform: [1, 0, 0, -0.4133172, 0, 1, 0, -0.01566553, 0, 0, 1, 1.553444, 0, 0, 0, 1]
+    mesh: .import\sphere.mesh
+    material: material_14

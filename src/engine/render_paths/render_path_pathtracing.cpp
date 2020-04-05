@@ -61,6 +61,8 @@ void drawMeshes(Material * pathtracingPreviewMaterial, std::vector<Render::Rende
 
 void uploadSceneToGPU(Render::RenderScene& scene)
 {
+	size_t vertexCount = 0;
+
 	for (int i = 0; i < scene.meshes.size(); ++i)
 	{
 		Render::RenderMesh& r = scene.meshes[i];
@@ -68,7 +70,9 @@ void uploadSceneToGPU(Render::RenderScene& scene)
 		if (r.mesh->isStd() && !r.mesh->isPlane())
 			continue;
 
-		std::shared_ptr rtWorldTriangles = r.model->GetRaytracingData();
+		std::shared_ptr<RaytracingData> rtWorldTriangles = r.model->GetRaytracingData();
+		vertexCount += rtWorldTriangles->size();
+
 		//trianglesBuffer = RES_MAN->CreateStructuredBuffer(trianglesBufferLen * sizeof(Triangle), sizeof(Triangle), BUFFER_USAGE::GPU_READ);
 	}
 }
