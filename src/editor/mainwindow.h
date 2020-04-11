@@ -5,6 +5,7 @@
 #include <QProgressBar>
 
 class Settings;
+class Core;
 
 enum THEME
 {
@@ -95,6 +96,7 @@ public slots:
 //	void keyPressEvent(QKeyEvent*);
 //	void keyReleaseEvent(QKeyEvent*);
 	bool MainWindow::eventFilter(QObject *watched, QEvent *event) override;
+	void OnEngineInit(Core* c);
 
 signals:
 	void onKeyPressed(Qt::Key key);

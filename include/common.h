@@ -596,9 +596,18 @@ struct ShaderInitData
 	size_t size;
 };
 
+#pragma pack(push, 1)
+struct RaytracingTriangle
+{
+	vec4 p0, p1, p2;
+	vec4 n;
+	uint materialID;
+};
+#pragma pack(pop)
+
 struct RaytracingData
 {	
-	std::vector<vec4> triangles;
+	std::vector<RaytracingTriangle> triangles;
 
 public:
 	RaytracingData(size_t len) : triangles(len) {}

@@ -1150,6 +1150,7 @@ auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) ->
 		{
 			_context->VSSetShaderResources(unit, 1, &srv);
 			_context->PSSetShaderResources(unit, 1, &srv);
+			_context->CSSetShaderResources(unit, 1, &srv);
 			state_.srvs[unit] = srv;
 		}
 	} else
@@ -1160,6 +1161,7 @@ auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) ->
 		{
 			_context->VSSetShaderResources(unit, 1, &srv);
 			_context->PSSetShaderResources(unit, 1, &srv);
+			_context->CSSetShaderResources(unit, 1, &srv);
 			state_.srvs[unit] = nullptr;
 		}
 	}

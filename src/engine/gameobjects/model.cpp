@@ -29,7 +29,7 @@ Model::Model(StreamPtr<Mesh> mesh) : Model()
 
 std::shared_ptr<RaytracingData> Model::GetRaytracingData()
 {
-	vector<vec4>& dataIn = meshPtr.get()->GetRaytracingData()->triangles;
+	vector<RaytracingTriangle>& dataIn = meshPtr.get()->GetRaytracingData()->triangles;
 
 	if (!trianglesDataPtrWorldSpace)
 	{
@@ -39,10 +39,20 @@ std::shared_ptr<RaytracingData> Model::GetRaytracingData()
 
 	if (memcmp(&trianglesDataTransform, &worldTransform_, sizeof(mat4)) != 0)
 	{
-		vector<vec4>& dataOut = trianglesDataPtrWorldSpace->triangles;
+		vector<RaytracingTriangle>& dataOut = trianglesDataPtrWorldSpace->triangles;
+		mat4 NM = worldTransform_.Inverse().Transpose();
 
 		for (int i = 0; i < dataIn.size(); ++i)
-			dataOut[i] = worldTransform_ * dataIn[i];
+		{
+			RaytracingTriangle& ti = dataIn[i];
+			RaytracingTriangle& to = dataOut[i];
+
+			to.p0 = worldTransform_ * ti.p0;
+			to.p1 = worldTransform_ * ti.p1;
+			to.p2 = worldTransform_ * ti.p2;
+
+			to.n = NM * ti.n;
+		}
 
 		trianglesDataTransform = worldTransform_;
 	}

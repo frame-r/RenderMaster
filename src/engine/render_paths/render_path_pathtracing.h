@@ -7,12 +7,8 @@ class RenderPathPathTracing : public RenderPathBase
 	Material* pathtracingDrawMaterial{};
 	Material* pathtracingPreviewMaterial{};
 	float drawMS;
+	SharedPtr<Texture> out;
 
-	struct Triangle
-	{
-		vec4 p0, p1, p2;
-		uint32 materialID;
-	};
 	uint32_t trianglesBufferLen{};
 	SharedPtr<StructuredBuffer> trianglesBuffer;
 

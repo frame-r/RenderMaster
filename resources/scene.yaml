@@ -22,7 +22,7 @@ objects:
     material: material_0
   - childs: 0
     id: 2076238944
-    enabled: true
+    enabled: false
     type: Model
     worldTransform: [1, 0, 0, -0.4133172, 0, 1, 0, -0.01566553, 0, 0, 1, 1.553444, 0, 0, 0, 1]
     mesh: .import\sphere.mesh

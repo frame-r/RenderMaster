@@ -245,12 +245,22 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 	{
 		if (isPlane())
 		{
-			trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(6));
-			vector<vec4>& trinagles = trianglesDataObjectSpace->triangles;
+			trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(2));
+			vector<RaytracingTriangle>& in = trianglesDataObjectSpace->triangles;
 
-			for (int i = 0; i < _countof(indexPlane); ++i)
+			auto index_to_pos = [](int i)->vec4
 			{
-				trinagles[i] = vec4(vertexPlane[i * 10], vertexPlane[i * 10 + 1], vertexPlane[i * 10 + 2], vertexPlane[i * 10 + 3]);
+				size_t s = indexPlane[i];
+				return vec4(vertexPlane[s * 10], vertexPlane[s * 10 + 1], vertexPlane[s * 10 + 2], vertexPlane[s * 10 + 3]);
+			};
+		
+			for (int i = 0; i < 2; ++i)
+			{
+				in[i].p0 = index_to_pos(i * 3 + 0);
+				in[i].p1 = index_to_pos(i * 3 + 1);
+				in[i].p2 = index_to_pos(i * 3 + 2);
+				in[i].n = triangle_normal(in[i].p0, in[i].p1, in[i].p2);
+				in[i].n.w = .0f;
 			}
 
 			return trianglesDataObjectSpace;
@@ -291,17 +301,18 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 	uint8_t *data = reinterpret_cast<uint8_t*>(mappedFile.ptr + sizeof(MeshHeader) + desc.positionOffset);
 
 	assert(desc.numberOfVertex % 3 == 0);
-
-	trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(desc.numberOfVertex));	
-	vector<vec4>& in = trianglesDataObjectSpace->triangles;
-
 	uint32_t stride = header.positionStride;
 	triangles = desc.numberOfVertex / 3;
 
-	for (int i = 0; i < desc.numberOfVertex; ++i)
+	trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(triangles));
+	vector<RaytracingTriangle>& in = trianglesDataObjectSpace->triangles;
+
+	for (int i = 0; i < triangles; ++i)
 	{
-		in[i] = (vec4)*data;
-		data += stride;
+		in[i].p0 = (vec4)*data; data += stride;
+		in[i].p1 = (vec4)*data; data += stride;
+		in[i].p2 = (vec4)*data; data += stride;
+		in[i].n = triangle_normal(in[i].p0, in[i].p1, in[i].p2);
 	}
 
 	return trianglesDataObjectSpace;
