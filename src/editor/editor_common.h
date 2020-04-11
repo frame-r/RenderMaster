@@ -12,7 +12,6 @@
 #define LIGHT_THEME ROOT_PATH "resources/editor/light.qss"
 #define DARK_THEME ROOT_PATH "resources/editor/dark.qss"
 
-
 struct CameraData
 {
 	vec3 pos;

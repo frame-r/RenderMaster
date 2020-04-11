@@ -495,9 +495,9 @@ auto DLLEXPORT Render::SetRenderPath(RENDER_PATH type) -> void
 	renderPathType = type;
 }
 
-void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
+void Render::RenderFrame(size_t viewID, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum)
 {
-	renderpath->FrameBegin(viewID, ViewMat, ProjMat, wireframeModels, modelsNum);
+	renderpath->FrameBegin(viewID, camera, wireframeModels, modelsNum);
 	renderpath->RenderFrame();
 	renderpath->FrameEnd();
 }

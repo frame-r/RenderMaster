@@ -33,7 +33,7 @@ RenderPathBase::RenderPathBase()
 	render = _core->GetRender();
 }
 
-void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
+void RenderPathBase::FrameBegin(size_t viewID, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum)
 {
 	uint32 timerID_ = render->frameID();
 	uint32 dataTimerID_ = render->readbackFrameID();
@@ -46,10 +46,10 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 	CORE_RENDER->ResizeBuffersByViewort();
 
 	// Init mats
-	mats.ProjUnjitteredMat_ = ProjMat;
-	mats.ViewUnjitteredMat_ = ViewMat;
-	mats.ViewProjUnjitteredMat_ = ProjMat * ViewMat;
-	mats.ProjMat_ = ProjMat;
+	mats.ProjUnjitteredMat_ = camera.ProjMat;
+	mats.ViewUnjitteredMat_ = camera.ViewMat;
+	mats.ViewProjUnjitteredMat_ = camera.ProjMat * camera.ViewMat;
+	mats.ProjMat_ = camera.ProjMat;
 
 	Mats& prev = viewsDataMap[viewID];
 
@@ -69,7 +69,7 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 		if (_core->frame() > 1)
 			cameraPrevViewProjMatRejittered_ = prev.ProjUnjitteredMat_;
 		else
-			cameraPrevViewProjMatRejittered_ = ProjMat;
+			cameraPrevViewProjMatRejittered_ = camera.ProjMat;
 
 		cameraPrevViewProjMatRejittered_.el_2D[0][2] += taaOffset.x / w;
 		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOffset.y / h;
@@ -77,14 +77,14 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 		if (_core->frame() > 1)
 			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * prev.ViewMat_;
 		else
-			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * ViewMat;
+			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * camera.ViewMat;
 	}
 	else
 		cameraPrevViewProjMatRejittered_ = prev.ProjMat_ * prev.ViewMat_;
 
-	mats.ViewProjMat_ = mats.ProjMat_ * ViewMat;
-	mats.ViewMat_ = ViewMat;
-	mats.WorldPos_ = ViewMat.Inverse().Column3(3);
+	mats.ViewProjMat_ = mats.ProjMat_ * camera.ViewMat;
+	mats.ViewMat_ = camera.ViewMat;
+	mats.WorldPos_ = camera.ViewMat.Inverse().Column3(3);
 	mats.ViewProjInvMat_ = mats.ViewProjMat_.Inverse();
 	mats.ViewInvMat_ = mats.ViewMat_.Inverse();
 	//

@@ -34,7 +34,7 @@ public:
 	virtual std::string getString(uint i) = 0;
 	virtual void RenderFrame() = 0;
 
-	void FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum);
+	void FrameBegin(size_t viewID, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum);
 	void FrameEnd();
 };
 

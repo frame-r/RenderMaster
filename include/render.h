@@ -122,7 +122,7 @@ public:
 	void Init();
 	void Update();
 	void Free();
-	void RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum);
+	void RenderFrame(size_t viewID, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum);
 	auto GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format) -> Texture*;
 	void ExchangePrevRenderTexture(Texture *prev, Texture *some);
 	void GetEnvironmentResolution(vec4& out);

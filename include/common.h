@@ -155,7 +155,15 @@ public:
 
 std::string fileExtension(const std::string& path);
 
-
+namespace Engine
+{
+	struct CameraData
+	{
+		mat4 ViewMat;
+		mat4 ProjMat;
+		float verFullFovInRadians;
+	};
+}
 // Engine enums
 
 enum class INIT_FLAGS
