@@ -983,9 +983,9 @@ auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize, BUFFER_
 	assert(size % 16 == 0);
 
 	D3D11_BUFFER_DESC desc = {};
-	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.Usage = usage == BUFFER_USAGE::CPU_WRITE? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.CPUAccessFlags = usage == BUFFER_USAGE::CPU_WRITE ? D3D11_CPU_ACCESS_WRITE : 0;
 	desc.ByteWidth = size;
 	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 	desc.StructureByteStride = elementSize;

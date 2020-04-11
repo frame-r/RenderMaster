@@ -7,6 +7,7 @@ cbuffer SceneBuffer : register(b1)
 	uint spheresCount;
 	uint triCount;
 	uint lightsCount;
+	//float4 light_n;
 };
 
 //struct Sphere
@@ -138,11 +139,11 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	uint ii = dispatchThreadId.x;
 	uint jj = maxSize_y - dispatchThreadId.y - 1;
 
-	//if (ii >= maxSize_x || jj >= maxSize_y)
-	//	return;
+	if (ii >= maxSize_x || jj >= maxSize_y)
+		return;
 
 	float4 curColor = tex[dispatchThreadId.xy];
-	float rays = 0;// curColor.a;
+	float rays =  curColor.a;
 
 	//float pixel_seed = rand(float2(ii,jj));
 	uint pixel_num = jj * maxSize_x * ii;
@@ -153,7 +154,6 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	float2 jitter = float2(Uniform01(), Uniform01());
 	ndc.x = (ii + jitter.x) / maxSize_x * 2 - 1;
 	ndc.y = (jj + jitter.y) / maxSize_y * 2 - 1;
-
 
 	float3 rayDirWs = GetWorldRay(ndc, cam_forward_ws.xyz, cam_right_ws.xyz, cam_up_ws.xyz);
 
@@ -176,16 +176,22 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	float3 orign = cam_pos_ws.xyz;
 	float3 dir = rayDirWs;
 	
+	float3 color = 0;
+
 	float3 hit, N;
 	int id;
 	if (IntersectWorld(orign, dir, hit, N, id))
 	{
-		float g = max(dot(N, normalize(float3(1,5,6))), 0);
-		tex[dispatchThreadId.xy] = float4(0,1,0,1);
+		float g = max(dot(N, normalize(float3(1,5,-6))), 0);
+		float a = rays / (rays + 1);
+		color = float3(g, g, g);
+		color = curColor.rgb * a + color.rgb * (1 - a);
 	}
 	else
-		tex[dispatchThreadId.xy] = float4(1,1,0,1);
+		color = float3(0,0,0);
 	
+	tex[dispatchThreadId.xy] = float4(color, rays + 1);
+
 	/*
 
 	[unroll]

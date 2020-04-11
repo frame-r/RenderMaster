@@ -104,6 +104,35 @@ void RenderPathPathTracing::RenderFrame()
 	Render::RenderScene scene = render->getRenderScene();
 	uint32_t nextcrc = scene.getHash();
 
+	if (!out || out->GetHeight() != height || out->GetWidth() != width)
+		out = RES_MAN->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA32F, TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS);
+
+	auto clearBuffer = [this]() -> void
+	{
+		vector<string> defines{ "GROUP_DIM_X=16", "GROUP_DIM_Y=16" };
+		if (Shader* pathtracingshader = RENDER->GetComputeShader("pathtracing\\pathtracing_clear.hlsl", &defines))
+		{
+			CORE_RENDER->SetShader(pathtracingshader);
+			pathtracingshader->SetUintParameter("maxSize_x", width);
+			pathtracingshader->SetUintParameter("maxSize_y", height);
+			pathtracingshader->FlushParameters();
+
+			CORE_RENDER->BindStructuredBuffer(0, trianglesBuffer.get());
+
+			Texture* uavs[] = { out.get() };
+			CORE_RENDER->CSBindUnorderedAccessTextures(1, uavs);
+
+			constexpr uint warpSize = 16;
+			int numGroupsX = (width + (warpSize - 1)) / warpSize;
+			int numGroupsY = (height + (warpSize - 1)) / warpSize;
+
+			CORE_RENDER->Dispatch(numGroupsX, numGroupsY, 1);
+
+			CORE_RENDER->CSBindUnorderedAccessTextures(1, nullptr);
+		}
+
+	};
+
 	static uint32_t crc_;
 	if (crc_ != nextcrc)
 	{
@@ -120,8 +149,13 @@ void RenderPathPathTracing::RenderFrame()
 		auto trianglesPtr = getTriangles(scene, triagles);
 		trianglesBuffer->SetData((uint8*)trianglesPtr->triangles.data(), allDataInBytes);
 
+		clearBuffer();
+
 		Log("Scene changed %u\n", crc_);
 	}
+
+	if (memcmp(&prevMats.ViewProjUnjitteredMat_, &mats.ViewProjUnjitteredMat_, sizeof(mat4)) != 0)
+		clearBuffer();
 
 	//render->updateEnvirenment(scene);
 	uint32 frameID_ = render->frameID();
@@ -145,14 +179,11 @@ void RenderPathPathTracing::RenderFrame()
 
 		if (Shader* pathtracingshader = RENDER->GetComputeShader("pathtracing\\pathtracing_draw.hlsl", &defines))
 		{
-			if (!out || out->GetHeight() != height || out->GetWidth() != width)
-				out = RES_MAN->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA32F, TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS);
-
 			CORE_RENDER->SetShader(pathtracingshader);
 
 			vec3 forwardWS = -mats.ViewInvMat_.Column3(2).Normalized();
-			vec3 rightWS = -mats.ViewInvMat_.Column3(0).Normalized() * tan(verFullFovInRadians * 0.5f) * aspect;
-			vec3 upWS = -mats.ViewInvMat_.Column3(1).Normalized() * tan(verFullFovInRadians * 0.5f);
+			vec3 rightWS = mats.ViewInvMat_.Column3(0).Normalized() * tan(verFullFovInRadians * 0.5f) * aspect;
+			vec3 upWS = mats.ViewInvMat_.Column3(1).Normalized() * tan(verFullFovInRadians * 0.5f);
 
 			pathtracingshader->SetVec4Parameter("cam_forward_ws", &vec4(forwardWS));
 			pathtracingshader->SetVec4Parameter("cam_right_ws", &vec4(rightWS));
