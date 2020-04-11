@@ -1,4 +1,4 @@
-#include "common.hlsli"
+#include "pathtracing_common.hlsli"
 
 RWTexture2D<float4> tex : register(u0);
 
@@ -125,10 +125,10 @@ void ComputeRngSeed(uint index, uint iteration, uint depth) {
 void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
 
-	tex[dispatchThreadId.xy] = float4(0, 1, 0, 0);
+	//tex[dispatchThreadId.xy] = float4(0, 1, 0, 0);
 
 	// TODO
-	/*
+	
 #if 1
 	const float3 skyColor = float3(0.0, 0.0, 0.0);
 #else
@@ -136,23 +136,23 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 #endif
 
 	uint ii = dispatchThreadId.x;
-	uint jj = maxSize.y - dispatchThreadId.y - 1;
+	uint jj = maxSize_y - dispatchThreadId.y - 1;
 
-	//if (ii >= maxSize.x || jj >= maxSize.y)
+	//if (ii >= maxSize_x || jj >= maxSize_y)
 	//	return;
 
 	float4 curColor = tex[dispatchThreadId.xy];
-	float rays = curColor.a;
+	float rays = 0;// curColor.a;
 
 	//float pixel_seed = rand(float2(ii,jj));
-	uint pixel_num = jj * maxSize.x * ii;
+	uint pixel_num = jj * maxSize_x * ii;
 	ComputeRngSeed(pixel_num, uint(rays), 0);
 	//rng_state = wang_hash(pixel_num);
 
 	float2 ndc;
 	float2 jitter = float2(Uniform01(), Uniform01());
-	ndc.x = (ii + jitter.x) / maxSize.x * 2 - 1;
-	ndc.y = (jj + jitter.y) / maxSize.y * 2 - 1;
+	ndc.x = (ii + jitter.x) / maxSize_x * 2 - 1;
+	ndc.y = (jj + jitter.y) / maxSize_y * 2 - 1;
 
 
 	float3 rayDirWs = GetWorldRay(ndc, cam_forward_ws.xyz, cam_right_ws.xyz, cam_up_ws.xyz);
@@ -181,11 +181,11 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	if (IntersectWorld(orign, dir, hit, N, id))
 	{
 		float g = max(dot(N, normalize(float3(1,5,6))), 0);
-		tex[dispatchThreadId.xy] = float4(g,g,g,0);
+		tex[dispatchThreadId.xy] = float4(0,1,0,1);
 	}
 	else
-		tex[dispatchThreadId.xy] = float4(0,0,0,1);
-	*/
+		tex[dispatchThreadId.xy] = float4(1,1,0,1);
+	
 	/*
 
 	[unroll]

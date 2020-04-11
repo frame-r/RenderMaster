@@ -12,6 +12,7 @@ class RenderPathPathTracing : public RenderPathBase
 	uint32_t trianglesBufferLen{};
 	SharedPtr<StructuredBuffer> trianglesBuffer;
 
+
 public:
 	RenderPathPathTracing();
 

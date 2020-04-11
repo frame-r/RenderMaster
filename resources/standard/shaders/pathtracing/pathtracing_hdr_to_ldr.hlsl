@@ -3,7 +3,6 @@
 
 
 #ifdef ENG_SHADER_PIXEL
-	#include "common.hlsli"
 
 	cbuffer PostprocessingBuffer : register(b0)
 	{

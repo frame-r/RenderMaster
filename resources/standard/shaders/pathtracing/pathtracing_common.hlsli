@@ -8,7 +8,8 @@ cbuffer CameraBuffer : register(b0)
 	float4 cam_right_ws;
 	float4 cam_up_ws;
 	float4 cam_pos_ws;
-	uint4 maxSize;
+	uint maxSize_x;
+	uint maxSize_y;
 };
 
 #define _PI (3.1415926f)

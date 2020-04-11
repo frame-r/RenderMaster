@@ -79,24 +79,21 @@ std::string RenderPathRealtime::getString(uint i)
 
 void RenderPathRealtime::RenderFrame()
 {
-	uint w, h;
-	CORE_RENDER->GetViewport(&w, &h);
-
 	bool colorReprojection = render->GetViewMode() == VIEW_MODE::COLOR_REPROJECTION || render->IsTAA();
 
 	RenderBuffers buffers;
-	buffers.color = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-	buffers.velocity = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RG16F);
+	buffers.color = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
+	buffers.velocity = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RG16F);
 	buffers.depth = CORE_RENDER->GetSurfaceDepthTexture();
-	buffers.albedo = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-	buffers.diffuseLight = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA16F);
-	buffers.specularLight = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA16F);
-	buffers.normal = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA32F);
-	buffers.shading = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+	buffers.albedo = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
+	buffers.diffuseLight = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA16F);
+	buffers.specularLight = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA16F);
+	buffers.normal = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA32F);
+	buffers.shading = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
 	if (colorReprojection)
-		buffers.colorReprojected = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+		buffers.colorReprojected = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
 
-	Texture* colorPrev = render->GetPrevRenderTexture(PREV_TEXTURES::COLOR, w, h, TEXTURE_FORMAT::RGBA8);
+	Texture* colorPrev = render->GetPrevRenderTexture(PREV_TEXTURES::COLOR, width, height, TEXTURE_FORMAT::RGBA8);
 
 	Render::RenderScene scene = render->getRenderScene();
 
@@ -167,7 +164,7 @@ void RenderPathRealtime::RenderFrame()
 			CORE_RENDER->BindTextures(2, texs);
 			CORE_RENDER->SetShader(shader);
 
-			vec4 s((float)w, (float)h, 0, 0);
+			vec4 s((float)width, (float)height, 0, 0);
 			shader->SetVec4Parameter("bufer_size", &s);
 			shader->FlushParameters();
 
@@ -284,7 +281,7 @@ void RenderPathRealtime::RenderFrame()
 	if (render->IsTAA())
 		if (Shader * shader = render->GetShader("taa.hlsl", render->fullScreen()))
 		{
-			Texture* taaOut = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+			Texture* taaOut = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
 
 			Texture* texs_rt[1] = { taaOut };
 			CORE_RENDER->SetRenderTextures(1, texs_rt, nullptr);
@@ -351,7 +348,7 @@ void RenderPathRealtime::RenderFrame()
 				CORE_RENDER->SetDepthFunc(DEPTH_FUNC::ALWAYS);
 				CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
 
-				wireframe_depth = GetRenderTexture(w, h, TEXTURE_FORMAT::D24S8);
+				wireframe_depth = GetRenderTexture(width, height, TEXTURE_FORMAT::D24S8);
 				CORE_RENDER->SetRenderTextures(1, nullptr, wireframe_depth);
 
 				Texture* texs[1] = { CORE_RENDER->GetSurfaceDepthTexture() };
@@ -390,7 +387,7 @@ void RenderPathRealtime::RenderFrame()
 
 		if (IsWireframeAA())
 		{
-			Texture* msaaTex = { GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8, 4) };
+			Texture* msaaTex = { GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8, 4) };
 			CORE_RENDER->SetRenderTextures(1, &msaaTex, nullptr);
 
 			CORE_RENDER->Clear();

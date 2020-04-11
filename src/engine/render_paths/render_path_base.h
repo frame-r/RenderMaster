@@ -26,6 +26,9 @@ protected:
 	Mats prevMats;
 	mat4 cameraPrevViewProjMatRejittered_; // previous Projection matrix with same jitter as current frame
 	float frameMs;
+	uint width, height;
+	float aspect;
+	float verFullFovInRadians;
 
 public:
 	RenderPathBase();

@@ -35,14 +35,17 @@ RenderPathBase::RenderPathBase()
 
 void RenderPathBase::FrameBegin(size_t viewID, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum)
 {
+	verFullFovInRadians = camera.verFullFovInRadians;
+
 	uint32 timerID_ = render->frameID();
 	uint32 dataTimerID_ = render->readbackFrameID();
 
 	CORE_RENDER->TimersBeginFrame(timerID_);
 	CORE_RENDER->TimersBeginPoint(timerID_, Render::T_ALL_FRAME);
 
-	uint w, h;
-	CORE_RENDER->GetViewport(&w, &h);
+	CORE_RENDER->GetViewport(&width, &height);
+	aspect = float(width) / height;
+
 	CORE_RENDER->ResizeBuffersByViewort();
 
 	// Init mats
@@ -62,8 +65,8 @@ void RenderPathBase::FrameBegin(size_t viewID, const Engine::CameraData& camera,
 
 		float needJitter = float(render->GetViewMode() == VIEW_MODE::FINAL);
 
-		mats.ProjMat_.el_2D[0][2] += needJitter * taaOffset.x / w;
-		mats.ProjMat_.el_2D[1][2] += needJitter * taaOffset.y / h;
+		mats.ProjMat_.el_2D[0][2] += needJitter * taaOffset.x / width;
+		mats.ProjMat_.el_2D[1][2] += needJitter * taaOffset.y / height;
 
 		// rejitter prev
 		if (_core->frame() > 1)
@@ -71,8 +74,8 @@ void RenderPathBase::FrameBegin(size_t viewID, const Engine::CameraData& camera,
 		else
 			cameraPrevViewProjMatRejittered_ = camera.ProjMat;
 
-		cameraPrevViewProjMatRejittered_.el_2D[0][2] += taaOffset.x / w;
-		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOffset.y / h;
+		cameraPrevViewProjMatRejittered_.el_2D[0][2] += taaOffset.x / width;
+		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOffset.y / height;
 
 		if (_core->frame() > 1)
 			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * prev.ViewMat_;
