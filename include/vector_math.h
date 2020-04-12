@@ -47,6 +47,19 @@ struct vec4
 	{
 		return vec4(*this) *= value;
 	}
+	vec4& operator-=(const vec4& point)
+	{
+		x -= point.x;
+		y -= point.y;
+		z -= point.z;
+		w -= point.w;
+		return *this;
+	}
+
+	vec4 operator-(const vec4& point) const
+	{
+		return vec4(*this) -= point;
+	}
 
 	float Lenght() const
 	{
@@ -963,4 +976,10 @@ inline float saturate(float a)
 	return max(min(a, 1.0f), 0.0f);
 }
 
+inline vec3 triangle_normal(vec4 p0, vec4 p1, vec4 p2)
+{
+	vec3 a = normalize(vec3(p0 - p1));
+	vec3 b = normalize(vec3(p2 - p0));
+	return /*wtf*/ normalize(cross(a, b));
+}
 #pragma warning(default : 4201)

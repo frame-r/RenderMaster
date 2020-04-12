@@ -210,6 +210,9 @@ bool RenderWidget::calculateCameraData(CameraData &data)
 
 void RenderWidget::onRender()
 {
+	if (!core)
+		return;
+
 	CameraData cam;
 	calculateCameraData(cam);
 
@@ -226,7 +229,12 @@ void RenderWidget::onRender()
 		}
 	}
 
-	core->ManualRenderFrame(&h, cam.ViewMat, cam.ProjectionMat, &selectedModel, numSelected);
+	Engine::CameraData camDataEngine;
+	camDataEngine.ProjMat = cam.ProjectionMat;
+	camDataEngine.ViewMat = cam.ViewMat;
+	camDataEngine.verFullFovInRadians = fovInDegrees_ * DEGTORAD;
+
+	core->ManualRenderFrame(&h, camDataEngine, &selectedModel, numSelected);
 
 	ICoreRender *coreRender = core->GetCoreRender();
 	Render *render = editor->core->GetRender();

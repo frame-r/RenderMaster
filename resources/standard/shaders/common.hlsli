@@ -1,4 +1,4 @@
-
+#pragma once
 
 static const float Reflectance = 0.4;
 

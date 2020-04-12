@@ -11,9 +11,16 @@
 #include "camera.h"
 #include "filesystem.h"
 #include "render_paths/render_path_realtime.h"
+#include "render_paths/render_path_pathtracing.h"
 #include "thirdparty/simplecpp/SimpleCpp.h"
+#include "crc.h"
 #include <memory>
 #include <sstream>
+
+namespace {
+	crc32 crc;
+}
+
 
 struct ShaderInstance
 {
@@ -377,7 +384,7 @@ vector<Render::RenderMesh> Render::getRenderMeshes()
 		if (!mesh)
 			continue;
 
-		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetMaterial(), model->GetWorldTransform(), model->GetWorldTransformPrev()});
+		meshesVec.emplace_back(RenderMesh{model->GetId(), mesh, model->GetMaterial(), model, model->GetWorldTransform(), model->GetWorldTransformPrev()});
 	}
 	return meshesVec;
 }
@@ -398,7 +405,15 @@ Render::RenderScene Render::getRenderScene()
 		vec3 worldDir = l->GetWorldTransform().Column3(2);
 		worldDir.Normalize();
 
-		scene.lights.emplace_back(RenderLight{l, worldDir});
+		RenderLight &rl = scene.lights.emplace_back();
+		rl.light = l;
+		rl.transform = l->GetWorldTransform();
+		rl.type = l->GetLightType();
+		rl.worldDirection = worldDir;
+		rl.intensity = l->GetIntensity();
+
+		if (rl.type == LIGHT_TYPE::AREA)
+			scene.areaLights.push_back(rl);
 	}
 	scene.hasWorldLight = scene.lights.size() > 0;
 
@@ -477,11 +492,22 @@ auto DLLEXPORT Render::SetEnvironmentType(ENVIRONMENT_TYPE type) -> void
 	environmentType = static_cast<ENVIRONMENT_TYPE>(type);
 }
 
-void Render::RenderFrame(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
+auto DLLEXPORT Render::SetRenderPath(RENDER_PATH type) -> void
 {
-	path->FrameBegin(viewID, ViewMat, ProjMat, wireframeModels, modelsNum);
-	path->RenderFrame();
-	path->FrameEnd();
+	if (type == RENDER_PATH::REALTIME)
+		renderpath = realtimeObj;
+	else if (type == RENDER_PATH::PATH_TRACING)
+		renderpath = pathtracingObj;
+	else
+		throw std::exception();
+	renderPathType = type;
+}
+
+void Render::RenderFrame(size_t viewID, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum)
+{
+	renderpath->FrameBegin(viewID, camera, wireframeModels, modelsNum);
+	renderpath->RenderFrame();
+	renderpath->FrameEnd();
 }
 
 Texture* Render::GetPrevRenderTexture(PREV_TEXTURES id, uint width, uint height, TEXTURE_FORMAT format)
@@ -611,24 +637,24 @@ void Render::updateEnvirenment(RenderScene& scene)
 		environment = blackCubemapTexture;
 }
 
-uint32 Render::timerID()
+uint32 Render::frameID()
 {
-	return uint32_t(_core->frame() % maxFrames);;
+	return uint32_t(_core->frame() % maxFrames);
 }
 
-uint32 Render::dataTimerID()
+uint32 Render::readbackFrameID()
 {
 	return uint32_t((_core->frame() > (int64_t)maxFrames ? _core->frame() - 3 : 0) % maxFrames);;
 }
 
 uint Render::getNumLines()
 {
-	return path->getNumLines();
+	return renderpath->getNumLines();
 }
 
 std::string Render::getString(uint i)
 {
-	return path->getString(i);
+	return renderpath->getString(i);
 }
 
 void Render::Init()
@@ -648,15 +674,16 @@ void Render::Init()
 	MaterialManager* mm = _core->GetMaterialManager();
 
 	// GPU timers
-	for(int i = 0; i < maxFrames; ++i)
-		CORE_RENDER->CreateTimer();
+	CORE_RENDER->CreateGPUTiming(maxFrames, T_TIMERS_NUM);
 
 	_core->AddProfilerCallback(this);
 
 	environmentAtmosphere = GetRenderTexture(environmentCubemapSize, environmentCubemapSize, TEXTURE_FORMAT::RGBA16F, 1, TEXTURE_TYPE::TYPE_CUBE, true);
 	blackCubemapTexture = new Texture(unique_ptr<ICoreTexture>(CORE_RENDER->CreateTexture(nullptr, 1, 1, TEXTURE_TYPE::TYPE_CUBE, TEXTURE_FORMAT::RGBA8, TEXTURE_CREATE_FLAGS::NONE, false)));
 
-	path = new RenderPathRealtime;
+	realtimeObj = new RenderPathRealtime;
+	pathtracingObj = new RenderPathPathTracing;
+	SetRenderPath(RENDER_PATH::PATH_TRACING);
 
 	Log("Render initialized");
 }
@@ -682,8 +709,11 @@ void Render::Update()
 
 void Render::Free()
 {
-	delete path;
-	path = nullptr;
+	delete realtimeObj;
+	realtimeObj = nullptr;
+
+	delete pathtracingObj;
+	pathtracingObj = nullptr;
 
 	ReleaseRenderTexture(environmentAtmosphere);
 	delete whiteTexture;
@@ -699,4 +729,39 @@ void Render::Free()
 	prevRenderTextures.clear();
 }
 
+uint32_t Render::RenderScene::getHash()
+{
+	constexpr size_t approxMeshSize = sizeof(mat4) + 30 /*path*/ + 4;
+	constexpr size_t approxLightSize = sizeof(mat4);
+	size_t approxSize = approxMeshSize * meshes.size() + approxLightSize * lights.size();
+	
+	vector<uint8_t> data(approxSize);
+	size_t len = 1;
 
+	auto addData = [&len, &data](const void* src, size_t srcLen)
+	{
+		len += srcLen;
+		data.resize(len);
+		memcpy(data.data() + len - srcLen, src, srcLen);
+	};
+
+	for (size_t i = 0; i < meshes.size(); ++i)
+	{
+		RenderMesh& r = meshes[i];
+
+		addData(r.mesh->GetPath(), strlen(r.mesh->GetPath()));
+		addData(&r.worldTransformMat, sizeof(mat4));
+
+		if (r.mat)
+			addData(r.mat->GetId(), strlen(r.mat->GetId()));
+	}
+
+	for (size_t i = 0; i < lights.size(); ++i)
+	{
+		RenderLight& l = lights[i];
+		addData(&l.transform, sizeof(mat4));
+		addData(&l.intensity, sizeof(float));
+	}
+
+	return crc.update(data.data(), data.size());
+}

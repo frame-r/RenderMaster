@@ -146,6 +146,10 @@
     <ClInclude Include="..\..\src\engine\render_paths\render_path_base.h">
       <Filter>render_paths</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\engine\render_paths\render_path_pathtracing.h">
+      <Filter>render_paths</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\engine\crc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\engine\pch.cpp" />
@@ -437,6 +441,10 @@
     <ClCompile Include="..\..\src\engine\render_paths\render_path_base.cpp">
       <Filter>render_paths</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\engine\render_paths\render_path_pathtracing.cpp">
+      <Filter>render_paths</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\engine\crc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="corerender">

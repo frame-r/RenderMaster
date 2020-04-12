@@ -2,6 +2,7 @@
 #include "dx11texture.h"
 #include "dx11corerender.h"
 #include "core.h"
+#include <algorithm>
 
 size_t BitsPerPixel(_In_ DXGI_FORMAT fmt);
 

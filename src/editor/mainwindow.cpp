@@ -36,6 +36,8 @@ static void saveADS(const QString& fname, const QByteArray& ba);
 static void toggleWindow(int i, bool show);
 static void updateMenuButtons();
 
+static QComboBox *render_path_cb;
+
 struct WindowData
 {
 	ADS_NS::SectionContent::RefPtr ptr;
@@ -210,6 +212,8 @@ MainWindow::MainWindow(QWidget *parent) :
 			editor->UnloadEngine();
 	});
 
+	connect(editor, &EditorCore::OnEngineInit, this, &MainWindow::OnEngineInit);
+
 	engineActions[PROFILER] = ui->actionProfiler;
 	engineActions[PROFILER]->setCheckable(true);
 	engineActions[PROFILER]->setChecked(editor->core ? editor->core->IsProfiler() : false);
@@ -221,20 +225,34 @@ MainWindow::MainWindow(QWidget *parent) :
 		}
 	});
 
-	QComboBox *view_cb = new QComboBox(this);
-	view_cb->addItem("Final");
-	view_cb->addItem("Normal");
-	view_cb->addItem("Albedo");
-	view_cb->addItem("Diffuse light (only analytic)");
-	view_cb->addItem("Specular light (only analytic)");
-	view_cb->addItem("Velocity");
-	view_cb->addItem("Color reprojection");
-	ui->mainToolBar->addWidget(view_cb);
-	connect(view_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [view_cb](int idx)->void
 	{
-		Render *render = editor->core->GetRender();
-		render->SetViewMode(static_cast<VIEW_MODE>(view_cb->currentIndex()));
-	});
+		render_path_cb = new QComboBox(this);
+		render_path_cb->addItem("Realtime");
+		render_path_cb->addItem("Path tracing");
+		ui->mainToolBar->addWidget(render_path_cb);
+		connect(render_path_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [](int idx)->void
+		{
+			Render *render = editor->core->GetRender();
+			render->SetRenderPath(static_cast<RENDER_PATH>(render_path_cb->currentIndex()));
+		});
+	}
+
+	{
+		QComboBox *view_cb = new QComboBox(this);
+		view_cb->addItem("Final");
+		view_cb->addItem("Normal");
+		view_cb->addItem("Albedo");
+		view_cb->addItem("Diffuse light (only analytic)");
+		view_cb->addItem("Specular light (only analytic)");
+		view_cb->addItem("Velocity");
+		view_cb->addItem("Color reprojection");
+		ui->mainToolBar->addWidget(view_cb);
+		connect(view_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), [view_cb](int idx)->void
+		{
+			Render *render = editor->core->GetRender();
+			render->SetViewMode(static_cast<VIEW_MODE>(view_cb->currentIndex()));
+		});
+	}
 
 	switch_button(ui->actionselect);
 
@@ -443,6 +461,12 @@ void MainWindow::switch_button(QAction *action)
 	ui->actionTranslator->setChecked(ui->actionTranslator == action);
 	ui->actionselect->setChecked(ui->actionselect == action);
 	ui->actionactionRotator->setChecked(ui->actionactionRotator == action);
+}
+
+void MainWindow::OnEngineInit(Core *c)
+{
+	Render *render = editor->core->GetRender();
+	render_path_cb->setCurrentIndex((int)render->GetRenderPath());
 }
 
 void MainWindow::on_actionselect_triggered(bool checked)

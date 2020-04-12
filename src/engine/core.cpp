@@ -232,10 +232,12 @@ void Core::mainLoop()
 		CORE_RENDER->GetViewport(&w, &h);
 		float aspect = (float)w / h;
 
-		mat4 ProjMat = camera->GetProjectionMatrix(aspect);
-		mat4 ViewMat = camera->GetViewMatrix();
+		Engine::CameraData camData;
+		camData.ProjMat = camera->GetProjectionMatrix(aspect);
+		camData.ViewMat = camera->GetViewMatrix();
+		camData.verFullFovInRadians = camera->GetFovAngle() * DEGTORAD;
 
-		render->RenderFrame(0, ViewMat, ProjMat, nullptr, 0);
+		render->RenderFrame(0, camData, nullptr, 0);
 		CORE_RENDER->SwapBuffers();
 	}else
 	{
@@ -249,7 +251,7 @@ auto DLLEXPORT Core::ManualUpdate() -> void
 	engineUpdate();
 }
 
-auto DLLEXPORT Core::ManualRenderFrame(const WindowHandle *externHandle, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum) -> void
+auto DLLEXPORT Core::ManualRenderFrame(const WindowHandle *externHandle, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum) -> void
 {
 	CORE_RENDER->MakeCurrent(externHandle);
 
@@ -274,7 +276,7 @@ auto DLLEXPORT Core::ManualRenderFrame(const WindowHandle *externHandle, const m
 
 	size_t viewID = windowToViewId[externHandle];
 
-	render->RenderFrame(viewID, ViewMat, ProjMat, wireframeModels, modelsNum);
+	render->RenderFrame(viewID, camera, wireframeModels, modelsNum);
 }
 
 auto DLLEXPORT Core::AddProfilerCallback(IProfilerCallback * c) -> void

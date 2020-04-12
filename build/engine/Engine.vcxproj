@@ -220,11 +220,13 @@
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11shader.h" />
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11structured_buffer.h" />
     <ClInclude Include="..\..\src\engine\corerender\dx11\dx11texture.h" />
+    <ClInclude Include="..\..\src\engine\crc.h" />
     <ClInclude Include="..\..\src\engine\images.h" />
     <ClInclude Include="..\..\src\engine\fbx.h" />
     <ClInclude Include="..\..\src\engine\main_window.h" />
     <ClInclude Include="..\..\src\engine\pch.h" />
     <ClInclude Include="..\..\src\engine\render_paths\render_path_base.h" />
+    <ClInclude Include="..\..\src\engine\render_paths\render_path_pathtracing.h" />
     <ClInclude Include="..\..\src\engine\render_paths\render_path_realtime.h" />
     <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jconfig.h" />
     <ClInclude Include="..\..\src\engine\thirdparty\jpeglib\jdct.h" />
@@ -265,6 +267,7 @@
     <ClCompile Include="..\..\src\engine\corerender\dx11\dx11shader.cpp" />
     <ClCompile Include="..\..\src\engine\corerender\dx11\dx11structured_buffer.cpp" />
     <ClCompile Include="..\..\src\engine\corerender\dx11\dx11texture.cpp" />
+    <ClCompile Include="..\..\src\engine\crc.cpp" />
     <ClCompile Include="..\..\src\engine\images.cpp" />
     <ClCompile Include="..\..\src\engine\fbx.cpp" />
     <ClCompile Include="..\..\src\engine\gameobjects\camera.cpp" />
@@ -288,6 +291,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\engine\render.cpp" />
     <ClCompile Include="..\..\src\engine\render_paths\render_path_base.cpp" />
+    <ClCompile Include="..\..\src\engine\render_paths\render_path_pathtracing.cpp" />
     <ClCompile Include="..\..\src\engine\render_paths\render_path_realtime.cpp" />
     <ClCompile Include="..\..\src\engine\resource_manager.cpp" />
     <ClCompile Include="..\..\src\engine\shader.cpp" />

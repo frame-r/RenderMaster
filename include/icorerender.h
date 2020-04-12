@@ -60,7 +60,7 @@ public:
 	auto virtual SetViewport(int w, int h, int count = 1) -> void = 0;
 	auto virtual ResizeBuffersByViewort() -> void = 0;
 	
-	auto virtual CreateTimer()->uint32_t;
+	auto virtual CreateGPUTiming(uint32_t frames, uint32_t timers)->void;
 	auto virtual TimersBeginFrame(uint32_t timerID) -> void;
 	auto virtual TimersEndFrame(uint32_t timerID) -> void;
 	auto virtual TimersBeginPoint(uint32_t timerID, uint32_t pointID) -> void;

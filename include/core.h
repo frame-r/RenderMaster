@@ -77,11 +77,12 @@ public:
 	}
 
 public:
+
 	auto DLLEXPORT Init(const char* rootPath, const WindowHandle* externHandle, INIT_FLAGS flags = INIT_FLAGS::NONE) -> bool;
 	auto DLLEXPORT Free() -> void;
 	auto DLLEXPORT Start(Camera *cam) -> void;
 	auto DLLEXPORT ManualUpdate() -> void;
-	auto DLLEXPORT ManualRenderFrame(const WindowHandle* externHandle, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum) -> void;
+	auto DLLEXPORT ManualRenderFrame(const WindowHandle* externHandle, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum) -> void;
 
 	auto DLLEXPORT GetRootPath() -> const std::string& { return rootPath_; }
 	auto DLLEXPORT GetDataPath() -> const std::string& { return dataPath_; }

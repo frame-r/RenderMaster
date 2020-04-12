@@ -79,24 +79,21 @@ std::string RenderPathRealtime::getString(uint i)
 
 void RenderPathRealtime::RenderFrame()
 {
-	uint w, h;
-	CORE_RENDER->GetViewport(&w, &h);
-
 	bool colorReprojection = render->GetViewMode() == VIEW_MODE::COLOR_REPROJECTION || render->IsTAA();
 
 	RenderBuffers buffers;
-	buffers.color = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-	buffers.velocity = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RG16F);
+	buffers.color = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
+	buffers.velocity = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RG16F);
 	buffers.depth = CORE_RENDER->GetSurfaceDepthTexture();
-	buffers.albedo = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
-	buffers.diffuseLight = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA16F);
-	buffers.specularLight = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA16F);
-	buffers.normal = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA32F);
-	buffers.shading = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+	buffers.albedo = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
+	buffers.diffuseLight = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA16F);
+	buffers.specularLight = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA16F);
+	buffers.normal = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA32F);
+	buffers.shading = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
 	if (colorReprojection)
-		buffers.colorReprojected = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+		buffers.colorReprojected = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
 
-	Texture* colorPrev = render->GetPrevRenderTexture(PREV_TEXTURES::COLOR, w, h, TEXTURE_FORMAT::RGBA8);
+	Texture* colorPrev = render->GetPrevRenderTexture(PREV_TEXTURES::COLOR, width, height, TEXTURE_FORMAT::RGBA8);
 
 	Render::RenderScene scene = render->getRenderScene();
 
@@ -128,13 +125,13 @@ void RenderPathRealtime::RenderFrame()
 		CORE_RENDER->SetRenderTextures(1, nullptr, nullptr);
 	}
 
-	uint32 timerID_ = render->timerID();
-	uint32 dataTimerID_ = render->dataTimerID();
+	uint32 frameID_ = render->frameID();
+	uint32 readbackFrameID_ = render->readbackFrameID();
 
 
 	// G-buffer
 	{
-		CORE_RENDER->TimersBeginPoint(timerID_, Render::T_GBUFFER);
+		CORE_RENDER->TimersBeginPoint(frameID_, Render::T_GBUFFER);
 
 		Texture* texs[4] = { buffers.albedo, buffers.shading, buffers.normal, buffers.velocity };
 		CORE_RENDER->SetRenderTextures(3, texs, buffers.depth);
@@ -150,8 +147,8 @@ void RenderPathRealtime::RenderFrame()
 
 		CORE_RENDER->SetDepthTest(0);
 
-		CORE_RENDER->TimersEndPoint(timerID_, Render::T_GBUFFER);
-		gbufferMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID_, Render::T_GBUFFER);
+		CORE_RENDER->TimersEndPoint(frameID_, Render::T_GBUFFER);
+		gbufferMs = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_GBUFFER);
 	}
 
 	// Color reprojection
@@ -167,7 +164,7 @@ void RenderPathRealtime::RenderFrame()
 			CORE_RENDER->BindTextures(2, texs);
 			CORE_RENDER->SetShader(shader);
 
-			vec4 s((float)w, (float)h, 0, 0);
+			vec4 s((float)width, (float)height, 0, 0);
 			shader->SetVec4Parameter("bufer_size", &s);
 			shader->FlushParameters();
 
@@ -180,7 +177,7 @@ void RenderPathRealtime::RenderFrame()
 
 	// Lights
 	{
-		CORE_RENDER->TimersBeginPoint(timerID_, Render::T_LIGHTS);
+		CORE_RENDER->TimersBeginPoint(frameID_, Render::T_LIGHTS);
 
 		CORE_RENDER->SetDepthTest(0);
 		Texture* rts[2] = { buffers.diffuseLight, buffers.specularLight };
@@ -193,7 +190,7 @@ void RenderPathRealtime::RenderFrame()
 			CORE_RENDER->SetShader(shader);
 
 			shader->SetVec4Parameter("camera_position", &mats.WorldPos_);
-			shader->SetMat4Parameter("camera_view_projection_inv", &mats.ViewProjectionInvMat_);
+			shader->SetMat4Parameter("camera_view_projection_inv", &mats.ViewProjInvMat_);
 
 			CORE_RENDER->SetBlendState(BLEND_FACTOR::ONE, BLEND_FACTOR::ONE_MINUS_SRC_ALPHA);
 			Texture* texs[4] = { buffers.normal, buffers.shading, buffers.albedo, buffers.depth };
@@ -216,14 +213,14 @@ void RenderPathRealtime::RenderFrame()
 
 		CORE_RENDER->SetRenderTextures(2, nullptr, nullptr);
 
-		CORE_RENDER->TimersEndPoint(timerID_, Render::T_LIGHTS);
-		lightsMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID_, Render::T_LIGHTS);
+		CORE_RENDER->TimersEndPoint(frameID_, Render::T_LIGHTS);
+		lightsMs = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_LIGHTS);
 
 	}
 
 	// Composite
 	{
-		CORE_RENDER->TimersBeginPoint(timerID_, Render::T_COMPOSITE);
+		CORE_RENDER->TimersBeginPoint(frameID_, Render::T_COMPOSITE);
 
 		compositeMaterial->SetDef("specular_quality", render->GetSpecularQuality());
 		compositeMaterial->SetDef("environment_type", static_cast<int>(render->GetEnvironmentType()));
@@ -244,7 +241,7 @@ void RenderPathRealtime::RenderFrame()
 
 			shader->SetVec4Parameter("camera_position", &mats.WorldPos_);
 
-			shader->SetMat4Parameter("camera_view_projection_inv", &mats.ViewProjectionInvMat_);
+			shader->SetMat4Parameter("camera_view_projection_inv", &mats.ViewProjInvMat_);
 
 			vec4 sun_disrection = vec4(0, 0, 1, 0);
 			if (scene.hasWorldLight)
@@ -276,15 +273,15 @@ void RenderPathRealtime::RenderFrame()
 			CORE_RENDER->BindTextures(tex_count, nullptr);
 		}
 
-		CORE_RENDER->TimersEndPoint(timerID_, Render::T_COMPOSITE);
-		compositeMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID_, Render::T_COMPOSITE);
+		CORE_RENDER->TimersEndPoint(frameID_, Render::T_COMPOSITE);
+		compositeMs = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_COMPOSITE);
 	}
 
 	// TAA
 	if (render->IsTAA())
 		if (Shader * shader = render->GetShader("taa.hlsl", render->fullScreen()))
 		{
-			Texture* taaOut = render->GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8);
+			Texture* taaOut = render->GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8);
 
 			Texture* texs_rt[1] = { taaOut };
 			CORE_RENDER->SetRenderTextures(1, texs_rt, nullptr);
@@ -351,7 +348,7 @@ void RenderPathRealtime::RenderFrame()
 				CORE_RENDER->SetDepthFunc(DEPTH_FUNC::ALWAYS);
 				CORE_RENDER->SetBlendState(BLEND_FACTOR::NONE, BLEND_FACTOR::NONE);
 
-				wireframe_depth = GetRenderTexture(w, h, TEXTURE_FORMAT::D24S8);
+				wireframe_depth = GetRenderTexture(width, height, TEXTURE_FORMAT::D24S8);
 				CORE_RENDER->SetRenderTextures(1, nullptr, wireframe_depth);
 
 				Texture* texs[1] = { CORE_RENDER->GetSurfaceDepthTexture() };
@@ -367,7 +364,7 @@ void RenderPathRealtime::RenderFrame()
 
 			// remove jitter form proj matrix
 			mats.ViewProjMat_ = ProjMat * ViewMat;
-			mats.ViewProjectionInvMat_ = mats.ViewProjMat_.Inverse();
+			mats.ViewProjInvMat_ = mats.ViewProjMat_.Inverse();
 		}
 
 		CORE_RENDER->SetFillingMode(FILLING_MODE::WIREFRAME);
@@ -390,7 +387,7 @@ void RenderPathRealtime::RenderFrame()
 
 		if (IsWireframeAA())
 		{
-			Texture* msaaTex = { GetRenderTexture(w, h, TEXTURE_FORMAT::RGBA8, 4) };
+			Texture* msaaTex = { GetRenderTexture(width, height, TEXTURE_FORMAT::RGBA8, 4) };
 			CORE_RENDER->SetRenderTextures(1, &msaaTex, nullptr);
 
 			CORE_RENDER->Clear();
@@ -470,6 +467,9 @@ void RenderPathRealtime::RenderFrame()
 		}
 	}
 	*/
+
+	draw_AreaLightEmblems(scene);
+
 	render->RenderGUI();
 
 	buffers.depth = nullptr;

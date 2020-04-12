@@ -22,6 +22,9 @@
 #include <fstream>
 #include <assert.h>
 #include <mutex>
+#include <string>
+#include <variant>
+#include <algorithm>
 
 #include <d3d11_2.h>
 #include <d3dcompiler.h>

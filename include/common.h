@@ -14,12 +14,19 @@
 // Avoid adding headers to this list.
 // If you want use stack, map or some other from STL
 // then use it only in .cpp
+#include <utility>
 #include <memory>
-#include <functional>
-#include <string>
+#include <unordered_map>
+#include <set>
 #include <vector>
-#include <algorithm>
+#include <iostream>
+#include <functional>
+#include <fstream>
+#include <assert.h>
 #include <mutex>
+#include <string>
+#include <variant>
+#include <algorithm>
 //
 
 #include "vector_math.h"
@@ -57,6 +64,7 @@ class Input;
 class Render;
 class RenderPathBase;
 class RenderPathRealtime;
+class RenderPathPathTracing;
 class IProfilerCallback;
 class File;
 struct FileMapping;
@@ -147,7 +155,15 @@ public:
 
 std::string fileExtension(const std::string& path);
 
-
+namespace Engine
+{
+	struct CameraData
+	{
+		mat4 ViewMat;
+		mat4 ProjMat;
+		float verFullFovInRadians;
+	};
+}
 // Engine enums
 
 enum class INIT_FLAGS
@@ -218,6 +234,7 @@ enum class PASS
 	DEFERRED,
 	ID,
 	WIREFRAME,
+	FORWARD,
 	COUNT
 };
 
@@ -350,6 +367,12 @@ enum class VERTEX_TOPOLOGY
 {
 	LINES,
 	TRIANGLES,
+};
+
+enum class LIGHT_TYPE
+{
+	DIRECT,
+	AREA
 };
 
 enum class KEYBOARD_KEY_CODES
@@ -500,7 +523,8 @@ enum class ENVIRONMENT_TYPE
 enum class PREV_TEXTURES
 {
 	UNKNOWN,
-	COLOR
+	COLOR,
+	PATH_TRACING_HDR
 };
 
 DXGI_FORMAT engToD3DDSVFormat(TEXTURE_FORMAT format);
@@ -584,6 +608,32 @@ struct ShaderInitData
 	void *pointer;
 	unsigned char *bytecode;
 	size_t size;
+};
+
+#pragma pack(push, 1)
+struct GPURaytracingTriangle
+{
+	vec4 p0, p1, p2;
+	vec4 n;
+	uint materialID;
+	uint _padding[3];
+};
+struct GPURaytracingAreaLight
+{
+	vec4 p0, p1, p2, p3;
+	vec4 center;
+	vec4 n;
+	vec4 color;
+};
+#pragma pack(pop)
+
+struct RaytracingData
+{	
+	std::vector<GPURaytracingTriangle> triangles;
+
+public:
+	RaytracingData(size_t len) : triangles(len) {}
+	size_t size() { return triangles.size(); }
 };
 
 enum class SHADER_TYPE

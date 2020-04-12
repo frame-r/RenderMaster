@@ -4,6 +4,7 @@
 #include "core.h"
 #include "material_manager.h"
 #include "yaml.inl"
+#include "mesh.h"
 
 
 void Model::Copy(GameObject * original)
@@ -26,6 +27,39 @@ Model::Model(StreamPtr<Mesh> mesh) : Model()
 	meshPtr = mesh;
 }
 
+std::shared_ptr<RaytracingData> Model::GetRaytracingData()
+{
+	vector<GPURaytracingTriangle>& dataIn = meshPtr.get()->GetRaytracingData()->triangles;
+
+	if (!trianglesDataPtrWorldSpace)
+	{
+		trianglesDataPtrWorldSpace = shared_ptr<RaytracingData>(new RaytracingData(dataIn.size()));
+		trianglesDataTransform = {};
+	}
+
+	if (memcmp(&trianglesDataTransform, &worldTransform_, sizeof(mat4)) != 0)
+	{
+		vector<GPURaytracingTriangle>& dataOut = trianglesDataPtrWorldSpace->triangles;
+		mat4 NM = worldTransform_.Inverse().Transpose();
+
+		for (int i = 0; i < dataIn.size(); ++i)
+		{
+			GPURaytracingTriangle& ti = dataIn[i];
+			GPURaytracingTriangle& to = dataOut[i];
+
+			to.p0 = worldTransform_ * ti.p0;
+			to.p1 = worldTransform_ * ti.p1;
+			to.p2 = worldTransform_ * ti.p2;
+
+			to.n = NM * ti.n;
+		}
+
+		trianglesDataTransform = worldTransform_;
+	}
+
+	return trianglesDataPtrWorldSpace;
+}
+
 auto DLLEXPORT Model::GetMesh() -> Mesh *
 {
 	return meshPtr.get();
@@ -40,6 +74,10 @@ auto DLLEXPORT Model::GetWorldCenter() -> vec3
 	vec3 center = meshPtr.isLoaded() ? meshPtr.get()->GetCenter() : vec3();
 	vec4 centerWS = worldTransform_ * vec4(center);
 	return (vec3)centerWS;
+}
+
+auto DLLEXPORT Model::GetTrinaglesWorldSpace(std::unique_ptr<vec3[]>& out, uint* trinaglesNum) -> void
+{
 }
 
 auto DLLEXPORT Model::Clone() -> GameObject *

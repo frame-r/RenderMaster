@@ -229,7 +229,7 @@ auto DX11CoreRender::Init(const WindowHandle* handle, int MSAASamples, int VSync
 
 	_core->AddProfilerCallback(this);
 
-	timers.clear();
+	frameTimersVec.clear();
 
 	Log("DX11CoreRender Inited");
 	return true;
@@ -983,9 +983,9 @@ auto DX11CoreRender::CreateStructuredBuffer(uint size, uint elementSize, BUFFER_
 	assert(size % 16 == 0);
 
 	D3D11_BUFFER_DESC desc = {};
-	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.Usage = usage == BUFFER_USAGE::CPU_WRITE? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.CPUAccessFlags = usage == BUFFER_USAGE::CPU_WRITE ? D3D11_CPU_ACCESS_WRITE : 0;
 	desc.ByteWidth = size;
 	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
 	desc.StructureByteStride = elementSize;
@@ -1150,6 +1150,7 @@ auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) ->
 		{
 			_context->VSSetShaderResources(unit, 1, &srv);
 			_context->PSSetShaderResources(unit, 1, &srv);
+			_context->CSSetShaderResources(unit, 1, &srv);
 			state_.srvs[unit] = srv;
 		}
 	} else
@@ -1160,6 +1161,7 @@ auto DX11CoreRender::BindStructuredBuffer(int unit, StructuredBuffer *buffer) ->
 		{
 			_context->VSSetShaderResources(unit, 1, &srv);
 			_context->PSSetShaderResources(unit, 1, &srv);
+			_context->CSSetShaderResources(unit, 1, &srv);
 			state_.srvs[unit] = nullptr;
 		}
 	}
@@ -1434,46 +1436,19 @@ auto DX11CoreRender::ResizeBuffersByViewort() -> void
 	}
 }
 
-auto DX11CoreRender::CreateTimer() -> uint32_t
+auto DX11CoreRender::CreateGPUTiming(uint32_t frames, uint32_t timers) -> void
 {
-	uint32_t id = (uint32_t)timers.size();
-
-	D3D11_QUERY_DESC desc{};
-	desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
-
-	ComPtr<ID3D11Query> disjointQuery;
-	ThrowIfFailed(_device->CreateQuery(&desc, &disjointQuery));
-
-	timers.emplace_back(disjointQuery);
-
-	return id;
-}
-
-auto DX11CoreRender::TimersBeginFrame(uint32_t timerID) -> void
-{
-	assert(timerID < timers.size());
-
-	Timer& timer = timers[timerID];
-
-	_context->Begin(timer.disjontQuery.Get());
-}
-
-auto DX11CoreRender::TimersEndFrame(uint32_t timerID) -> void
-{
-	assert(timerID < timers.size());
-
-	Timer& timer = timers[timerID];
-	_context->End(timer.disjontQuery.Get());
-}
-
-auto DX11CoreRender::TimersBeginPoint(uint32_t timerID, uint32_t pointID) -> void
-{
-	assert(timerID < timers.size());
-
-	Timer& timer = timers[timerID];
-	if (pointID >= timer.TimerPoints.size())
+	for (int i = 0; i < frames; ++i)
 	{
-		for (size_t i = timer.TimerPoints.size(); i <= pointID; ++i)
+		D3D11_QUERY_DESC desc{};
+		desc.Query = D3D11_QUERY_TIMESTAMP_DISJOINT;
+
+		ComPtr<ID3D11Query> disjointQuery;
+		ThrowIfFailed(_device->CreateQuery(&desc, &disjointQuery));
+
+		frameTimersVec.emplace_back(disjointQuery);
+
+		for (int j = 0; j < timers; j++)
 		{
 			D3D11_QUERY_DESC desc{};
 			desc.Query = D3D11_QUERY_TIMESTAMP;
@@ -1482,41 +1457,51 @@ auto DX11CoreRender::TimersBeginPoint(uint32_t timerID, uint32_t pointID) -> voi
 			ThrowIfFailed(_device->CreateQuery(&desc, &queryBegin));
 			ThrowIfFailed(_device->CreateQuery(&desc, &queryEnd));
 
-			timer.TimerPoints.push_back({ std::move(queryBegin),std::move(queryEnd) } );
+			frameTimersVec[i].timers.push_back({ std::move(queryBegin),std::move(queryEnd) });
 		}
 	}
-
-	_context->End(timer.TimerPoints[pointID].beginQuery.Get());
 }
 
-auto DX11CoreRender::TimersEndPoint(uint32_t timerID, uint32_t pointID) -> void
+auto DX11CoreRender::TimersBeginFrame(uint32_t timerID) -> void
 {
-	assert(timerID < timers.size());
+	assert(timerID < frameTimersVec.size());
 
-	Timer& timer = timers[timerID];
-	if (pointID >= timer.TimerPoints.size())
-	{
-		for (uint32_t i = 0; i < pointID; ++i)
-		{
-			D3D11_QUERY_DESC desc{};
-			desc.Query = D3D11_QUERY_TIMESTAMP;
+	GPUFrameTiming& timer = frameTimersVec[timerID];
 
-			ComPtr<ID3D11Query> queryBegin, queryEnd;
-			ThrowIfFailed(_device->CreateQuery(&desc, &queryBegin));
-			ThrowIfFailed(_device->CreateQuery(&desc, &queryBegin));
-
-			timer.TimerPoints.push_back({ std::move(queryBegin),std::move(queryEnd) });
-		}
-	}
-
-	_context->End(timer.TimerPoints[pointID].endQuery.Get());
+	_context->Begin(timer.disjontQuery.Get());
 }
 
-auto DX11CoreRender::GetTimeInMsForPoint(uint32_t timerID, uint32_t pointID) -> float
+auto DX11CoreRender::TimersEndFrame(uint32_t frameID) -> void
 {
-	assert(timerID < timers.size());
+	assert(frameID < frameTimersVec.size());
 
-	Timer& timer = timers[timerID];
+	GPUFrameTiming& timer = frameTimersVec[frameID];
+	_context->End(timer.disjontQuery.Get());
+}
+
+auto DX11CoreRender::TimersBeginPoint(uint32_t frameID, uint32_t timerID) -> void
+{
+	assert(frameID < frameTimersVec.size());
+	assert(timerID < frameTimersVec[0].timers.size());
+
+	GPUFrameTiming& timing = frameTimersVec[frameID];
+	_context->End(timing.timers[timerID].beginQuery.Get());
+}
+
+auto DX11CoreRender::TimersEndPoint(uint32_t frameID, uint32_t timerID) -> void
+{
+	assert(frameID < frameTimersVec.size());
+	assert(timerID < frameTimersVec[0].timers.size());
+
+	GPUFrameTiming& timer = frameTimersVec[frameID];
+	_context->End(timer.timers[timerID].endQuery.Get());
+}
+
+auto DX11CoreRender::GetTimeInMsForPoint(uint32_t frameID, uint32_t timerID_) -> float
+{
+	assert(frameID < frameTimersVec.size());
+
+	GPUFrameTiming& timer = frameTimersVec[frameID];
 
 	if (_context->GetData(timer.disjontQuery.Get(), NULL, 0, 0) == S_FALSE)
 		return 0.0f;
@@ -1531,8 +1516,8 @@ auto DX11CoreRender::GetTimeInMsForPoint(uint32_t timerID, uint32_t pointID) -> 
 
 	UINT64 tsBeginPoint, tsEndPoint;
 
-	_context->GetData(timer.TimerPoints[pointID].beginQuery.Get(), &tsBeginPoint, sizeof(UINT64), 0);
-	_context->GetData(timer.TimerPoints[pointID].endQuery.Get(), &tsEndPoint, sizeof(UINT64), 0);
+	_context->GetData(timer.timers[timerID_].beginQuery.Get(), &tsBeginPoint, sizeof(UINT64), 0);
+	_context->GetData(timer.timers[timerID_].endQuery.Get(), &tsEndPoint, sizeof(UINT64), 0);
 	
 	float msShadowClear = float(tsEndPoint - tsBeginPoint) /	float(tsDisjoint.Frequency) * 1000.0f;
 	return msShadowClear;

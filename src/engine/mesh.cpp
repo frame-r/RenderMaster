@@ -5,35 +5,63 @@
 #include "filesystem.h"
 #include "icorerender.h"
 
+static float vertexPlane[40] =
+{
+	-1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 1.0f,
+	 1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		1.0f, 0.0f,
+	 1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		1.0f, 1.0f,
+	-1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 0.0f
+};
+
+static unsigned short indexPlane[6]
+{
+	0, 2, 1,
+	0, 1, 3
+};
+
+static const char* stdMeshses[] =
+{
+	"std#plane",
+	"std#grid",
+	"std#line",
+	"std#axes_arrows"
+};
+
+bool Mesh::isSphere()
+{
+	return strcmp(path_.c_str(), "standard\meshes\sphere.mesh") == 0;
+}
+
+bool Mesh::isPlane()
+{
+	return strcmp(path_.c_str(), "std#plane") == 0;
+}
+
+bool Mesh::isStd()
+{
+	for (int i = 0; i < _countof(stdMeshses); ++i)
+		if (strcmp(path_.c_str(), stdMeshses[i]) == 0)
+			return true;
+	return false;
+}
+
 Mesh::Mesh(const std::string& path) : path_(path)
 {
 }
+
 Mesh::~Mesh()
 {
 	Log("Mesh unloaded: '%s'", path_.c_str());
 }
+
 ICoreMesh* createStdMesh(const char *path)
 {
 	ICoreMesh *ret = nullptr;
 
 	if (!strcmp(path, "std#plane"))
 	{
-		float vertex[40] =
-		{
-			-1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 1.0f,
-			 1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		1.0f, 0.0f,
-			 1.0f, 1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		1.0f, 1.0f,
-			-1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 0.0f
-		};
-	
-		unsigned short indexPlane[6]
-		{
-			0, 2, 1,
-			0, 1, 3
-		};
-
 		MeshDataDesc desc;
-		desc.pData = reinterpret_cast<uint8*>(vertex);
+		desc.pData = reinterpret_cast<uint8*>(vertexPlane);
 		desc.numberOfVertex = 4;
 		desc.positionStride = 40;
 		desc.normalsPresented = true;
@@ -133,20 +161,15 @@ ICoreMesh* createStdMesh(const char *path)
 	return ret;
 }
 
-
 bool Mesh::Load()
 {
-	Log("Mesh loading: '%s'", path_.c_str());
-
-	ICoreMesh *m = createStdMesh(path_.c_str());
-
-	if (m)
+	if (isStd())
 	{
-		coreMesh_.reset(m);
+		coreMeshPtr.reset(createStdMesh(path_.c_str()));
 		return true;
 	}
 
-	MeshHeader header;
+	Log("Mesh loading: '%s'", path_.c_str());
 
 	if (!FS->FileExist(path_.c_str()))
 	{
@@ -155,55 +178,55 @@ bool Mesh::Load()
 	}
 
 	FileMapping mappedFile = FS->CreateMemoryMapedFile(path_.c_str());
+
+	MeshHeader header;
 	memcpy(&header, mappedFile.ptr, sizeof(header));
 
-	int is_positions = (header.attributes & 1u) > 0;
-	int is_normals = (header.attributes & 2u) > 0;
-	int is_uv = (header.attributes & 4u) > 0;
-	int is_tangent = (header.attributes & 8u) > 0;
-	int is_binormal = (header.attributes & 16u) > 0;
-	int is_color = (header.attributes & 32u) > 0;
+	int bPositions = (header.attributes & 1u) > 0;
+	int bNormals = (header.attributes & 2u) > 0;
+	int bUv = (header.attributes & 4u) > 0;
+	int bTangent = (header.attributes & 8u) > 0;
+	int bBinormal = (header.attributes & 16u) > 0;
+	int bColor = (header.attributes & 32u) > 0;
 
 	size_t bytes = 0;
-	bytes += (size_t)is_positions * header.numberOfVertex * sizeof(vec4);
-	bytes += (size_t)is_normals * header.numberOfVertex * sizeof(vec4);
-	bytes += (size_t)is_uv * header.numberOfVertex * sizeof(vec2);
-	bytes += (size_t)is_tangent * header.numberOfVertex * sizeof(vec4);
-	bytes += (size_t)is_binormal * header.numberOfVertex * sizeof(vec4);
-	bytes += (size_t)is_color * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bPositions * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bNormals * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bUv * header.numberOfVertex * sizeof(vec2);
+	bytes += (size_t)bTangent * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bBinormal * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bColor * header.numberOfVertex * sizeof(vec4);
 
 	MeshDataDesc desc;
 	desc.numberOfVertex = header.numberOfVertex;
 	desc.positionOffset = header.positionOffset;
 	desc.positionStride = header.positionStride;
-	desc.normalsPresented = is_normals;
+	desc.normalsPresented = bNormals;
 	desc.normalOffset = header.normalOffset;
 	desc.normalStride = header.normalOffset;
-	desc.tangentPresented = is_tangent;
+	desc.tangentPresented = bTangent;
 	desc.tangentOffset = header.tangentOffset;
 	desc.tangentStride = header.tangentStride;
-	desc.binormalPresented = is_binormal;
+	desc.binormalPresented = bBinormal;
 	desc.binormalOffset = header.binormalOffset;
 	desc.binormalStride = header.binormalStride;
-	desc.texCoordPresented = is_uv;
+	desc.texCoordPresented = bUv;
 	desc.texCoordOffset = header.uvOffset;
 	desc.texCoordStride = header.uvStride;
-	desc.colorPresented = is_color;
+	desc.colorPresented = bColor;
 	desc.colorOffset = header.colorOffset;
 	desc.colorStride = header.colorStride;
 	desc.pData = reinterpret_cast<uint8*>(mappedFile.ptr + sizeof(MeshHeader));
 
 	MeshIndexDesc indexDesc;
 
-	m = CORE_RENDER->CreateMesh(&desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
-
-	if (!m)
+	if (auto coreMesh = CORE_RENDER->CreateMesh(&desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES))
+		coreMeshPtr.reset(coreMesh);
+	else
 	{
 		LogCritical("Mesh::Load(): error occured");
 		return false;
-	}
-
-	coreMesh_.reset(m);
+	}	
 
 	center_.x = header.minX * 0.5f + header.maxX * 0.5f;
 	center_.y = header.minY * 0.5f + header.maxY * 0.5f;
@@ -212,17 +235,99 @@ bool Mesh::Load()
 	return true;
 }
 
+std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
+{
+	if (trianglesDataObjectSpace)
+		return trianglesDataObjectSpace;
+
+	if (isStd())
+	{
+		if (isPlane())
+		{
+			trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(2));
+			vector<GPURaytracingTriangle>& in = trianglesDataObjectSpace->triangles;
+
+			auto index_to_pos = [](int i)->vec4
+			{
+				size_t s = indexPlane[i];
+				return vec4(vertexPlane[s * 10], vertexPlane[s * 10 + 1], vertexPlane[s * 10 + 2], vertexPlane[s * 10 + 3]);
+			};
+		
+			for (int i = 0; i < 2; ++i)
+			{
+				in[i].p0 = index_to_pos(i * 3 + 0);
+				in[i].p1 = index_to_pos(i * 3 + 1);
+				in[i].p2 = index_to_pos(i * 3 + 2);
+				in[i].n = triangle_normal(in[i].p0, in[i].p1, in[i].p2);
+				in[i].n.w = .0f;
+			}
+
+			return trianglesDataObjectSpace;
+
+		} else
+			throw new std::exception("not impl");
+	}
+	if (!FS->FileExist(path_.c_str()))
+	{
+		LogCritical("Mesh::Load(): file '%s' not found", path_);
+		trianglesDataObjectSpace = nullptr;
+		return trianglesDataObjectSpace;
+	}
+
+	FileMapping mappedFile = FS->CreateMemoryMapedFile(path_.c_str());
+
+	MeshHeader header;
+	memcpy(&header, mappedFile.ptr, sizeof(header));
+
+	int bPositions = (header.attributes & 1u) > 0;
+	int bNormals = (header.attributes & 2u) > 0;
+	int bUv = (header.attributes & 4u) > 0;
+	int bTangent = (header.attributes & 8u) > 0;
+	int bBinormal = (header.attributes & 16u) > 0;
+	int bColor = (header.attributes & 32u) > 0;
+
+	size_t bytes = 0;
+	bytes += (size_t)bPositions * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bNormals * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bUv * header.numberOfVertex * sizeof(vec2);
+	bytes += (size_t)bTangent * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bBinormal * header.numberOfVertex * sizeof(vec4);
+	bytes += (size_t)bColor * header.numberOfVertex * sizeof(vec4);
+
+	MeshDataDesc desc;
+	desc.numberOfVertex = header.numberOfVertex;
+	desc.positionOffset = header.positionOffset;
+	uint8_t *data = reinterpret_cast<uint8_t*>(mappedFile.ptr + sizeof(MeshHeader) + desc.positionOffset);
+
+	assert(desc.numberOfVertex % 3 == 0);
+	uint32_t stride = header.positionStride;
+	triangles = desc.numberOfVertex / 3;
+
+	trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(triangles));
+	vector<GPURaytracingTriangle>& in = trianglesDataObjectSpace->triangles;
+
+	for (int i = 0; i < triangles; ++i)
+	{
+		in[i].p0 = (vec4)*data; data += stride;
+		in[i].p1 = (vec4)*data; data += stride;
+		in[i].p2 = (vec4)*data; data += stride;
+		in[i].n = triangle_normal(in[i].p0, in[i].p1, in[i].p2);
+	}
+
+	return trianglesDataObjectSpace;
+}
+
 auto DLLEXPORT Mesh::GetAttributes() -> INPUT_ATTRUBUTE
 {
-	return coreMesh_->GetAttributes();
+	return coreMeshPtr->GetAttributes();
 }
 
 auto DLLEXPORT Mesh::GetVideoMemoryUsage() -> size_t
 {
-	if (!coreMesh_)
+	if (!coreMeshPtr)
 		return 0;
 
-	return coreMesh_->GetVideoMemoryUsage();
+	return coreMeshPtr->GetVideoMemoryUsage();
 }
 
 auto DLLEXPORT Mesh::GetCenter() -> vec3

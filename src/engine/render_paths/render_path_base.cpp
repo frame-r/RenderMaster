@@ -28,27 +28,56 @@ static const vec2 taaSamples[16] =
 	vec2(1.0f / 32.0f, 16.0f / 27.0f)
 };
 
+void RenderPathBase::draw_AreaLightEmblems(const Render::RenderScene& scene)
+{
+	if (Shader* shader = render->GetShader("primitive.hlsl", render->fullScreen()))
+	{
+		CORE_RENDER->SetDepthTest(1);
+		CORE_RENDER->SetShader(shader);
+
+		for (const Render::RenderLight& renderLight : scene.areaLights)
+		{
+			mat4 MVP = mats.ViewProjUnjitteredMat_ * renderLight.transform;
+
+			shader->SetMat4Parameter("MVP", &MVP);
+
+			vec4 one = vec4{ 1,1,1,1 };
+			one *= renderLight.intensity;
+
+			shader->SetVec4Parameter("main_color", &one);
+			shader->FlushParameters();
+
+			CORE_RENDER->Draw(render->fullScreen(), 1);
+		}
+		CORE_RENDER->SetDepthTest(0);
+	}
+}
+
 RenderPathBase::RenderPathBase()
 {
 	render = _core->GetRender();
 }
 
-void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& ProjMat, Model** wireframeModels, int modelsNum)
+void RenderPathBase::FrameBegin(size_t viewID, const Engine::CameraData& camera, Model** wireframeModels, int modelsNum)
 {
-	uint32 timerID_ = render->timerID();
-	uint32 dataTimerID_ = render->dataTimerID();
+	verFullFovInRadians = camera.verFullFovInRadians;
+
+	uint32 timerID_ = render->frameID();
+	uint32 dataTimerID_ = render->readbackFrameID();
 
 	CORE_RENDER->TimersBeginFrame(timerID_);
 	CORE_RENDER->TimersBeginPoint(timerID_, Render::T_ALL_FRAME);
 
-	uint w, h;
-	CORE_RENDER->GetViewport(&w, &h);
+	CORE_RENDER->GetViewport(&width, &height);
+	aspect = float(width) / height;
+
 	CORE_RENDER->ResizeBuffersByViewort();
 
 	// Init mats
-	mats.ProjUnjitteredMat_ = ProjMat;
-	mats.ViewUnjitteredMat_ = ViewMat;
-	mats.ProjMat_ = ProjMat;
+	mats.ProjUnjitteredMat_ = camera.ProjMat;
+	mats.ViewUnjitteredMat_ = camera.ViewMat;
+	mats.ViewProjUnjitteredMat_ = camera.ProjMat * camera.ViewMat;
+	mats.ProjMat_ = camera.ProjMat;
 
 	Mats& prev = viewsDataMap[viewID];
 
@@ -61,30 +90,30 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 
 		float needJitter = float(render->GetViewMode() == VIEW_MODE::FINAL);
 
-		mats.ProjMat_.el_2D[0][2] += needJitter * taaOffset.x / w;
-		mats.ProjMat_.el_2D[1][2] += needJitter * taaOffset.y / h;
+		mats.ProjMat_.el_2D[0][2] += needJitter * taaOffset.x / width;
+		mats.ProjMat_.el_2D[1][2] += needJitter * taaOffset.y / height;
 
 		// rejitter prev
 		if (_core->frame() > 1)
 			cameraPrevViewProjMatRejittered_ = prev.ProjUnjitteredMat_;
 		else
-			cameraPrevViewProjMatRejittered_ = ProjMat;
+			cameraPrevViewProjMatRejittered_ = camera.ProjMat;
 
-		cameraPrevViewProjMatRejittered_.el_2D[0][2] += taaOffset.x / w;
-		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOffset.y / h;
+		cameraPrevViewProjMatRejittered_.el_2D[0][2] += taaOffset.x / width;
+		cameraPrevViewProjMatRejittered_.el_2D[1][2] += taaOffset.y / height;
 
 		if (_core->frame() > 1)
 			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * prev.ViewMat_;
 		else
-			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * ViewMat;
+			cameraPrevViewProjMatRejittered_ = cameraPrevViewProjMatRejittered_ * camera.ViewMat;
 	}
 	else
 		cameraPrevViewProjMatRejittered_ = prev.ProjMat_ * prev.ViewMat_;
 
-	mats.ViewProjMat_ = mats.ProjMat_ * ViewMat;
-	mats.ViewMat_ = ViewMat;
-	mats.WorldPos_ = ViewMat.Inverse().Column3(3);
-	mats.ViewProjectionInvMat_ = mats.ViewProjMat_.Inverse();
+	mats.ViewProjMat_ = mats.ProjMat_ * camera.ViewMat;
+	mats.ViewMat_ = camera.ViewMat;
+	mats.WorldPos_ = camera.ViewMat.Inverse().Column3(3);
+	mats.ViewProjInvMat_ = mats.ViewProjMat_.Inverse();
 	mats.ViewInvMat_ = mats.ViewMat_.Inverse();
 	//
 
@@ -100,8 +129,8 @@ void RenderPathBase::FrameBegin(size_t viewID, const mat4& ViewMat, const mat4& 
 
 void RenderPathBase::FrameEnd()
 {
-	uint32 timerID_ = render->timerID();
-	uint32 dataTimerID_ = render->dataTimerID();
+	uint32 timerID_ = render->frameID();
+	uint32 dataTimerID_ = render->readbackFrameID();
 
 	CORE_RENDER->TimersEndPoint(timerID_, Render::T_ALL_FRAME);
 	frameMs = CORE_RENDER->GetTimeInMsForPoint(dataTimerID_, Render::T_ALL_FRAME);

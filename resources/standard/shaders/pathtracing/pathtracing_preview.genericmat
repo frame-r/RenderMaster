@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<generic_material id="pathtracing_preview">
+	
+	<pass_forward>
+		<shader>pathtracing\pathtracing_preview.hlsl</shader>
+	</pass_forward>
+	
+</generic_material>
