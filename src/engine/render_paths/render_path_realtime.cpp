@@ -467,6 +467,9 @@ void RenderPathRealtime::RenderFrame()
 		}
 	}
 	*/
+
+	draw_AreaLightEmblems(scene);
+
 	render->RenderGUI();
 
 	buffers.depth = nullptr;

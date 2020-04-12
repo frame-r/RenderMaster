@@ -4,13 +4,14 @@ objects:
     id: 845369033
     enabled: true
     type: Light
-    worldTransform: [0.8472725, 0.3067083, 0.4336593, 0, 0.3057738, 0.3859437, -0.8703738, 0, -0.4343189, 0.8700449, 0.233216, 0, 0, 0, 0, 1]
+    worldTransform: [0, 0, 1.000002, -5.82071, 0, 1, 0, -1.969099, -1.000002, 0, 0, 0.6385118, 0, 0, 0, 1]
     intensity: 1
+    light_type: 1
   - childs: 0
     id: 36578474
     enabled: true
     type: Model
-    worldTransform: [6, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    worldTransform: [6, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, -0.3096306, 0, 0, 0, 1]
     mesh: std#plane
     material: material_0
   - childs: 0

@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+#include "render.h"
 
 struct Mats
 {
@@ -29,6 +30,8 @@ protected:
 	uint width, height;
 	float aspect;
 	float verFullFovInRadians;
+
+	void draw_AreaLightEmblems(const Render::RenderScene& scene);
 
 public:
 	RenderPathBase();

@@ -15,7 +15,7 @@ class LightPropertyWidget : public QWidget
 
 	Light *light;
 
-	void updateIntensityLabel(float i);
+	void onIntensityChanged(float i);
 
 public:
 	explicit LightPropertyWidget(QWidget *parent, Light *l);

@@ -369,6 +369,12 @@ enum class VERTEX_TOPOLOGY
 	TRIANGLES,
 };
 
+enum class LIGHT_TYPE
+{
+	DIRECT,
+	AREA
+};
+
 enum class KEYBOARD_KEY_CODES
 {
 	KEY_UNKNOWN			= 0x0,

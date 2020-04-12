@@ -182,7 +182,7 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	int id;
 	if (IntersectWorld(orign, dir, hit, N, id))
 	{
-		float g = max(dot(N, normalize(float3(1,5,-6))), 0);
+		float g = max(dot(N, normalize(float3(-10,5,-6))), 0);
 		float a = rays / (rays + 1);
 		color = float3(g, g, g);
 		color = curColor.rgb * a + color.rgb * (1 - a);

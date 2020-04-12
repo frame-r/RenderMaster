@@ -107,7 +107,7 @@ void RenderPathPathTracing::RenderFrame()
 	if (!out || out->GetHeight() != height || out->GetWidth() != width)
 		out = RES_MAN->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA32F, TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS);
 
-	auto clearBuffer = [this]() -> void
+	auto clearHDRbuffer = [this]() -> void
 	{
 		vector<string> defines{ "GROUP_DIM_X=16", "GROUP_DIM_Y=16" };
 		if (Shader* pathtracingshader = RENDER->GetComputeShader("pathtracing\\pathtracing_clear.hlsl", &defines))
@@ -130,7 +130,6 @@ void RenderPathPathTracing::RenderFrame()
 
 			CORE_RENDER->CSBindUnorderedAccessTextures(1, nullptr);
 		}
-
 	};
 
 	static uint32_t crc_;
@@ -149,13 +148,13 @@ void RenderPathPathTracing::RenderFrame()
 		auto trianglesPtr = getTriangles(scene, triagles);
 		trianglesBuffer->SetData((uint8*)trianglesPtr->triangles.data(), allDataInBytes);
 
-		clearBuffer();
+		clearHDRbuffer();
 
 		Log("Scene changed %u\n", crc_);
 	}
 
 	if (memcmp(&prevMats.ViewProjUnjitteredMat_, &mats.ViewProjUnjitteredMat_, sizeof(mat4)) != 0)
-		clearBuffer();
+		clearHDRbuffer();
 
 	//render->updateEnvirenment(scene);
 	uint32 frameID_ = render->frameID();
@@ -163,8 +162,8 @@ void RenderPathPathTracing::RenderFrame()
 
 	CORE_RENDER->TimersBeginPoint(frameID_, Render::T_PATH_TRACING_DRAW);
 
-	static bool s = 0;
-	if (s)
+	//static bool s = 1;
+	//if (s)
 	{
 		Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
 		CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
@@ -173,7 +172,7 @@ void RenderPathPathTracing::RenderFrame()
 
 		drawMeshes(pathtracingPreviewMaterial, scene.meshes, mats.ViewProjUnjitteredMat_, scene.sun_direction);
 	}
-	else
+	//else
 	{
 		vector<string> defines {"GROUP_DIM_X=16", "GROUP_DIM_Y=16"};
 
@@ -213,7 +212,6 @@ void RenderPathPathTracing::RenderFrame()
 			CORE_RENDER->SetShader(pathtracingshader);
 			Texture* rts[1] = { CORE_RENDER->GetSurfaceColorTexture() };
 			CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
-			CORE_RENDER->Clear();
 			constexpr int tex_count = 1;
 			Texture* texs[tex_count] = {
 				out.get()
@@ -222,12 +220,15 @@ void RenderPathPathTracing::RenderFrame()
 
 			CORE_RENDER->BindTextures(tex_count, texs);
 			{
-				
 				CORE_RENDER->Draw(render->fullScreen(), 1);
 			}
 			CORE_RENDER->BindTextures(tex_count, nullptr);
+
+			CORE_RENDER->SetDepthTest(1);
 		}
 	}
+
+	draw_AreaLightEmblems(scene);
 
 	CORE_RENDER->TimersEndPoint(frameID_, Render::T_PATH_TRACING_DRAW);
 	drawMS = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_PATH_TRACING_DRAW);

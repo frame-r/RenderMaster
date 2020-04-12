@@ -405,7 +405,12 @@ Render::RenderScene Render::getRenderScene()
 		vec3 worldDir = l->GetWorldTransform().Column3(2);
 		worldDir.Normalize();
 
-		scene.lights.emplace_back(RenderLight{l, worldDir});
+		RenderLight &rl = scene.lights.emplace_back();
+		rl.light = l;
+		rl.transform = l->GetWorldTransform();
+		rl.type = l->GetLightType();
+		rl.worldDirection = worldDir;
+		rl.intensity = l->GetIntensity();
 	}
 	scene.hasWorldLight = scene.lights.size() > 0;
 

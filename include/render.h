@@ -95,6 +95,9 @@ public:
 	{
 		Light* light;
 		vec3 worldDirection;
+		LIGHT_TYPE type;
+		mat4 transform;
+		float intensity;
 	};
 
 	struct RenderScene

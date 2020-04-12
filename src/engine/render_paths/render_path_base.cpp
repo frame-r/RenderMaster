@@ -28,6 +28,34 @@ static const vec2 taaSamples[16] =
 	vec2(1.0f / 32.0f, 16.0f / 27.0f)
 };
 
+void RenderPathBase::draw_AreaLightEmblems(const Render::RenderScene& scene)
+{
+	if (Shader* shader = render->GetShader("primitive.hlsl", render->fullScreen()))
+	{
+		CORE_RENDER->SetDepthTest(1);
+		CORE_RENDER->SetShader(shader);
+
+		for (const Render::RenderLight& renderLight : scene.lights)
+		{
+			if (renderLight.type != LIGHT_TYPE::AREA)
+				continue;
+
+			mat4 MVP = mats.ViewProjUnjitteredMat_ * renderLight.transform;
+
+			shader->SetMat4Parameter("MVP", &MVP);
+
+			vec4 one = vec4{ 1,1,1,1 };
+			one *= renderLight.intensity;
+
+			shader->SetVec4Parameter("main_color", &one);
+			shader->FlushParameters();
+
+			CORE_RENDER->Draw(render->fullScreen(), 1);
+		}
+		CORE_RENDER->SetDepthTest(0);
+	}
+}
+
 RenderPathBase::RenderPathBase()
 {
 	render = _core->GetRender();

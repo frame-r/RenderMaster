@@ -18,6 +18,7 @@ void Light::SaveYAML(void * yaml)
 	YAML::Emitter& n = *_n;
 
 	n << YAML::Key << "intensity" << YAML::Value << intensity_;
+	n << YAML::Key << "light_type" << YAML::Value << (int)lightType_;
 }
 
 void Light::LoadYAML(void * yaml)
@@ -28,6 +29,7 @@ void Light::LoadYAML(void * yaml)
 	YAML::Node& n = *_n;
 
 	if (n["intensity"]) intensity_ = n["intensity"].as<float>();
+	if (n["light_type"]) lightType_ = (LIGHT_TYPE)n["intensity"].as<int>();
 }
 
 Light::Light()
