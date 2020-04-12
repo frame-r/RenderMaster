@@ -3,10 +3,10 @@
 Graphic engine for experiments with graphics and programming
 
 ## Features
-PBR materials and textures, deferred shading, TAA, MSAA, reprojection, environment HDR cubemap, atmosphere, game objects hierarchy, manipulators, picking, imports assets, debug views.
+PBR materials and textures, deferred shading, TAA, MSAA, reprojection, environment HDR cubemap, atmosphere, game objects hierarchy, manipulators, picking, imports assets, debug views, path tracing for preview.
 
 ## Planned
-path tracing for preview, RTX, SSR, reflection probes, prefiltered reflections.
+RTX, SSR, denoise, reflection probes, prefiltered reflections.
 
 
 ## Building
@@ -22,5 +22,6 @@ Editor can be run form Qt Designer or Visual Studio (Editor.vcproj).
 Don't forget to set the environment variable PATH for your IDE: Engine.dll, FBX SDK dll, Qt binaries (only for editor).
 
 ![Alt text](preview.png?raw=true "Preview")
+![Alt text](preview1.png?raw=true "Preview")
 
 
