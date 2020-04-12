@@ -745,6 +745,8 @@ uint32_t Render::RenderScene::getHash()
 		memcpy(data.data() + len - srcLen, src, srcLen);
 	};
 
+	addData(&approxSize, sizeof(approxSize));
+
 	for (size_t i = 0; i < meshes.size(); ++i)
 	{
 		RenderMesh& r = meshes[i];

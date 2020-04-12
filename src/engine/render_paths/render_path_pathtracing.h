@@ -15,10 +15,13 @@ class RenderPathPathTracing : public RenderPathBase
 	uint32_t areaLightsCount{};
 	SharedPtr<StructuredBuffer> areaLightBuffer;
 
+	uint32_t crc_{};
+
 public:
 	RenderPathPathTracing();
 
 	uint getNumLines() override {return 1;}
 	std::string getString(uint i) override;
+	void uploadScene(Render::RenderScene& scene);
 	void RenderFrame() override;
 };
