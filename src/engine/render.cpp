@@ -411,6 +411,9 @@ Render::RenderScene Render::getRenderScene()
 		rl.type = l->GetLightType();
 		rl.worldDirection = worldDir;
 		rl.intensity = l->GetIntensity();
+
+		if (rl.type == LIGHT_TYPE::AREA)
+			scene.areaLights.push_back(rl);
 	}
 	scene.hasWorldLight = scene.lights.size() > 0;
 
@@ -756,7 +759,8 @@ uint32_t Render::RenderScene::getHash()
 	for (size_t i = 0; i < lights.size(); ++i)
 	{
 		RenderLight& l = lights[i];
-		addData(&l.worldDirection, sizeof(vec3));
+		addData(&l.transform, sizeof(mat4));
+		addData(&l.intensity, sizeof(float));
 	}
 
 	return crc.update(data.data(), data.size());

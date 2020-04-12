@@ -57,7 +57,7 @@ void drawMeshes(Material * pathtracingPreviewMaterial, std::vector<Render::Rende
 	}
 }
 
-size_t uploadSceneToGPU(Render::RenderScene& scene)
+size_t sceneTriangleCount(Render::RenderScene& scene)
 {
 	size_t tris = 0;
 
@@ -78,7 +78,7 @@ size_t uploadSceneToGPU(Render::RenderScene& scene)
 std::shared_ptr<RaytracingData> getTriangles(Render::RenderScene& scene, size_t triangles)
 {
 	std::shared_ptr<RaytracingData> ret =std::make_shared<RaytracingData>(triangles);
-	RaytracingTriangle* data = ret->triangles.data();
+	GPURaytracingTriangle* data = ret->triangles.data();
 
 	for (int i = 0; i < scene.meshes.size(); ++i)
 	{
@@ -89,7 +89,7 @@ std::shared_ptr<RaytracingData> getTriangles(Render::RenderScene& scene, size_t 
 
 		std::shared_ptr<RaytracingData> rtWorldTriangles = r.model->GetRaytracingData();
 
-		size_t bytes = sizeof(RaytracingTriangle) * rtWorldTriangles->size();
+		size_t bytes = sizeof(GPURaytracingTriangle) * rtWorldTriangles->size();
 		memcpy(data, rtWorldTriangles->triangles.data(), bytes);
 		data += rtWorldTriangles->triangles.size();
 	}
@@ -136,21 +136,52 @@ void RenderPathPathTracing::RenderFrame()
 	if (crc_ != nextcrc)
 	{
 		crc_ = nextcrc;
-		size_t triagles = uploadSceneToGPU(scene);
-		size_t allDataInBytes = triagles * sizeof(RaytracingTriangle);
 
-		if (triagles > trianglesBufferLen)
+		// 1. Triangles
 		{
-			trianglesBufferLen = triagles;
-			trianglesBuffer = RES_MAN->CreateStructuredBuffer(allDataInBytes, sizeof(RaytracingTriangle), BUFFER_USAGE::GPU_READ);
+			size_t triagles = sceneTriangleCount(scene);
+			size_t bufferLen = triagles * sizeof(GPURaytracingTriangle);
+
+			if (trianglesCount < triagles)
+			{
+				trianglesCount = triagles;
+				trianglesBuffer = RES_MAN->CreateStructuredBuffer(bufferLen, sizeof(GPURaytracingTriangle), BUFFER_USAGE::GPU_READ);
+			}
+
+			auto trianglesPtr = getTriangles(scene, triagles);
+			trianglesBuffer->SetData((uint8*)trianglesPtr->triangles.data(), bufferLen);
 		}
 
-		auto trianglesPtr = getTriangles(scene, triagles);
-		trianglesBuffer->SetData((uint8*)trianglesPtr->triangles.data(), allDataInBytes);
+		// 2. Area lights
+		{
+			size_t newAreaLightsCount = scene.areaLightCount();
+			size_t bufferLen = newAreaLightsCount * sizeof(GPURaytracingAreaLight);
+
+			if (areaLightsCount < newAreaLightsCount)
+			{
+				areaLightsCount = scene.areaLightCount();
+				areaLightBuffer = RES_MAN->CreateStructuredBuffer(bufferLen, sizeof(GPURaytracingAreaLight), BUFFER_USAGE::GPU_READ);
+			}
+
+			vector<GPURaytracingAreaLight> areaLightData(newAreaLightsCount);
+			for (size_t i = 0; i < scene.areaLightCount(); ++i)
+			{
+				areaLightData[i].p0 = scene.areaLights[i].transform * vec4(-1, 1, 0, 1);
+				areaLightData[i].p1 = scene.areaLights[i].transform * vec4( 1,-1, 0, 1);
+				areaLightData[i].p2 = scene.areaLights[i].transform * vec4( 1, 1, 0, 1);
+				areaLightData[i].p3 = scene.areaLights[i].transform * vec4(-1,-1, 0, 1);
+				areaLightData[i].center = scene.areaLights[i].transform.Column3(3);
+				areaLightData[i].center.w = 1.0f;
+				areaLightData[i].n = triangle_normal(areaLightData[i].p0, areaLightData[i].p1, areaLightData[i].p2);
+				areaLightData[i].color = vec4(1.0f) * scene.areaLights[i].intensity;
+			}
+
+			areaLightBuffer->SetData((uint8*)areaLightData.data(), bufferLen);
+		}
 
 		clearHDRbuffer();
 
-		Log("Scene changed %u\n", crc_);
+		Log("Scene upload. Hash: %u\n", crc_);
 	}
 
 	if (memcmp(&prevMats.ViewProjUnjitteredMat_, &mats.ViewProjUnjitteredMat_, sizeof(mat4)) != 0)
@@ -190,10 +221,12 @@ void RenderPathPathTracing::RenderFrame()
 			pathtracingshader->SetVec4Parameter("cam_pos_ws", &mats.WorldPos_);
 			pathtracingshader->SetUintParameter("maxSize_x", width);
 			pathtracingshader->SetUintParameter("maxSize_y", height);
-			pathtracingshader->SetUintParameter("triCount", trianglesBufferLen);
+			pathtracingshader->SetUintParameter("triCount", trianglesCount);
+			pathtracingshader->SetUintParameter("lightsCount", areaLightsCount);
 			pathtracingshader->FlushParameters();
 
 			CORE_RENDER->BindStructuredBuffer(0, trianglesBuffer.get());
+			CORE_RENDER->BindStructuredBuffer(1, areaLightBuffer.get());
 
 			Texture* uavs[] = { out.get() };
 			CORE_RENDER->CSBindUnorderedAccessTextures(1, uavs);
@@ -217,13 +250,11 @@ void RenderPathPathTracing::RenderFrame()
 				out.get()
 			};
 			CORE_RENDER->SetDepthTest(0);
-
 			CORE_RENDER->BindTextures(tex_count, texs);
 			{
 				CORE_RENDER->Draw(render->fullScreen(), 1);
 			}
 			CORE_RENDER->BindTextures(tex_count, nullptr);
-
 			CORE_RENDER->SetDepthTest(1);
 		}
 	}

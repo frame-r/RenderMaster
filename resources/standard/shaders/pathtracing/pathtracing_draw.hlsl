@@ -25,8 +25,22 @@ struct Triangle
 	float4 p2;
 	float4 normal;
 	int materialID;
+	uint _padding[3];
 };
 StructuredBuffer<Triangle> triangles : register(t0);
+
+struct AreaLight
+{
+	float4 p0;
+	float4 p1;
+	float4 p2;
+	float4 p3;
+	float4 center;
+	float4 normal;
+	float4 color;
+};
+StructuredBuffer<AreaLight> lights : register(t1);
+
 #include "intersect.hlsli"
 
 static uint rng_state;
@@ -157,9 +171,9 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 
 	float3 rayDirWs = GetWorldRay(ndc, cam_forward_ws.xyz, cam_right_ws.xyz, cam_up_ws.xyz);
 
-	//float3 lightPos = (lights[0].p0.xyz + lights[0].p1.xyz + lights[0].p2.xyz + lights[0].p3.xyz) * 0.25;
-	//float3 T = 0.5 * (lights[0].p0.xyz - lights[0].p1.xyz);
-	//float3 B = 0.5 * (lights[0].p0.xyz - lights[0].p2.xyz);
+	float3 lightPos = lights[0].center;
+	float3 T = 0.5 * (lights[0].p0.xyz - lights[0].p1.xyz);
+	float3 B = 0.5 * (lights[0].p0.xyz - lights[0].p2.xyz);
 
 	float3 throughput = float3(1, 1, 1);
 
@@ -170,29 +184,29 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	const int bounces = 5;
 	const int lightSamples = 1;
 #endif
-	//const float lightSamplesInv = rcp(lightSamples);
-	//const float3 L_normal = normalize(cross(T, B));
+	const float lightSamplesInv = rcp(lightSamples);
+	const float3 L_normal = normalize(cross(T, B));
 
 	float3 orign = cam_pos_ws.xyz;
 	float3 dir = rayDirWs;
 	
 	float3 color = 0;
 
-	float3 hit, N;
-	int id;
-	if (IntersectWorld(orign, dir, hit, N, id))
-	{
-		float g = max(dot(N, normalize(float3(-10,5,-6))), 0);
-		float a = rays / (rays + 1);
-		color = float3(g, g, g);
-		color = curColor.rgb * a + color.rgb * (1 - a);
-	}
-	else
-		color = float3(0,0,0);
-	
-	tex[dispatchThreadId.xy] = float4(color, rays + 1);
+	//float3 hit, N;
+	//int id;
+	//if (IntersectWorld(orign, dir, hit, N, id))
+	//{
+	//	float g = max(dot(N, normalize(float3(-10,5,-6))), 0);
+	//	float a = rays / (rays + 1);
+	//	color = float3(g, g, g);
+	//	color = curColor.rgb * a + color.rgb * (1 - a);
+	//}
+	//else
+	//	color = float3(0,0,0);
+	//
+	//tex[dispatchThreadId.xy] = float4(color, rays + 1);
 
-	/*
+	
 
 	[unroll]
 	for (int i = 0; i < bounces; i++)
@@ -224,7 +238,7 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 		
 			float brdf = _INVPI;
 			float areaLightFactor = max(dot(L_normal, -L), 0)  / (L_len * L_len);
-			directLight += isVisible * areaLightFactor * brdf * max(dot(L, N), 0);
+			directLight += lights[0].color * isVisible * areaLightFactor * brdf * max(dot(L, N), 0);
 		}
 
 		color += saturate(directLight * throughput);
@@ -256,6 +270,6 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	color.rgb = curColor.rgb * a + color.rgb * (1 - a);
 	
 	tex[dispatchThreadId.xy] = float4(color.rgb, rays+1);
-	*/
+	
 
 }

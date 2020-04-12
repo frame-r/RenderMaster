@@ -611,17 +611,25 @@ struct ShaderInitData
 };
 
 #pragma pack(push, 1)
-struct RaytracingTriangle
+struct GPURaytracingTriangle
 {
 	vec4 p0, p1, p2;
 	vec4 n;
 	uint materialID;
+	uint _padding[3];
+};
+struct GPURaytracingAreaLight
+{
+	vec4 p0, p1, p2, p3;
+	vec4 center;
+	vec4 n;
+	vec4 color;
 };
 #pragma pack(pop)
 
 struct RaytracingData
 {	
-	std::vector<RaytracingTriangle> triangles;
+	std::vector<GPURaytracingTriangle> triangles;
 
 public:
 	RaytracingData(size_t len) : triangles(len) {}

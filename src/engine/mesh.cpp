@@ -19,7 +19,6 @@ static unsigned short indexPlane[6]
 	0, 1, 3
 };
 
-
 static const char* stdMeshses[] =
 {
 	"std#plane",
@@ -246,7 +245,7 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 		if (isPlane())
 		{
 			trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(2));
-			vector<RaytracingTriangle>& in = trianglesDataObjectSpace->triangles;
+			vector<GPURaytracingTriangle>& in = trianglesDataObjectSpace->triangles;
 
 			auto index_to_pos = [](int i)->vec4
 			{
@@ -305,7 +304,7 @@ std::shared_ptr<RaytracingData> Mesh::GetRaytracingData()
 	triangles = desc.numberOfVertex / 3;
 
 	trianglesDataObjectSpace = shared_ptr<RaytracingData>(new RaytracingData(triangles));
-	vector<RaytracingTriangle>& in = trianglesDataObjectSpace->triangles;
+	vector<GPURaytracingTriangle>& in = trianglesDataObjectSpace->triangles;
 
 	for (int i = 0; i < triangles; ++i)
 	{

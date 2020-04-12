@@ -979,7 +979,7 @@ inline float saturate(float a)
 inline vec3 triangle_normal(vec4 p0, vec4 p1, vec4 p2)
 {
 	vec3 a = normalize(vec3(p0 - p1));
-	vec3 b = normalize(vec3(p0 - p2));
+	vec3 b = normalize(vec3(p2 - p0));
 	return /*wtf*/ normalize(cross(a, b));
 }
 #pragma warning(default : 4201)

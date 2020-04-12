@@ -35,11 +35,8 @@ void RenderPathBase::draw_AreaLightEmblems(const Render::RenderScene& scene)
 		CORE_RENDER->SetDepthTest(1);
 		CORE_RENDER->SetShader(shader);
 
-		for (const Render::RenderLight& renderLight : scene.lights)
+		for (const Render::RenderLight& renderLight : scene.areaLights)
 		{
-			if (renderLight.type != LIGHT_TYPE::AREA)
-				continue;
-
 			mat4 MVP = mats.ViewProjUnjitteredMat_ * renderLight.transform;
 
 			shader->SetMat4Parameter("MVP", &MVP);

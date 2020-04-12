@@ -104,10 +104,12 @@ public:
 	{
 		std::vector<RenderMesh> meshes;
 		std::vector<RenderLight> lights;
+		std::vector<RenderLight> areaLights;
 		bool hasWorldLight;
 		vec4 sun_direction;
 
 		uint32_t getHash();
+		size_t areaLightCount() { return areaLights.size(); }
 	};
 
 	RenderScene getRenderScene();

@@ -9,9 +9,11 @@ class RenderPathPathTracing : public RenderPathBase
 	float drawMS;
 	SharedPtr<Texture> out;
 
-	uint32_t trianglesBufferLen{};
+	uint32_t trianglesCount{};
 	SharedPtr<StructuredBuffer> trianglesBuffer;
 
+	uint32_t areaLightsCount{};
+	SharedPtr<StructuredBuffer> areaLightBuffer;
 
 public:
 	RenderPathPathTracing();
