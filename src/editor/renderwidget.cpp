@@ -290,7 +290,7 @@ void RenderWidget::onRender()
 	}
 
 	// TODO: repair picking
-	/*
+
 	if (leftMouseClick && !keyAlt)
 	{
 		if ((manipulator && !manipulator->isMouseIntersect(normalizedMousePos))
@@ -304,7 +304,7 @@ void RenderWidget::onRender()
 			coreRender->SetRenderTextures(1, texs, coreRender->GetSurfaceDepthTexture());
 			coreRender->Clear();
 			{
-				render->DrawMeshes(PASS::ID);
+				render->DrawMeshes(PASS::ID, cam.ProjectionMat * cam.ViewMat);
 			}
 			texs[0] = coreRender->GetSurfaceColorTexture();
 			coreRender->SetRenderTextures(1, texs, coreRender->GetSurfaceDepthTexture());
@@ -333,7 +333,7 @@ void RenderWidget::onRender()
 			editor->SelectObjects(slected);
 
 		}
-	}*/
+	}
 
 
 	coreRender->SwapBuffers();

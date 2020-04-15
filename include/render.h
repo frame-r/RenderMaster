@@ -122,6 +122,7 @@ public:
 	// IProfilerCallback
 	uint getNumLines() override;
 	std::string getString(uint i) override;
+	void drawMeshes(PASS pass, std::vector<Render::RenderMesh>& meshes, mat4 VP, mat4 VP_Prev);
 
 public:
 	void Init();
@@ -139,7 +140,7 @@ public:
 	auto DLLEXPORT GetComputeShader(const char* path, const std::vector<std::string>* defines) -> Shader*;
 	auto DLLEXPORT ReloadShaders() -> void;
 	auto DLLEXPORT RenderGUI() -> void;
-	//auto DLLEXPORT DrawMeshes(PASS pass) -> void;
+	auto DLLEXPORT DrawMeshes(PASS pass, const mat4& VP) -> void;
 	auto DLLEXPORT GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples = 0, TEXTURE_TYPE type = TEXTURE_TYPE::TYPE_2D, bool mips = false) -> Texture*;
 	auto DLLEXPORT ReleaseRenderTexture(Texture *tex) -> void;
 	auto DLLEXPORT RenderVector(const vec3& end, const vec4& c) -> void { renderVectors.push_back({c, end}); }

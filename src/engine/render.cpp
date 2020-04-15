@@ -85,6 +85,49 @@ static const uint fontWidth[256] =
 ,7, 7, 8, 8, 8, 8, 8, 9, 8, 7, 7, 7, 7, 6, 8, 6
 };
 
+void Render::drawMeshes(PASS pass, std::vector<Render::RenderMesh>& meshes, mat4 VP, mat4 VP_Prev)
+{
+	for (Render::RenderMesh& renderMesh : meshes)
+	{
+		Material* mat = renderMesh.mat;
+		if (!mat)
+			continue;
+
+		Shader* shader = nullptr;
+
+		if (pass == PASS::DEFERRED)
+			shader = mat->GetDeferredShader(renderMesh.mesh);
+		else if (pass == PASS::ID)
+			shader = mat->GetIdShader(renderMesh.mesh);
+		else if (pass == PASS::WIREFRAME)
+			shader = mat->GetWireframeShader(renderMesh.mesh);
+
+		if (!shader)
+			continue;
+
+		CORE_RENDER->SetShader(shader);
+
+		mat->UploadShaderParameters(shader, pass);
+		mat->BindShaderTextures(shader, pass);
+
+		mat4 MVP = VP * renderMesh.worldTransformMat;
+		mat4 MVP_prev = VP_Prev * renderMesh.worldTransformMatPrev;
+		mat4 M = renderMesh.worldTransformMat;
+		mat4 NM = M.Inverse().Transpose();
+
+		shader->SetMat4Parameter("MVP", &MVP);
+		shader->SetMat4Parameter("MVP_prev", &MVP_prev);
+		shader->SetMat4Parameter("M", &M);
+		shader->SetMat4Parameter("NM", &NM);
+
+		if (pass == PASS::ID)
+			shader->SetUintParameter("id", renderMesh.modelId);
+
+		shader->FlushParameters();
+
+		CORE_RENDER->Draw(renderMesh.mesh, 1);
+	}
+}
 
 template<typename T>
 void addObjectsRecursive(std::vector<T*>& ret, GameObject *root, OBJECT_TYPE type)
@@ -425,11 +468,11 @@ Render::RenderScene Render::getRenderScene()
 	return scene;
 }
 
-//auto DLLEXPORT Render::DrawMeshes(PASS pass) -> void
-//{
-//	vector<RenderMesh> meshes = getRenderMeshes();
-//	drawMeshes(pass, meshes);
-//}
+auto DLLEXPORT Render::DrawMeshes(PASS pass, const mat4& VP) -> void
+{
+	vector<RenderMesh> meshes = getRenderMeshes();
+	drawMeshes(pass, meshes, VP, VP);
+}
 
 auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples, TEXTURE_TYPE type, bool mips) -> Texture *
 {

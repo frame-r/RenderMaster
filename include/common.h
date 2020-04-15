@@ -623,6 +623,7 @@ struct GPURaytracingAreaLight
 	vec4 p0, p1, p2, p3;
 	vec4 center;
 	vec4 n;
+	vec4 T, B;
 	vec4 color;
 };
 #pragma pack(pop)

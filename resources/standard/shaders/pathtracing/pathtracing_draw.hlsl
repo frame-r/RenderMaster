@@ -37,6 +37,7 @@ struct AreaLight
 	float4 p3;
 	float4 center;
 	float4 normal;
+	float4 T, B;
 	float4 color;
 };
 StructuredBuffer<AreaLight> lights : register(t1);
@@ -139,11 +140,6 @@ void ComputeRngSeed(uint index, uint iteration, uint depth) {
 [numthreads(GROUP_DIM_X, GROUP_DIM_Y, 1)]
 void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
-
-	//tex[dispatchThreadId.xy] = float4(0, 1, 0, 0);
-
-	// TODO
-	
 #if 1
 	const float3 skyColor = float3(0.0, 0.0, 0.0);
 #else
@@ -159,23 +155,15 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	float4 curColor = tex[dispatchThreadId.xy];
 	float rays =  curColor.a;
 
-	//float pixel_seed = rand(float2(ii,jj));
-	uint pixel_num = jj * maxSize_x * ii;
-	ComputeRngSeed(pixel_num, uint(rays), 0);
+	uint pixelNum = jj * maxSize_x * ii;
+	ComputeRngSeed(pixelNum, uint(rays), 0);
 	//rng_state = wang_hash(pixel_num);
+	
+	float2 jitter = float2(Uniform01(), Uniform01());
 
 	float2 ndc;
-	float2 jitter = float2(Uniform01(), Uniform01());
 	ndc.x = (ii + jitter.x) / maxSize_x * 2 - 1;
 	ndc.y = (jj + jitter.y) / maxSize_y * 2 - 1;
-
-	float3 rayDirWs = GetWorldRay(ndc, cam_forward_ws.xyz, cam_right_ws.xyz, cam_up_ws.xyz);
-
-	float3 lightPos = lights[0].center;
-	float3 T = 0.5 * (lights[0].p0.xyz - lights[0].p1.xyz);
-	float3 B = 0.5 * (lights[0].p0.xyz - lights[0].p2.xyz);
-
-	float3 throughput = float3(1, 1, 1);
 
 #if REALTIME==1
 	const int bounces = 1;
@@ -185,34 +173,16 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	const int lightSamples = 1;
 #endif
 	const float lightSamplesInv = rcp(lightSamples);
-	const float3 L_normal = normalize(cross(T, B));
 
 	float3 orign = cam_pos_ws.xyz;
-	float3 dir = rayDirWs;
-	
+	float3 dir = GetWorldRay(ndc, cam_forward_ws.xyz, cam_right_ws.xyz, cam_up_ws.xyz);	
+	float3 throughput = float3(1, 1, 1);
 	float3 color = 0;
-
-	//float3 hit, N;
-	//int id;
-	//if (IntersectWorld(orign, dir, hit, N, id))
-	//{
-	//	float g = max(dot(N, normalize(float3(-10,5,-6))), 0);
-	//	float a = rays / (rays + 1);
-	//	color = float3(g, g, g);
-	//	color = curColor.rgb * a + color.rgb * (1 - a);
-	//}
-	//else
-	//	color = float3(0,0,0);
-	//
-	//tex[dispatchThreadId.xy] = float4(color, rays + 1);
-
-	
 
 	[unroll]
 	for (int i = 0; i < bounces; i++)
 	{
-		float3 hit, N;
-		int id;
+		float3 hit, N; int id;
 		if (!IntersectWorld(orign, dir, hit, N, id))
 		{
 			color += skyColor * throughput;
@@ -225,8 +195,8 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 		{
 			float tt = lerp(-1, 1, Uniform01());
 			float bb = lerp(-1, 1, Uniform01());
-		
-			float3 lightSample = lightPos + T * tt + B * bb;
+			float3 lightSample = lights[0].center + lights[0].T * tt + lights[0].B * bb;
+
 			float3 L = lightSample - hit;
 			float L_len = length(L);
 			L /= L_len;
@@ -237,11 +207,11 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 				isVisible = 0;
 		
 			float brdf = _INVPI;
-			float areaLightFactor = max(dot(L_normal, -L), 0)  / (L_len * L_len);
-			directLight += lights[0].color * isVisible * areaLightFactor * brdf * max(dot(L, N), 0);
+			float areaLightFactor = max(dot(lights[0].normal, -L), 0)  / (L_len * L_len);
+			directLight +=  isVisible * areaLightFactor * brdf * max(dot(L, N), 0);
 		}
 
-		color += saturate(directLight * throughput);
+		color += lights[0].color * (directLight * throughput);
 		
 		float pdf;
 	#if 0
@@ -253,7 +223,7 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 		float brdf = _INVPI;
 		throughput *= max(dot(dir, N), 0) * brdf / pdf;
 
-	#if 1
+	#if 0
 		float p = max(throughput.x, max(throughput.y, throughput.z));
 		if (Uniform01() > p) {
 			break;
@@ -268,8 +238,5 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 
 	float a = rays / (rays + 1);
 	color.rgb = curColor.rgb * a + color.rgb * (1 - a);
-	
 	tex[dispatchThreadId.xy] = float4(color.rgb, rays+1);
-	
-
 }

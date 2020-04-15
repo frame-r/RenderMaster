@@ -105,10 +105,10 @@ void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
 		size_t triagles = sceneTriangleCount(scene);
 		size_t bufferLen = triagles * sizeof(GPURaytracingTriangle);
 
-		if (trianglesCount < triagles)
+		if (trianglesCount < (uint32_t)triagles)
 		{
-			trianglesCount = triagles;
-			trianglesBuffer = RES_MAN->CreateStructuredBuffer(bufferLen, sizeof(GPURaytracingTriangle), BUFFER_USAGE::GPU_READ);
+			trianglesCount = (uint32_t)triagles;
+			trianglesBuffer = RES_MAN->CreateStructuredBuffer((uint)bufferLen, sizeof(GPURaytracingTriangle), BUFFER_USAGE::GPU_READ);
 		}
 
 		auto trianglesPtr = getTriangles(scene, triagles);
@@ -120,22 +120,26 @@ void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
 		size_t newAreaLightsCount = scene.areaLightCount();
 		size_t bufferLen = newAreaLightsCount * sizeof(GPURaytracingAreaLight);
 
-		if (areaLightsCount < newAreaLightsCount)
+		if (areaLightsCount < (uint32_t)newAreaLightsCount)
 		{
-			areaLightsCount = scene.areaLightCount();
-			areaLightBuffer = RES_MAN->CreateStructuredBuffer(bufferLen, sizeof(GPURaytracingAreaLight), BUFFER_USAGE::GPU_READ);
+			areaLightsCount = (uint32_t)newAreaLightsCount;
+			areaLightBuffer = RES_MAN->CreateStructuredBuffer((uint)bufferLen, sizeof(GPURaytracingAreaLight), BUFFER_USAGE::GPU_READ);
 		}
 
 		vector<GPURaytracingAreaLight> areaLightData(newAreaLightsCount);
 		for (size_t i = 0; i < scene.areaLightCount(); ++i)
 		{
-			areaLightData[i].p0 = scene.areaLights[i].transform * vec4(-1, 1, 0, 1);
-			areaLightData[i].p1 = scene.areaLights[i].transform * vec4(1, -1, 0, 1);
-			areaLightData[i].p2 = scene.areaLights[i].transform * vec4(1, 1, 0, 1);
-			areaLightData[i].p3 = scene.areaLights[i].transform * vec4(-1, -1, 0, 1);
-			areaLightData[i].center = scene.areaLights[i].transform.Column3(3);
-			areaLightData[i].center.w = 1.0f;
-			areaLightData[i].n = triangle_normal(areaLightData[i].p0, areaLightData[i].p1, areaLightData[i].p2);
+			areaLightData[i].p0 = scene.areaLights[i].transform * (vec4(-1, 1, 0, 1));
+			areaLightData[i].p1 = scene.areaLights[i].transform * (vec4(-1,-1, 0, 1));
+			areaLightData[i].p2 = scene.areaLights[i].transform * (vec4( 1,-1, 0, 1));
+			areaLightData[i].p3 = scene.areaLights[i].transform * (vec4( 1, 1, 0, 1));
+			areaLightData[i].center = vec4(scene.areaLights[i].transform.Column3(3));
+			areaLightData[i].center.w = 1;
+			areaLightData[i].T = (areaLightData[i].p0 - areaLightData[i].p1) * .5f;
+			areaLightData[i].B = (areaLightData[i].p0 - areaLightData[i].p2) * .5f;
+			areaLightData[i].T.w = 0;
+			areaLightData[i].B.w = 0;
+			areaLightData[i].n = -triangle_normal(areaLightData[i].p0, areaLightData[i].p1, areaLightData[i].p2);
 			areaLightData[i].color = vec4(1.0f) * scene.areaLights[i].intensity;
 		}
 
