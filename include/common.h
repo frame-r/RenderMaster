@@ -255,7 +255,7 @@ enum class BLEND_FACTOR
 
 enum class CULLING_MODE
 {
-	NONE = 0,
+	NONE = 1,
 	FRONT,
 	BACK	
 };

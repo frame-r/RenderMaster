@@ -214,7 +214,7 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 		float brdf = _INVPI;
 		throughput *= max(dot(dir, N), 0) * brdf / pdf;
 
-	#if 0
+	#if 1
 		float p = max(throughput.x, max(throughput.y, throughput.z));
 		if (Uniform01() > p) {
 			break;
