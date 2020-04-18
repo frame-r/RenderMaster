@@ -7,16 +7,7 @@ cbuffer SceneBuffer : register(b1)
 	uint spheresCount;
 	uint triCount;
 	uint lightsCount;
-	//float4 light_n;
 };
-
-//struct Sphere
-//{
-//	float4 center;
-//	float4 radius2;
-//	int materialID;
-//};
-//StructuredBuffer<Sphere> spheres : register(t1);
 
 struct Triangle
 {
@@ -42,7 +33,7 @@ struct AreaLight
 };
 StructuredBuffer<AreaLight> lights : register(t1);
 
-#include "intersect.hlsli"
+#include "pathtracing_intersect.hlsli"
 
 static uint rng_state;
 static const float png_01_convert = (1.0f / 4294967296.0f); // to convert into a 01 distribution

@@ -106,10 +106,8 @@ void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
 		size_t bufferLen = triagles * sizeof(GPURaytracingTriangle);
 
 		if (trianglesCount < (uint32_t)triagles)
-		{
-			trianglesCount = (uint32_t)triagles;
 			trianglesBuffer = RES_MAN->CreateStructuredBuffer((uint)bufferLen, sizeof(GPURaytracingTriangle), BUFFER_USAGE::GPU_READ);
-		}
+		trianglesCount = (uint32_t)triagles;
 
 		auto trianglesPtr = getTriangles(scene, triagles);
 		trianglesBuffer->SetData((uint8*)trianglesPtr->triangles.data(), bufferLen);
@@ -121,10 +119,8 @@ void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
 		size_t bufferLen = newAreaLightsCount * sizeof(GPURaytracingAreaLight);
 
 		if (areaLightsCount < (uint32_t)newAreaLightsCount)
-		{
-			areaLightsCount = (uint32_t)newAreaLightsCount;
 			areaLightBuffer = RES_MAN->CreateStructuredBuffer((uint)bufferLen, sizeof(GPURaytracingAreaLight), BUFFER_USAGE::GPU_READ);
-		}
+		areaLightsCount = (uint32_t)newAreaLightsCount;
 
 		vector<GPURaytracingAreaLight> areaLightData(newAreaLightsCount);
 		for (size_t i = 0; i < scene.areaLightCount(); ++i)
@@ -135,8 +131,8 @@ void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
 			areaLightData[i].p3 = scene.areaLights[i].transform * (vec4( 1, 1, 0, 1));
 			areaLightData[i].center = vec4(scene.areaLights[i].transform.Column3(3));
 			areaLightData[i].center.w = 1;
-			areaLightData[i].T = (areaLightData[i].p0 - areaLightData[i].p1) * .5f;
-			areaLightData[i].B = (areaLightData[i].p0 - areaLightData[i].p2) * .5f;
+			areaLightData[i].T = (areaLightData[i].p1 - areaLightData[i].p0) * .5f;
+			areaLightData[i].B = (areaLightData[i].p3 - areaLightData[i].p0) * .5f;
 			areaLightData[i].T.w = 0;
 			areaLightData[i].B.w = 0;
 			areaLightData[i].n = -triangle_normal(areaLightData[i].p0, areaLightData[i].p1, areaLightData[i].p2);

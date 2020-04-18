@@ -37,11 +37,7 @@ void RenderPathBase::draw_AreaLightEmblems(const Render::RenderScene& scene)
 
 		for (const Render::RenderLight& renderLight : scene.areaLights)
 		{
-			static mat4 facking_wtf_correct;
-			facking_wtf_correct.el_2D[0][3] = 0.0f;
-			facking_wtf_correct.el_2D[1][3] = 0.5f;
-
-			mat4 MVP = mats.ViewProjUnjitteredMat_ * renderLight.transform * facking_wtf_correct;
+			mat4 MVP = mats.ViewProjUnjitteredMat_ * renderLight.transform;
 
 			shader->SetMat4Parameter("MVP", &MVP);
 
