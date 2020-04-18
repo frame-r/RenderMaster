@@ -128,6 +128,29 @@ void ComputeRngSeed(uint index, uint iteration, uint depth) {
 	rng_state = uint(wang_hash((1 << 31) | (depth << 22) | iteration) ^ wang_hash(index));
 }
 
+float3 directLights(float3 orign, float3 N)
+{
+	float tt = lerp(-1, 1, Uniform01());
+	float bb = lerp(-1, 1, Uniform01());
+	float3 lightSample = lights[0].center + lights[0].T * tt + lights[0].B * bb;
+
+	float3 L = lightSample - orign;
+	float L_len = length(L);
+	L /= L_len;
+
+	float isVisible = 1;
+	float3 hitPosition, hitNormal;
+	int id;
+	if (IntersectWorld(orign, L, hitPosition, hitNormal, id, L_len))
+		isVisible = 0;
+
+	float brdf = _INVPI;
+	float areaLightFactor = max(dot(lights[0].normal, -L), 0) / (L_len * L_len);
+	float3 directLight = isVisible * areaLightFactor * brdf * max(dot(L, N), 0);
+
+	return directLight;
+}
+
 [numthreads(GROUP_DIM_X, GROUP_DIM_Y, 1)]
 void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
@@ -158,12 +181,9 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 
 #if REALTIME==1
 	const int bounces = 1;
-	const int lightSamples = 1;
 #else
 	const int bounces = 5;
-	const int lightSamples = 1;
 #endif
-	const float lightSamplesInv = rcp(lightSamples);
 
 	float3 orign = cam_pos_ws.xyz;
 	float3 dir = GetWorldRay(ndc, cam_forward_ws.xyz, cam_right_ws.xyz, cam_up_ws.xyz);	
@@ -173,36 +193,17 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	[unroll]
 	for (int i = 0; i < bounces; i++)
 	{
-		float3 hit, N; int id;
-		if (!IntersectWorld(orign, dir, hit, N, id))
+		float3 hit, N;
+		int id;
+		if (!IntersectWorld(orign, dir, hit, N, id, 1000.0f))
 		{
 			color += skyColor * throughput;
 			break;
 		}
 
 		orign = hit + N * 0.003;
-		
-		float3 directLight = 0;
-		{
-			float tt = lerp(-1, 1, Uniform01());
-			float bb = lerp(-1, 1, Uniform01());
-			float3 lightSample = lights[0].center + lights[0].T * tt + lights[0].B * bb;
 
-			float3 L = lightSample - hit;
-			float L_len = length(L);
-			L /= L_len;
-		
-			float isVisible = 1;
-			float3 hitPosition, hitNormal;
-			if (IntersectWorld(orign, L, hitPosition, hitNormal, id))
-				isVisible = 0;
-		
-			float brdf = _INVPI;
-			float areaLightFactor = max(dot(lights[0].normal, -L), 0)  / (L_len * L_len);
-			directLight +=  isVisible * areaLightFactor * brdf * max(dot(L, N), 0);
-		}
-
-		color += lights[0].color * (directLight * throughput);
+		color += lights[0].color * directLights(orign, N) * throughput;
 		
 		float pdf;
 	#if 0

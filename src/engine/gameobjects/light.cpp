@@ -29,7 +29,7 @@ void Light::LoadYAML(void * yaml)
 	YAML::Node& n = *_n;
 
 	if (n["intensity"]) intensity_ = n["intensity"].as<float>();
-	if (n["light_type"]) lightType_ = (LIGHT_TYPE)n["intensity"].as<int>();
+	if (n["light_type"]) lightType_ = (LIGHT_TYPE)n["light_type"].as<int>();
 }
 
 Light::Light()

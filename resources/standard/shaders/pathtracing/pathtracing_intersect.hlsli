@@ -90,11 +90,9 @@ bool IntersectSphere(float3 center3, float radius, float3 orig, float3 dir, out 
 // iD -		0 -geometry
 //			1 - lights
 
-bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out int id)
+bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out int id, float MaxDist)
 {
-	#define MAX_DIST 1000
-
-	float minDist = MAX_DIST;
+	float minDist = MaxDist;
 	float3 retHit, retN;
 	id = -1;
 
@@ -104,11 +102,12 @@ bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out i
 		if (rayTriangleIntersect(orig, dir, triangles[j].p0.xyz, triangles[j].p1.xyz, triangles[j].p2.xyz, hit))
 		{
 			float dist = length(hit - orig);
-			if (dist < minDist)
+			if (dist < minDist && dist <= MaxDist)
 			{
 				minDist = dist;
 				retHit = hit;
-				retN = triangles[j].normal.xyz;
+				bool sign_ = dot(hit - orig, triangles[j].normal.xyz) < 0;
+				retN = sign_? triangles[j].normal.xyz : -triangles[j].normal.xyz;
             }
 		}
 	}
@@ -135,7 +134,7 @@ bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out i
 		   rayTriangleIntersect(orig, dir, lights[k].p0.xyz, lights[k].p2.xyz, lights[k].p3.xyz, hit))
 	    {
 	        float dist = length(hit - orig);
-	        if (dist < minDist && dot(dir, lights[k].normal.xyz) > 0.0f)
+	        if (dist < minDist && dot(dir, lights[k].normal.xyz) > 0.0f && dist <= MaxDist)
 	        {
 	            minDist = dist;
 	            retHit = hit;
@@ -147,7 +146,7 @@ bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out i
 	N = retN;
 	hit = retHit;
 
-	return bool(minDist < MAX_DIST);
+	return bool(minDist < MaxDist);
 }
 
 float3 GetWorldRay(float2 ndc, float3 forwardWS, float3 rightWS, float3 upWS)

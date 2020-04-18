@@ -1,24 +1,24 @@
-roots: 4
+roots: 5
 objects:
   - childs: 0
     id: 845369033
     enabled: true
     type: Light
-    worldTransform: [0, -1.77638e-14, 0.9999997, -4.398415, -8.742368e-08, -1.000013, -1.776356e-14, 0.001035452, 1.00001, -8.742394e-08, 0, 0.773356, 0, 0, 0, 1]
-    intensity: 1
+    worldTransform: [1.192101e-07, 0.08243349, 0.9966623, -1.062489, -2.12343e-07, -0.996658, 0.08243384, 19.07181, 1.000007, -2.198056e-07, 0, 1.667727, 0, 0, 0, 1]
+    intensity: 6.565657
     light_type: 1
   - childs: 0
     id: 36578474
     enabled: true
     type: Model
-    worldTransform: [6, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, -0.3096306, 0, 0, 0, 1]
+    worldTransform: [60, 0, 0, 1.796759, 0, 100, 0, 0, 0, 0, 1, -0.3096306, 0, 0, 0, 1]
     mesh: std#plane
     material: material_0
   - childs: 0
     id: 1985095428
     enabled: true
     type: Model
-    worldTransform: [6, 0, 0, 0, 0, 0, -1.000001, 1.731466, 0, 3.000001, 0, 2.654777, 0, 0, 0, 1]
+    worldTransform: [-1.790021, 2.980232e-08, -0.4460523, 12.54922, -0.8920902, 2.503394e-06, 0.895025, 18.32798, 1.192093e-06, 2, -1.192112e-06, 0.9148207, 0, 0, 0, 1]
     mesh: std#plane
     material: material_0
   - childs: 0
@@ -28,3 +28,10 @@ objects:
     worldTransform: [1, 0, 0, -0.4133172, 0, 1, 0, -0.01566553, 0, 0, 1, 1.553444, 0, 0, 0, 1]
     mesh: .import\sphere.mesh
     material: material_14
+  - childs: 0
+    id: 883314448
+    enabled: true
+    type: Model
+    worldTransform: [5.05506, -8.940607e-08, 0.5387175, 0.105876, 3.232299, -3.218619e-06, -0.8425117, 27.56675, 3.576348e-06, 2.99997, -9.536946e-07, 2.654763, 0, 0, 0, 1]
+    mesh: std#plane
+    material: material_0

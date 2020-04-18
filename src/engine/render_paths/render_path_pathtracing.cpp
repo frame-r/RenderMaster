@@ -200,7 +200,7 @@ void RenderPathPathTracing::RenderFrame()
 		clearHDRbuffer();
 		fillDepthBuffer(scene);
 
-		Log("Scene upload. Hash: %u\n", crc_);
+		//Log("Scene upload. Hash: %u\n", crc_);
 	}
 
 	if (memcmp(&prevMats.ViewProjUnjitteredMat_, &mats.ViewProjUnjitteredMat_, sizeof(mat4)) != 0)
