@@ -8,6 +8,7 @@ void Light::Copy(GameObject * original)
 
 	Light *original_light = static_cast<Light*>(original);
 	intensity_ = original_light->intensity_;
+	lightType_ = original_light->lightType_;
 }
 
 void Light::SaveYAML(void * yaml)

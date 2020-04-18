@@ -132,21 +132,28 @@ float3 directLights(float3 orign, float3 N)
 {
 	float tt = lerp(-1, 1, Uniform01());
 	float bb = lerp(-1, 1, Uniform01());
-	float3 lightSample = lights[0].center + lights[0].T * tt + lights[0].B * bb;
 
-	float3 L = lightSample - orign;
-	float L_len = length(L);
-	L /= L_len;
+	float3 directLight = 0;
 
-	float isVisible = 1;
-	float3 hitPosition, hitNormal;
-	int id;
-	if (IntersectWorld(orign, L, hitPosition, hitNormal, id, L_len))
-		isVisible = 0;
+	for(int i = 0; i < lightsCount; ++i)
+	{
+		float3 lightSample = lights[i].center + lights[i].T * tt + lights[i].B * bb;
 
-	float brdf = _INVPI;
-	float areaLightFactor = max(dot(lights[0].normal, -L), 0) / (L_len * L_len);
-	float3 directLight = isVisible * areaLightFactor * brdf * max(dot(L, N), 0);
+		float3 L = lightSample - orign;
+		float L_len = length(L);
+		L /= L_len;
+
+		float isVisible = 1;
+		float3 hitPosition, hitNormal;
+		int id;
+		if (IntersectWorld(orign, L, hitPosition, hitNormal, id, L_len))
+			isVisible = 0;
+
+		float brdf = _INVPI;
+		float areaLightFactor = max(dot(lights[i].normal, -L), 0) / (L_len * L_len);
+
+		directLight += isVisible * areaLightFactor * brdf * max(dot(L, N), 0);
+	}
 
 	return directLight;
 }
