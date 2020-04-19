@@ -187,7 +187,9 @@ void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
 			areaLightData[i].T.w = 0;
 			areaLightData[i].B.w = 0;
 			areaLightData[i].n = -triangle_normal(areaLightData[i].p0, areaLightData[i].p1, areaLightData[i].p2);
-			areaLightData[i].color = vec4(1.0f) * scene.areaLights[i].intensity;
+
+			float S = cross((vec3)areaLightData[i].p1 - (vec3)areaLightData[i].p0, (vec3)areaLightData[i].p3 - (vec3)areaLightData[i].p0).Lenght();
+			areaLightData[i].color = vec4(1.0f) * scene.areaLights[i].intensity / S;
 		}
 
 		areaLightBuffer->SetData((uint8*)areaLightData.data(), bufferLen);
@@ -210,7 +212,8 @@ void RenderPathPathTracing::RenderFrame()
 	uint32_t nextcrc = scene.getHash();
 
 	if (!out || out->GetHeight() != height || out->GetWidth() != width)
-		out = RES_MAN->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA32F, TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS);
+		out = RES_MAN->CreateTexture(width, height, TEXTURE_TYPE::TYPE_2D, TEXTURE_FORMAT::RGBA32F,
+									 TEXTURE_CREATE_FLAGS::USAGE_UNORDRED_ACCESS | TEXTURE_CREATE_FLAGS::USAGE_RENDER_TARGET);
 
 	uint32 frameID_ = render->frameID();
 	uint32 readbackFrameID_ = render->readbackFrameID();
@@ -317,6 +320,14 @@ void RenderPathPathTracing::RenderFrame()
 		CORE_RENDER->CSBindUnorderedAccessTextures(1, nullptr);
 	}
 
+	// emblem
+	{
+		Texture* rts_out[1] = { out.get() };
+		CORE_RENDER->SetRenderTextures(1, rts_out, CORE_RENDER->GetSurfaceDepthTexture());
+
+		draw_AreaLightEmblems(scene);
+	}
+
 	CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
 
 	if (Shader* pathtracingshader = RENDER->GetShader("pathtracing\\pathtracing_hdr_to_ldr.hlsl", nullptr))
@@ -334,8 +345,6 @@ void RenderPathPathTracing::RenderFrame()
 		CORE_RENDER->BindTextures(tex_count, nullptr);
 		CORE_RENDER->SetDepthTest(1);
 	}
-
-	draw_AreaLightEmblems(scene);
 
 	CORE_RENDER->TimersEndPoint(frameID_, Render::T_PATH_TRACING_DRAW);
 	drawMS = CORE_RENDER->GetTimeInMsForPoint(readbackFrameID_, Render::T_PATH_TRACING_DRAW);

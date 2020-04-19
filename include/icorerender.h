@@ -48,6 +48,7 @@ public:
 	auto virtual SetDepthFunc(DEPTH_FUNC func) -> void = 0;
 	auto virtual SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void = 0;
 	auto virtual SetCullingMode(CULLING_MODE value) -> void = 0;
+	auto virtual SetDepthBias(float bias) -> void = 0;
 	auto virtual SetFillingMode(FILLING_MODE value) -> void = 0;
 	auto virtual BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags = BIND_TETURE_FLAGS::PIXEL) -> void = 0;
 	auto virtual CSBindUnorderedAccessTextures(int units, Texture **textures) -> void = 0;

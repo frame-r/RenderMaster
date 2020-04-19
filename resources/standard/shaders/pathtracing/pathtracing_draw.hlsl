@@ -166,6 +166,106 @@ float3 directLights(float3 orign, float3 N)
 	return directLight;
 }
 
+float3 applyRotationMappingZToN(in float3 N, in float3 v)	// --> https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+{
+	float  s = (N.z >= 0.0f) ? 1.0f : -1.0f;
+	v.z *= s;
+
+	float3 h = float3(N.x, N.y, N.z + s);
+	float  k = dot(v, h) / (1.0f + abs(N.z));
+
+	return k * h - v;
+}
+float Smith_TrowbridgeReitz(in float3 wi, in float3 wo, in float3 wm, in float3 wn, in float alpha2)
+{
+	if (dot(wo, wm) < 0 || dot(wi, wm) < 0)
+		return 0.0f;
+
+	float cos2 = dot(wn, wo);
+	cos2 *= cos2;
+	float lambda1 = 0.5 * (-1 + sqrt(1 + alpha2 * (1 - cos2) / cos2));
+	cos2 = dot(wn, wi);
+	cos2 *= cos2;
+	float lambda2 = 0.5 * (-1 + sqrt(1 + alpha2 * (1 - cos2) / cos2));
+	return 1 / (1 + lambda1 + lambda2);
+}
+float rnd(inout uint seed)
+{
+	seed = (1664525u * seed + 1013904223u);
+	return ((float)(seed & 0x00FFFFFF) / (float)0x01000000);
+}
+float3 sample_hemisphere_TrowbridgeReitzCos(in float alpha2, inout uint seed)
+{
+	float3 sampleDir; 
+
+	float u = rnd(seed);
+	float v = rnd(seed);
+
+	float tan2theta = alpha2 * (u / (1 - u));
+	float cos2theta = 1 / (1 + tan2theta);
+	float sinTheta = sqrt(1 - cos2theta);
+	float phi = _2PI * v;
+
+	sampleDir.x = sinTheta * cos(phi);
+	sampleDir.y = sinTheta * sin(phi);
+	sampleDir.z = sqrt(cos2theta);
+
+	return sampleDir;
+}
+float TrowbridgeReitz(in float cos2, in float alpha2)
+{
+	float x = alpha2 + (1 - cos2) / cos2;
+	return alpha2 / (_PI * cos2 * cos2 * x * x);
+}
+void samplingBRDF(out float3 sampleDir, out float sampleProb, out float3 brdfCos,
+				  in float3 surfaceNormal, in float3 baseDir, in uint materialIdx, inout uint seed)
+{
+	Material mtl = materials[materialIdx];
+
+	float3 brdfEval;
+	float3 albedo = mtl.albedo;
+
+	float3 I, O = baseDir, N = surfaceNormal, H;
+	float ON = dot(O, N), IN, HN, OH;
+	float alpha2 = mtl.shading.y * mtl.shading.y;
+
+	{
+		
+		H = sample_hemisphere_TrowbridgeReitzCos(alpha2, seed);
+		HN = H.z;
+		H = applyRotationMappingZToN(N, H);
+		OH = dot(O, H);
+
+		I = 2 * OH * H - O;
+		IN = dot(I, N);
+
+		if (IN < 0)
+		{
+			brdfEval = 0;
+			sampleProb = 0;		// sampleProb = D*HN / (4*abs(OH));  if allowing sample negative hemisphere
+		}
+		else
+		{
+			if (mtl.shading.y >= 0.001f)
+			{
+				float D = TrowbridgeReitz(HN * HN, alpha2);
+				float G = Smith_TrowbridgeReitz(I, O, H, N, alpha2);
+				float3 F = albedo + (1 - albedo) * pow(max(0, 1 - OH), 5);
+				brdfEval = ((D * G) / (4 * IN * ON)) * F;
+				sampleProb = D * HN / (4 * OH);
+			}
+			else
+			{
+				brdfEval = albedo / (4 * IN * ON);
+				sampleProb = 1 / (4 * OH);		// IN > 0 imply OH > 0
+			}
+		}
+	}
+
+	sampleDir = I;
+	brdfCos = brdfEval * IN;
+}
+
 [numthreads(GROUP_DIM_X, GROUP_DIM_Y, 1)]
 void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 {
@@ -210,27 +310,39 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 	{
 		float3 hit, N;
 		int id;
-		if (!IntersectWorld(orign, dir, hit, N, id, 1000.0f))
+		if (!IntersectWorld(orign, dir, hit, N, id, 1000.0f)) 
 		{
 			color += skyColor * throughput;
 			break;
 		}
 
+		if (id < 0) // light
+			color += lights[-(id + 1)].color * throughput;
+
 		Material mat = materials[id];
 
 		orign = hit + N * 0.003;
 
-		color += mat.albedo * lights[0].color * directLights(orign, N) * throughput;
-		
-		float pdf;
-	#if 0
-		dir = rayUniform(N, Uniform01(), Uniform01(), pdf);
-	#else
-		dir = rayCosine(N, Uniform01(), Uniform01(), pdf);
-	#endif
+		float3 sampleDir, brdfCos;
+		float sampleProb;
+		samplingBRDF(sampleDir, sampleProb, brdfCos, N, -dir, id, rng_state);
 
-		float3 brdf = mat.albedo * _INVPI;
-		throughput *= max(dot(dir, N), 0) * brdf / pdf;
+		throughput *= max(brdfCos / sampleProb,float3(0,0,0));
+		dir = sampleDir;
+
+
+		//color += mat.albedo * lights[0].color * directLights(orign, N) * throughput;
+		
+		//	float pdf;
+		//#if 0
+		//	dir = rayUniform(N, Uniform01(), Uniform01(), pdf);
+		//#else
+		//	dir = rayCosine(N, Uniform01(), Uniform01(), pdf);
+		//#endif
+
+
+		//float3 brdf = mat.albedo * _INVPI;
+		//throughput *= max(dot(dir, N), 0) * brdf / pdf;
 
 	#if 1
 		float p = max(throughput.x, max(throughput.y, throughput.z));

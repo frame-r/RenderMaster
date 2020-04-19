@@ -120,12 +120,21 @@ bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out i
 		   rayTriangleIntersect(orig, dir, lights[k].p0.xyz, lights[k].p2.xyz, lights[k].p3.xyz, hit))
 	    {
 	        float dist = length(hit - orig);
-	        if (dist < minDist && dot(dir, lights[k].normal.xyz) > 0.0f && dist <= MaxDist)
+	        if (dist < minDist && dist <= MaxDist)
 	        {
 	            minDist = dist;
 	            retHit = hit;
-	            retN = -lights[k].normal.xyz;
-				id = 0; // default matrial
+
+				if (dot(dir, lights[k].normal.xyz) > 0.0f) // back
+				{
+					retN = -lights[k].normal.xyz;
+					id = 0; // default matrial
+				}
+				else // front light
+				{
+					retN = lights[k].normal.xyz;
+					id = -(int)k - 1;
+				}
 	        }
 	    }
 	}

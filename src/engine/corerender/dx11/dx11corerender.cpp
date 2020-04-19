@@ -1253,6 +1253,20 @@ auto DX11CoreRender::SetCullingMode(CULLING_MODE value) -> void
 	_context->RSSetState(state_.rasterState.Get());
 }
 
+DWORD FtoInt(float f) { return *((DWORD*)&f); }
+
+auto DX11CoreRender::SetDepthBias(float bias) -> void
+{
+	DWORD v = FtoInt(bias);
+
+	if (state_.rasterStateDesc.DepthBias == v)
+		return;
+
+	state_.rasterStateDesc.DepthBias = v;
+	state_.rasterState = _rasterizerStatePool.FetchState(state_.rasterStateDesc);
+	_context->RSSetState(state_.rasterState.Get());
+}
+
 auto DX11CoreRender::SetFillingMode(FILLING_MODE value) -> void
 {
 	D3D11_FILL_MODE newMode = static_cast<D3D11_FILL_MODE>((int)value);

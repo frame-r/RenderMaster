@@ -17,7 +17,7 @@
 
 		float4 color = color_tex.Load(int3(screenPos.xy, 0));
 
-		color *= 2; // exposure
+		color *= 1.3; // exposure
 		
 		#if TM_ACES==1
 			color.rgb = tonemapACES(color.rgb);

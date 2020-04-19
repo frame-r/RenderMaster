@@ -96,6 +96,7 @@ public:
 	auto SetDepthFunc(DEPTH_FUNC func) -> void override;
 	auto SetBlendState(BLEND_FACTOR src, BLEND_FACTOR dest) -> void override;
 	auto SetCullingMode(CULLING_MODE value) -> void override;
+	auto SetDepthBias(float bias) -> void override;
 	auto SetFillingMode(FILLING_MODE value) -> void override;
 	auto BindTextures(int units, Texture **textures, BIND_TETURE_FLAGS flags) -> void override;
 	auto CSBindUnorderedAccessTextures(int units, Texture **textures) -> void override;

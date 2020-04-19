@@ -32,6 +32,7 @@ void RenderPathBase::draw_AreaLightEmblems(const Render::RenderScene& scene)
 {
 	if (Shader* shader = render->GetShader("primitive.hlsl", render->fullScreen()))
 	{
+		CORE_RENDER->SetDepthBias(-0.005f);
 		CORE_RENDER->SetCullingMode(CULLING_MODE::BACK);
 		CORE_RENDER->SetDepthTest(1);
 		CORE_RENDER->SetShader(shader);
@@ -52,6 +53,7 @@ void RenderPathBase::draw_AreaLightEmblems(const Render::RenderScene& scene)
 		}
 		CORE_RENDER->SetDepthTest(0);
 		CORE_RENDER->SetCullingMode(CULLING_MODE::NONE);
+		CORE_RENDER->SetDepthBias(0.0f);
 	}
 }
 
