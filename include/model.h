@@ -10,6 +10,7 @@ class Model final : public GameObject
 	vec3 meshCeneter;
 	Material *mat_{nullptr};
 	std::shared_ptr<RaytracingData> trianglesDataPtrWorldSpace;
+	uint raytracingMaterial = 0;
 	mat4 trianglesDataTransform;
 
 protected:
@@ -21,7 +22,7 @@ public:
 	Model();
 	Model(StreamPtr<Mesh> mesh);
 
-	std::shared_ptr<RaytracingData> GetRaytracingData();
+	std::shared_ptr<RaytracingData> GetRaytracingData(uint mat);
 
 	auto DLLEXPORT GetMesh() -> Mesh*;
 	auto DLLEXPORT GetMeshPath() -> const char*;

@@ -2,11 +2,22 @@
 #include "common.h"
 
 
+
 class MaterialManager
 {
+	Signal<Material*> onMaterialChanged;
+
 public:
 	void Init();
 	void Free();
+	void MaterialChanged(Material* mat)
+	{
+		onMaterialChanged.Invoke(mat);
+	}
+	void AddCallbackMaterialChanged(MaterialCallback callback)
+	{
+		onMaterialChanged.Add(callback);
+	}
 
 public:
 	auto DLLEXPORT CreateMaterial(const char *genericmat) -> Material*;

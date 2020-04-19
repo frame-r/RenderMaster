@@ -27,7 +27,7 @@ Model::Model(StreamPtr<Mesh> mesh) : Model()
 	meshPtr = mesh;
 }
 
-std::shared_ptr<RaytracingData> Model::GetRaytracingData()
+std::shared_ptr<RaytracingData> Model::GetRaytracingData(uint mat)
 {
 	vector<GPURaytracingTriangle>& dataIn = meshPtr.get()->GetRaytracingData()->triangles;
 
@@ -37,8 +37,10 @@ std::shared_ptr<RaytracingData> Model::GetRaytracingData()
 		trianglesDataTransform = {};
 	}
 
-	if (memcmp(&trianglesDataTransform, &worldTransform_, sizeof(mat4)) != 0)
+	if (memcmp(&trianglesDataTransform, &worldTransform_, sizeof(mat4)) != 0 || raytracingMaterial != mat)
 	{
+		raytracingMaterial = mat;
+
 		vector<GPURaytracingTriangle>& dataOut = trianglesDataPtrWorldSpace->triangles;
 		mat4 NM = worldTransform_.Inverse().Transpose();
 
@@ -52,6 +54,8 @@ std::shared_ptr<RaytracingData> Model::GetRaytracingData()
 			to.p2 = worldTransform_ * ti.p2;
 
 			to.n = NM * ti.n;
+
+			to.materialID = mat;
 		}
 
 		trianglesDataTransform = worldTransform_;

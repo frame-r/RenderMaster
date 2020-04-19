@@ -33,6 +33,14 @@ struct AreaLight
 };
 StructuredBuffer<AreaLight> lights : register(t1);
 
+struct Material
+{
+	uint type[4];
+	float4 albedo;
+	float4 shading; // metall, roughness, 0, 0
+};
+StructuredBuffer<Material> materials : register(t2);
+
 #include "pathtracing_intersect.hlsli"
 
 static uint rng_state;
@@ -208,9 +216,11 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 			break;
 		}
 
+		Material mat = materials[id];
+
 		orign = hit + N * 0.003;
 
-		color += lights[0].color * directLights(orign, N) * throughput;
+		color += mat.albedo * lights[0].color * directLights(orign, N) * throughput;
 		
 		float pdf;
 	#if 0
@@ -219,7 +229,7 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 		dir = rayCosine(N, Uniform01(), Uniform01(), pdf);
 	#endif
 
-		float brdf = _INVPI;
+		float3 brdf = mat.albedo * _INVPI;
 		throughput *= max(dot(dir, N), 0) * brdf / pdf;
 
 	#if 1

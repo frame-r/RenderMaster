@@ -94,7 +94,7 @@ bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out i
 {
 	float minDist = MaxDist;
 	float3 retHit, retN;
-	id = -1;
+	id = 0;
 
 	for (uint j = 0; j < triCount; j++)
 	{
@@ -108,24 +108,10 @@ bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out i
 				retHit = hit;
 				bool sign_ = dot(hit - orig, triangles[j].normal.xyz) < 0;
 				retN = sign_? triangles[j].normal.xyz : -triangles[j].normal.xyz;
+				id = triangles[j].materialID;
             }
 		}
 	}
-
-	//for (uint i = 0; i < spheresCount; i++)
-	//{
-	//	if (IntersectSphere(spheres[i].center.xyz, spheres[i].radius2.x, orig, dir, hit, N))
-	//	{
-	//		float dist = length(hit - orig);
-	//		if (dist < minDist)
-	//		{
-	//			minDist = dist;
-	//			retHit = hit;
-	//			retN = N;
- //              // id = 0;
- //           }
-	//	}
-	//}
 
 	// Area light back face
 	for (uint k = 0; k < lightsCount; k++)
@@ -139,6 +125,7 @@ bool IntersectWorld(float3 orig, float3 dir, out float3 hit, out float3 N, out i
 	            minDist = dist;
 	            retHit = hit;
 	            retN = -lights[k].normal.xyz;
+				id = 0; // default matrial
 	        }
 	    }
 	}

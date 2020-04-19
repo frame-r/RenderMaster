@@ -375,6 +375,9 @@ auto DLLEXPORT Material::SetParamFloat(const char* def, float value) -> void
 	}
 	auto id = parent_->nameToIndexMap_[def];
 	runtimeParams_[id].x = value;
+
+	MaterialManager* mm = _core->GetMaterialManager();
+	mm->MaterialChanged(this);
 }
 
 auto DLLEXPORT Material::SetParamFloat4(const char* def, const vec4& value) -> void
@@ -387,6 +390,9 @@ auto DLLEXPORT Material::SetParamFloat4(const char* def, const vec4& value) -> v
 
 	auto id = parent_->nameToIndexMap_[def];
 	runtimeParams_[id] = value;
+
+	MaterialManager* mm = _core->GetMaterialManager();
+	mm->MaterialChanged(this);
 }
 
 auto DLLEXPORT Material::GetParamFloat4(const char* def) -> vec4

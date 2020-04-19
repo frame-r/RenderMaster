@@ -13,9 +13,20 @@
 
 vector<string> defines{ "GROUP_DIM_X=16", "GROUP_DIM_Y=16" };
 
+RenderPathPathTracing* RenderPathPathTracing::instance;
+
+void RenderPathPathTracing::onMaterialChanged(Material* mat)
+{
+	instance->needUploadMaterials = true;
+	instance->materialChanged = mat;
+}
+
 RenderPathPathTracing::RenderPathPathTracing()
 {
+	instance = this;
+
 	MaterialManager* mm = _core->GetMaterialManager();
+	mm->AddCallbackMaterialChanged(onMaterialChanged);
 
 	pathtracingDrawMaterial = mm->CreateInternalMaterial("pathtracing_draw");
 	assert(pathtracingDrawMaterial);
@@ -58,9 +69,10 @@ void drawMeshes(Material * pathtracingPreviewMaterial, std::vector<Render::Rende
 	}
 }
 
-size_t sceneTriangleCount(Render::RenderScene& scene)
+std::pair<size_t, size_t> sceneTriangleCount(Render::RenderScene& scene)
 {
 	size_t tris = 0;
+	size_t mats = 1;
 
 	for (int i = 0; i < scene.meshes.size(); ++i)
 	{
@@ -69,17 +81,29 @@ size_t sceneTriangleCount(Render::RenderScene& scene)
 		if (r.mesh->isStd() && !r.mesh->isPlane())
 			continue;
 
-		std::shared_ptr<RaytracingData> rtWorldTriangles = r.model->GetRaytracingData();
+		std::shared_ptr<RaytracingData> rtWorldTriangles = r.model->GetRaytracingData(0);
 		tris += rtWorldTriangles->size();
+		mats++;
 	}
 
-	return tris;
+	return std::make_pair(tris, mats);
 }
 
-std::shared_ptr<RaytracingData> getTriangles(Render::RenderScene& scene, size_t triangles)
+std::shared_ptr<RaytracingData> RenderPathPathTracing::getScene(Render::RenderScene& scene, size_t triangles)
 {
-	std::shared_ptr<RaytracingData> ret =std::make_shared<RaytracingData>(triangles);
-	GPURaytracingTriangle* data = ret->triangles.data();
+	std::shared_ptr<RaytracingData> ret = std::make_shared<RaytracingData>(triangles);
+	GPURaytracingTriangle* tringlesData = ret->triangles.data();
+
+	matPointerToIndex.clear();
+
+	// Default diffuse material
+	{
+		GPUMaterial& gpuMat = ret->materials.emplace_back();
+		gpuMat.albedo = vec4{ 1,1,1,1 };
+		gpuMat.shading.x = 1;
+		gpuMat.shading.y = 1;
+		matPointerToIndex[nullptr] = 0;
+	}
 
 	for (int i = 0; i < scene.meshes.size(); ++i)
 	{
@@ -88,29 +112,56 @@ std::shared_ptr<RaytracingData> getTriangles(Render::RenderScene& scene, size_t 
 		if (r.mesh->isStd() && !r.mesh->isPlane())
 			continue;
 
-		std::shared_ptr<RaytracingData> rtWorldTriangles = r.model->GetRaytracingData();
+		uint matID = 0;
+		Material* mat = r.model->GetMaterial();
+
+		if (mat)
+		{
+			if (auto it = matPointerToIndex.find(mat); it != matPointerToIndex.end())
+				matID = it->second;
+			else
+			{
+				matID = ret->materials.size();
+				GPUMaterial& gpuMat = ret->materials.emplace_back();
+				fillGPUMaterial(gpuMat, mat);
+				matPointerToIndex[mat] = matID;
+			}
+		}
+
+		std::shared_ptr<RaytracingData> rtWorldTriangles = r.model->GetRaytracingData(matID);
 
 		size_t bytes = sizeof(GPURaytracingTriangle) * rtWorldTriangles->size();
-		memcpy(data, rtWorldTriangles->triangles.data(), bytes);
-		data += rtWorldTriangles->triangles.size();
+		memcpy(tringlesData, rtWorldTriangles->triangles.data(), bytes);
+		tringlesData += rtWorldTriangles->triangles.size();
 	}
+
+	gpuMaterials = ret->materials;
 
 	return ret;
 }
 
+void RenderPathPathTracing::fillGPUMaterial(GPUMaterial& gpuMat, Material* mat)
+{
+	gpuMat.albedo = mat->GetParamFloat4("base_color");
+	gpuMat.shading.x = mat->GetParamFloat("metalness");
+	gpuMat.shading.y = mat->GetParamFloat("roughness");
+}
+
 void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
 {
-	// 1. Triangles
+	// 1. Triangles & material
 	{
-		size_t triagles = sceneTriangleCount(scene);
+		auto [triagles, mats] = sceneTriangleCount(scene);
 		size_t bufferLen = triagles * sizeof(GPURaytracingTriangle);
 
 		if (trianglesCount < (uint32_t)triagles)
 			trianglesBuffer = RES_MAN->CreateStructuredBuffer((uint)bufferLen, sizeof(GPURaytracingTriangle), BUFFER_USAGE::GPU_READ);
 		trianglesCount = (uint32_t)triagles;
 
-		auto trianglesPtr = getTriangles(scene, triagles);
+		auto trianglesPtr = getScene(scene, triagles);
 		trianglesBuffer->SetData((uint8*)trianglesPtr->triangles.data(), bufferLen);
+
+		uploadMaterials(mats);
 	}
 
 	// 2. Area lights
@@ -141,6 +192,14 @@ void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
 
 		areaLightBuffer->SetData((uint8*)areaLightData.data(), bufferLen);
 	}
+}
+
+void RenderPathPathTracing::uploadMaterials(size_t mats)
+{
+	if (materialsCount < mats)
+		materialsBuffer = RES_MAN->CreateStructuredBuffer((uint)sizeof(GPUMaterial) * mats, sizeof(GPUMaterial), BUFFER_USAGE::GPU_READ);
+	materialsCount = mats;
+	materialsBuffer->SetData((uint8*)gpuMaterials.data(), sizeof(GPUMaterial) * mats);
 }
 
 void RenderPathPathTracing::RenderFrame()
@@ -203,6 +262,21 @@ void RenderPathPathTracing::RenderFrame()
 		//Log("Scene upload. Hash: %u\n", crc_);
 	}
 
+	if (needUploadMaterials)
+	{
+		if (auto it = matPointerToIndex.find(materialChanged); it != matPointerToIndex.end())
+		{
+			fillGPUMaterial(gpuMaterials[it->second], materialChanged);
+			uploadMaterials(materialsCount);
+		}
+
+		clearHDRbuffer();
+		fillDepthBuffer(scene);
+
+		needUploadMaterials = false;
+		materialChanged = nullptr;
+	}
+
 	if (memcmp(&prevMats.ViewProjUnjitteredMat_, &mats.ViewProjUnjitteredMat_, sizeof(mat4)) != 0)
 	{
 		clearHDRbuffer();
@@ -229,6 +303,7 @@ void RenderPathPathTracing::RenderFrame()
 
 		CORE_RENDER->BindStructuredBuffer(0, trianglesBuffer.get());
 		CORE_RENDER->BindStructuredBuffer(1, areaLightBuffer.get());
+		CORE_RENDER->BindStructuredBuffer(2, materialsBuffer.get());
 
 		Texture* uavs[] = { out.get() };
 		CORE_RENDER->CSBindUnorderedAccessTextures(1, uavs);

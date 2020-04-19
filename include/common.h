@@ -79,7 +79,7 @@ class Texture;
 class Light;
 class Material;
 struct GenericMaterial;
-
+class Material;
 
 enum class WINDOW_MESSAGE;
 enum class LOG_TYPE;
@@ -92,6 +92,7 @@ typedef void (*ConsoleCallback)(const char *, LOG_TYPE);
 typedef void (*ObjectCallback)(GameObject*);
 typedef void (*WindowCallback)(WINDOW_MESSAGE, uint32, uint32, void*);
 typedef void (*ProgressCallback)(int);
+typedef void (*MaterialCallback)(Material*);
 
 extern Core *_core;
 
@@ -626,11 +627,18 @@ struct GPURaytracingAreaLight
 	vec4 T, B;
 	vec4 color;
 };
+struct GPUMaterial
+{
+	uint type[4];
+	vec4 albedo;
+	vec4 shading; // metall, roughness, 0, 0
+};
 #pragma pack(pop)
 
 struct RaytracingData
 {	
 	std::vector<GPURaytracingTriangle> triangles;
+	std::vector<GPUMaterial> materials;
 
 public:
 	RaytracingData(size_t len) : triangles(len) {}
