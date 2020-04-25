@@ -423,7 +423,7 @@ void RenderPathRealtime::RenderFrame()
 	}
 	*/
 
-	draw_AreaLightEmblems(scene);
+	render->draw_AreaLightEmblems(scene.areaLights, mats.ViewProjUnjitteredMat_, PASS::FORWARD);
 
 	render->RenderGUI();
 

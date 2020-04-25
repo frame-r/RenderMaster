@@ -98,6 +98,7 @@ public:
 		LIGHT_TYPE type;
 		mat4 transform;
 		float intensity;
+		int id;
 	};
 
 	struct RenderScene
@@ -114,6 +115,10 @@ public:
 
 	RenderScene getRenderScene();
 	std::vector<RenderMesh> getRenderMeshes();
+
+	void addLight(Light* l, std::vector<RenderLight>& tergetVec);
+	std::vector<RenderLight> getRenderAreaLights(std::vector<Light*> lights);
+	std::vector<RenderLight> getRenderLights(std::vector<Light*> lights);
 	Mesh* fullScreen() { return planeMesh.get(); }
 	void updateEnvirenment(RenderScene& scene);
 	uint32 frameID();
@@ -134,6 +139,7 @@ public:
 	void GetEnvironmentResolution(vec4& out);
 	void GetEnvironmentIntensity(vec4& out);
 	Texture* GetEnvironmentTexture() { return environment; }
+	void draw_AreaLightEmblems(const std::vector<Render::RenderLight>& lights, const mat4& VP, PASS pas);
 
 public:
 	auto DLLEXPORT GetShader(const char* path, Mesh* meshattrib = nullptr, const std::vector<std::string>* defines = nullptr, LOAD_SHADER_FLAGS flags = LS_NONE) -> Shader*;

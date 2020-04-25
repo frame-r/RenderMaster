@@ -46,19 +46,6 @@ StructuredBuffer<Material> materials : register(t2);
 static uint rng_state;
 static const float png_01_convert = (1.0f / 4294967296.0f); // to convert into a 01 distribution
 
-//float3 uniformSampleHemisphere(float u1, float u2)
-//{
-//	float r = sqrt(1.0f - u1 * u1);
-//	float phi = _2PI * u2;
-//	return float3(cos(phi), sin(phi), u1);
-//}
-//float3 cosineSampleHemisphere(float u1, float u2)
-//{
-//	float r = sqrt(u1);
-//	float theta = _2PI * u2;
-//	return float3(cos(theta), sin(theta), sqrt(max(0, 1 - u1)));
-//}
-
 const static float fi = 1.324717957244;
 float goldenRatioU1(float seed)
 {
@@ -229,6 +216,14 @@ void samplingBRDF(out float3 sampleDir, out float sampleProb, out float3 brdfCos
 	float ON = dot(O, N), IN, HN, OH;
 	float alpha2 = mtl.shading.y * mtl.shading.y;
 
+#if 0
+
+		sampleDir = rayCosine(N, Uniform01(), Uniform01(), sampleProb);
+
+		//float3 brdf = mat.albedo * _INVPI;
+		//throughput *= max(dot(dir, N), 0) * brdf / pdf;
+		brdfCos = float3(1,1,1) * _INVPI * max(dot(-sampleDir, N), 0);
+#else
 	{
 		
 		H = sample_hemisphere_TrowbridgeReitzCos(alpha2, seed);
@@ -264,6 +259,8 @@ void samplingBRDF(out float3 sampleDir, out float sampleProb, out float3 brdfCos
 
 	sampleDir = I;
 	brdfCos = brdfEval * IN;
+
+#endif
 }
 
 [numthreads(GROUP_DIM_X, GROUP_DIM_Y, 1)]
@@ -329,20 +326,6 @@ void mainCS(uint3 dispatchThreadId : SV_DispatchThreadID)
 
 		throughput *= max(brdfCos / sampleProb,float3(0,0,0));
 		dir = sampleDir;
-
-
-		//color += mat.albedo * lights[0].color * directLights(orign, N) * throughput;
-		
-		//	float pdf;
-		//#if 0
-		//	dir = rayUniform(N, Uniform01(), Uniform01(), pdf);
-		//#else
-		//	dir = rayCosine(N, Uniform01(), Uniform01(), pdf);
-		//#endif
-
-
-		//float3 brdf = mat.albedo * _INVPI;
-		//throughput *= max(dot(dir, N), 0) * brdf / pdf;
 
 	#if 1
 		float p = max(throughput.x, max(throughput.y, throughput.z));

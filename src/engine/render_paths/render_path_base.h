@@ -31,8 +31,6 @@ protected:
 	float aspect;
 	float verFullFovInRadians;
 
-	void draw_AreaLightEmblems(const Render::RenderScene& scene);
-
 public:
 	RenderPathBase();
 

@@ -321,12 +321,12 @@ void RenderPathPathTracing::RenderFrame()
 	}
 
 	// emblem
-	{
-		Texture* rts_out[1] = { out.get() };
-		CORE_RENDER->SetRenderTextures(1, rts_out, CORE_RENDER->GetSurfaceDepthTexture());
+	//{
+	//	Texture* rts_out[1] = { out.get() };
+	//	CORE_RENDER->SetRenderTextures(1, rts_out, CORE_RENDER->GetSurfaceDepthTexture());
 
-		draw_AreaLightEmblems(scene);
-	}
+	//	draw_AreaLightEmblems(scene);
+	//}
 
 	CORE_RENDER->SetRenderTextures(1, rts, CORE_RENDER->GetSurfaceDepthTexture());
 

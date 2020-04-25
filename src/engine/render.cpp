@@ -432,6 +432,48 @@ vector<Render::RenderMesh> Render::getRenderMeshes()
 	return meshesVec;
 }
 
+void Render::addLight(Light* l, std::vector<RenderLight>& tergetVec)
+{
+	RenderLight& rl = tergetVec.emplace_back();
+	rl.light = l;
+	rl.transform = l->GetWorldTransform();
+	rl.type = l->GetLightType();
+	rl.worldDirection = l->GetWorldTransform().Column3(2);
+	rl.worldDirection.Normalize();
+	rl.intensity = l->GetIntensity();
+	rl.id = l->GetId();
+}
+
+std::vector<Render::RenderLight> Render::getRenderAreaLights(vector<Light*> lights)
+{
+	std::vector<Render::RenderLight> ret;
+
+	for (Light* l : lights)
+	{
+		if (!l->IsEnabled() || l->GetLightType() != LIGHT_TYPE::AREA)
+			continue;
+
+		addLight(l, ret);
+	}
+
+	return ret;
+}
+
+std::vector<Render::RenderLight> Render::getRenderLights(vector<Light*> lights)
+{
+	std::vector<Render::RenderLight> ret;
+
+	for (Light* l : lights)
+	{
+		if (!l->IsEnabled())
+			continue;
+
+		addLight(l, ret);
+	}
+
+	return ret;
+}
+
 Render::RenderScene Render::getRenderScene()
 {
 	RenderScene scene;
@@ -440,24 +482,28 @@ Render::RenderScene Render::getRenderScene()
 	vector<Light*> lights;
 	getObjects(lights, OBJECT_TYPE::LIGHT);
 
-	for (Light *l : lights)
-	{
-		if (!l->IsEnabled())
-			continue;
+	scene.lights = getRenderLights(lights);
+	scene.areaLights = getRenderAreaLights(lights);
 
-		vec3 worldDir = l->GetWorldTransform().Column3(2);
-		worldDir.Normalize();
+	//for (Light *l : lights)
+	//{
+	//	if (!l->IsEnabled())
+	//		continue;
 
-		RenderLight &rl = scene.lights.emplace_back();
-		rl.light = l;
-		rl.transform = l->GetWorldTransform();
-		rl.type = l->GetLightType();
-		rl.worldDirection = worldDir;
-		rl.intensity = l->GetIntensity();
+	//	vec3 worldDir = l->GetWorldTransform().Column3(2);
+	//	worldDir.Normalize();
 
-		if (rl.type == LIGHT_TYPE::AREA)
-			scene.areaLights.push_back(rl);
-	}
+	//	RenderLight &rl = scene.lights.emplace_back();
+	//	rl.light = l;
+	//	rl.transform = l->GetWorldTransform();
+	//	rl.type = l->GetLightType();
+	//	rl.worldDirection = worldDir;
+	//	rl.intensity = l->GetIntensity();
+
+	//	if (rl.type == LIGHT_TYPE::AREA)
+	//		scene.areaLights.push_back(rl);
+	//}
+
 	scene.hasWorldLight = scene.lights.size() > 0;
 
 	if (scene.hasWorldLight)
@@ -472,6 +518,12 @@ auto DLLEXPORT Render::DrawMeshes(PASS pass, const mat4& VP) -> void
 {
 	vector<RenderMesh> meshes = getRenderMeshes();
 	drawMeshes(pass, meshes, VP, VP);
+
+	vector<Light*> lights;
+	getObjects(lights, OBJECT_TYPE::LIGHT);
+
+	vector<RenderLight> areaLights = getRenderAreaLights(lights);
+	draw_AreaLightEmblems(areaLights, VP, pass);
 }
 
 auto DLLEXPORT Render::GetRenderTexture(uint width, uint height, TEXTURE_FORMAT format, int msaaSamples, TEXTURE_TYPE type, bool mips) -> Texture *
@@ -612,6 +664,38 @@ void Render::GetEnvironmentIntensity(vec4& environment_intensity)
 {
 	environment_intensity.x = diffuseEnvironemnt;
 	environment_intensity.y = specularEnvironemnt;
+}
+
+void Render::draw_AreaLightEmblems(const std::vector<Render::RenderLight>& lights , const mat4& VP, PASS pass)
+{
+	if (Shader* shader = GetShader(pass==PASS::ID? "primitive_id.hlsl" : "primitive.hlsl", fullScreen()))
+	{
+		//CORE_RENDER->SetDepthBias(0.005f);
+		//CORE_RENDER->SetCullingMode(CULLING_MODE::BACK);
+		CORE_RENDER->SetDepthTest(1);
+		CORE_RENDER->SetShader(shader);
+
+		for (const Render::RenderLight& renderLight : lights)
+		{
+			mat4 MVP = VP * renderLight.transform;
+
+			shader->SetMat4Parameter("MVP", &MVP);
+
+			vec4 one = vec4{ 1,1,1,1 };
+			one *= renderLight.intensity;
+
+			if (pass == PASS::ID)
+				shader->SetUintParameter("id", renderLight.id);
+			else
+				shader->SetVec4Parameter("main_color", &one);
+			shader->FlushParameters();
+
+			CORE_RENDER->Draw(fullScreen(), 1);
+		}
+		CORE_RENDER->SetDepthTest(0);
+		CORE_RENDER->SetCullingMode(CULLING_MODE::NONE);
+		//CORE_RENDER->SetDepthBias(0.0f);
+	}
 }
 
 void Render::renderGrid()
