@@ -9,10 +9,10 @@
 const static float PlaneScale = 0.2f;
 static StreamPtr<Mesh> meshLine;
 static StreamPtr<Mesh> meshCube;
-static mat4 CubeTranslateMatOriginal[3];
+static mat4 CubeTranslateMatDefault[3];
 static mat4 CubeTranslateMat[3];
 static mat4 AxesCorrectionMat[3];
-static mat4 AxesCorrectionMatOriginal[3];
+static mat4 AxesCorrectionMatDefault[3];
 
 ManipulatorScale::ManipulatorScale()
 {
@@ -20,18 +20,18 @@ ManipulatorScale::ManipulatorScale()
 	meshLine = resMan->CreateStreamMesh("std#line");
 	meshCube = resMan->CreateStreamMesh("std#cube");
 
-	CubeTranslateMatOriginal[0].el_2D[0][3] = 1.0f;
-	CubeTranslateMatOriginal[1].el_2D[1][3] = 1.0f;
-	CubeTranslateMatOriginal[2].el_2D[2][3] = 1.0f;
+	CubeTranslateMatDefault[0].el_2D[0][3] = 1.0f;
+	CubeTranslateMatDefault[1].el_2D[1][3] = 1.0f;
+	CubeTranslateMatDefault[2].el_2D[2][3] = 1.0f;
 
-	AxesCorrectionMatOriginal[1].el_2D[0][0] = 0.0f;
-	AxesCorrectionMatOriginal[1].el_2D[1][1] = 0.0f;
-	AxesCorrectionMatOriginal[1].el_2D[1][0] = 1.0f;
-	AxesCorrectionMatOriginal[1].el_2D[0][1] = 1.0f;
-	AxesCorrectionMatOriginal[2].el_2D[0][0] = 0.0f;
-	AxesCorrectionMatOriginal[2].el_2D[2][2] = 0.0f;
-	AxesCorrectionMatOriginal[2].el_2D[2][0] = 1.0f;
-	AxesCorrectionMatOriginal[2].el_2D[0][2] = 1.0f;
+	AxesCorrectionMatDefault[1].el_2D[0][0] = 0.0f;
+	AxesCorrectionMatDefault[1].el_2D[1][1] = 0.0f;
+	AxesCorrectionMatDefault[1].el_2D[1][0] = 1.0f;
+	AxesCorrectionMatDefault[1].el_2D[0][1] = 1.0f;
+	AxesCorrectionMatDefault[2].el_2D[0][0] = 0.0f;
+	AxesCorrectionMatDefault[2].el_2D[2][2] = 0.0f;
+	AxesCorrectionMatDefault[2].el_2D[2][0] = 1.0f;
+	AxesCorrectionMatDefault[2].el_2D[0][2] = 1.0f;
 }
 
 ManipulatorScale::~ManipulatorScale()
@@ -59,31 +59,39 @@ void ManipulatorScale::render(const CameraData &cam, const mat4 &selectionTransf
 	mat4 invSelectionWorldTransform = selectionTransform.Inverse();
 	vec4 camPos_axesSpace = invSelectionWorldTransform * vec4(cam.pos);
 
-	// axis
-	for (int i = 0; i < 3; i++)
-	{
-		mat4 MVP = cam.ViewProjMat * selectionTransform * distanceScaleMat * AxesCorrectionMat[i];
-		shader->SetMat4Parameter("MVP", &MVP);
-		shader->SetVec4Parameter("main_color", &ColorYellow);
-		shader->FlushParameters();
-		coreRender->Draw(meshLine.get(), 1);
-	}
+	mat4 *CubeTranslatePtr;
+	mat4 *AxesCorrectionPtr;
 
 	if (state == STATE::SCALING_ARROW_HANDLE)
 	{
+		memcpy(CubeTranslateMat, CubeTranslateMatDefault, sizeof(CubeTranslateMatDefault));
+		memcpy(AxesCorrectionMat, AxesCorrectionMatDefault, sizeof(AxesCorrectionMatDefault));
+
 		CubeTranslateMat[0].el_2D[0][3] = scaleVector.x;
 		CubeTranslateMat[1].el_2D[1][3] = scaleVector.y;
 		CubeTranslateMat[2].el_2D[2][3] = scaleVector.z;
 
 		AxesCorrectionMat[0].el_2D[0][0] = scaleVector.x;
 		AxesCorrectionMat[1].el_2D[1][0] = scaleVector.y;
-		AxesCorrectionMat[2].el_2D[0][2] = scaleVector.z;
 		AxesCorrectionMat[2].el_2D[2][0] = scaleVector.z;
+
+		CubeTranslatePtr = CubeTranslateMat;
+		AxesCorrectionPtr = AxesCorrectionMat;
 	}
 	else
 	{
-		memcpy(&CubeTranslateMat, &CubeTranslateMatOriginal, sizeof(CubeTranslateMatOriginal));
-		memcpy(&AxesCorrectionMat, &AxesCorrectionMatOriginal, sizeof(AxesCorrectionMatOriginal));
+		CubeTranslatePtr = CubeTranslateMatDefault;
+		AxesCorrectionPtr = AxesCorrectionMatDefault;
+	}
+
+	// axis
+	for (int i = 0; i < 3; i++)
+	{
+		mat4 MVP = cam.ViewProjMat * selectionTransform * distanceScaleMat * AxesCorrectionPtr[i];
+		shader->SetMat4Parameter("MVP", &MVP);
+		shader->SetVec4Parameter("main_color", &ColorYellow);
+		shader->FlushParameters();
+		coreRender->Draw(meshLine.get(), 1);
 	}
 
 	// cubes
@@ -96,7 +104,7 @@ void ManipulatorScale::render(const CameraData &cam, const mat4 &selectionTransf
 			col = AxesColors[i];
 
 		mat4 scale = mat4{0.05f};
-		mat4 MVP = cam.ViewProjMat * selectionTransform * distanceScaleMat * CubeTranslateMat[i] * scale;
+		mat4 MVP = cam.ViewProjMat * selectionTransform * distanceScaleMat * CubeTranslatePtr[i] * scale;
 		shader->SetMat4Parameter("MVP", &MVP);
 
 		shader->SetVec4Parameter("main_color", &col);
