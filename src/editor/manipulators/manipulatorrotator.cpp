@@ -146,7 +146,7 @@ void ManipulatorRotator::render(const CameraData &cam, const mat4& selectionTran
 	coreRender->PopStates();
 }
 
-void ManipulatorRotator::update(const CameraData &cam, const mat4& selectionTransform, const QRect &screen, const vec2 &normalizedMousePos)
+void ManipulatorRotator::updateMouse(const CameraData &cam, const mat4& selectionTransform, const QRect &screen, const vec2 &normalizedMousePos)
 {
 	if (state_ == STATE::NONE)
 	{

@@ -7,9 +7,6 @@
 #include "gameobject.h"
 #include <qdebug.h>
 
-float SelectionThresholdInPixels = 8.0f;
-const static float MaxDistanceInPixels = 1000000.0f;
-const static vec3 AxesEndpoints[3] = {vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1)};
 vec4 ColorYellow = vec4(1,1,0,1);
 vec4 ColorTransparent = vec4(1,1,1,0.17f);
 const static vec4 ColorRed = vec4(1,0,0,1);
@@ -27,47 +24,6 @@ static mat4 AxesCorrectionMat[3];
 static mat4 PlaneCorrectionMat[3];
 static mat4 RuntimeSideMat[3];
 static vec4 PlaneTriangles[2][3];
-
-
-struct AxisIntersection
-{
-	float minDistToAxes;
-	vec3 worldPos;
-};
-
-AxisIntersection intersectMouseWithAxis(const CameraData& cam, const mat4 selectionWS, const QRect &screen, const vec2 &normalizedMousePos, const vec3 &axisDirWS, MANIPULATOR_ELEMENT type)
-{
-	AxisIntersection out;
-
-	vec3 center = selectionWS.Column3(3);
-	vec4 center4 = vec4(selectionWS.Column3(3));
-
-	vec3 V = (center - cam.pos).Normalized();
-	vec3 VcrossAxis = V.Cross(axisDirWS).Normalized();
-	vec3 N = axisDirWS.Cross(VcrossAxis).Normalized();
-
-	Plane plane(N, center);
-
-	Ray ray = MouseToRay(cam.WorldTransform, cam.fovInDegrees, cam.aspect, normalizedMousePos);
-
-	if (RayPlaneIntersection(out.worldPos, plane, ray))
-	{
-	   vec2 A = NdcToScreen(WorldToNdc(center, cam.ViewProjMat), screen);
-
-	   vec4 axisEndpointLocal = vec4(AxesEndpoints[(int)type] * axisScale(center4, cam.ViewMat, cam.ProjectionMat, QPoint(screen.width(), screen.height())));
-	   vec4 axisEndpointWorld = selectionWS * axisEndpointLocal;
-	   vec2 B = NdcToScreen(WorldToNdc(vec3(axisEndpointWorld), cam.ViewProjMat), screen);
-
-	   vec2 I = NdcToScreen(WorldToNdc(out.worldPos, cam.ViewProjMat), screen);
-
-	   out.minDistToAxes = PointToSegmentDistance(A, B, I);
-	   return out;
-	}
-
-	out.minDistToAxes = MaxDistanceInPixels;
-
-	return out;
-}
 
 ManipulatorTranslator::ManipulatorTranslator()
 {
@@ -141,7 +97,7 @@ void ManipulatorTranslator::render(const CameraData& cam, const mat4& selectionT
 	vec4 camPos_axesSpace = invSelectionWorldTransform * vec4(cam.pos);
 
 	// Orientate manipulator-planes to viewer
-	if (state == MANIPULATOR_STATE::NONE)
+	if (state == STATE::NONE)
 	{
 		RuntimeSideMat[0].el_2D[0][0] = camPos_axesSpace.x > 0 ? 1.0f : -1.0f;
 		RuntimeSideMat[0].el_2D[1][1] = camPos_axesSpace.y > 0 ? 1.0f : -1.0f;
@@ -205,14 +161,14 @@ void ManipulatorTranslator::render(const CameraData& cam, const mat4& selectionT
 	}
 }
 
-void ManipulatorTranslator::update(const CameraData& cam, const mat4& selectionWorldTransform, const QRect& screen, const vec2 &normalizedMousePos)
+void ManipulatorTranslator::updateMouse(const CameraData& cam, const mat4& selectionWorldTransform, const QRect& screen, const vec2 &normalizedMousePos)
 {
 	if (oldNormalizedMousePos.Aproximately(normalizedMousePos))
 		return;
 
 	oldNormalizedMousePos = normalizedMousePos;
 
-	if (state == MANIPULATOR_STATE::MOVING_ARROW_HANDLE) // move object by arrow
+	if (state == STATE::MOVING_ARROW_HANDLE) // axis movement => update position
 	{
 		AxisIntersection I = intersectMouseWithAxis(cam, selectionWorldTransform, screen, normalizedMousePos, movesAlongLine.direction, underMouse);
 
@@ -222,7 +178,7 @@ void ManipulatorTranslator::update(const CameraData& cam, const mat4& selectionW
 			editor->FirstSelectedObjects()->SetWorldPosition(pos);
 		}
 
-	} else if (state == MANIPULATOR_STATE::MOVING_PLANE_HANDLE) // move object by plane
+	} else if (state == STATE::MOVING_PLANE_HANDLE) // plane movement => update position
 	{
 		Ray ray = MouseToRay(cam.WorldTransform, cam.fovInDegrees, cam.aspect, normalizedMousePos);
 
@@ -232,7 +188,7 @@ void ManipulatorTranslator::update(const CameraData& cam, const mat4& selectionW
 			vec3 pos = worldIntersection - worldDelta;
 			editor->FirstSelectedObjects()->SetWorldPosition(pos);
 		}
-	} else // Only check intersection with manipulator and set "underMouse"
+	} else // Intersection with manipulator handles and set "underMouse"
 	{
 		underMouse = MANIPULATOR_ELEMENT::NONE;
 
@@ -243,12 +199,11 @@ void ManipulatorTranslator::update(const CameraData& cam, const mat4& selectionW
 										selectionWorldTransform.Column3(2).Normalized()};
 		float minDist = MaxDistanceInPixels;
 
-		// Check intersection with plane
+		// Intersection with planes
 		{
 			vec4 center4 = vec4(selectionWorldTransform.Column3(3));
 			mat4 distanceScaleMat = mat4(axisScale(center4, cam.ViewMat, cam.ProjectionMat, QPoint(screen.width(), screen.height())));
 			mat4 planeTransform = cam.ViewProjMat * selectionWorldTransform * distanceScaleMat;
-
 			vec2 ndcMouse = normalizedMousePos * 2.0f - vec2(1.0f, 1.0f);
 
 			for (int k = 0; k < 3; k++) // each plane
@@ -271,7 +226,29 @@ void ManipulatorTranslator::update(const CameraData& cam, const mat4& selectionW
 			}
 		}
 
-		if (MANIPULATOR_ELEMENT::XY <= underMouse && underMouse <= MANIPULATOR_ELEMENT::ZX)
+		// Intersection with axis
+		if (underMouse == MANIPULATOR_ELEMENT::NONE)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				AxisIntersection I = intersectMouseWithAxis(cam, selectionWorldTransform, screen, normalizedMousePos, axesWorldDirection[i], (MANIPULATOR_ELEMENT)i);
+
+				// find minimum distance to each axis
+				if (I.minDistToAxes < SelectionThresholdInPixels && I.minDistToAxes < minDist)
+				{
+					minDist = I.minDistToAxes;
+					underMouse = static_cast<MANIPULATOR_ELEMENT>(i);
+
+					// Calculate worldDelta for axis
+					movesAlongLine = Ray(axesWorldDirection[i], center);
+					vec3 projectedToAxisLinePoint = movesAlongLine.projectPoint(I.worldPos);
+					worldDelta = projectedToAxisLinePoint - center;
+				}
+			}
+		}
+
+		// Calculate worldDelta for plane
+		if (isPlaneMovement(underMouse))
 		{
 			vec3 N;
 			switch(underMouse)
@@ -291,28 +268,7 @@ void ManipulatorTranslator::update(const CameraData& cam, const mat4& selectionW
 				worldDelta = worldIntersection - center;
 			}
 		}
-
-		// Check intersection with axis
-		if (underMouse == MANIPULATOR_ELEMENT::NONE)
-			for (int i = 0; i < 3; i++)
-			{
-				AxisIntersection I = intersectMouseWithAxis(cam, selectionWorldTransform, screen, normalizedMousePos, axesWorldDirection[i], (MANIPULATOR_ELEMENT)i);
-
-				// find minimum distance to each axis
-				if (I.minDistToAxes < SelectionThresholdInPixels && I.minDistToAxes < minDist)
-				{
-					minDist = I.minDistToAxes;
-
-					underMouse = static_cast<MANIPULATOR_ELEMENT>(i);
-
-					Ray axisLine = Ray(axesWorldDirection[i], center);
-					vec3 projectedToAxisLinePoint = axisLine.projectPoint(I.worldPos);
-					worldDelta = projectedToAxisLinePoint - center;
-				}
-			}
-
 	}
-
 }
 
 bool ManipulatorTranslator::isMouseIntersect(const vec2 &)
@@ -322,21 +278,13 @@ bool ManipulatorTranslator::isMouseIntersect(const vec2 &)
 
 void ManipulatorTranslator::mousePress(const CameraData &cam, const mat4& selectionTransform, const QRect &screen, const vec2 &normalizedMousePos)
 {
-	if (MANIPULATOR_ELEMENT::NONE < underMouse && underMouse <= MANIPULATOR_ELEMENT::Z)
-	{
-		state = MANIPULATOR_STATE::MOVING_ARROW_HANDLE;
-
-		vec3 worldDirection = selectionTransform.Column3((int)underMouse).Normalized();
-		vec3 center = selectionTransform.Column3(3);
-		movesAlongLine = Ray(worldDirection, center);
-	}
-	else if (MANIPULATOR_ELEMENT::XY <= underMouse && underMouse <= MANIPULATOR_ELEMENT::ZX)
-	{
-		state = MANIPULATOR_STATE::MOVING_PLANE_HANDLE;
-	}
+	if (isAxisMovement(underMouse))
+		state = STATE::MOVING_ARROW_HANDLE;
+	else if (isPlaneMovement(underMouse))
+		state = STATE::MOVING_PLANE_HANDLE;
 }
 
 void ManipulatorTranslator::mouseRelease()
 {
-	state = MANIPULATOR_STATE::NONE;
+	state = STATE::NONE;
 }

@@ -70,9 +70,10 @@ SOURCES += \
     $$PWD/../../src/editor/propertieswidgets/lightpropertywidget.cpp \
     $$PWD/../../src/editor/settings.cpp \
     $$PWD/../../src/editor/texturelineedit.cpp \
-    ../../src/editor/importthread.cpp \
-    ../../src/editor/manipulators/manipulatorrotator.cpp \
-    ../../src/editor/mylineedit.cpp
+    $$PWD/../../src/editor/importthread.cpp \
+    $$PWD/../../src/editor/manipulators/manipulatorrotator.cpp \
+    $$PWD/../../src/editor/manipulators/manipulatorscale.cpp \
+    $$PWD/../../src/editor/mylineedit.cpp
 
 HEADERS += \
     $$PWD/../../src/editor/mainwindow.h \
@@ -99,8 +100,9 @@ HEADERS += \
     $$PWD/../../src/editor/propertieswidgets/lightpropertywidget.h \
     $$PWD/../../src/editor/settings.h \
     $$PWD/../../src/editor/texturelineedit.h \
-    ../../src/editor/importthread.h \
-    ../../src/editor/manipulators/manipulatorrotator.h
+    $$PWD/../../src/editor/importthread.h \
+    $$PWD/../../src/editor/manipulators/manipulatorrotator.h \
+    $$PWD/../../src/editor/manipulators/manipulatorscale.h
 
 INCLUDEPATH += "$$PWD/../../src/editor/thirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/include"
 DEPENDPATH += "$$PWD/../../src/editorthirdparty/Qt-Advanced-Docking-System/AdvancedDockingSystem/include"

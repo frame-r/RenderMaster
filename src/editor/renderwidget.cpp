@@ -397,7 +397,7 @@ void RenderWidget::onUpdate(float dt)
 		if (leftMousePress)
 			editor->currentManipulator->mousePress(cam, editor->SelectionTransform(), rect(), normalizedMousePos);
 		else
-			editor->currentManipulator->update(cam, editor->SelectionTransform(), rect(), normalizedMousePos);
+			editor->currentManipulator->updateMouse(cam, editor->SelectionTransform(), rect(), normalizedMousePos);
 	}
 
 	if (isFocusing) // focusing

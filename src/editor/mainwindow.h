@@ -85,6 +85,10 @@ private slots:
 
 	void on_actionactionRotator_triggered(bool checked);
 
+	void on_actionscale_triggered();
+
+	void on_actionscale_triggered(bool checked);
+
 private:
 	Ui::MainWindow *ui;
 

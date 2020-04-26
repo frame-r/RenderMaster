@@ -10,6 +10,7 @@
 #include "treenode.h"
 #include "manipulators/manipulatortranslator.h"
 #include "manipulators/manipulatorrotator.h"
+#include "manipulators/manipulatorscale.h"
 #include "consolewidget.h"
 #include <qstatusbar.h>
 
@@ -352,12 +353,14 @@ void EditorCore::ToggleManipulator(MANIPULATOR type)
 		return;
 
 	maipulatorType_ = type;
+	currentManipulator = nullptr;
 
 	switch (type)
 	{
 		case MANIPULATOR::SELECT: currentManipulator = nullptr; break;
 		case MANIPULATOR::TRANSLATE: currentManipulator = std::unique_ptr<IManupulator>(new ManipulatorTranslator()); break;
 		case MANIPULATOR::ROTATE: currentManipulator = std::unique_ptr<IManupulator>(new ManipulatorRotator()); break;
+		case MANIPULATOR::SCALE: currentManipulator = std::unique_ptr<IManupulator>(new ManipulatorScale()); break;
 		default: currentManipulator = nullptr; break;
 	}
 }

@@ -13,10 +13,43 @@ static float vertexPlane[40] =
 	-1.0f,-1.0f, 0.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,		0.0f, 0.0f
 };
 
+static float vertexCube[] =
+{
+	-1.0f, 1.0f, 1.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,			0.0f, 1.0f, // top
+	 1.0f,-1.0f, 1.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,			1.0f, 0.0f,
+	 1.0f, 1.0f, 1.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,			1.0f, 1.0f,
+	-1.0f,-1.0f, 1.0f, 1.0f,	0.0f, 0.0f, 1.0f, 0.0f,			0.0f, 0.0f,
+
+	-1.0f, 1.0f, -1.0f, 1.0f,	0.0f, 0.0f, -1.0f, 0.0f,		0.0f, 1.0f, // bottom
+	 1.0f,-1.0f, -1.0f, 1.0f,	0.0f, 0.0f, -1.0f, 0.0f,		1.0f, 0.0f,
+	 1.0f, 1.0f, -1.0f, 1.0f,	0.0f, 0.0f, -1.0f, 0.0f,		1.0f, 1.0f,
+	-1.0f,-1.0f, -1.0f, 1.0f,	0.0f, 0.0f, -1.0f, 0.0f,		0.0f, 0.0f,
+
+	 -1.0f, -1.0f, 1.0f,1.0f,	-1.0f, 0.0f, 0.0f, 0.0f,		0.0f, 1.0f, // left
+	 -1.0f,  1.0f,-1.0f,1.0f,	-1.0f, 0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+	 -1.0f,  1.0f, 1.0f,1.0f,	-1.0f, 0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+	 -1.0f, -1.0f,-1.0f,1.0f,	-1.0f, 0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+
+	 1.0f, -1.0f, 1.0f,1.0f,	1.0f, 0.0f, 0.0f, 0.0f,			0.0f, 1.0f, // right
+	 1.0f,  1.0f,-1.0f,1.0f,	1.0f, 0.0f, 0.0f, 0.0f,			1.0f, 0.0f,
+	 1.0f,  1.0f, 1.0f,1.0f,	1.0f, 0.0f, 0.0f, 0.0f,			1.0f, 1.0f,
+	 1.0f, -1.0f,-1.0f,1.0f,	1.0f, 0.0f, 0.0f, 0.0f,			0.0f, 0.0f,
+
+	-1.0f, 1.0f,  1.0f,1.0f,	0.0f, 1.0f, 0.0f, 0.0f,			0.0f, 1.0f, // front
+	 1.0f, 1.0f, -1.0f,1.0f,	0.0f, 1.0f, 0.0f, 0.0f,			1.0f, 0.0f,
+	 1.0f, 1.0f,  1.0f,1.0f,	0.0f, 1.0f, 0.0f, 0.0f,			1.0f, 1.0f,
+	-1.0f, 1.0f, -1.0f,1.0f,	0.0f, 1.0f, 0.0f, 0.0f,			0.0f, 0.0f,
+
+	-1.0f, -1.0f,  1.0f,1.0f,	0.0f, -1.0f, 0.0f, 0.0f,		0.0f, 1.0f, // back
+	 1.0f, -1.0f, -1.0f,1.0f,	0.0f, -1.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+	 1.0f, -1.0f,  1.0f,1.0f,	0.0f, -1.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+	-1.0f, -1.0f, -1.0f,1.0f,	0.0f, -1.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+};
+
 static unsigned short indexPlane[6]
 {
-	0, 2, 1,
-	0, 1, 3
+	0+0, 0+2, 0+1,
+	0+0, 0+1, 0+3
 };
 
 static const char* stdMeshses[] =
@@ -24,7 +57,8 @@ static const char* stdMeshses[] =
 	"std#plane",
 	"std#grid",
 	"std#line",
-	"std#axes_arrows"
+	"std#axes_arrows",
+	"std#cube"
 };
 
 bool Mesh::isSphere()
@@ -156,6 +190,35 @@ ICoreMesh* createStdMesh(const char *path)
 		descArrows.positionStride = 16;
 
 		ret = CORE_RENDER->CreateMesh(&descArrows, &indexEmpty, VERTEX_TOPOLOGY::TRIANGLES);
+	}
+	else if (!strcmp(path, "std#cube"))
+	{
+		MeshDataDesc desc;
+		desc.pData = reinterpret_cast<uint8*>(vertexCube);
+		desc.numberOfVertex = sizeof(vertexCube) / (sizeof(float) * 10);
+		desc.positionStride = 40;
+		desc.normalsPresented = true;
+		desc.normalOffset = 16;
+		desc.normalStride = 40;
+		desc.texCoordPresented = true;
+		desc.texCoordOffset = 32;
+		desc.texCoordStride = 40;
+
+		unsigned short indexCube_[6 * sizeof(indexPlane) / sizeof(indexPlane[0])];
+		for (int i = 0; i < 6; i++)
+		{
+			for (int j = 0; j < 6; j++)
+			{
+				indexCube_[i * 6 + j] = indexPlane[j] + 4 * i;
+			}
+		}
+
+		MeshIndexDesc indexDesc;
+		indexDesc.pData = reinterpret_cast<uint8*>(indexCube_);
+		indexDesc.number = sizeof(indexCube_) / sizeof(indexCube_[0]);
+		indexDesc.format = MESH_INDEX_FORMAT::INT16;
+
+		ret = CORE_RENDER->CreateMesh(&desc, &indexDesc, VERTEX_TOPOLOGY::TRIANGLES);
 	}
 
 	return ret;

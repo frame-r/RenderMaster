@@ -69,6 +69,7 @@
    <addaction name="actionselect"/>
    <addaction name="actionTranslator"/>
    <addaction name="actionactionRotator"/>
+   <addaction name="actionscale"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoad">
@@ -144,6 +145,9 @@
    <property name="text">
     <string>Translator</string>
    </property>
+   <property name="shortcut">
+    <string>E</string>
+   </property>
   </action>
   <action name="actionReload_shaders">
    <property name="text">
@@ -165,6 +169,24 @@
    </property>
    <property name="text">
     <string>actionRotator</string>
+   </property>
+   <property name="shortcut">
+    <string>R</string>
+   </property>
+  </action>
+  <action name="actionscale">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/editor/rm2.qrc">
+     <normaloff>:/icons/manipulator_scale.png</normaloff>:/icons/manipulator_scale.png</iconset>
+   </property>
+   <property name="text">
+    <string>scale</string>
+   </property>
+   <property name="shortcut">
+    <string>T</string>
    </property>
   </action>
  </widget>

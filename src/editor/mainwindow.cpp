@@ -461,6 +461,7 @@ void MainWindow::switch_button(QAction *action)
 	ui->actionTranslator->setChecked(ui->actionTranslator == action);
 	ui->actionselect->setChecked(ui->actionselect == action);
 	ui->actionactionRotator->setChecked(ui->actionactionRotator == action);
+	ui->actionscale->setChecked(ui->actionscale == action);
 }
 
 void MainWindow::OnEngineInit(Core *c)
@@ -490,4 +491,14 @@ void MainWindow::on_actionactionRotator_triggered(bool checked)
 {
 	switch_button(ui->actionactionRotator);
 	if (checked) editor->ToggleManipulator(MANIPULATOR::ROTATE);
+}
+
+void MainWindow::on_actionscale_triggered()
+{
+}
+
+void MainWindow::on_actionscale_triggered(bool checked)
+{
+	switch_button(ui->actionscale);
+	if (checked) editor->ToggleManipulator(MANIPULATOR::SCALE);
 }

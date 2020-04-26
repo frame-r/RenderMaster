@@ -359,7 +359,7 @@ auto DLLEXPORT ResourceManager::GetImportedMeshes() -> std::vector<std::string>
 {
 	vector<string> paths = FS->FilterPaths(".mesh");
 
-	std::vector<std::string> stds = { "std#plane", "std#grid", "std#line", "std#axes_arrows" };
+	std::vector<std::string> stds = { "std#plane", "std#grid", "std#line", "std#axes_arrows", "std#cube" };
 	paths.insert(paths.begin(), stds.begin(), stds.end());
 
 	return paths;
