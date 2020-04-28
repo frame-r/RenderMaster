@@ -37,10 +37,11 @@
 		float3 albedo = texture_albedo.Load(int3(screenPos.xy, 0)).rgb;
 		float3 N = texture_normals.Load(int3(screenPos.xy, 0)).rgb * 2.0 - float3(1, 1, 1);
 		float4 shading = texture_shading.Load(int3(screenPos.xy, 0));
+		float reflectivity = shading.b;
 		float3 diffuseBRDF = texture_diffuse_light.Load(int3(screenPos.xy, 0)).rgb;
 		float3 specularBRDF = texture_specular_light.Load(int3(screenPos.xy, 0)).rgb;
 
-		float roughness = shading.r;
+		float roughness = shading.r; 
 		float metallic = shading.g;
 		float3 WorldPosition = depthToPosition(depth, fs_input.ndc, camera_view_projection_inv);
 		float3 V = normalize(camera_position.xyz - WorldPosition);
@@ -50,8 +51,8 @@
 		float3 F0 = float3(1, 1, 1) * 0.16 * Reflectance * Reflectance;
 		F0 = lerp(F0, albedo, metallic);
 
-		float3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
-		float3 kD = lerp(float3(1, 1, 1) - F, float3(0, 0, 0), metallic);
+		float3 F = fresnelSchlick(max(dot(N, V), 0.0), F0);
+		float3 kD = lerp(float3(1, 1, 1), float3(0, 0, 0), metallic);
 		
 		//
 		// Environment specular
@@ -163,11 +164,9 @@
 		//
 		// Environment + lights
 		//
-		float3 color = float3(0, 0, 0);
-		color += kD * environment_intensity.x * diffuseEnv;
-		color += environment_intensity.y * specularEnv;
-		color += kD * diffuseBRDF;
-		color += specularBRDF;
+		float3 color = 
+		 kD * (environment_intensity.x * diffuseEnv + diffuseBRDF) * (1 - reflectivity) +
+		 (environment_intensity.y * specularEnv + specularBRDF) * reflectivity;
 
 		float3 R = normalize(reflect(-V, N));
 		

@@ -10,6 +10,7 @@
 		
 		<param id="roughness" type="float">1.0</param>
 		<param id="metalness" type="float">1.0</param>
+		<param id="reflectivity" type="float">0.5</param>
 		<param id="normal_intensity" type="float">1</param>
 		<param id="base_color" type="color">1 1 1 1</param>
 		

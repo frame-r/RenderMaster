@@ -95,7 +95,7 @@ void GenericMaterial::LoadXML()
 
 			switch (p.type)
 			{
-				case PARAM_TYPE::FLOAT: if (!default_val.empty()) p.defaultValue.x = (float)std::stoi(default_val); break;
+				case PARAM_TYPE::FLOAT: if (!default_val.empty()) p.defaultValue.x = (float)std::stof(default_val); break;
 				case PARAM_TYPE::COLOR: sscanf(default_val.c_str(), "%f %f %f %f", &p.defaultValue.x, &p.defaultValue.y, &p.defaultValue.z, &p.defaultValue.w); break;
 				default: LogWarning("Material::LoadXML(): %s default value for param=% is not supported", id_.c_str(), id.c_str());
 			}

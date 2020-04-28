@@ -11,6 +11,7 @@
 		float4 base_color;
 		float roughness;
 		float metalness;
+		float reflectivity;
 		float normal_intensity;
 		float4 albedo_uv;
 	};
@@ -58,6 +59,8 @@
 		#if defined(ENG_INPUT_TEXCOORD) && defined(metalness_map)
 			out_color.shading.y *= TEXTURE_UV_SAMPLE(metalness, fs_input.TexCoord.xy).r;
 		#endif
+
+		out_color.shading.z = reflectivity;
 
 		#if defined(ENG_INPUT_TEXCOORD) && defined(albedo_map)
 			out_color.color *= srgbInv(TEXTURE_UV_SAMPLE(albedo, fs_input.TexCoord.xy));

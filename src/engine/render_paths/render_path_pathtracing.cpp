@@ -145,6 +145,7 @@ void RenderPathPathTracing::fillGPUMaterial(GPUMaterial& gpuMat, Material* mat)
 	gpuMat.albedo = mat->GetParamFloat4("base_color");
 	gpuMat.shading.x = mat->GetParamFloat("metalness");
 	gpuMat.shading.y = mat->GetParamFloat("roughness");
+	gpuMat.shading.z = mat->GetParamFloat("reflectivity");
 }
 
 void RenderPathPathTracing::uploadScene(Render::RenderScene& scene)
@@ -294,12 +295,12 @@ void RenderPathPathTracing::RenderFrame()
 		vec3 rightWS = mats.ViewInvMat_.Column3(0).Normalized() * tan(verFullFovInRadians * 0.5f) * aspect;
 		vec3 upWS = mats.ViewInvMat_.Column3(1).Normalized() * tan(verFullFovInRadians * 0.5f);
 
-		pathtracingshader->SetVec4Parameter("cam_forward_ws", &vec4(forwardWS));
-		pathtracingshader->SetVec4Parameter("cam_right_ws", &vec4(rightWS));
-		pathtracingshader->SetVec4Parameter("cam_up_ws", &vec4(upWS));
-		pathtracingshader->SetVec4Parameter("cam_pos_ws", &mats.WorldPos_);
-		pathtracingshader->SetUintParameter("maxSize_x", width);
-		pathtracingshader->SetUintParameter("maxSize_y", height);
+		pathtracingshader->SetVec4Parameter("camForwardWS", &vec4(forwardWS));
+		pathtracingshader->SetVec4Parameter("camRightWS", &vec4(rightWS));
+		pathtracingshader->SetVec4Parameter("camUpWS", &vec4(upWS));
+		pathtracingshader->SetVec4Parameter("camPosWS", &mats.WorldPos_);
+		pathtracingshader->SetUintParameter("maxSizeX", width);
+		pathtracingshader->SetUintParameter("maxSizeY", height);
 		pathtracingshader->SetUintParameter("triCount", trianglesCount);
 		pathtracingshader->SetUintParameter("lightsCount", areaLightsCount);
 		pathtracingshader->FlushParameters();

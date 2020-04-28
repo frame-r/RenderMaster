@@ -2,81 +2,156 @@
 
 #include "../common.hlsli"
 
-cbuffer CameraBuffer : register(b0)
-{
-	float4 cam_forward_ws;
-	float4 cam_right_ws;
-	float4 cam_up_ws;
-	float4 cam_pos_ws;
-	uint maxSize_x;
-	uint maxSize_y;
-};
-
 #define _PI (3.1415926f)
 #define _2PI (2.0f * _PI)
 #define _INV2PI (rcp(_2PI))
 #define _INVPI (rcp(_PI))
 
-float rand(float2 co) {
-	return frac(sin(dot(co.xy, float2(12.9898, 78.233))) * 43758.5453);
+struct Triangle
+{
+	float4 p0;
+	float4 p1;
+	float4 p2;
+	float4 normal;
+	int materialID;
+	uint _padding[3];
+};
+
+struct AreaLight
+{
+	float4 p0;
+	float4 p1;
+	float4 p2;
+	float4 p3;
+	float4 center;
+	float4 normal;
+	float4 T, B;
+	float4 color;
+};
+
+struct Material
+{
+	uint type[4];
+	float4 albedo;
+	float4 shading; // metall, roughness, reflectivity, 0
+};
+
+static const float fi = 1.324717957244;
+static uint rng_state;
+static const float png_01_convert = (1.0f / 4294967296.0f); // to convert into a 01 distribution
+
+// Wang hash for randomizing
+uint wang_hash(uint seed)
+{
+	seed = (seed ^ 61) ^ (seed >> 16);
+	seed *= 9;
+	seed = seed ^ (seed >> 4);
+	seed *= 0x27d4eb2d;
+	seed = seed ^ (seed >> 15);
+	return seed;
 }
 
-//float radicalInverseVdC(uint bits)
-//{
-//	bits = (bits << 16) | (bits >> 16);
-//	bits = ((bits & 0x55555555) << 1) | ((bits & 0xAAAAAAAA) >> 1);
-//	bits = ((bits & 0x33333333) << 2) | ((bits & 0xCCCCCCCC) >> 2);
-//	bits = ((bits & 0x0F0F0F0F) << 4) | ((bits & 0xF0F0F0F0) >> 4);
-//	bits = ((bits & 0x00FF00FF) << 8) | ((bits & 0xFF00FF00) >> 8);
-//	return float(bits) * 2.3283064365386963e-10f; // / 0x100000000
-//}
-//
-//float2 hammersley2d(int i, int N)
-//{
-//	return float2(float(i) / float(N), radicalInverseVdC(i));
-//}
+uint rand_xorshift()
+{
+	rng_state ^= uint(rng_state << 13);
+	rng_state ^= uint(rng_state >> 17);
+	rng_state ^= uint(rng_state << 5);
+	return rng_state;
+}
 
-//float luma(float3 col)
-//{
-//	return 0.299 * col.r + 0.587 * col.g + 0.114 * col.b;
-//}
-//float3 srgb(float3 v)
-//{
-//	return float3(pow(abs(v.x), 0.45), pow(abs(v.y), 0.45), pow(abs(v.z), 0.45));
-//}
-//float4 srgb(float4 v)
-//{
-//	return float4(pow(abs(v.x), 0.45), pow(abs(v.y), 0.45), pow(abs(v.z), 0.45), pow(abs(v.w), 0.45));
-//}
-//float3 srgbInv(float3 v)
-//{
-//	return float3(pow(v.x, 2.2), pow(v.y, 2.2), pow(v.z, 2.2));
-//}
-//float4 srgbInv(float4 v)
-//{
-//	return float4(pow(v.x, 2.2), pow(v.y, 2.2), pow(v.z, 2.2), pow(v.w, 2.2));
-//}
+float Uniform01()
+{
+	return float(rand_xorshift() * png_01_convert);
+}
 
-//
-// Tonemapping
-//
-//float3 tonemapReinhard(float3 x)
-//{
-//	return x / (1.0 + luma(x));
-//}
+void ComputeRngSeed(uint index, uint iteration, uint depth)
+{
+	rng_state = uint(wang_hash((1 << 31) /*| (depth << 22)*/ | iteration) ^ wang_hash(index));
+}
 
-// Gamma 2.2 correction is baked in, don't use with sRGB conversion!
-//float3 tonemapUnreal(float3 x)
-//{
-//	return x / (x + 0.155) * 1.019;
-//}
-//
-//float3 tonemapACES(float3 x)
-//{
-//	const float a = 2.51;
-//	const float b = 0.03;
-//	const float c = 2.43;
-//	const float d = 0.59;
-//	const float e = 0.14;
-//	return (x * (a * x + b)) / (x * (c * x + d) + e);
-//}
+float goldenRatioU1(float seed)
+{
+	return frac(seed / fi);
+}
+
+float goldenRatioU2(float seed)
+{
+	return frac(seed / (fi * fi));
+}
+
+
+
+float3 applyRotationMappingZToN(in float3 N, in float3 v)	// --> https://math.stackexchange.com/questions/180418/calculate-rotation-matrix-to-align-vector-a-to-vector-b-in-3d
+{
+	float  s = (N.z >= 0.0f) ? 1.0f : -1.0f;
+	v.z *= s;
+
+	float3 h = float3(N.x, N.y, N.z + s);
+	float  k = dot(v, h) / (1.0f + abs(N.z));
+
+	return k * h - v;
+}
+
+float Smith_TrowbridgeReitz(in float3 wi, in float3 wo, in float3 wm, in float3 wn, in float alpha2)
+{
+	if (dot(wo, wm) < 0 || dot(wi, wm) < 0)
+		return 0.0f;
+
+	float cos2 = dot(wn, wo);
+	cos2 *= cos2;
+	float lambda1 = 0.5 * (-1 + sqrt(1 + alpha2 * (1 - cos2) / cos2));
+	cos2 = dot(wn, wi);
+	cos2 *= cos2;
+	float lambda2 = 0.5 * (-1 + sqrt(1 + alpha2 * (1 - cos2) / cos2));
+	return 1 / (1 + lambda1 + lambda2);
+}
+
+float rnd(inout uint seed)
+{
+	seed = (1664525u * seed + 1013904223u);
+	return ((float)(seed & 0x00FFFFFF) / (float)0x01000000);
+}
+
+float3 sample_hemisphere_TrowbridgeReitzCos(in float alpha2, inout uint seed)
+{
+	float3 sampleDir;
+
+	float u = rnd(seed);
+	float v = rnd(seed);
+
+	float tan2theta = alpha2 * (u / (1 - u));
+	float cos2theta = 1 / (1 + tan2theta);
+	float sinTheta = sqrt(1 - cos2theta);
+	float phi = _2PI * v;
+
+	sampleDir.x = sinTheta * cos(phi);
+	sampleDir.y = sinTheta * sin(phi);
+	sampleDir.z = sqrt(cos2theta);
+
+	return sampleDir;
+}
+
+float TrowbridgeReitz(in float cos2, in float alpha2)
+{
+	float x = alpha2 + (1 - cos2) / cos2;
+	return alpha2 / (_PI * cos2 * cos2 * x * x);
+}
+
+float3 sample_hemisphere_cos(inout uint seed)
+{
+	float3 sampleDir;
+
+	float param1 = rnd(seed);
+	float param2 = rnd(seed);
+
+	// Uniformly sample disk.
+	float r = sqrt(param1);
+	float phi = 2.0f * _PI * param2;
+	sampleDir.x = r * cos(phi);
+	sampleDir.y = r * sin(phi);
+
+	// Project up to hemisphere.
+	sampleDir.z = sqrt(max(0.0f, 1.0f - r * r));
+
+	return sampleDir;
+}
