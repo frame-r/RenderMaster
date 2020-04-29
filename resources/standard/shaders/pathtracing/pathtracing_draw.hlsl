@@ -112,7 +112,7 @@ void samplingBRDF(out float3 sampleDir, out float sampleProb, out float3 brdfCos
 
 		brdfEval = spec + diff;
 
-		sampleProb = .5 * (D * HN / (4 * OH) + (_INVPI * IN));
+		sampleProb =  (D * HN / (4 * OH) * lerp(.5, 1, metallic) + (_INVPI * IN) * lerp(.5, 0, metallic));
 	}
 
 	sampleDir = I;
